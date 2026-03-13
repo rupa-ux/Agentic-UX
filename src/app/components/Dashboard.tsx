@@ -3,6 +3,7 @@ import { ChevronDown, Filter, Info, MoreVertical } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { ShareModal } from "./ShareModal";
 import { AICustomizePanel } from "./AICustomizePanel";
+import { ScheduleModal } from "./ScheduleModal";
 import { type DraftReport } from "./draftStore";
 import svgPaths from "../../imports/svg-mh0ycv9qll";
 
@@ -71,9 +72,9 @@ function QuestionIcon() {
 
 function EqualizerIcon() {
   return (
-    <div className="relative shrink-0 size-[16px]">
+    <div className="relative shrink-0 size-[14px]">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-        <path d={svgPaths.p3f857700} fill="#212121" />
+        <path d={svgPaths.p3f857700} className="fill-[#212121] dark:fill-[#c0c6d4]" />
       </svg>
     </div>
   );
@@ -81,11 +82,11 @@ function EqualizerIcon() {
 
 function ThreeDotIcon() {
   return (
-    <div className="relative shrink-0 size-[16px]">
+    <div className="relative shrink-0 size-[14px]">
       <div className="absolute flex inset-[14.81%_42.24%_14.88%_42.24%] items-center justify-center">
         <div className="flex-none h-[2.484px] rotate-90 w-[11.25px]">
           <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 11.25 2.48438">
-            <path clipRule="evenodd" d={svgPaths.p23a25380} fill="#212121" fillRule="evenodd" />
+            <path clipRule="evenodd" d={svgPaths.p23a25380} className="fill-[#212121] dark:fill-[#c0c6d4]" fillRule="evenodd" />
           </svg>
         </div>
       </div>
@@ -116,7 +117,7 @@ function LegendDot({ color, label }: { color: string; label: string }) {
           <circle cx="6" cy="6" fill={color} r="6" />
         </svg>
       </div>
-      <p className="text-[11px] text-[#8a8a8a] whitespace-nowrap" style={{ fontWeight: 400 }}>{label}</p>
+      <p className="text-[11px] text-[#8a8a8a] dark:text-[#8b92a5] whitespace-nowrap" style={{ fontWeight: 400 }}>{label}</p>
     </div>
   );
 }
@@ -126,7 +127,7 @@ function KpiValue({ value, change, label, large }: { value: string; change: stri
   return (
     <div className="flex flex-col gap-[2px] items-start shrink-0">
       <div className="flex gap-[4px] items-center">
-        <p className={`text-[#222] whitespace-nowrap ${large ? "text-[30px] leading-[42px]" : "text-[20px] leading-[22px]"}`} style={{ fontWeight: 400 }}>
+        <p className={`text-[#222] dark:text-[#e4e4e4] whitespace-nowrap ${large ? "text-[30px] leading-[42px]" : "text-[20px] leading-[22px]"}`} style={{ fontWeight: 400 }}>
           {value}
         </p>
         {change && (
@@ -136,7 +137,7 @@ function KpiValue({ value, change, label, large }: { value: string; change: stri
           </div>
         )}
       </div>
-      <p className={`text-[12px] whitespace-nowrap ${large ? "text-[#555] leading-[18px]" : "text-[#8f8f8f] uppercase leading-[16px]"}`} style={{ fontWeight: 400 }}>
+      <p className={`text-[12px] whitespace-nowrap ${large ? "text-[#555] dark:text-[#9ba2b0] leading-[18px]" : "text-[#8f8f8f] dark:text-[#7d849a] uppercase leading-[16px]"}`} style={{ fontWeight: 400 }}>
         {label}
       </p>
     </div>
@@ -148,24 +149,24 @@ function WidgetHeader({ title, showActions = true }: { title: string; showAction
   return (
     <div className="flex flex-col gap-[16px] items-start shrink-0 w-full">
       <div className="flex items-start justify-between px-[20px] py-[16px] w-full relative">
-        <div className="absolute border-[#eaeaea] border-b border-solid inset-0 pointer-events-none" />
+        <div className="absolute border-[#eaeaea] dark:border-[#333a47] border-b border-solid inset-0 pointer-events-none" />
         <div className="flex flex-col gap-[4px] items-start justify-center">
           <div className="flex gap-[4px] items-center">
-            <p className="text-[17px] text-[#555] whitespace-nowrap" style={{ fontWeight: 400 }}>{title}</p>
+            <p className="text-[17px] text-[#555] dark:text-[#c0c6d4] whitespace-nowrap" style={{ fontWeight: 400 }}>{title}</p>
             <QuestionIcon />
           </div>
           <div className="flex gap-[4px] items-start text-[12px] whitespace-nowrap" style={{ fontWeight: 400 }}>
-            <span className="text-[#555] leading-[16px]">This month</span>
-            <span className="text-[#8f8f8f] leading-[16px]">vs</span>
-            <span className="text-[#555] leading-[16px]">Previous period</span>
+            <span className="text-[#555] dark:text-[#9ba2b0] leading-[16px]">This month</span>
+            <span className="text-[#8f8f8f] dark:text-[#6b7280] leading-[16px]">vs</span>
+            <span className="text-[#555] dark:text-[#9ba2b0] leading-[16px]">Previous period</span>
           </div>
         </div>
         {showActions && (
           <div className="flex gap-[8px] items-start">
-            <button className="bg-white flex items-start p-[8px] relative rounded-[6px] border border-[#ccc]">
+            <button className="bg-white dark:bg-[#2a3040] flex items-start p-[8px] relative rounded-[8px] border border-[#e5e9f0] dark:border-[#333a47]">
               <EqualizerIcon />
             </button>
-            <button className="bg-white flex items-start p-[8px] relative rounded-[6px] border border-[#ccc]">
+            <button className="bg-white dark:bg-[#2a3040] flex items-start p-[8px] relative rounded-[8px] border border-[#e5e9f0] dark:border-[#333a47]">
               <ThreeDotIcon />
             </button>
           </div>
@@ -196,7 +197,7 @@ function ChartWidget({ title, kpis, data, series, yDomain, yTickFormatter, table
   const formatter = yTickFormatter || defaultFormatter;
 
   return (
-    <div className="bg-white flex flex-col gap-[20px] items-center pb-[20px] px-[20px] rounded-[8px] shadow-[0px_2px_12px_rgba(33,33,33,0.06)] w-full">
+    <div className="bg-white dark:bg-[#1e2229] flex flex-col gap-[20px] items-center pb-[20px] px-[20px] rounded-[8px] border border-[#e5e9f0] dark:border-[#333a47] w-full transition-colors duration-300">
       <WidgetHeader title={title} />
 
       {/* KPIs */}
@@ -269,15 +270,15 @@ function ChartWidget({ title, kpis, data, series, yDomain, yTickFormatter, table
 
       {/* Data table */}
       {tableHeaders && tableRows && (
-        <div className="w-full border-t border-[#eaeaea]">
+        <div className="w-full border-t border-[#eaeaea] dark:border-[#333a47]">
           {/* Table header */}
           <div className="flex items-center py-[12px]">
             <div className="min-w-[200px]">
-              <p className="text-[13px] text-[#212121]" style={{ fontWeight: 400 }}>Channels</p>
+              <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>Channels</p>
             </div>
             {tableHeaders.map(h => (
               <div key={h} className="min-w-[200px] flex items-center gap-[4px]">
-                <p className="text-[13px] text-[#212121]" style={{ fontWeight: 400 }}>{h}</p>
+                <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{h}</p>
                 <div className="relative shrink-0 size-[12px]">
                   <div className="absolute bottom-1/4 left-[18.75%] right-[18.75%] top-[37.5%]">
                     <svg className="absolute block size-full" fill="none" viewBox="0 0 7.5 4.5">
@@ -290,13 +291,13 @@ function ChartWidget({ title, kpis, data, series, yDomain, yTickFormatter, table
           </div>
           {/* Table rows */}
           {tableRows.map(row => (
-            <div key={row.channel} className="flex items-center border-t border-[#eaeaea]">
+            <div key={row.channel} className="flex items-center border-t border-[#eaeaea] dark:border-[#333a47]">
               <div className="min-w-[200px] py-[12px]">
-                <p className="text-[15px] text-[#212121]" style={{ fontWeight: 400 }}>{row.channel}</p>
+                <p className="text-[15px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{row.channel}</p>
               </div>
               {row.values.map((v, vi) => (
                 <div key={vi} className="min-w-[200px] py-[12px] flex items-center gap-[8px]">
-                  <p className="text-[15px] text-[#212121]" style={{ fontWeight: 400 }}>{v.value}</p>
+                  <p className="text-[15px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{v.value}</p>
                   {v.change && (
                     <div className="flex items-center">
                       <UpArrowIcon />
@@ -437,6 +438,8 @@ const chartWidgets: ChartWidgetProps[] = [
 export function Dashboard({ aiPanelOpen, onAiPanelChange, editingDraft }: { aiPanelOpen: boolean; onAiPanelChange: (open: boolean) => void; editingDraft?: DraftReport | null }) {
   const [shareDropdownOpen, setShareDropdownOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [aiEntryMode, setAiEntryMode] = useState<"share" | "schedule">("share");
   const [themeColor, setThemeColor] = useState("#2552ED");
   const [showSummaryPage, setShowSummaryPage] = useState(false);
   const shareRef = useRef<HTMLDivElement>(null);
@@ -455,52 +458,60 @@ export function Dashboard({ aiPanelOpen, onAiPanelChange, editingDraft }: { aiPa
   if (aiPanelOpen) {
     return (
       <AICustomizePanel
-        onClose={() => onAiPanelChange(false)}
+        onClose={() => { onAiPanelChange(false); setAiEntryMode("share"); }}
         themeColor={themeColor}
         onThemeColorChange={setThemeColor}
         showSummaryPage={showSummaryPage}
         onToggleSummaryPage={setShowSummaryPage}
         editingDraft={editingDraft}
+        entryMode={aiEntryMode}
       />
     );
   }
 
   return (
-    <div className="flex-1 bg-[#f8f9fa] overflow-auto flex flex-col">
+    <div className="flex-1 bg-white dark:bg-[#13161b] overflow-auto flex flex-col transition-colors duration-300">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#f8f9fa] px-8 h-[76px] flex items-center justify-between shrink-0 rounded-tr-[8px]">
-        <h1 className="text-[22px] text-[#212121] tracking-[-0.26px]" style={{ fontWeight: 400 }}>Profile performance</h1>
+      <div className="sticky top-0 z-10 bg-white dark:bg-[#13161b] px-8 h-[76px] flex items-center justify-between shrink-0 rounded-tr-[8px] transition-colors duration-300">
+        <h1 className="text-[#212121] dark:text-[#e4e4e4] tracking-[-0.26px] text-[18px]" style={{ fontWeight: 400 }}>Profile performance</h1>
         <div className="flex items-center gap-3">
           <div className="relative" ref={shareRef}>
             <button
               onClick={() => setShareDropdownOpen(!shareDropdownOpen)}
-              className="flex items-center gap-1 px-4 py-1.5 bg-white border border-[#e5e9f0] rounded-lg text-[14px] text-[#212121] hover:bg-[#f5f5f5] tracking-[-0.15px]"
+              className="flex items-center gap-1 px-4 py-1.5 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] text-[14px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] tracking-[-0.15px]"
               style={{ fontWeight: 400 }}
             >
-              Share
-              <ChevronDown className="w-4 h-4 text-[#212121]" />
+              Actions
+              <ChevronDown className="w-4 h-4 text-[#212121] dark:text-[#e4e4e4]" />
             </button>
             {shareDropdownOpen && (
-              <div className="absolute right-0 top-full mt-1 bg-white border border-[#e5e9f0] rounded-lg shadow-[0px_20px_34px_rgba(33,33,33,0.16)] z-20 min-w-[160px]">
+              <div className="absolute right-0 top-full mt-1 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-lg shadow-[0px_20px_34px_rgba(33,33,33,0.16)] dark:shadow-[0px_20px_34px_rgba(0,0,0,0.35)] z-20 min-w-[160px]">
                 <button
                   onClick={() => { setShareDropdownOpen(false); setShareModalOpen(true); }}
-                  className="w-full px-4 py-2.5 text-left text-[13px] text-[#1e1e1e] hover:bg-[#f5f5f5] rounded-lg"
+                  className="w-full px-4 py-2.5 text-left text-[13px] text-[#1e1e1e] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] rounded-t-lg"
                   style={{ fontWeight: 400 }}
                 >
                   Share report
                 </button>
                 <button
-                  onClick={() => { setShareDropdownOpen(false); onAiPanelChange(true); }}
-                  className="w-full px-4 py-2.5 text-left text-[13px] text-[#1e1e1e] hover:bg-[#f5f5f5] rounded-lg"
+                  onClick={() => { setShareDropdownOpen(false); setAiEntryMode("share"); onAiPanelChange(true); }}
+                  className="w-full px-4 py-2.5 text-left text-[13px] text-[#1e1e1e] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
                   style={{ fontWeight: 400 }}
                 >
                   Customize & share
                 </button>
+                <button
+                  onClick={() => { setShareDropdownOpen(false); setScheduleModalOpen(true); }}
+                  className="w-full px-4 py-2.5 text-left text-[13px] text-[#1e1e1e] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] rounded-b-lg"
+                  style={{ fontWeight: 400 }}
+                >
+                  Schedule
+                </button>
               </div>
             )}
           </div>
-          <button className="bg-white p-2 border border-[#e5e9f0] rounded-[9px] hover:bg-[#f5f5f5]">
-            <Filter className="w-[18px] h-[18px] text-[#555]" />
+          <button className="bg-white dark:bg-[#262b35] p-2 border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]">
+            <Filter className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" />
           </button>
         </div>
       </div>
@@ -508,7 +519,7 @@ export function Dashboard({ aiPanelOpen, onAiPanelChange, editingDraft }: { aiPa
       {/* Content */}
       <div className="px-8 pt-0 pb-8 flex flex-col gap-[20px] flex-1">
         {/* Performance Summary */}
-        <div className="bg-white flex flex-col gap-[20px] items-center pb-[20px] px-[20px] rounded-[8px] shadow-[0px_2px_12px_rgba(33,33,33,0.06)] w-full">
+        <div className="bg-white dark:bg-[#1e2229] flex flex-col gap-[20px] items-center pb-[20px] px-[20px] rounded-[8px] border border-[#e5e9f0] dark:border-[#333a47] w-full transition-colors duration-300">
           <WidgetHeader title="Performance summary" showActions={false} />
           <div className="flex flex-wrap gap-[80px_80px] items-start w-full px-[0px]">
             {[
@@ -532,7 +543,16 @@ export function Dashboard({ aiPanelOpen, onAiPanelChange, editingDraft }: { aiPa
       <ShareModal
         open={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
-        onCustomize={() => { setShareModalOpen(false); onAiPanelChange(true); }}
+        onCustomize={() => { setShareModalOpen(false); setAiEntryMode("share"); onAiPanelChange(true); }}
+        themeColor={themeColor}
+        showSummaryPage={showSummaryPage}
+      />
+
+      {/* Schedule Modal */}
+      <ScheduleModal
+        open={scheduleModalOpen}
+        onClose={() => setScheduleModalOpen(false)}
+        onCustomize={() => { setScheduleModalOpen(false); setAiEntryMode("schedule"); onAiPanelChange(true); }}
         themeColor={themeColor}
         showSummaryPage={showSummaryPage}
       />

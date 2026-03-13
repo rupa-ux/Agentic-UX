@@ -1,7 +1,25 @@
 @custom-variant dark (&:is(.dark *));
 
+@keyframes agents-shimmer {
+  0%, 100% { filter: drop-shadow(0 0 0px transparent); }
+  50% { filter: drop-shadow(0 0 4px rgba(37, 82, 237, 0.45)); }
+}
+@keyframes agents-sparkle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 :root {
   --font-size: 16px;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);
   --card: #ffffff;
@@ -137,6 +155,8 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-weight: 400;
   }
 
   /**
@@ -146,6 +166,7 @@
 
   html {
     font-size: var(--font-size);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   h1 {
@@ -189,6 +210,25 @@
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
   }
+}
+
+/*
+ * DESIGN SYSTEM CONSTRAINT — Light (300) + Regular (400) only.
+ * This override layer ensures Tailwind utility classes like font-medium,
+ * font-semibold, font-bold are clamped to 400 across all UI components.
+ * Use fontWeight: 300 for de-emphasised text and 400 for everything else.
+ */
+.font-medium,
+.font-semibold,
+.font-bold,
+.font-extrabold,
+.font-black {
+  font-weight: 400 !important;
+}
+.font-thin,
+.font-extralight,
+.font-light {
+  font-weight: 300 !important;
 }
 
 /* ─── Print Styles ─── */
