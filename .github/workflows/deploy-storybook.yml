@@ -1,0 +1,61 @@
+name: Deploy Storybook to GitHub Pages
+
+on:
+  # Auto-deploy whenever main is updated
+  push:
+    branches: [main]
+  # Allow manual deploys from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deploy can run at a time; cancel any in-progress run
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Node setup ────────────────────────────────────────────
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # ── 3. Install dependencies ───────────────────────────────────
+      - name: Install dependencies
+        run: npm ci
+
+      # ── 4. Build Storybook ────────────────────────────────────────
+      # STORYBOOK_BASE sets the sub-path for GitHub Pages
+      # so assets load from /ShareConsolidated/ not /
+      - name: Build Storybook
+        run: npm run build-storybook
+        env:
+          STORYBOOK_BASE: /ShareConsolidated/
+
+      # ── 5. Upload the built output ────────────────────────────────
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: storybook-static
+
+      # ── 6. Deploy to GitHub Pages ─────────────────────────────────
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

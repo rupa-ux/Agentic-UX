@@ -7,6 +7,15 @@ under 15 minutes.
 
 ---
 
+## Live URL
+
+> **Hosted Storybook →** https://balajik-cmyk.github.io/ShareConsolidated/
+>
+> Updated automatically every time a change is merged to `main`.
+> No local setup needed just to browse or reference components.
+
+---
+
 ## Table of Contents
 
 1. [What Is Storybook?](#1-what-is-storybook)
@@ -633,9 +642,11 @@ builds with what you already have instead of inventing new patterns.
 
 ### Prerequisites
 
-- Storybook running locally at `http://localhost:6006` (`npm run storybook`)
 - [Claude Code](https://claude.ai/code) installed (the CLI or desktop app)
 - Node.js 18 or higher
+- Storybook accessible — either:
+  - **Locally:** `npm run storybook` → `http://localhost:6006`
+  - **Hosted:** `https://balajik-cmyk.github.io/ShareConsolidated/` (no local setup needed)
 
 ---
 
@@ -668,12 +679,17 @@ Create a `.claude/settings.json` file in the root of this repository:
         "-y",
         "@storybook/mcp",
         "--storybook-url",
-        "http://localhost:6006"
+        "https://balajik-cmyk.github.io/ShareConsolidated/"
       ]
     }
   }
 }
 ```
+
+This points at the **hosted** Storybook so Claude can read your design
+system without anyone running it locally first. If you prefer to work
+offline, swap the URL for `http://localhost:6006` and run
+`npm run storybook` yourself.
 
 This file is committed to the repo so every team member gets the same
 configuration automatically when they clone.

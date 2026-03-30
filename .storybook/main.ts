@@ -31,7 +31,13 @@ const config: StorybookConfig = {
       };
     }
 
+    // When deploying to GitHub Pages the workflow sets STORYBOOK_BASE=/ShareConsolidated/
+    // so all built assets resolve from the correct sub-path.
+    // Locally (no env var) it falls back to "/" so nothing changes.
+    const base = process.env.STORYBOOK_BASE ?? "/";
+
     return mergeConfig(config, {
+      base,
       plugins: [tailwindcss(), figmaAssetStubPlugin()],
       resolve: {
         alias: {
