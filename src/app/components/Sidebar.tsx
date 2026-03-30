@@ -150,7 +150,7 @@ export function IconStrip({ currentView, onViewChange }: IconStripProps) {
       </div>
 
       {/* Icon buttons */}
-      <div className="flex flex-col items-center px-[12px] py-[8px] gap-[2px] flex-1 overflow-y-auto">
+      <div className="flex flex-col items-center px-[12px] py-[8px] gap-[2px] flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {iconStripItems.map(item => {
           const isActive = item.label === activeIcon;
           return (
