@@ -1,34 +1,37 @@
 import { useState, useRef, useEffect } from "react";
 import {
-  ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Palette, Clock, Bot, Sparkles,
+  ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Palette, Clock, Sparkles,
 } from "lucide-react";
+import {
+  House, ChatDots, MapPin, Star, Gift, CurrencyDollar,
+  CalendarDots, Graph, ClipboardText, Ticket, Users,
+  MegaphoneSimple, Globe, Lightbulb, ChartBar, Sparkle,
+} from "@phosphor-icons/react";
 import svgPaths from "../../imports/svg-y1gexucine";
-import svgPathsNew from "../../imports/svg-xipmb1bbds";
 import svgPathsReviews from "../../imports/svg-w1z8z09mht";
-import svgPathsAgents from "../../imports/svg-317cpi2zmx";
 import type { AppView } from "../App";
 import { useTheme, type ThemePreference } from "./useTheme";
 
 const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1617853701628-bfcf8b81d13d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBtYW4lMjBoZWFkc2hvdCUyMHNtaWxlJTIwc3R1ZGlvJTIwbGlnaHRpbmd8ZW58MXx8fHwxNzczMjE4MDIzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 
-/* ─── Icon-strip items (Figma rail) ─── */
-const iconStripItems = [
-  { label: "Agents", useLucide: true },
-  { label: "Home", path: svgPaths.p3c83e900, viewBox: "0 0 11.1666 12.7435" },
-  { label: "Inbox", path: svgPaths.p16687400, viewBox: "0 0 15.1666 13.85" },
-  { label: "Listings", path: svgPaths.p1db22180, viewBox: "0 0 12.2467 14.7836" },
-  { label: "Reviews", path: svgPaths.p97a8100, viewBox: "0 0 13.6492 12.9968" },
-  { label: "Referrals", path: svgPaths.p3bb91c80, viewBox: "0 0 15.1666 16.1506" },
-  { label: "Payments", path: svgPaths.p3d180f80, viewBox: "0 0 15.1666 15.1666" },
-  { label: "Appointments", path: svgPaths.p1e88cfb0, viewBox: "0 0 13.1666 15.2628" },
-  { label: "Social", path: svgPaths.p210b2470, viewBox: "0 0 15.3589 13.3589" },
-  { label: "Surveys", path: svgPaths.p1271780, viewBox: "0 0 13.1666 14.6666" },
-  { label: "Ticketing", path: svgPaths.p2af55f00, viewBox: "0 0 14.9743 14.9743" },
-  { label: "Contacts", path: svgPaths.p1cc6aa00, viewBox: "0 0 14.6698 10.8485" },
-  { label: "Campaigns", path: svgPaths.p2cdd75c0, viewBox: "0 0 15.2948 11.7626" },
-  { label: "Reports", path: svgPathsNew.p3f11bb00, viewBox: "0 0 15.1666 15.1666", active: true },
-  { label: "Insights", path: svgPaths.p140b9400, viewBox: "0 0 11.1666 15.2018" },
-  { label: "Competitors", path: svgPaths.paf11800, viewBox: "0 0 14.1666 13.1666" },
+/* ─── Icon-strip items — Phosphor Icons ─── */
+const iconStripItems: { label: string; Icon: React.ElementType }[] = [
+  { label: "Agents",       Icon: Sparkle        },
+  { label: "Home",         Icon: House          },
+  { label: "Inbox",        Icon: ChatDots       },
+  { label: "Listings",     Icon: MapPin         },
+  { label: "Reviews",      Icon: Star           },
+  { label: "Referrals",    Icon: Gift           },
+  { label: "Payments",     Icon: CurrencyDollar },
+  { label: "Appointments", Icon: CalendarDots   },
+  { label: "Social",       Icon: Graph          },
+  { label: "Surveys",      Icon: ClipboardText  },
+  { label: "Ticketing",    Icon: Ticket         },
+  { label: "Contacts",     Icon: Users          },
+  { label: "Campaigns",    Icon: MegaphoneSimple},
+  { label: "Reports",      Icon: Globe          },
+  { label: "Insights",     Icon: Lightbulb      },
+  { label: "Competitors",  Icon: ChartBar       },
 ];
 
 /* ─── Reports nav sections ─── */
@@ -90,9 +93,11 @@ const dashboardGroups = [
 interface IconStripProps {
   currentView: AppView;
   onViewChange: (view: AppView) => void;
+  /** Icon size in px. Defaults to 18. */
+  iconSize?: number;
 }
 
-export function IconStrip({ currentView, onViewChange }: IconStripProps) {
+export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStripProps) {
   const [activeIcon, setActiveIcon] = useState("Agents");
   const [profileOpen, setProfileOpen] = useState(false);
   const [showAppearance, setShowAppearance] = useState(false);
@@ -151,67 +156,41 @@ export function IconStrip({ currentView, onViewChange }: IconStripProps) {
 
       {/* Icon buttons */}
       <div className="flex flex-col items-center px-[12px] py-[8px] gap-[2px] flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {iconStripItems.map(item => {
-          const isActive = item.label === activeIcon;
+        {iconStripItems.map(({ label, Icon }) => {
+          const isActive = label === activeIcon;
           return (
             <button
-              key={item.label}
+              key={label}
               onClick={() => {
-                setActiveIcon(item.label);
-                if (item.label === "Inbox") onViewChange("inbox");
-                else if (item.label === "Reports") onViewChange("dashboard");
-                else if (item.label === "Reviews") onViewChange("reviews");
-                else if (item.label === "Social") onViewChange("social");
-                else if (item.label === "Insights") onViewChange("searchai");
-                else if (item.label === "Contacts") onViewChange("contacts");
-                else if (item.label === "Agents") onViewChange("agents");
+                setActiveIcon(label);
+                if (label === "Inbox") onViewChange("inbox");
+                else if (label === "Reports") onViewChange("dashboard");
+                else if (label === "Reviews") onViewChange("reviews");
+                else if (label === "Social") onViewChange("social");
+                else if (label === "Insights") onViewChange("searchai");
+                else if (label === "Contacts") onViewChange("contacts");
+                else if (label === "Agents") onViewChange("agents");
               }}
               className={`
                 group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0
-                transition-all duration-200 ease-out
-                outline-none
-                focus-visible:ring-2 focus-visible:ring-[#2552ED]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-[#e0e5eb] dark:focus-visible:ring-offset-[#181b22]
+                transition-all duration-200 ease-out outline-none
+                focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-[#e0e5eb] dark:focus-visible:ring-offset-[#181b22]
                 ${isActive
-                  ? "bg-[#dae3f0] dark:bg-[#252d42] shadow-[0_0_0_1px_rgba(37,82,237,0.08)]"
+                  ? "bg-[#dae3f0] dark:bg-[#252d42] shadow-[0_0_0_1px_rgba(30,68,204,0.08)]"
                   : "bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95"
                 }
               `}
-              title={item.label}
+              title={label}
             >
-              {item.useLucide ? (
-                <svg
-                  className={`w-[18px] h-[18px] transition-all duration-200 ${
-                    isActive ? "animate-[agents-shimmer_3s_ease-in-out_infinite]" : "group-hover:scale-110"
-                  }`}
-                  viewBox="0 0 16.6975 14.8252"
-                  fill="none"
-                  preserveAspectRatio="xMidYMid meet"
-                >
-                  <path d={svgPathsAgents.p33170700} fill={isActive ? "#2552ED" : "currentColor"} className={isActive ? "animate-[agents-sparkle_2.5s_ease-in-out_infinite]" : "text-[#505050] dark:text-[#9ba2b0] transition-colors duration-150"} />
-                  <path d={svgPathsAgents.p2d8f3b80} fill={isActive ? "#2552ED" : "currentColor"} className={isActive ? "animate-[agents-sparkle_2.5s_ease-in-out_infinite]" : "text-[#505050] dark:text-[#9ba2b0] transition-colors duration-150"} style={isActive ? { animationDelay: "0.3s" } : undefined} />
-                  <path clipRule="evenodd" d={svgPathsAgents.p1692000} fill={isActive ? "#2552ED" : "currentColor"} fillRule="evenodd" className={isActive ? "" : "text-[#505050] dark:text-[#9ba2b0] transition-colors duration-150"} />
-                  <path d={svgPathsAgents.p4cf0c70} fill={isActive ? "#2552ED" : "currentColor"} className={isActive ? "" : "text-[#505050] dark:text-[#9ba2b0] transition-colors duration-150"} />
-                </svg>
-              ) : (
-              <svg
-                className={`w-[16px] h-[16px] transition-all duration-200 ${
-                  isActive ? "" : "group-hover:scale-105"
-                }`}
-                viewBox={item.viewBox}
-                fill="none"
-                preserveAspectRatio="xMidYMid meet"
-              >
-                <path
-                  d={item.path}
-                  fill={isActive ? "#2552ED" : "currentColor"}
-                  className={isActive
-                    ? ""
-                    : "text-[#505050] dark:text-[#9ba2b0] transition-colors duration-150"
-                  }
-                />
-              </svg>
-              )}
-
+              <Icon
+                size={iconSize}
+                weight={isActive ? "fill" : "regular"}
+                className={`transition-all duration-200 ${
+                  isActive
+                    ? "text-[#1E44CC] dark:text-[#2952E3]"
+                    : "text-[#505050] dark:text-[#9ba2b0] group-hover:scale-110"
+                } ${label === "Agents" && isActive ? "animate-[agents-shimmer_3s_ease-in-out_infinite]" : ""}`}
+              />
             </button>
           );
         })}

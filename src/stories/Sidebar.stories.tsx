@@ -11,32 +11,17 @@ import {
 } from "@/app/components/Sidebar";
 import type { AppView } from "@/app/App";
 
-// ─── All selectable views, grouped for the control dropdown ───────────────
+// ─── All selectable views ─────────────────────────────
 const VIEW_OPTIONS: AppView[] = [
-  // BirdAI
-  "agents",
-  "agents-monitor",
-  "birdai-reports",
-  // Reports
-  "dashboard",
-  "shared-by-me",
-  // Modules with their own L2
-  "reviews",
-  "social",
-  "searchai",
-  "contacts",
-  // No-L2 modules
-  "inbox",
-  "scheduled-deliveries",
+  "agents", "agents-monitor", "birdai-reports",
+  "dashboard", "shared-by-me",
+  "reviews", "social", "searchai", "contacts",
+  "inbox", "scheduled-deliveries",
 ];
 
-// Human-readable label for each view (shown in the Controls panel)
-const VIEW_LABELS: Record<AppView, string> = {
+const VIEW_LABELS: Record<string, string> = {
   "agents":                "BirdAI — Agents",
   "agents-monitor":        "BirdAI — Monitor",
-  "agents-builder":        "BirdAI — Builder",
-  "agents-onboarding":     "BirdAI — Onboarding",
-  "agent-detail":          "BirdAI — Agent detail",
   "birdai-reports":        "BirdAI — Reports",
   "dashboard":             "Reports — Dashboard",
   "shared-by-me":          "Reports — Shared by me",
@@ -46,52 +31,21 @@ const VIEW_LABELS: Record<AppView, string> = {
   "contacts":              "Contacts",
   "inbox":                 "Inbox (no L2)",
   "scheduled-deliveries":  "Scheduled deliveries (no L2)",
-  "schedule-builder":      "Schedule builder (no L2)",
-  "storybook":             "Component showcase (no L2)",
 };
 
-// ─── L2 panel resolver — returns the right panel for any view ─────────────
-function ActiveL2Panel({
-  view,
-  onViewChange,
-}: {
-  view: AppView;
-  onViewChange: (v: AppView) => void;
-}) {
-  if (view === "reviews")   return <ReviewsL2NavPanel />;
-  if (view === "social")    return <SocialL2NavPanel />;
-  if (view === "searchai")  return <SearchAIL2NavPanel />;
-  if (view === "contacts")  return <ContactsL2NavPanel />;
-  if (
-    view === "agents" ||
-    view === "agents-monitor" ||
-    view === "agent-detail" ||
-    view === "birdai-reports"
-  ) {
-    return (
-      <AgentsL2NavPanel
-        currentView={view}
-        onViewChange={onViewChange}
-        selectedAgentSlug=""
-      />
-    );
-  }
-  // Modules with no L2 panel
-  if (
-    view === "inbox" ||
-    view === "storybook" ||
-    view === "scheduled-deliveries" ||
-    view === "agents-builder" ||
-    view === "agents-onboarding" ||
-    view === "schedule-builder"
-  ) {
+// ─── L2 panel resolver ────────────────────────────────
+function ActiveL2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v: AppView) => void }) {
+  if (view === "reviews")  return <ReviewsL2NavPanel />;
+  if (view === "social")   return <SocialL2NavPanel />;
+  if (view === "searchai") return <SearchAIL2NavPanel />;
+  if (view === "contacts") return <ContactsL2NavPanel />;
+  if (["agents","agents-monitor","agent-detail","birdai-reports"].includes(view))
+    return <AgentsL2NavPanel currentView={view} onViewChange={onViewChange} selectedAgentSlug="" />;
+  if (["inbox","storybook","scheduled-deliveries","agents-builder","agents-onboarding","schedule-builder"].includes(view))
     return null;
-  }
-  // dashboard, shared-by-me → Reports L2
   return <L2NavPanel currentView={view} onViewChange={onViewChange} />;
 }
 
-// ─── Shared wrapper ───────────────────────────────────────────────────────
 function SidebarFrame({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
@@ -100,67 +54,58 @@ function SidebarFrame({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ─── Storybook meta ───────────────────────────────────────────────────────
+// ─── Storybook meta ───────────────────────────────────
 const meta: Meta = {
   title: "App/Sidebar",
   parameters: { layout: "fullscreen" },
   argTypes: {
     currentView: {
       name: "Active view",
-      description:
-        "The currently active product or module. Controls which icon is highlighted and which L2 panel is shown.",
+      description: "Active product — updates the highlighted icon and L2 panel.",
       control: "select",
       options: VIEW_OPTIONS,
-      // Map raw values → readable labels in the Controls dropdown
-      mapping: Object.fromEntries(VIEW_OPTIONS.map((v) => [v, v])) as Record<string, AppView>,
-      labels: Object.fromEntries(
-        VIEW_OPTIONS.map((v) => [v, VIEW_LABELS[v]])
-      ) as Record<string, string>,
+      labels: Object.fromEntries(VIEW_OPTIONS.map(v => [v, VIEW_LABELS[v]])) as Record<string, string>,
+    },
+    iconSize: {
+      name: "Icon size (px)",
+      description: "Phosphor icon size. Default is 18px.",
+      control: { type: "range", min: 12, max: 28, step: 1 },
     },
   },
 };
 export default meta;
 
-type Story = StoryObj<{ currentView: AppView }>;
+type Story = StoryObj<{ currentView: AppView; iconSize: number }>;
 
 /* ══════════════════════════════════════════════════════
-   STORY 1 — Icon Strip (L1 rail only)
-   Use the Controls panel to switch the active icon.
+   STORY 1 — Icon Strip only
    ══════════════════════════════════════════════════════ */
 export const IconStripOnly: Story = {
   name: "Icon Strip",
-  args: { currentView: "agents" },
-  render: ({ currentView: argView }) => {
+  args: { currentView: "agents", iconSize: 18 },
+  render: ({ currentView: argView, iconSize }) => {
     const [view, setView] = useState<AppView>(argView);
-
-    // Sync when the Controls panel changes the arg
     useEffect(() => { setView(argView); }, [argView]);
-
     return (
       <SidebarFrame>
-        <IconStrip currentView={view} onViewChange={setView} />
+        <IconStrip currentView={view} onViewChange={setView} iconSize={iconSize} />
       </SidebarFrame>
     );
   },
 };
 
 /* ══════════════════════════════════════════════════════
-   STORY 2 — Full Sidebar (Icon Strip + L2 panel)
-   Use the Controls panel to switch the product.
-   The L2 panel updates automatically — no new stories needed.
+   STORY 2 — Full Sidebar (Icon Strip + L2)
    ══════════════════════════════════════════════════════ */
 export const SidebarCombined: Story = {
   name: "Sidebar",
-  args: { currentView: "dashboard" },
-  render: ({ currentView: argView }) => {
+  args: { currentView: "dashboard", iconSize: 18 },
+  render: ({ currentView: argView, iconSize }) => {
     const [view, setView] = useState<AppView>(argView);
-
-    // Sync when the Controls panel changes the arg
     useEffect(() => { setView(argView); }, [argView]);
-
     return (
       <SidebarFrame>
-        <IconStrip currentView={view} onViewChange={setView} />
+        <IconStrip currentView={view} onViewChange={setView} iconSize={iconSize} />
         <ActiveL2Panel view={view} onViewChange={setView} />
       </SidebarFrame>
     );
