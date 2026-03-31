@@ -58,7 +58,7 @@ export const Colors: Story = {
 
       <div>
         <SectionLabel>Base colours</SectionLabel>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-4">
           {baseColors.map(({ name, token, cls }) => (
             <div key={token} className="flex flex-col gap-2">
               <div className={`h-14 w-full rounded-lg ${cls}`} />
@@ -73,7 +73,7 @@ export const Colors: Story = {
 
       <div>
         <SectionLabel>Chart colours</SectionLabel>
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-5 gap-4">
           {chartColors.map(({ name, token, cls }) => (
             <div key={token} className="flex flex-col gap-2">
               <div className={`h-14 w-full rounded-lg ${cls}`} />
@@ -88,7 +88,7 @@ export const Colors: Story = {
 
       <div>
         <SectionLabel>Sidebar colours</SectionLabel>
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-5 gap-4">
           {sidebarColors.map(({ name, token, cls }) => (
             <div key={token} className="flex flex-col gap-2">
               <div className={`h-14 w-full rounded-lg ${cls}`} />
@@ -185,7 +185,7 @@ export const BorderRadius: Story = {
         <SectionLabel>Radius scale</SectionLabel>
         <div className="grid grid-cols-4 gap-4">
           {radiusTokens.map(({ name, token, tw, value, use }) => (
-            <div key={tw} className="flex flex-col gap-3">
+            <div key={tw} className="flex flex-col gap-4">
               <div
                 className={`h-20 w-full bg-primary/10 border-2 border-primary/30 ${tw} flex items-center justify-center`}
               >
@@ -214,17 +214,17 @@ export const BorderRadius: Story = {
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {["Token", "Tailwind class", "Value", "Used on"].map(h => (
-                  <th key={h} className="text-left px-4 py-2.5 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {radiusTokens.map(({ name, token, tw, value, use }) => (
                 <tr key={tw} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs text-primary">{token !== "--" ? token : "—"}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-foreground">{tw}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{value}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{use}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-primary">{token !== "--" ? token : "—"}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-foreground">{tw}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{value}</td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground">{use}</td>
                 </tr>
               ))}
             </tbody>
@@ -239,13 +239,13 @@ export const BorderRadius: Story = {
           <button className="px-4 py-2 bg-primary text-primary-foreground text-sm rounded-md">
             Button — rounded-md
           </button>
-          <span className="px-3 py-1 bg-secondary text-secondary-foreground text-xs rounded-full border border-border">
+          <span className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded-full border border-border">
             Badge — rounded-full
           </span>
-          <div className="px-4 py-3 bg-card border border-border rounded-lg text-sm text-foreground">
+          <div className="px-4 py-4 bg-card border border-border rounded-lg text-sm text-foreground">
             Card — rounded-lg
           </div>
-          <div className="px-5 py-4 bg-card border border-border rounded-xl text-sm text-foreground shadow-md">
+          <div className="px-6 py-4 bg-card border border-border rounded-xl text-sm text-foreground shadow-md">
             Dialog — rounded-xl
           </div>
           <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm">
@@ -314,7 +314,7 @@ export const Shadows: Story = {
         <SectionLabel>Shadow scale</SectionLabel>
         <div className="grid grid-cols-4 gap-6">
           {shadowTokens.map(({ name, tw, use }) => (
-            <div key={tw} className="flex flex-col gap-3">
+            <div key={tw} className="flex flex-col gap-4">
               <div
                 className={`h-20 w-full bg-card rounded-xl border border-border ${tw} flex items-center justify-center`}
               >
@@ -337,16 +337,16 @@ export const Shadows: Story = {
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {["Tailwind class", "Level", "Used on"].map(h => (
-                  <th key={h} className="text-left px-4 py-2.5 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {shadowTokens.map(({ name, tw, use }) => (
                 <tr key={tw} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs text-foreground">{tw}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{name}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{use}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-foreground">{tw}</td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground">{name}</td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground">{use}</td>
                 </tr>
               ))}
             </tbody>
@@ -359,11 +359,11 @@ export const Shadows: Story = {
         <SectionLabel>Elevation in real components</SectionLabel>
         <div className="flex flex-wrap gap-6 items-end">
           {[
-            { label: "Input",   tw: "shadow-sm",  radius: "rounded-md",  extra: "px-3 py-2 border border-border bg-input-background" },
-            { label: "Card",    tw: "shadow",      radius: "rounded-lg",  extra: "px-5 py-4 border border-border bg-card" },
-            { label: "Popover", tw: "shadow-md",   radius: "rounded-xl",  extra: "px-5 py-4 border border-border bg-card" },
-            { label: "Dialog",  tw: "shadow-xl",   radius: "rounded-xl",  extra: "px-6 py-5 border border-border bg-card" },
-            { label: "Drawer",  tw: "shadow-2xl",  radius: "rounded-xl",  extra: "px-6 py-5 border border-border bg-card" },
+            { label: "Input",   tw: "shadow-sm",  radius: "rounded-md",  extra: "px-4 py-2 border border-border bg-input-background" },
+            { label: "Card",    tw: "shadow",      radius: "rounded-lg",  extra: "px-6 py-4 border border-border bg-card" },
+            { label: "Popover", tw: "shadow-md",   radius: "rounded-xl",  extra: "px-6 py-4 border border-border bg-card" },
+            { label: "Dialog",  tw: "shadow-xl",   radius: "rounded-xl",  extra: "px-6 py-6 border border-border bg-card" },
+            { label: "Drawer",  tw: "shadow-2xl",  radius: "rounded-xl",  extra: "px-6 py-6 border border-border bg-card" },
           ].map(({ label, tw, radius, extra }) => (
             <div key={label} className="flex flex-col gap-2 items-center">
               <div className={`${extra} ${tw} ${radius} text-sm text-foreground min-w-[100px] text-center`}>
@@ -487,7 +487,7 @@ export const ButtonSystem: Story = {
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {["Token", "Value", "Size variant", "Live example"].map(h => (
-                  <th key={h} className="text-left px-4 py-2.5 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -498,10 +498,10 @@ export const ButtonSystem: Story = {
                 { token: "--button-height-lg", value: "44px", size: "lg",      label: "Large" },
               ].map(({ token, value, size, label }) => (
                 <tr key={token} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs text-primary">{token}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{value}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{label}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-2 font-mono text-xs text-primary">{token}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{value}</td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground">{label}</td>
+                  <td className="px-4 py-2">
                     <Button size={size as any} variant="outline">{label}</Button>
                   </td>
                 </tr>
@@ -513,7 +513,7 @@ export const ButtonSystem: Story = {
 
       <div>
         <SectionLabel>All variants at 38px default height</SectionLabel>
-        <div className="flex flex-wrap gap-3 items-center">
+        <div className="flex flex-wrap gap-4 items-center">
           {(["default","secondary","outline","ghost","destructive","link"] as const).map(v => (
             <Button key={v} variant={v}>{v.charAt(0).toUpperCase() + v.slice(1)}</Button>
           ))}
@@ -522,7 +522,7 @@ export const ButtonSystem: Story = {
 
       <div>
         <SectionLabel>Size comparison</SectionLabel>
-        <div className="flex flex-wrap gap-3 items-end">
+        <div className="flex flex-wrap gap-4 items-end">
           <div className="flex flex-col items-center gap-1">
             <Button size="sm">Small — 32px</Button>
             <span className="font-mono text-[10px] text-muted-foreground">h: 32px</span>
@@ -549,7 +549,7 @@ export const ButtonSystem: Story = {
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {["Token", "Value", "Effect"].map(h => (
-                  <th key={h} className="text-left px-4 py-2.5 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -564,9 +564,9 @@ export const ButtonSystem: Story = {
                 { token: "text-2xl",   value: "1.5rem ≈ 20px", effect: "Page titles (h1)" },
               ].map(({ token, value, effect }) => (
                 <tr key={token} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs text-primary">{token}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{value}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{effect}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-primary">{token}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{value}</td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground">{effect}</td>
                 </tr>
               ))}
             </tbody>

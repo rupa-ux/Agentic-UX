@@ -29,7 +29,7 @@ import { ChevronUp, ChevronDown, ExternalLink } from "lucide-react";
    Design tokens — edit here to update every L2 panel
    ───────────────────────────────────────────────────── */
 export const PANEL =
-  "w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#e5e9f0] dark:border-[#2e3340] rounded-tl-[3px] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300";
+  "w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#e5e9f0] dark:border-[#2e3340] rounded-tl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300";
 
 // Shared row geometry — same for headers, children, footer
 export const ROW =
@@ -39,7 +39,7 @@ export const HOVER = "hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]";
 
 export const SECTION_HEADER    = `${ROW} ${HOVER} text-[#212121] dark:text-[#e4e4e4]`;
 export const CHILD_INACTIVE    = `${ROW} ${HOVER} text-left text-[#555] dark:text-[#9ba2b0]`;
-export const CHILD_ACTIVE      = `${ROW} text-left text-[#1E44CC] dark:text-[#7fa8ff] bg-[#dce5ff] dark:bg-[#1e2d5e]`;
+export const CHILD_ACTIVE      = `${ROW} text-left text-[#212121] dark:text-[#e4e4e4] bg-[#dce5ff] dark:bg-[#1e2d5e]`;
 export const FOOTER_ROW_CLS    = `${ROW} ${HOVER} text-[#212121] dark:text-[#e4e4e4]`;
 
 /* ─────────────────────────────────────────────────────

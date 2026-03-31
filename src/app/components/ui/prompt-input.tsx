@@ -169,6 +169,10 @@ const PromptInputAction = React.forwardRef<
 });
 PromptInputAction.displayName = "PromptInputAction";
 
+/** Apply to `PromptInputAction` for Myna’s circular gradient send. Documented in **UI / PromptInput → Branded send (Myna)**. */
+export const PROMPT_INPUT_BRANDED_SEND_CLASSNAME =
+  "rounded-full !bg-gradient-to-r from-[#9970D7] to-[#2552ED] !text-white shadow-sm hover:opacity-95 hover:!text-white disabled:opacity-40 disabled:hover:opacity-40 p-2";
+
 export {
   PromptInput,
   PromptInputTextarea,

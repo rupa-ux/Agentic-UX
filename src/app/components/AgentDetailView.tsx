@@ -484,7 +484,7 @@ export function getAllAgentSlugs(): string[] {
 }
 
 /* ═══════════════════════════════════════════
-   Status Badge (reused from AgentsView pattern)
+   Status Badge
    ═══════════════════════════════════════════ */
 function StatusBadge({ status }: { status: AgentInstance["status"] }) {
   const config = {
@@ -990,7 +990,7 @@ export function AgentDetailView({ agentSlug, onOpenBuilder }: AgentDetailViewPro
   const needsAttention = config.agents.filter(a => a.status === "error" || a.status === "paused").length;
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300 rounded-tr-[8px]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300">
       {/* Header */}
       <div className="shrink-0 px-6 pt-5 pb-0">
         <div className="flex items-center justify-between mb-4">

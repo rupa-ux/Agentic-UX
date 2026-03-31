@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { AgentsView } from "@/app/components/AgentsView";
 import { AgentsMonitorView } from "@/app/components/AgentsMonitorView";
 import { AgentsBuilderView } from "@/app/components/AgentsBuilderView";
+import { APP_MAIN_CONTENT_SHELL_CLASS } from "@/app/components/layout/appShellClasses";
+import { MonitorNotificationsProvider } from "@/app/context/MonitorNotificationsContext";
 
 const viewMeta: Meta = {
   title: "App/Views/Agents",
@@ -11,14 +12,28 @@ const viewMeta: Meta = {
 export default viewMeta;
 type Story = StoryObj;
 
-export const AgentsList: Story = {
-  render: () => <AgentsView onViewChange={() => {}} />,
-};
+function MonitorShell() {
+  return (
+    <MonitorNotificationsProvider onNavigateToMonitor={() => {}}>
+      <div className="h-screen flex flex-col min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
+        <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
+          <AgentsMonitorView onBack={() => {}} />
+        </div>
+      </div>
+    </MonitorNotificationsProvider>
+  );
+}
 
 export const AgentsMonitor: Story = {
-  render: () => <AgentsMonitorView onViewChange={() => {}} />,
+  render: () => <MonitorShell />,
 };
 
 export const AgentsBuilder: Story = {
-  render: () => <AgentsBuilderView onViewChange={() => {}} />,
+  render: () => (
+    <div className="h-screen flex flex-col min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
+      <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
+        <AgentsBuilderView onBack={() => {}} />
+      </div>
+    </div>
+  ),
 };

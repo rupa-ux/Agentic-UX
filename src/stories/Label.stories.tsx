@@ -18,7 +18,7 @@ export const Default: Story = {
 
 export const WithInput: Story = {
   render: () => (
-    <div className="flex flex-col gap-1.5 w-64">
+    <div className="flex flex-col gap-1 w-64">
       <Label htmlFor="biz-name">Business Name</Label>
       <Input id="biz-name" placeholder="Acme Coffee Roasters" />
     </div>
@@ -36,7 +36,7 @@ export const WithCheckbox: Story = {
 
 export const Required: Story = {
   render: () => (
-    <div className="flex flex-col gap-1.5 w-64">
+    <div className="flex flex-col gap-1 w-64">
       <Label htmlFor="required-email">
         Email Address{" "}
         <span className="text-destructive" aria-hidden>
@@ -50,7 +50,7 @@ export const Required: Story = {
 
 export const Disabled: Story = {
   render: () => (
-    <div className="flex flex-col gap-1.5 w-64">
+    <div className="flex flex-col gap-1 w-64">
       <Label htmlFor="disabled-input" className="text-muted-foreground">
         API Key (read-only)
       </Label>

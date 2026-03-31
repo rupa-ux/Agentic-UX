@@ -68,8 +68,8 @@ export const SocialProfile: Story = {
           </Button>
         </HoverCardTrigger>
         <HoverCardContent className="w-80">
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
+          <div className="space-y-4">
+            <div className="flex items-start gap-4">
               <Avatar className="size-12">
                 <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
                   BE

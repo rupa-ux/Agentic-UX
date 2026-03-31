@@ -47,7 +47,7 @@ export const Portrait: Story = {
 
 export const Gallery: Story = {
   render: () => (
-    <div className="grid grid-cols-2 gap-3 w-full max-w-lg">
+    <div className="grid grid-cols-2 gap-4 w-full max-w-lg">
       {["Review #1", "Review #2", "Review #3", "Review #4"].map((label, i) => (
         <AspectRatio key={i} ratio={4 / 3}>
           <div

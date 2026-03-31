@@ -51,12 +51,12 @@ export const DatePickerStyle: Story = {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72">
-        <div className="space-y-3">
+        <div className="space-y-4">
           <h4 className="font-medium text-sm text-foreground">
             Select Report Date Range
           </h4>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
               <Label htmlFor="start-date" className="text-xs">
                 Start Date
               </Label>
@@ -66,7 +66,7 @@ export const DatePickerStyle: Story = {
                 className="text-xs"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="end-date" className="text-xs">
                 End Date
               </Label>
@@ -104,8 +104,8 @@ export const Settings: Story = {
           <h4 className="font-medium text-sm text-foreground">
             Widget Dimensions
           </h4>
-          <div className="space-y-3">
-            <div className="grid grid-cols-3 items-center gap-3">
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 items-center gap-4">
               <Label htmlFor="width" className="text-xs text-right">
                 Width
               </Label>
@@ -115,7 +115,7 @@ export const Settings: Story = {
                 className="col-span-2 h-8 text-xs"
               />
             </div>
-            <div className="grid grid-cols-3 items-center gap-3">
+            <div className="grid grid-cols-3 items-center gap-4">
               <Label htmlFor="height" className="text-xs text-right">
                 Height
               </Label>
@@ -125,7 +125,7 @@ export const Settings: Story = {
                 className="col-span-2 h-8 text-xs"
               />
             </div>
-            <div className="grid grid-cols-3 items-center gap-3">
+            <div className="grid grid-cols-3 items-center gap-4">
               <Label htmlFor="max-reviews" className="text-xs text-right">
                 Max Reviews
               </Label>

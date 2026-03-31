@@ -743,11 +743,9 @@ function TestStep({
 function DoneStep({
   agents,
   onGoToMonitor,
-  onGoToOverview,
 }: {
   agents: ConfiguredAgent[];
   onGoToMonitor: () => void;
-  onGoToOverview: () => void;
 }) {
   const enabledAgents = agents.filter((a) => a.enabled);
 
@@ -789,13 +787,6 @@ function DoneStep({
           >
             Go to monitor
             <ArrowRight className="w-4 h-4" />
-          </button>
-          <button
-            onClick={onGoToOverview}
-            className="text-[13px] text-[#888] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#8b92a5] transition-colors"
-            style={{ fontWeight: 300 }}
-          >
-            Go to overview
           </button>
         </div>
       </div>
@@ -873,7 +864,7 @@ export function AgentOnboardingView({ onComplete, onSkip, onGoToMonitor }: Agent
       <OnboardingSidebar current={step} />
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300 rounded-tr-[8px]">
+      <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300">
         {/* Minimal header with close button */}
         <div className="shrink-0 h-[61px] flex items-center justify-end px-6">
           {step !== "done" && (
@@ -926,7 +917,6 @@ export function AgentOnboardingView({ onComplete, onSkip, onGoToMonitor }: Agent
           <DoneStep
             agents={configuredAgents}
             onGoToMonitor={onGoToMonitor}
-            onGoToOverview={onComplete}
           />
         )}
       </div>

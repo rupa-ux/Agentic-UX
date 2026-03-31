@@ -975,7 +975,7 @@ export function AICustomizePanel({ onClose, themeColor, onThemeColorChange, show
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300" data-print-root>
       {/* Page-level header bar */}
-      <div className="h-[56px] border-b border-[#e5e9f0] dark:border-[#333a47] flex items-center justify-between px-6 shrink-0 bg-white dark:bg-[#1e2229] rounded-tr-[8px] transition-colors duration-300" data-no-print>
+      <div className="h-[56px] border-b border-[#e5e9f0] dark:border-[#333a47] flex items-center justify-between px-6 shrink-0 bg-white dark:bg-[#1e2229] transition-colors duration-300" data-no-print>
         <div className="flex items-center gap-2">
           <button onClick={onClose} className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]">
             <ArrowLeft className="w-[14px] h-[14px] text-[#303030] dark:text-[#c0c6d4]" />

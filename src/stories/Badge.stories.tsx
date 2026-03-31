@@ -22,7 +22,7 @@ export const Default: Story = {
 
 export const AllVariants: Story = {
   render: () => (
-    <div className="flex flex-wrap gap-3 items-center">
+    <div className="flex flex-wrap gap-4 items-center">
       <Badge variant="default">Default</Badge>
       <Badge variant="secondary">Secondary</Badge>
       <Badge variant="destructive">Destructive</Badge>
@@ -33,7 +33,7 @@ export const AllVariants: Story = {
 
 export const WithNumbers: Story = {
   render: () => (
-    <div className="flex flex-wrap gap-3 items-center">
+    <div className="flex flex-wrap gap-4 items-center">
       <Badge>New</Badge>
       <Badge variant="secondary">12</Badge>
       <Badge variant="destructive">99+</Badge>

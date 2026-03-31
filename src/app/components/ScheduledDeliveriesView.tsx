@@ -500,7 +500,7 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
   return (
     <div className="flex-1 bg-white dark:bg-[#13161b] overflow-auto flex flex-col transition-colors duration-300">
       {/* ─── Header ─── */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-[#13161b] px-8 h-[76px] flex items-center justify-between shrink-0 rounded-tr-[8px] transition-colors duration-300">
+      <div className="sticky top-0 z-10 bg-white dark:bg-[#13161b] px-8 h-[76px] flex items-center justify-between shrink-0 transition-colors duration-300">
         <div className="flex items-center gap-3">
           <Clock className="w-5 h-5 text-[#2552ED]" />
           <h1 className="text-[#212121] dark:text-[#e4e4e4] tracking-[-0.26px] text-[18px]" style={{ fontWeight: 400 }}>

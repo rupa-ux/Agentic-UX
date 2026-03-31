@@ -14,6 +14,43 @@
   50% { opacity: 0.6; }
 }
 
+/** Brief L2 nav row shimmer (e.g. Myna AI → Reports handoff to reporting module) */
+@keyframes l2-nav-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.l2-nav-reports-shimmer-line,
+.l2-nav-reports-shimmer-icon {
+  background: linear-gradient(
+    90deg,
+    #d8dce4 0%,
+    #e8ebf2 40%,
+    #f6f7fa 50%,
+    #e8ebf2 60%,
+    #d8dce4 100%
+  );
+  background-size: 220% 100%;
+  animation: l2-nav-shimmer 0.32s linear infinite;
+}
+
+.dark .l2-nav-reports-shimmer-line,
+.dark .l2-nav-reports-shimmer-icon {
+  background: linear-gradient(
+    90deg,
+    #252a38 0%,
+    #323946 40%,
+    #3d4454 50%,
+    #323946 60%,
+    #252a38 100%
+  );
+  background-size: 220% 100%;
+}
+
 .scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;

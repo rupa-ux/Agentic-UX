@@ -10,8 +10,8 @@ const meta: Meta<typeof TopBar> = {
     currentView: {
       control: "select",
       options: [
-        "dashboard", "reviews", "inbox", "social", "searchai",
-        "contacts", "scheduled-deliveries", "agents", "storybook",
+        "business-overview", "dashboard", "reviews", "inbox", "social", "searchai",
+        "contacts", "scheduled-deliveries", "agents-monitor", "storybook",
       ],
     },
   },
@@ -27,6 +27,10 @@ const meta: Meta<typeof TopBar> = {
 export default meta;
 type Story = StoryObj<typeof TopBar>;
 
+export const BusinessOverview: Story = {
+  args: { currentView: "business-overview" as AppView, onViewChange: () => {} },
+};
+
 export const Dashboard: Story = {
   args: { currentView: "dashboard" as AppView, onViewChange: () => {} },
 };
@@ -40,5 +44,5 @@ export const Inbox: Story = {
 };
 
 export const Agents: Story = {
-  args: { currentView: "agents" as AppView, onViewChange: () => {} },
+  args: { currentView: "agents-monitor" as AppView, onViewChange: () => {} },
 };

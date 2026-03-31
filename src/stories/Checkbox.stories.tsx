@@ -40,7 +40,7 @@ export const WithLabel: Story = {
 
 export const CheckboxGroup: Story = {
   render: () => (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {["Reviews", "Reports", "Analytics", "Contacts"].map((item) => (
         <div key={item} className="flex items-center gap-2">
           <Checkbox id={item.toLowerCase()} />

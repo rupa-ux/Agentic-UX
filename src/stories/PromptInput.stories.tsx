@@ -96,7 +96,7 @@ export const Loading: Story = {
     const [isLoading, setIsLoading] = useState(true);
 
     return (
-      <div className="w-full max-w-lg space-y-3">
+      <div className="w-full max-w-lg space-y-4">
         <PromptInput isLoading={isLoading}>
           <PromptInputTextarea
             placeholder="Generating your review summary…"

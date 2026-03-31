@@ -51,7 +51,7 @@ export const Sizes: Story = {
 
 export const AvatarStack: Story = {
   render: () => (
-    <div className="flex -space-x-3">
+    <div className="flex -space-x-2">
       {["JD", "AB", "MK", "TL", "+4"].map((initials) => (
         <Avatar key={initials} className="border-2 border-background">
           <AvatarFallback className="text-xs">{initials}</AvatarFallback>

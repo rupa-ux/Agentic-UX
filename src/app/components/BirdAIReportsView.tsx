@@ -217,7 +217,7 @@ const adoptionTrend = [
    COMPONENTS
    ════════════════════════════════════════════════════════════ */
 
-/* Metric card — reuses the exact pattern from AgentsView */
+/* Metric card */
 function MetricCard({ label, value, icon: Icon, color }: {
   label: string; value: string; icon: typeof Zap; color: string;
 }) {
@@ -579,7 +579,7 @@ export function BirdAIReportsView() {
   }, [activeTab]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-white dark:bg-[#13161b] transition-colors duration-300 rounded-tr-[8px]">
+    <div className="flex-1 overflow-y-auto bg-white dark:bg-[#13161b] transition-colors duration-300">
       <div className="px-6 py-6 space-y-5">
 
         {/* ─── Page Header ─── */}

@@ -1,40 +1,27 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import {
-  Search, ChevronDown, CheckCircle2, XCircle, Clock,
-  AlertTriangle, Bot, Activity, X, RotateCcw, UserCheck,
-  PauseCircle, Pencil, Sparkles, Loader2, Bell, Eye, Wrench, Zap,
+  Search,
+  ChevronDown,
+  CheckCircle2,
+  Clock,
+  Activity,
+  X,
+  RotateCcw,
+  UserCheck,
+  PauseCircle,
+  Pencil,
+  Sparkles,
+  Zap,
 } from "lucide-react";
-
-/* ─── Types ─── */
-type ActivityStatus = "success" | "warning" | "error" | "processing";
-type ActivityCategory = "Customer Interaction" | "Automation" | "Content Publishing" | "Data Update" | "System Event" | "Error";
-
-interface TimelineStep {
-  time: string;
-  label: string;
-  detail?: string;
-}
-
-interface AgentReasoning {
-  sentiment?: string;
-  topic?: string;
-  customerHistory?: string;
-  confidence: number;
-}
-
-interface MonitorActivity {
-  id: string;
-  time: string;
-  agentName: string;
-  action: string;
-  status: ActivityStatus;
-  detail?: string;
-  category: ActivityCategory;
-  timeline?: TimelineStep[];
-  reasoning?: AgentReasoning;
-  hasDraft?: boolean;
-  draftText?: string;
-}
+import { Badge } from "@/app/components/ui/badge";
+import { cn } from "@/app/components/ui/utils";
+import {
+  monitorActivities,
+  type MonitorActivity,
+  type ActivityStatus,
+  type ActivityCategory,
+} from "@/app/data/agentsMonitorMock";
+import { useMonitorNotifications } from "@/app/context/MonitorNotificationsContext";
 
 /* ─── Mock Data ─── */
 const monitorMetrics = [
@@ -44,175 +31,12 @@ const monitorMetrics = [
   { label: "Avg response time", value: "4.2s", icon: Clock, color: "#F59E0B" },
 ];
 
-const monitorActivities: MonitorActivity[] = [
-  {
-    id: "m1", time: "10:42 AM", agentName: "Review response agent",
-    action: "Replied to a 2-star review on Google",
-    status: "success", detail: "Sentiment: negative \u2022 Auto-approved",
-    category: "Customer Interaction",
-    timeline: [
-      { time: "10:42:01", label: "Customer posted review", detail: "\"Food was terrible and the wait was over an hour.\"" },
-      { time: "10:42:04", label: "Agent detected sentiment: Negative" },
-      { time: "10:42:06", label: "Agent generated response draft", detail: "\"I'm sorry your experience didn't meet expectations. We take feedback seriously and would love the chance to make it right...\"" },
-      { time: "10:42:10", label: "Auto-approval rule applied" },
-      { time: "10:42:11", label: "Response posted to Google" },
-    ],
-    reasoning: { sentiment: "Negative", topic: "Service delay", customerHistory: "First-time reviewer", confidence: 0.92 },
-  },
-  {
-    id: "m2", time: "10:39 AM", agentName: "Social publishing agent",
-    action: "Scheduled campaign post on Instagram",
-    status: "success", detail: "Campaign: Spring Sale 2026",
-    category: "Content Publishing",
-    timeline: [
-      { time: "10:39:01", label: "Campaign trigger activated" },
-      { time: "10:39:03", label: "Generated caption and hashtags" },
-      { time: "10:39:05", label: "Image asset selected from library" },
-      { time: "10:39:08", label: "Post scheduled for 2:00 PM EST" },
-    ],
-    reasoning: { topic: "Campaign scheduling", confidence: 0.95 },
-  },
-  {
-    id: "m3", time: "10:34 AM", agentName: "Ticketing agent",
-    action: "Escalated support request to Tier 2",
-    status: "warning", detail: "Confidence: low",
-    category: "Customer Interaction",
-    timeline: [
-      { time: "10:34:01", label: "Ticket #5201 received" },
-      { time: "10:34:04", label: "Agent classified: Billing dispute" },
-      { time: "10:34:06", label: "Confidence below threshold (0.42)" },
-      { time: "10:34:08", label: "Escalated to Tier 2 support" },
-    ],
-    reasoning: { topic: "Billing dispute", customerHistory: "3 prior tickets, VIP customer", confidence: 0.42 },
-  },
-  {
-    id: "m4", time: "10:28 AM", agentName: "Review generation agent",
-    action: "Sent 15 review requests via SMS",
-    status: "success", detail: "Location: Austin, TX \u2022 Batch #847",
-    category: "Automation",
-    timeline: [
-      { time: "10:28:01", label: "Batch #847 triggered" },
-      { time: "10:28:03", label: "15 eligible customers identified" },
-      { time: "10:28:06", label: "SMS messages dispatched" },
-      { time: "10:28:10", label: "Delivery confirmed: 15/15" },
-    ],
-    reasoning: { topic: "Review solicitation", confidence: 0.98 },
-  },
-  {
-    id: "m5", time: "10:22 AM", agentName: "Listing optimization agent",
-    action: "Updated hours on 3 Google Business profiles",
-    status: "success", detail: "Locations: San Francisco, Austin, Denver",
-    category: "Data Update",
-    timeline: [
-      { time: "10:22:01", label: "Holiday schedule detected" },
-      { time: "10:22:04", label: "Updated 3 location profiles" },
-      { time: "10:22:08", label: "Changes verified on Google" },
-    ],
-    reasoning: { topic: "Holiday hours sync", confidence: 0.97 },
-  },
-  {
-    id: "m6", time: "10:15 AM", agentName: "Social publishing agent",
-    action: "Failed to publish post \u2014 token expired",
-    status: "error", detail: "Platform: Facebook \u2022 Error code: AUTH_EXPIRED",
-    category: "Error",
-    timeline: [
-      { time: "10:15:01", label: "Scheduled post triggered" },
-      { time: "10:15:03", label: "API authentication failed", detail: "Facebook OAuth token expired" },
-      { time: "10:15:05", label: "Retry attempt 1 failed" },
-      { time: "10:15:08", label: "Action flagged for manual intervention" },
-    ],
-    reasoning: { topic: "Authentication failure", confidence: 0.0 },
-  },
-  {
-    id: "m7", time: "10:08 AM", agentName: "Review response agent",
-    action: "Drafted response for 1-star review (pending approval)",
-    status: "warning", detail: "Confidence: 0.38 \u2022 Requires human review",
-    category: "Customer Interaction",
-    hasDraft: true,
-    draftText: "We sincerely apologize for your experience. Your feedback is important to us, and we'd like to make things right. Could you reach out to our team directly so we can address your concerns?",
-    timeline: [
-      { time: "10:08:01", label: "1-star review detected on Google" },
-      { time: "10:08:04", label: "Agent analyzed sentiment: Very negative" },
-      { time: "10:08:07", label: "Response draft generated", detail: "Low confidence \u2014 flagged for human review" },
-    ],
-    reasoning: { sentiment: "Very negative", topic: "Product quality complaint", customerHistory: "Repeat customer, 2 prior reviews", confidence: 0.38 },
-  },
-  {
-    id: "m8", time: "9:55 AM", agentName: "Ticketing agent",
-    action: "Auto-closed 12 resolved tickets",
-    status: "success", detail: "SLA compliance: 98.2%",
-    category: "Automation",
-    timeline: [
-      { time: "9:55:01", label: "Batch close triggered" },
-      { time: "9:55:04", label: "12 tickets identified as resolved >48h" },
-      { time: "9:55:06", label: "Closure notifications sent" },
-    ],
-    reasoning: { topic: "Ticket lifecycle management", confidence: 0.99 },
-  },
-  {
-    id: "m9", time: "9:48 AM", agentName: "Review response agent",
-    action: "Replied to a 5-star review on Yelp",
-    status: "success", detail: "Sentiment: positive \u2022 Auto-approved",
-    category: "Customer Interaction",
-    timeline: [
-      { time: "9:48:01", label: "5-star review detected on Yelp" },
-      { time: "9:48:03", label: "Sentiment: Positive" },
-      { time: "9:48:05", label: "Thank-you response generated and posted" },
-    ],
-    reasoning: { sentiment: "Positive", topic: "Positive feedback", confidence: 0.96 },
-  },
-  {
-    id: "m10", time: "9:42 AM", agentName: "Social engagement agent",
-    action: "Responded to 8 comments on Facebook",
-    status: "success", detail: "Avg response time: 2.3 min",
-    category: "Customer Interaction",
-    timeline: [
-      { time: "9:42:01", label: "8 new comments detected" },
-      { time: "9:42:04", label: "Responses generated and posted" },
-    ],
-    reasoning: { topic: "Social engagement", confidence: 0.91 },
-  },
-  {
-    id: "m11", time: "9:35 AM", agentName: "Listing optimization agent",
-    action: "Detected outdated photo on Google listing",
-    status: "warning", detail: "Location: Portland \u2022 Flagged for review",
-    category: "Data Update",
-    timeline: [
-      { time: "9:35:01", label: "Photo audit completed" },
-      { time: "9:35:04", label: "1 photo flagged as outdated (>12 months)" },
-      { time: "9:35:06", label: "Notification sent to location manager" },
-    ],
-    reasoning: { topic: "Visual content freshness", confidence: 0.78 },
-  },
-  {
-    id: "m12", time: "9:28 AM", agentName: "Ticketing agent",
-    action: "Failed to route ticket \u2014 missing category",
-    status: "error", detail: "Ticket #4892 \u2022 Needs manual assignment",
-    category: "Error",
-    timeline: [
-      { time: "9:28:01", label: "Ticket #4892 received" },
-      { time: "9:28:03", label: "Category classification failed" },
-      { time: "9:28:05", label: "Routing aborted \u2014 flagged for manual assignment" },
-    ],
-    reasoning: { topic: "Unclassifiable request", confidence: 0.12 },
-  },
-];
-
 const agentOptions = ["All agents", "Review response agent", "Review generation agent", "Listing optimization agent", "Social publishing agent", "Social engagement agent", "Ticketing agent"];
 const statusOptions = ["All statuses", "Success", "Needs review", "Failed", "Processing"];
 const categoryOptions: ("All categories" | ActivityCategory)[] = ["All categories", "Customer Interaction", "Automation", "Content Publishing", "Data Update", "System Event", "Error"];
 const dateOptions = ["Today", "Last 7 days", "Last 30 days", "Custom range"];
 
-/* ─── Status Icon ─── */
-function StatusIcon({ status, size = "sm" }: { status: ActivityStatus; size?: "sm" | "md" }) {
-  const cls = size === "md" ? "w-5 h-5" : "w-4 h-4";
-  if (status === "success") return <CheckCircle2 className={`${cls} text-[#4caf50] shrink-0`} />;
-  if (status === "warning") return <AlertTriangle className={`${cls} text-[#F59E0B] shrink-0`} />;
-  if (status === "processing") return <Loader2 className={`${cls} text-[#2552ED] shrink-0 animate-spin`} />;
-  return <XCircle className={`${cls} text-[#ef5350] shrink-0`} />;
-}
-
-/* ─── Status Label ─── */
+/* ─── Status / category labels (text badges; design tokens via UI Badge) ─── */
 function statusLabel(status: ActivityStatus) {
   if (status === "success") return "Success";
   if (status === "warning") return "Needs review";
@@ -220,27 +44,46 @@ function statusLabel(status: ActivityStatus) {
   return "Failed";
 }
 
-function statusColor(status: ActivityStatus) {
-  if (status === "success") return "text-[#4caf50]";
-  if (status === "warning") return "text-[#F59E0B]";
-  if (status === "processing") return "text-[#2552ED]";
-  return "text-[#ef5350]";
+function ActivityCategoryBadge({ category }: { category: ActivityCategory }) {
+  return (
+    <Badge
+      variant="outline"
+      className="border-transparent bg-muted text-muted-foreground h-5 min-h-0 px-2 py-0 text-[10px] font-normal tracking-tight shrink-0 rounded-md"
+    >
+      {category}
+    </Badge>
+  );
 }
 
-/* ─── Category Badge ─── */
-function CategoryBadge({ category }: { category: ActivityCategory }) {
-  const colorMap: Record<ActivityCategory, string> = {
-    "Customer Interaction": "bg-[#e8effe] dark:bg-[#252d42] text-[#2552ED] dark:text-[#6b9bff]",
-    "Automation": "bg-[#e8f5e9] dark:bg-[#1b3a2a] text-[#4caf50] dark:text-[#66bb6a]",
-    "Content Publishing": "bg-[#f3e8ff] dark:bg-[#2d1b4e] text-[#9970D7] dark:text-[#b794f4]",
-    "Data Update": "bg-[#e0f2f1] dark:bg-[#1b3a36] text-[#00897b] dark:text-[#4db6ac]",
-    "System Event": "bg-[#f0f1f5] dark:bg-[#262b35] text-[#555] dark:text-[#9ba2b0]",
-    "Error": "bg-[#fce4ec] dark:bg-[#3a1b1b] text-[#ef5350] dark:text-[#ef9a9a]",
-  };
+function ActivityStatusBadge({ status }: { status: ActivityStatus }) {
+  const label = statusLabel(status);
+  if (status === "warning") {
+    return (
+      <Badge
+        variant="outline"
+        className="border-transparent h-5 min-h-0 bg-amber-100 text-amber-950 dark:bg-amber-950/40 dark:text-amber-200 px-2 py-0 text-[10px] font-normal shrink-0 rounded-md"
+      >
+        {label}
+      </Badge>
+    );
+  }
+  if (status === "error") {
+    return (
+      <Badge
+        variant="destructive"
+        className="h-5 min-h-0 px-2 py-0 text-[10px] font-normal shrink-0 rounded-md"
+      >
+        {label}
+      </Badge>
+    );
+  }
   return (
-    <span className={`inline-block px-1.5 py-0.5 rounded-[4px] text-[10px] tracking-[-0.2px] ${colorMap[category]}`} style={{ fontWeight: 400 }}>
-      {category}
-    </span>
+    <Badge
+      variant="outline"
+      className="border-transparent bg-muted text-muted-foreground h-5 min-h-0 px-2 py-0 text-[10px] font-normal shrink-0 rounded-md"
+    >
+      {label}
+    </Badge>
   );
 }
 
@@ -281,9 +124,9 @@ function InspectionPanel({ activity, onClose }: { activity: MonitorActivity; onC
 
         {/* Summary */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <CategoryBadge category={activity.category} />
-            <span className={`text-[11px] ${statusColor(activity.status)}`} style={{ fontWeight: 400 }}>{statusLabel(activity.status)}</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <ActivityCategoryBadge category={activity.category} />
+            <ActivityStatusBadge status={activity.status} />
           </div>
           <p className="text-[14px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.28px]" style={{ fontWeight: 400 }}>
             {activity.agentName}
@@ -473,6 +316,7 @@ function InspectionPanel({ activity, onClose }: { activity: MonitorActivity; onC
    Monitor View
    ═══════════════════════════════════════════ */
 export function AgentsMonitorView({ onBack }: { onBack: () => void }) {
+  void onBack;
   const [searchQuery, setSearchQuery] = useState("");
   const [agentFilter, setAgentFilter] = useState("All agents");
   const [statusFilter, setStatusFilter] = useState("All statuses");
@@ -482,53 +326,19 @@ export function AgentsMonitorView({ onBack }: { onBack: () => void }) {
   const [statusDropOpen, setStatusDropOpen] = useState(false);
   const [categoryDropOpen, setCategoryDropOpen] = useState(false);
   const [dateDropOpen, setDateDropOpen] = useState(false);
-  const [selectedActivity, setSelectedActivity] = useState<MonitorActivity | null>(null);
   const [searchExpanded, setSearchExpanded] = useState(false);
 
-  /* ── Notification panel state ── */
-  const [notifPanelOpen, setNotifPanelOpen] = useState(false);
-  const [resolvedNotifs, setResolvedNotifs] = useState<Set<string>>(new Set());
-  const [readNotifs, setReadNotifs] = useState<Set<string>>(new Set());
-  const notifBellRef = useRef<HTMLDivElement>(null);
+  const { selectedActivityId, setSelectedActivityId } = useMonitorNotifications();
 
-  // Build notifications from activities that need attention (warning + error)
-  const notificationItems = monitorActivities
-    .filter(a => a.status === "warning" || a.status === "error")
-    .map(a => ({
-      id: a.id,
-      agentName: a.agentName,
-      summary: a.status === "warning"
-        ? (a.hasDraft ? "Drafted response requires approval" : "Action flagged — requires review")
-        : (a.detail?.includes("token") ? "Post failed due to token expiration" : "Action failed — needs manual intervention"),
-      time: a.time,
-      severity: a.status as "warning" | "error",
-      activityRef: a,
-      quickAction: a.status === "warning" ? (a.hasDraft ? "Review" : "Inspect") : "Fix connection",
-    }));
-
-  const unresolvedNotifs = notificationItems.filter(n => !resolvedNotifs.has(n.id));
-  const unresolvedCount = unresolvedNotifs.length;
-
-  const handleResolveNotif = (id: string) => {
-    setResolvedNotifs(prev => new Set(prev).add(id));
-  };
-
-  const handleNotifClick = (notif: typeof notificationItems[0]) => {
-    setReadNotifs(prev => new Set(prev).add(notif.id));
-    setSelectedActivity(notif.activityRef);
-    setNotifPanelOpen(false);
-  };
-
-  // Close notif panel on outside click
+  /** On landing with no selection (e.g. from L2 Monitor), highlight the top feed row and open the details pane. Preserve ID when coming from notifications. */
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (notifBellRef.current && !notifBellRef.current.contains(e.target as Node)) {
-        setNotifPanelOpen(false);
-      }
-    };
-    if (notifPanelOpen) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [notifPanelOpen]);
+    setSelectedActivityId(prev => (prev == null ? monitorActivities[0]?.id ?? null : prev));
+  }, [setSelectedActivityId]);
+
+  const selectedActivity = useMemo((): MonitorActivity | null => {
+    if (!selectedActivityId) return null;
+    return monitorActivities.find(a => a.id === selectedActivityId) ?? null;
+  }, [selectedActivityId]);
 
   /* ── Resizable pane state ── */
   const containerRef = useRef<HTMLDivElement>(null);
@@ -589,12 +399,8 @@ export function AgentsMonitorView({ onBack }: { onBack: () => void }) {
     return true;
   });
 
-  // Alert counts
-  const needsReviewCount = monitorActivities.filter(a => a.status === "warning").length;
-  const errorCount = monitorActivities.filter(a => a.status === "error").length;
-
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300 rounded-tr-[8px]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300">
       {/* ─── Page Header ─── */}
       <div className="px-6 pt-6 pb-0 shrink-0">
         {/* Title row with filters inline */}
@@ -630,172 +436,6 @@ export function AgentsMonitorView({ onBack }: { onBack: () => void }) {
                 <Search className="w-3.5 h-3.5 text-[#999] dark:text-[#6b7280]" />
               </button>
             )}
-
-            {/* Notification bell */}
-            <div className="relative" ref={notifBellRef}>
-              <button
-                onClick={() => { setNotifPanelOpen(!notifPanelOpen); closeAllDropdowns(); }}
-                className="relative flex items-center justify-center size-[38px] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
-              >
-                <Bell className="w-4 h-4 text-[#555] dark:text-[#9ba2b0]" />
-                {unresolvedCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 bg-[#ef5350] text-white text-[10px] rounded-full tabular-nums" style={{ fontWeight: 400 }}>
-                    {unresolvedCount}
-                  </span>
-                )}
-              </button>
-
-              {/* Notification dropdown panel */}
-              {notifPanelOpen && (
-                <div className="absolute top-full right-0 mt-2 w-[400px] bg-white dark:bg-[#1e2229] border border-[#e5e9f0] dark:border-[#333a47] rounded-[12px] shadow-xl z-50 flex flex-col max-h-[480px] overflow-hidden">
-                  {/* Panel header */}
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-[#f0f1f5] dark:border-[#2e3340]">
-                    <h4 className="text-[14px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.28px]" style={{ fontWeight: 400 }}>
-                      Notifications
-                    </h4>
-                    <div className="flex items-center gap-2">
-                      {unresolvedCount > 0 && (
-                        <span className="text-[11px] text-[#888] dark:text-[#6b7280] px-2 py-0.5 bg-[#f0f1f5] dark:bg-[#262b35] rounded-full" style={{ fontWeight: 300 }}>
-                          {unresolvedCount} unresolved
-                        </span>
-                      )}
-                      <button
-                        onClick={() => setNotifPanelOpen(false)}
-                        className="w-6 h-6 flex items-center justify-center rounded-[4px] hover:bg-[#f0f0f0] dark:hover:bg-[#2e3340] transition-colors"
-                      >
-                        <X className="w-3.5 h-3.5 text-[#999] dark:text-[#6b7280]" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Notification list */}
-                  <div className="flex-1 overflow-y-auto divide-y divide-[#f0f1f5] dark:divide-[#2e3340]">
-                    {/* Requires review section */}
-                    {notificationItems.filter(n => n.severity === "warning" && !resolvedNotifs.has(n.id)).length > 0 && (
-                      <div>
-                        <div className="px-4 py-2">
-                          <span className="text-[10px] text-[#F59E0B] tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>
-                            Requires review
-                          </span>
-                        </div>
-                        {notificationItems
-                          .filter(n => n.severity === "warning" && !resolvedNotifs.has(n.id))
-                          .map(n => (
-                            <button
-                              key={n.id}
-                              onClick={() => handleNotifClick(n)}
-                              className={`w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-[#f8f9fa] dark:hover:bg-[#1a1e26] transition-colors ${
-                                !readNotifs.has(n.id) ? "bg-[#fffef5] dark:bg-[#1e2229]" : ""
-                              }`}
-                            >
-                              <AlertTriangle className="w-4 h-4 text-[#F59E0B] shrink-0 mt-0.5" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4] truncate" style={{ fontWeight: 400 }}>{n.agentName}</p>
-                                <p className="text-[12px] text-[#555] dark:text-[#9ba2b0] mt-0.5" style={{ fontWeight: 300 }}>{n.summary}</p>
-                                <span className="text-[10px] text-[#999] dark:text-[#6b7280] tabular-nums" style={{ fontWeight: 300 }}>{n.time}</span>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                                <span
-                                  onClick={(e) => { e.stopPropagation(); handleNotifClick(n); }}
-                                  className="text-[11px] text-[#2552ED] dark:text-[#6b9bff] hover:underline cursor-pointer"
-                                  style={{ fontWeight: 400 }}
-                                >
-                                  {n.quickAction}
-                                </span>
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); handleResolveNotif(n.id); }}
-                                  className="w-5 h-5 flex items-center justify-center rounded hover:bg-[#e8f5e9] dark:hover:bg-[#1b3a2a] transition-colors"
-                                  title="Mark as resolved"
-                                >
-                                  <CheckCircle2 className="w-3 h-3 text-[#4caf50]" />
-                                </button>
-                              </div>
-                            </button>
-                          ))}
-                      </div>
-                    )}
-
-                    {/* Failed actions section */}
-                    {notificationItems.filter(n => n.severity === "error" && !resolvedNotifs.has(n.id)).length > 0 && (
-                      <div>
-                        <div className="px-4 py-2">
-                          <span className="text-[10px] text-[#ef5350] tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>
-                            Failed actions
-                          </span>
-                        </div>
-                        {notificationItems
-                          .filter(n => n.severity === "error" && !resolvedNotifs.has(n.id))
-                          .map(n => (
-                            <button
-                              key={n.id}
-                              onClick={() => handleNotifClick(n)}
-                              className={`w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-[#f8f9fa] dark:hover:bg-[#1a1e26] transition-colors ${
-                                !readNotifs.has(n.id) ? "bg-[#fff5f5] dark:bg-[#1e2229]" : ""
-                              }`}
-                            >
-                              <XCircle className="w-4 h-4 text-[#ef5350] shrink-0 mt-0.5" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4] truncate" style={{ fontWeight: 400 }}>{n.agentName}</p>
-                                <p className="text-[12px] text-[#555] dark:text-[#9ba2b0] mt-0.5" style={{ fontWeight: 300 }}>{n.summary}</p>
-                                <span className="text-[10px] text-[#999] dark:text-[#6b7280] tabular-nums" style={{ fontWeight: 300 }}>{n.time}</span>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                                <span
-                                  onClick={(e) => { e.stopPropagation(); handleNotifClick(n); }}
-                                  className="text-[11px] text-[#2552ED] dark:text-[#6b9bff] hover:underline cursor-pointer"
-                                  style={{ fontWeight: 400 }}
-                                >
-                                  {n.quickAction}
-                                </span>
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); handleResolveNotif(n.id); }}
-                                  className="w-5 h-5 flex items-center justify-center rounded hover:bg-[#e8f5e9] dark:hover:bg-[#1b3a2a] transition-colors"
-                                  title="Mark as resolved"
-                                >
-                                  <CheckCircle2 className="w-3 h-3 text-[#4caf50]" />
-                                </button>
-                              </div>
-                            </button>
-                          ))}
-                      </div>
-                    )}
-
-                    {/* Resolved section */}
-                    {notificationItems.filter(n => resolvedNotifs.has(n.id)).length > 0 && (
-                      <div>
-                        <div className="px-4 py-2">
-                          <span className="text-[10px] text-[#4caf50] tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>
-                            Resolved
-                          </span>
-                        </div>
-                        {notificationItems
-                          .filter(n => resolvedNotifs.has(n.id))
-                          .map(n => (
-                            <div
-                              key={n.id}
-                              className="flex items-center gap-3 px-4 py-2.5 opacity-50"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5 text-[#4caf50] shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[12px] text-[#888] dark:text-[#6b7280] truncate" style={{ fontWeight: 300 }}>{n.agentName} — {n.summary}</p>
-                              </div>
-                              <span className="text-[10px] text-[#999] dark:text-[#6b7280] tabular-nums shrink-0" style={{ fontWeight: 300 }}>{n.time}</span>
-                            </div>
-                          ))}
-                      </div>
-                    )}
-
-                    {/* Empty state */}
-                    {unresolvedCount === 0 && notificationItems.filter(n => resolvedNotifs.has(n.id)).length === 0 && (
-                      <div className="py-8 text-center">
-                        <Bell className="w-5 h-5 text-[#999] dark:text-[#6b7280] mx-auto mb-2" />
-                        <p className="text-[13px] text-[#888] dark:text-[#6b7280]" style={{ fontWeight: 300 }}>No notifications</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
 
             <FilterDropdown label={agentFilter} options={agentOptions} isOpen={agentDropOpen} onToggle={() => { setAgentDropOpen(!agentDropOpen); setStatusDropOpen(false); setCategoryDropOpen(false); setDateDropOpen(false); }} onSelect={v => { setAgentFilter(v); setAgentDropOpen(false); }} />
             <FilterDropdown label={statusFilter} options={statusOptions} isOpen={statusDropOpen} onToggle={() => { setStatusDropOpen(!statusDropOpen); setAgentDropOpen(false); setCategoryDropOpen(false); setDateDropOpen(false); }} onSelect={v => { setStatusFilter(v); setStatusDropOpen(false); }} />
@@ -840,19 +480,33 @@ export function AgentsMonitorView({ onBack }: { onBack: () => void }) {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => setSelectedActivity(isSelected ? null : item)}
-                    className={`w-full flex items-start gap-3 px-3 py-3.5 rounded-[6px] transition-colors text-left ${
+                    type="button"
+                    onClick={() => setSelectedActivityId(isSelected ? null : item.id)}
+                    className={cn(
+                      "group w-full flex items-start gap-2 px-3 py-3.5 rounded-[6px] text-left cursor-pointer",
+                      "transition-colors duration-200",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E44CC]/40 focus-visible:ring-offset-1 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#13161b]",
                       isSelected
                         ? "bg-[#f0f4ff] dark:bg-[#1e2d5e]/40"
-                        : "hover:bg-[#f8f9fa] dark:hover:bg-[#1a1e26]"
-                    }`}
+                        : "hover:bg-[#f8f9fa] dark:hover:bg-[#1a1e26]",
+                    )}
                   >
                     <span className="text-[11px] text-[#999] dark:text-[#6b7280] whitespace-nowrap mt-0.5 w-[65px] shrink-0 tabular-nums" style={{ fontWeight: 300 }}>{item.time}</span>
-                    <StatusIcon status={item.status} />
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[13px] text-[#2552ED] dark:text-[#6b9bff]" style={{ fontWeight: 400 }}>{item.agentName}</span>
-                        <CategoryBadge category={item.category} />
+                      <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                        <span
+                          className={cn(
+                            "text-[13px] transition-colors duration-200",
+                            isSelected
+                              ? "text-[#1E44CC] dark:text-[#6b9bff]"
+                              : "text-[#212121] dark:text-[#e4e4e4] group-hover:text-[#1E44CC] dark:group-hover:text-[#6b9bff] group-focus-visible:text-[#1E44CC] dark:group-focus-visible:text-[#6b9bff]",
+                          )}
+                          style={{ fontWeight: 400 }}
+                        >
+                          {item.agentName}
+                        </span>
+                        <ActivityCategoryBadge category={item.category} />
+                        <ActivityStatusBadge status={item.status} />
                       </div>
                       <span className="text-[13px] text-[#555] dark:text-[#9ba2b0] block" style={{ fontWeight: 300 }}>{item.action}</span>
                       {item.detail && (
@@ -893,7 +547,7 @@ export function AgentsMonitorView({ onBack }: { onBack: () => void }) {
 
         {/* Inspection Panel (Right) */}
         {selectedActivity && (
-          <InspectionPanel activity={selectedActivity} onClose={() => setSelectedActivity(null)} />
+          <InspectionPanel activity={selectedActivity} onClose={() => setSelectedActivityId(null)} />
         )}
       </div>
     </div>

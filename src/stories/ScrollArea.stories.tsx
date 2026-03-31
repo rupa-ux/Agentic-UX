@@ -69,11 +69,11 @@ const platforms = [
 export const Horizontal: Story = {
   render: () => (
     <ScrollArea className="w-80 whitespace-nowrap rounded-md border border-border">
-      <div className="flex w-max gap-3 p-4">
+      <div className="flex w-max gap-4 p-4">
         {platforms.map((platform) => (
           <div
             key={platform}
-            className="flex flex-col items-center gap-1 rounded-md border border-border bg-card px-5 py-3 shrink-0"
+            className="flex flex-col items-center gap-1 rounded-md border border-border bg-card px-6 py-4 shrink-0"
           >
             <span className="text-sm font-medium text-foreground">
               {platform}
@@ -118,7 +118,7 @@ export const TagList: Story = {
           {tags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-foreground"
+              className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted px-2 py-1 text-xs font-medium text-foreground"
             >
               {tag}
             </span>

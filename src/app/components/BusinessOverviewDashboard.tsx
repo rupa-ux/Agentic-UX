@@ -12,8 +12,12 @@ import {
 } from "recharts";
 import { Share2, ChevronDown, Maximize2, Info, Star } from "lucide-react";
 
-// ─── Design constants ───
-const PRIMARY = "#1E44CC";
+// ─── Chart series (neutral at rest; brand blue reserved for hover/focus on links) ───
+const CHART_STROKE = "#525252";
+const CHART_FILL_BASE = "#525252";
+/** Stacked social — categorical, avoid extra brand-blue blocks */
+const SOCIAL_BAR_FACEBOOK = "#64748b";
+const SOCIAL_BAR_LINKEDIN = "#0d9488";
 
 // ─── Sub-components ───
 
@@ -41,7 +45,7 @@ function SectionHeader({ title, right }: SectionHeaderProps) {
 function StatItem({ value, label }: { value: React.ReactNode; label: string }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <div className="text-2xl text-primary" style={{ fontWeight: 300 }}>{value}</div>
+      <div className="text-2xl text-foreground tabular-nums" style={{ fontWeight: 300 }}>{value}</div>
       <div className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 400 }}>{label}</div>
     </div>
   );
@@ -70,8 +74,8 @@ function GradientBar({ score, min = 0, max = 100 }: { score: number; min?: numbe
   return (
     <div className="relative h-2 rounded-full overflow-visible" style={{ background: "linear-gradient(to right, #ef4444, #f59e0b, #22c55e)" }}>
       <div
-        className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white border-2 shadow"
-        style={{ left: `${pct}%`, transform: "translate(-50%, -50%)", borderColor: PRIMARY }}
+        className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white border-2 border-border shadow dark:bg-card"
+        style={{ left: `${pct}%`, transform: "translate(-50%, -50%)" }}
       />
     </div>
   );
@@ -123,7 +127,7 @@ function PlatformChip({ name, rating, count, color }: { name: string; rating: st
     <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] border border-border bg-background">
       <div className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: color }} />
       <span className="text-xs text-foreground" style={{ fontWeight: 400 }}>{name}</span>
-      <span className="text-xs text-primary" style={{ fontWeight: 400 }}>{rating}</span>
+      <span className="text-xs text-foreground" style={{ fontWeight: 400 }}>{rating}</span>
       <span className="text-xs text-muted-foreground" style={{ fontWeight: 300 }}>{count}</span>
     </div>
   );
@@ -166,7 +170,7 @@ const insightRows = [
 // ─── Main Component ───
 export default function BusinessOverviewDashboard() {
   return (
-    <div className="bg-background min-h-screen overflow-y-auto">
+    <div className="bg-background h-full min-h-0 overflow-y-auto">
       <div className="max-w-5xl mx-auto px-6 py-8 flex flex-col gap-5">
 
         {/* 1. Header */}
@@ -189,11 +193,11 @@ export default function BusinessOverviewDashboard() {
             <div className="text-xs text-muted-foreground uppercase tracking-wide mb-3" style={{ fontWeight: 400 }}>Inbox</div>
             <div className="flex gap-8">
               <div>
-                <div className="text-3xl text-primary" style={{ fontWeight: 300 }}>499</div>
+                <div className="text-3xl text-foreground tabular-nums" style={{ fontWeight: 300 }}>499</div>
                 <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5" style={{ fontWeight: 400 }}>Unread Messages</div>
               </div>
               <div>
-                <div className="text-3xl text-primary" style={{ fontWeight: 300 }}>538</div>
+                <div className="text-3xl text-foreground tabular-nums" style={{ fontWeight: 300 }}>538</div>
                 <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5" style={{ fontWeight: 400 }}>Open Leads</div>
               </div>
             </div>
@@ -202,7 +206,7 @@ export default function BusinessOverviewDashboard() {
           <div className="p-5 bg-card">
             <div className="text-xs text-muted-foreground uppercase tracking-wide mb-3" style={{ fontWeight: 400 }}>Ticketing</div>
             <div>
-              <div className="text-3xl text-primary" style={{ fontWeight: 300 }}>1</div>
+              <div className="text-3xl text-foreground tabular-nums" style={{ fontWeight: 300 }}>1</div>
               <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5" style={{ fontWeight: 400 }}>Assigned To Me</div>
             </div>
           </div>
@@ -212,7 +216,11 @@ export default function BusinessOverviewDashboard() {
         <div className="flex items-center justify-between">
           <p className="text-sm text-foreground" style={{ fontWeight: 400 }}>
             Here is the recent performance of your business for{" "}
-            <a href="#" className="text-primary underline-offset-2 hover:underline" style={{ fontWeight: 400 }}>
+            <a
+              href="#"
+              className="text-foreground underline-offset-2 hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-sm"
+              style={{ fontWeight: 400 }}
+            >
               48 locations
             </a>
           </p>
@@ -263,14 +271,18 @@ export default function BusinessOverviewDashboard() {
             </div>
           </div>
           {/* Info banner */}
-          <div className="mt-4 flex items-center justify-between bg-primary/5 border border-primary/20 rounded-lg px-4 py-2.5">
+          <div className="mt-4 flex items-center justify-between bg-muted/50 border border-border rounded-lg px-4 py-2.5">
             <div className="flex items-center gap-2">
-              <Info className="w-4 h-4 text-primary shrink-0" />
+              <Info className="w-4 h-4 text-muted-foreground shrink-0" />
               <span className="text-xs text-foreground" style={{ fontWeight: 400 }}>
                 Maximize reviews by updating 7293 review sites
               </span>
             </div>
-            <a href="#" className="text-xs text-primary hover:underline underline-offset-2 shrink-0" style={{ fontWeight: 400 }}>
+            <a
+              href="#"
+              className="text-xs text-foreground hover:text-primary hover:underline underline-offset-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-sm"
+              style={{ fontWeight: 400 }}
+            >
               See all
             </a>
           </div>
@@ -281,7 +293,11 @@ export default function BusinessOverviewDashboard() {
           <SectionHeader title="Payments" />
           <p className="text-sm text-muted-foreground" style={{ fontWeight: 400 }}>
             Get paid today.{" "}
-            <a href="#" className="text-primary hover:underline underline-offset-2" style={{ fontWeight: 400 }}>
+            <a
+              href="#"
+              className="text-foreground hover:text-primary hover:underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-sm"
+              style={{ fontWeight: 400 }}
+            >
               Set up Payments
             </a>{" "}
             to get started.
@@ -357,8 +373,8 @@ export default function BusinessOverviewDashboard() {
             <AreaChart data={inboxChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="inboxGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={PRIMARY} stopOpacity={0.1} />
-                  <stop offset="100%" stopColor={PRIMARY} stopOpacity={0} />
+                  <stop offset="0%" stopColor={CHART_FILL_BASE} stopOpacity={0.12} />
+                  <stop offset="100%" stopColor={CHART_FILL_BASE} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid horizontal vertical={false} stroke="var(--color-border)" />
@@ -382,7 +398,7 @@ export default function BusinessOverviewDashboard() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke={PRIMARY}
+                stroke={CHART_STROKE}
                 strokeWidth={1.5}
                 fill="url(#inboxGrad)"
                 dot={false}
@@ -428,9 +444,9 @@ export default function BusinessOverviewDashboard() {
                 wrapperStyle={{ fontSize: 11, paddingTop: 8, color: "var(--color-muted-foreground)" }}
                 formatter={(value) => <span style={{ fontWeight: 400, color: "var(--color-muted-foreground)" }}>{value}</span>}
               />
-              <Bar dataKey="facebook" name="Facebook" stackId="a" fill={PRIMARY} radius={[0, 0, 0, 0]} />
+              <Bar dataKey="facebook" name="Facebook" stackId="a" fill={SOCIAL_BAR_FACEBOOK} radius={[0, 0, 0, 0]} />
               <Bar dataKey="instagram" name="Instagram" stackId="a" fill="#E1306C" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="linkedin" name="LinkedIn" stackId="a" fill="#0077B5" radius={[2, 2, 0, 0]} />
+              <Bar dataKey="linkedin" name="LinkedIn" stackId="a" fill={SOCIAL_BAR_LINKEDIN} radius={[2, 2, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </SectionCard>
@@ -447,24 +463,24 @@ export default function BusinessOverviewDashboard() {
                 <span className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 400 }}>BirdEye Score</span>
                 <Info className="w-3 h-3 text-muted-foreground" />
               </div>
-              <div className="text-3xl text-primary" style={{ fontWeight: 300 }}>59.7</div>
+              <div className="text-3xl text-foreground tabular-nums" style={{ fontWeight: 300 }}>59.7</div>
             </div>
             {/* Understanding */}
             <div className="flex flex-col gap-2">
               <span className="text-xs text-muted-foreground" style={{ fontWeight: 400 }}>Understanding the BirdEye Score</span>
-              <div className="text-2xl text-primary" style={{ fontWeight: 300 }}>79.2</div>
+              <div className="text-2xl text-foreground tabular-nums" style={{ fontWeight: 300 }}>79.2</div>
               <GradientBar score={79.2} />
             </div>
             {/* Sentiment Score */}
             <div className="flex flex-col gap-2">
               <span className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 400 }}>Sentiment Score</span>
-              <div className="text-2xl text-primary" style={{ fontWeight: 300 }}>58</div>
+              <div className="text-2xl text-foreground tabular-nums" style={{ fontWeight: 300 }}>58</div>
               <GradientBar score={58} />
             </div>
             {/* 4th score */}
             <div className="flex flex-col gap-2">
               <span className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 400 }}>Reputation Score</span>
-              <div className="text-2xl text-primary" style={{ fontWeight: 300 }}>34.7</div>
+              <div className="text-2xl text-foreground tabular-nums" style={{ fontWeight: 300 }}>34.7</div>
               <GradientBar score={34.7} />
             </div>
           </div>
@@ -493,10 +509,10 @@ export default function BusinessOverviewDashboard() {
                   {insightRows.map((row) => (
                     <tr key={row.location} className="border-b border-border last:border-0">
                       <td className="py-2.5 pr-4 text-sm text-foreground" style={{ fontWeight: 400 }}>{row.location}</td>
-                      <td className="py-2.5 pr-4 text-sm text-primary" style={{ fontWeight: 300 }}>{row.birdeye}</td>
-                      <td className="py-2.5 pr-4 text-sm text-primary" style={{ fontWeight: 300 }}>{row.sentiment}</td>
-                      <td className="py-2.5 pr-4 text-sm text-primary" style={{ fontWeight: 300 }}>{row.reputation}</td>
-                      <td className="py-2.5 pr-4 text-sm text-primary" style={{ fontWeight: 300 }}>{row.listing}</td>
+                      <td className="py-2.5 pr-4 text-sm text-foreground tabular-nums" style={{ fontWeight: 300 }}>{row.birdeye}</td>
+                      <td className="py-2.5 pr-4 text-sm text-foreground tabular-nums" style={{ fontWeight: 300 }}>{row.sentiment}</td>
+                      <td className="py-2.5 pr-4 text-sm text-foreground tabular-nums" style={{ fontWeight: 300 }}>{row.reputation}</td>
+                      <td className="py-2.5 pr-4 text-sm text-foreground tabular-nums" style={{ fontWeight: 300 }}>{row.listing}</td>
                     </tr>
                   ))}
                 </tbody>

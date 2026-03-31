@@ -36,11 +36,11 @@ export const Bottom: Story = {
             </DrawerDescription>
           </DrawerHeader>
           <div className="px-4 space-y-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="customer-name">Customer Name</Label>
               <Input id="customer-name" placeholder="Jane Smith" />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="customer-email">Email Address</Label>
               <Input
                 id="customer-email"
@@ -48,7 +48,7 @@ export const Bottom: Story = {
                 placeholder="jane@example.com"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="customer-phone">Phone Number</Label>
               <Input
                 id="customer-phone"
@@ -84,7 +84,7 @@ export const Right: Story = {
             </DrawerDescription>
           </DrawerHeader>
           <div className="px-4 space-y-4">
-            <div className="rounded-md bg-muted p-3 text-sm text-foreground">
+            <div className="rounded-md bg-muted p-4 text-sm text-foreground">
               "Excellent service! The staff was incredibly helpful and went above
               and beyond to ensure our satisfaction. Will definitely return."
             </div>
@@ -95,11 +95,11 @@ export const Right: Story = {
               <span>·</span>
               <span>2 days ago</span>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="reply">Your Reply</Label>
               <textarea
                 id="reply"
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none h-24 focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-md border border-border bg-background px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none h-24 focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="Thank you for your kind words…"
               />
             </div>

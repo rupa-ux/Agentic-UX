@@ -62,7 +62,7 @@ export const ThreePanels: Story = {
       className="min-h-64 max-w-2xl rounded-lg border border-border"
     >
       <ResizablePanel defaultSize={20} minSize={15}>
-        <div className="flex h-full items-center justify-center p-3 bg-muted text-muted-foreground text-xs">
+        <div className="flex h-full items-center justify-center p-4 bg-muted text-muted-foreground text-xs">
           Nav
         </div>
       </ResizablePanel>
@@ -74,7 +74,7 @@ export const ThreePanels: Story = {
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel defaultSize={25} minSize={15}>
-        <div className="flex h-full items-center justify-center p-3 bg-card text-muted-foreground text-xs border-l border-border">
+        <div className="flex h-full items-center justify-center p-4 bg-card text-muted-foreground text-xs border-l border-border">
           Details
         </div>
       </ResizablePanel>
@@ -95,7 +95,7 @@ export const WithHandle: Story = {
             (item) => (
               <div
                 key={item}
-                className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground"
+                className="rounded-md bg-muted px-4 py-2 text-xs text-muted-foreground"
               >
                 {item}
               </div>

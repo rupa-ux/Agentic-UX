@@ -4,8 +4,9 @@ import {
   CampaignsL2NavPanel, SurveysL2NavPanel, InsightsL2NavPanel, CompetitorsL2NavPanel,
   InboxL2NavPanel,
 } from "./components/Sidebar";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Toaster } from "sonner";
+import { MonitorNotificationsProvider } from "./context/MonitorNotificationsContext";
 import { TopBar } from "./components/TopBar";
 import { Dashboard } from "./components/Dashboard";
 import { SharedByMe } from "./components/SharedByMe";
@@ -16,7 +17,6 @@ import { SocialView } from "./components/SocialView";
 import { SearchAIView } from "./components/SearchAIView";
 import { ContactsView } from "./components/ContactsView";
 import { ScheduledDeliveriesView } from "./components/ScheduledDeliveriesView";
-import { AgentsView } from "./components/AgentsView";
 import { AgentsMonitorView } from "./components/AgentsMonitorView";
 import { AgentsBuilderView } from "./components/AgentsBuilderView";
 import { AgentDetailView } from "./components/AgentDetailView";
@@ -24,8 +24,13 @@ import { AgentOnboardingView } from "./components/AgentOnboardingView";
 import { ScheduleBuilderView } from "./components/ScheduleBuilderView";
 import { BirdAIReportsView } from "./components/BirdAIReportsView";
 import { type DraftReport } from "./components/draftStore";
+import { APP_MAIN_CONTENT_SHELL_CLASS } from "./components/layout/appShellClasses";
+import { ResizableRightChatPanel } from "./components/layout/ResizableRightChatPanel";
+import { MynaChatPanel } from "./components/MynaChatPanel";
+import BusinessOverviewDashboard from "./components/BusinessOverviewDashboard";
 
 export type AppView =
+  | "business-overview"
   | "dashboard"
   | "shared-by-me"
   | "inbox"
@@ -35,7 +40,6 @@ export type AppView =
   | "searchai"
   | "contacts"
   | "scheduled-deliveries"
-  | "agents"
   | "agents-monitor"
   | "agents-builder"
   | "agent-detail"
@@ -51,7 +55,7 @@ export type AppView =
 
 export default function App() {
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<AppView>("agents");
+  const [currentView, setCurrentView] = useState<AppView>("agents-monitor");
   const [editingDraft, setEditingDraft] = useState<DraftReport | null>(null);
   const [selectedAgentSlug, setSelectedAgentSlug] = useState<string>("");
 
@@ -77,8 +81,24 @@ export default function App() {
     if (!open) setEditingDraft(null);
   };
 
+  const [mynaChatOpen, setMynaChatOpen] = useState(false);
+  const chatLayoutRef = useRef<HTMLDivElement>(null);
+  const [chatLayoutWidth, setChatLayoutWidth] = useState(0);
+
+  useLayoutEffect(() => {
+    const el = chatLayoutRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      setChatLayoutWidth(el.clientWidth);
+    });
+    ro.observe(el);
+    setChatLayoutWidth(el.clientWidth);
+    return () => ro.disconnect();
+  }, []);
+
   // Views that have their own L2 panels (not the default Reports L2NavPanel)
   const hasOwnL2Panel = (v: AppView) =>
+    v === "business-overview" ||
     v === "inbox" ||
     v === "storybook" ||
     v === "reviews" ||
@@ -86,12 +106,10 @@ export default function App() {
     v === "searchai" ||
     v === "contacts" ||
     v === "scheduled-deliveries" ||
-    v === "agents" ||
     v === "agents-monitor" ||
     v === "agents-builder" ||
     v === "agent-detail" ||
     v === "agents-onboarding" ||
-    v === "schedule-builder" ||
     v === "birdai-reports" ||
     v === "listings" ||
     v === "surveys" ||
@@ -101,6 +119,7 @@ export default function App() {
     v === "competitors";
 
   return (
+    <MonitorNotificationsProvider onNavigateToMonitor={() => setCurrentView("agents-monitor")}>
     <div className="h-screen w-screen flex overflow-hidden">
       <Toaster position="top-center" richColors />
 
@@ -110,7 +129,12 @@ export default function App() {
       {/* Everything to the right of the icon strip */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* TopBar spans above both L2 nav and content */}
-        <TopBar currentView={currentView} onViewChange={handleViewChange} />
+        <TopBar
+          currentView={currentView}
+          onViewChange={handleViewChange}
+          mynaChatOpen={mynaChatOpen}
+          onToggleMynaChat={() => setMynaChatOpen((o) => !o)}
+        />
 
         {/* Below TopBar: L2 nav + main content side by side */}
         <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
@@ -165,13 +189,21 @@ export default function App() {
             <InboxL2NavPanel />
           )}
           {/* Agents L2 nav panel */}
-          {!aiPanelOpen && (currentView === "agents" || currentView === "agents-monitor" || currentView === "agent-detail" || currentView === "birdai-reports") && (
+          {!aiPanelOpen && (currentView === "agents-monitor" || currentView === "agents-builder" || currentView === "agents-onboarding" || currentView === "agent-detail" || currentView === "birdai-reports") && (
             <AgentsL2NavPanel currentView={currentView} onViewChange={handleViewChange} selectedAgentSlug={selectedAgentSlug} />
           )}
 
-          {/* Main content area */}
-          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-            {currentView === "shared-by-me" ? (
+          {/* Main content + optional Myna chat (flex row, main keeps ≥60% when possible) */}
+          <div
+            ref={chatLayoutRef}
+            className="flex min-h-0 min-w-0 flex-1 overflow-hidden"
+          >
+            <div
+              className={`${APP_MAIN_CONTENT_SHELL_CLASS} min-h-0 min-w-[60%]`}
+            >
+            {currentView === "business-overview" ? (
+              <BusinessOverviewDashboard />
+            ) : currentView === "shared-by-me" ? (
               <SharedByMe onEditDraft={handleEditDraft} onViewReport={handleViewReport} />
             ) : currentView === "inbox" ? (
               <InboxView />
@@ -187,15 +219,10 @@ export default function App() {
               <ContactsView />
             ) : currentView === "scheduled-deliveries" ? (
               <ScheduledDeliveriesView onCreateSchedule={() => handleViewChange("schedule-builder")} />
-            ) : currentView === "agents" ? (
-              <AgentsView
-                onNavigateToMonitor={() => setCurrentView("agents-monitor")}
-                onNavigateToDetail={(slug: string) => handleViewChange("agent-detail", slug)}
-              />
             ) : currentView === "agents-monitor" ? (
-              <AgentsMonitorView onBack={() => setCurrentView("agents")} />
+              <AgentsMonitorView onBack={() => setCurrentView("agents-monitor")} />
             ) : currentView === "agents-builder" ? (
-              <AgentsBuilderView onBack={() => handleViewChange("agents")} />
+              <AgentsBuilderView onBack={() => handleViewChange("agents-monitor")} />
             ) : currentView === "agent-detail" ? (
               <AgentDetailView
                 agentSlug={selectedAgentSlug}
@@ -209,8 +236,8 @@ export default function App() {
               />
             ) : currentView === "agents-onboarding" ? (
               <AgentOnboardingView
-                onComplete={() => handleViewChange("agents")}
-                onSkip={() => handleViewChange("agents")}
+                onComplete={() => handleViewChange("agents-monitor")}
+                onSkip={() => handleViewChange("agents-monitor")}
                 onGoToMonitor={() => handleViewChange("agents-monitor")}
               />
             ) : currentView === "schedule-builder" ? (
@@ -260,9 +287,14 @@ export default function App() {
                 editingDraft={editingDraft}
               />
             )}
+            </div>
+            <ResizableRightChatPanel open={mynaChatOpen} layoutRowWidth={chatLayoutWidth}>
+              <MynaChatPanel onClose={() => setMynaChatOpen(false)} />
+            </ResizableRightChatPanel>
           </div>
         </div>
       </div>
     </div>
+    </MonitorNotificationsProvider>
   );
 }

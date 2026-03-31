@@ -32,7 +32,7 @@ export const WithLabel: Story = {
 
 export const AllTypes: Story = {
   render: () => (
-    <div className="flex flex-col gap-3 w-72">
+    <div className="flex flex-col gap-4 w-72">
       <Input type="text" placeholder="Text" />
       <Input type="email" placeholder="Email" />
       <Input type="password" placeholder="Password" />

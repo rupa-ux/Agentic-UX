@@ -580,7 +580,6 @@ export function ReviewsView() {
           onFiltersChange={setFilters}
           collapsed={false}
           onToggleCollapse={() => setFilterPanelOpen(false)}
-          title="Review filters"
           storageKey="birdeye_reviews_filters"
         />
       )}

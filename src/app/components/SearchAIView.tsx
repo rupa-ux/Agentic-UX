@@ -354,13 +354,13 @@ function PlatformTabs({ activeTab, onTabChange }: { activeTab: string; onTabChan
         >
           <span
             className={`h-[32px] flex items-center justify-center px-2 rounded-[4px] text-[14px] tracking-[-0.28px] whitespace-nowrap ${
-              activeTab === tab ? "text-[#212121] dark:text-[#e4e4e4]" : "text-[#555] dark:text-[#8b92a5]"
+              activeTab === tab ? "text-[#2552ED] dark:text-[#6b9bff]" : "text-[#555] dark:text-[#8b92a5]"
             }`}
             style={{ fontWeight: 400 }}
           >
             {tab}
           </span>
-          <div className={`h-[1px] w-full ${activeTab === tab ? "bg-[#1976d2]" : "bg-transparent"}`} />
+          <div className={`h-[1px] w-full ${activeTab === tab ? "bg-[#2552ED] dark:bg-[#6b9bff]" : "bg-transparent"}`} />
         </button>
       ))}
     </div>

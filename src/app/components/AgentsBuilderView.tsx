@@ -615,7 +615,7 @@ export function AgentsBuilderView({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300 rounded-tr-[8px]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300">
       {/* ─── Top Header ─── */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-[#e5e9f0] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] shrink-0">
         <div className="flex items-center gap-3">

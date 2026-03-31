@@ -36,22 +36,22 @@ export const Right: Story = {
           </SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 py-4">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label htmlFor="biz-name">Business Name</Label>
             <Input id="biz-name" defaultValue="Acme Coffee Roasters" />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label htmlFor="biz-phone">Phone</Label>
             <Input id="biz-phone" defaultValue="+1 (512) 555-0100" type="tel" />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label htmlFor="biz-address">Address</Label>
             <Input
               id="biz-address"
               defaultValue="123 Main St, Austin, TX 78701"
             />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label htmlFor="biz-website">Website</Label>
             <Input
               id="biz-website"
@@ -94,7 +94,7 @@ export const Left: Story = {
             <SheetClose key={item} asChild>
               <a
                 href="#"
-                className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                className="rounded-md px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
               >
                 {item}
               </a>
@@ -139,7 +139,7 @@ export const Top: Story = {
           ].map((n) => (
             <div
               key={n.msg}
-              className="flex items-start gap-3 rounded-md border border-border bg-muted px-3 py-2"
+              className="flex items-start gap-4 rounded-md border border-border bg-muted px-4 py-2"
             >
               <div className="flex-1">
                 <p className="text-sm text-foreground">{n.msg}</p>

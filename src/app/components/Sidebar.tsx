@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import {
   ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Palette, Clock, Sparkles, ExternalLink,
 } from "lucide-react";
@@ -8,13 +8,21 @@ import {
   MegaphoneSimple, Globe, Lightbulb, ChartBar, Sparkle,
 } from "@phosphor-icons/react";
 import svgPaths from "../../imports/svg-y1gexucine";
-import svgPathsReviews from "../../imports/svg-w1z8z09mht";
 import type { AppView } from "../App";
+import { MonitorNotificationsTrigger } from "./MonitorNotificationsTrigger";
 import { useTheme, type ThemePreference } from "./useTheme";
 import { L2NavLayout, PANEL, ROW, HOVER, CHILD_ACTIVE, CHILD_INACTIVE, FOOTER_ROW_CLS, SECTION_HEADER } from "./L2NavLayout";
 
-// suppress unused-import warning for ExternalLink (used in AgentsL2NavPanel indirectly)
-void ExternalLink;
+/** How long to show the Reports-row shimmer before opening the tab (~sub-second “micro” handoff). */
+export const REPORTS_EXTERNAL_SHIMMER_MS = 480;
+
+/** Opens the full Reporting module in a new tab. Set `VITE_REPORTING_MODULE_URL` in the host app when known. */
+export function openReportingModuleInNewTab() {
+  const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
+  const envUrl = (env?.VITE_REPORTING_MODULE_URL ?? "").trim();
+  const url = envUrl || `${window.location.origin}${window.location.pathname}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
 
 const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1617853701628-bfcf8b81d13d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBtYW4lMjBoZWFkc2hvdCUyMHNtaWxlJTIwc3R1ZGlvJTIwbGlnaHRpbmd8ZW58MXx8fHwxNzczMjE4MDIzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 
@@ -49,7 +57,7 @@ interface IconStripProps {
 }
 
 export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStripProps) {
-  const [activeIcon, setActiveIcon] = useState("Agents");
+  const [activeIcon, setActiveIcon] = useState("Home");
   const [profileOpen, setProfileOpen] = useState(false);
   // Portal tooltip — fixed position so it escapes overflow-y: auto clipping
   const [tooltip, setTooltip] = useState<{ label: string; top: number } | null>(null);
@@ -70,9 +78,10 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
     return localStorage.getItem("profile_avatar") || DEFAULT_AVATAR;
   });
 
-  // Sync activeIcon with currentView
-  useEffect(() => {
-    if (currentView === "inbox") setActiveIcon("Inbox");
+  // Sync activeIcon with currentView (layout effect avoids wrong rail highlight on first paint)
+  useLayoutEffect(() => {
+    if (currentView === "business-overview") setActiveIcon("Home");
+    else if (currentView === "inbox") setActiveIcon("Inbox");
     else if (currentView === "reviews") setActiveIcon("Reviews");
     else if (currentView === "social") setActiveIcon("Social");
     else if (currentView === "searchai") setActiveIcon("Insights");
@@ -84,8 +93,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
     else if (currentView === "insights") setActiveIcon("Insights");
     else if (currentView === "competitors") setActiveIcon("Competitors");
     else if (currentView === "dashboard" || currentView === "shared-by-me") setActiveIcon("Reports");
-    else if (currentView === "agents" || currentView === "agents-monitor" || currentView === "agents-builder" || currentView === "agent-detail" || currentView === "agents-onboarding" || currentView === "birdai-reports") setActiveIcon("Agents");
-    // storybook doesn't map to any icon strip item
+    else if (currentView === "agents-monitor" || currentView === "agents-builder" || currentView === "agent-detail" || currentView === "agents-onboarding" || currentView === "birdai-reports") setActiveIcon("Agents");
+    // storybook / scheduled-deliveries / schedule-builder: no icon mapping
   }, [currentView]);
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,13 +139,14 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
               key={label}
               onClick={() => {
                 setActiveIcon(label);
-                if (label === "Inbox") onViewChange("inbox");
+                if (label === "Home") onViewChange("business-overview");
+                else if (label === "Inbox") onViewChange("inbox");
                 else if (label === "Reports") onViewChange("dashboard");
                 else if (label === "Reviews") onViewChange("reviews");
                 else if (label === "Social") onViewChange("social");
                 else if (label === "Insights") onViewChange("searchai");
                 else if (label === "Contacts") onViewChange("contacts");
-                else if (label === "Agents") onViewChange("agents");
+                else if (label === "Agents") onViewChange("agents-monitor");
                 else if (label === "Listings") onViewChange("listings");
                 else if (label === "Surveys") onViewChange("surveys");
                 else if (label === "Ticketing") onViewChange("ticketing");
@@ -148,7 +158,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
                 transition-all duration-200 ease-out outline-none
                 focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-[#e0e5eb] dark:focus-visible:ring-offset-[#181b22]
                 ${isActive
-                  ? "bg-[#dae3f0] dark:bg-[#252d42] shadow-[0_0_0_1px_rgba(30,68,204,0.08)]"
+                  ? "bg-[#d4dae3] dark:bg-[#282e3a] shadow-none"
                   : "bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95"
                 }
               `}
@@ -156,11 +166,11 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
               <Icon
                 size={iconSize}
                 weight={isActive ? "fill" : "regular"}
-                className={`transition-all duration-200 ${
+                className={`transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] ${
                   isActive
                     ? "text-[#1E44CC] dark:text-[#2952E3]"
                     : "text-[#505050] dark:text-[#9ba2b0] group-hover:scale-110"
-                } ${label === "Agents" && isActive ? "animate-[agents-shimmer_3s_ease-in-out_infinite]" : ""}`}
+                } ${label === "Agents" && isActive ? "group-hover:animate-[agents-shimmer_3s_ease-in-out_infinite]" : ""}`}
               />
             </button>
           );
@@ -187,6 +197,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
         >
           <Settings className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" />
         </button>
+
+        <MonitorNotificationsTrigger />
 
         {/* Profile avatar with upward dropdown */}
         <div className="relative" ref={profileRef}>
@@ -400,19 +412,17 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
    ═══════════════════════════════════════════ */
 interface L2NavPanelProps {
   currentView: AppView;
-  onViewChange: (view: AppView) => void;
+  onViewChange: (view: AppView, agentSlug?: string) => void;
 }
 
 /* ─── Reporting nav data ─── */
 const dashboardSections = [
-  { label: "Created by Birdeye", children: ["<Default name>", "<Default name>"] },
   { label: "Created by me", children: ["Palo Alto performance", "2024 Yearly report"] },
   { label: "Shared with me", children: ["2025 Q1 dashboard", "2025 Q2 dashboard", "2025 Q3 dashboard"] },
 ];
 
-const reportSections2 = [
-  { label: "Custom", children: ["<Custom report name>", "<Custom report name>"] },
-  { label: "Reviews AI", children: ["Overview", "Volume and ratings", "Leaderboard", "Distribution", "Responses", "NPS", "Tags", "QR Codes", "Review impressions"] },
+/** Product report catalogs in Reports L2 (no "Agent Reports" parent). */
+const reportCatalogSections = [
   { label: "Listings AI", children: ["All", "Google", "Apple", "Facebook", "Bing", "Yelp"] },
   { label: "Social AI", children: ["All channels", "Post performance", "Response trends", "Best time to post"] },
   { label: "Campaigns", children: ["Review campaigns", "Referral campaigns", "CX campaigns", "Custom campaigns"] },
@@ -423,28 +433,36 @@ const reportSections2 = [
 
 export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPanelProps) {
   // Active item tracked internally
-  const [activeItem, setActiveItem] = useState("Created by Birdeye/<Default name>");
+  const [activeItem, setActiveItem] = useState("Created by me/Palo Alto performance");
 
   const activate = (key: string) => {
     setActiveItem(key);
     onViewChange("dashboard");
   };
 
-  // Expansion: "Created by Birdeye" and "Reviews AI" open by default
-  const allSections = [...dashboardSections, ...reportSections2];
-  const [expanded, setExpanded] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(allSections.map(s => [s.label, s.label === "Created by Birdeye" || s.label === "Reviews AI"]))
+  const dashboardExpandedInit = Object.fromEntries(
+    dashboardSections.map(s => [s.label, s.label === "Created by me"])
+  );
+  const reportExpandedInit = Object.fromEntries(
+    reportCatalogSections.map(s => [s.label, s.label === "Listings AI"])
   );
 
-  const toggle = (label: string) =>
-    setExpanded(prev => ({ ...prev, [label]: !prev[label] }));
+  const [dashboardExpanded, setDashboardExpanded] = useState<Record<string, boolean>>(() => dashboardExpandedInit);
+  const [reportExpanded, setReportExpanded] = useState<Record<string, boolean>>(() => reportExpandedInit);
+  const [automationReportsOpen, setAutomationReportsOpen] = useState(true);
 
-  const renderSection = (section: { label: string; children: string[] }) => {
-    const isExp = expanded[section.label];
+  const toggleDashboard = (label: string) =>
+    setDashboardExpanded(prev => ({ ...prev, [label]: !prev[label] }));
+  const toggleReport = (label: string) =>
+    setReportExpanded(prev => ({ ...prev, [label]: !prev[label] }));
+
+  const renderDashboardSection = (section: { label: string; children: string[] }) => {
+    const isExp = dashboardExpanded[section.label];
     return (
       <div key={section.label}>
         <button
-          onClick={() => toggle(section.label)}
+          type="button"
+          onClick={() => toggleDashboard(section.label)}
           className={SECTION_HEADER}
           style={{ fontWeight: 400 }}
         >
@@ -459,6 +477,42 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
           const isActive = activeItem === key;
           return (
             <button
+              type="button"
+              key={key}
+              onClick={() => activate(key)}
+              className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
+              style={{ fontWeight: isActive ? 400 : 300 }}
+            >
+              {child}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderReportSection = (section: { label: string; children: string[] }) => {
+    const isExp = reportExpanded[section.label];
+    return (
+      <div key={section.label}>
+        <button
+          type="button"
+          onClick={() => toggleReport(section.label)}
+          className={SECTION_HEADER}
+          style={{ fontWeight: 400 }}
+        >
+          <span>{section.label}</span>
+          {isExp
+            ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+            : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+          }
+        </button>
+        {isExp && section.children.map(child => {
+          const key = `${section.label}/${child}`;
+          const isActive = activeItem === key;
+          return (
+            <button
+              type="button"
               key={key}
               onClick={() => activate(key)}
               className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
@@ -475,10 +529,14 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
   return (
     <div className={PANEL} data-no-print>
       <div className="flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
+        <p className="px-2 pb-2 text-[11px] uppercase tracking-wide text-[#888] dark:text-[#6b7280]" style={{ fontWeight: 500 }}>
+          Reports
+        </p>
 
         {/* Create dashboard button */}
         <button
-          className={`${FOOTER_ROW_CLS} mb-[6px]`}
+          type="button"
+          className={`${FOOTER_ROW_CLS} mb-2`}
           style={{ fontSize: 14 }}
           onClick={() => onViewChange("dashboard")}
         >
@@ -489,11 +547,12 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
         </button>
 
         {/* Dashboard sections */}
-        {dashboardSections.map(renderSection)}
+        {dashboardSections.map(renderDashboardSection)}
 
         {/* Create report button */}
         <button
-          className={`${FOOTER_ROW_CLS} mt-[6px] mb-[6px]`}
+          type="button"
+          className={`${FOOTER_ROW_CLS} mt-2 mb-2`}
           style={{ fontSize: 14 }}
           onClick={() => onViewChange("dashboard")}
         >
@@ -503,8 +562,46 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
           </div>
         </button>
 
-        {/* Report sections */}
-        {reportSections2.map(renderSection)}
+        {/* Product report catalogs (Listings, Social, …) — no Agent Reports parent */}
+        <div className="mt-2 flex flex-col gap-1">
+          {reportCatalogSections.map(renderReportSection)}
+        </div>
+
+        {/* Automation reports — scheduled / automation */}
+        <div className="mt-2">
+          <button
+            type="button"
+            onClick={() => setAutomationReportsOpen(o => !o)}
+            className={SECTION_HEADER}
+            style={{ fontWeight: 400 }}
+          >
+            <span>Automation reports</span>
+            {automationReportsOpen
+              ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+              : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+            }
+          </button>
+          {automationReportsOpen && (
+            <div className="flex flex-col gap-1">
+              <button
+                type="button"
+                onClick={() => onViewChange("agent-detail", "scheduled-reports")}
+                className={CHILD_INACTIVE}
+                style={{ fontWeight: 300 }}
+              >
+                Scheduled reports
+              </button>
+              <button
+                type="button"
+                onClick={() => onViewChange("agent-detail", "automation")}
+                className={CHILD_INACTIVE}
+                style={{ fontWeight: 300 }}
+              >
+                Automation agents
+              </button>
+            </div>
+          )}
+        </div>
 
       </div>
     </div>
@@ -543,8 +640,8 @@ const reviewsConfig = {
     {
       label: "Agents",
       children: [
-        "Review generation agents",
-        "Review response agents",
+        "Review response agent",
+        "Review generation agent",
         "Review monitoring agents",
         "Review marketing agents",
       ],
@@ -573,7 +670,7 @@ const socialConfig = {
     { label: "Reports", children: ["All channels", "Post performance", "Response trends", "Best time to post"] },
     { label: "Competitors", children: ["Benchmarking", "Posts"] },
     { label: "Libraries", children: ["Post library", "Media library", "Reply templates"] },
-    { label: "Agents", children: ["Publishing agents", "Engagement agents"] },
+    { label: "Agents", children: ["Publishing agent", "Engagement agent"] },
     { label: "Settings", children: ["Approvals", "Link in bio", "Tags", "AI posts", "AI prompts"] },
   ],
 };
@@ -622,7 +719,7 @@ const listingsConfig = {
     { label: "Search performance", children: ["All sites", "Google", "Apple", "Facebook", "Bing", "Yelp"] },
     { label: "Accuracy", children: ["Core sites", "Other sites"] },
     { label: "Publish status", children: ["All listings", "By location", "By site"] },
-    { label: "Agents", children: ["Optimizer agents"] },
+    { label: "Agents", children: ["Listing optimization agent"] },
     { label: "Settings", children: ["Profiles", "Keywords", "Ranking report", "FAQs", "Products", "Google services"] },
   ],
 };
@@ -639,7 +736,7 @@ const ticketingConfig = {
   sections: [
     { label: "Actions", children: ["My tickets", "View all tickets"] },
     { label: "Reports", children: ["Resolution time", "Volume"] },
-    { label: "Agents", children: ["Ticketing agents"] },
+    { label: "Agents", children: ["Ticket resolution agent"] },
   ],
 };
 
@@ -893,198 +990,78 @@ interface AgentsL2NavPanelProps {
   selectedAgentSlug?: string;
 }
 
-interface AgentsNavChild {
+interface MynaAiL2NavItem {
   label: string;
   view?: AppView;
-  agentSlug?: string;
-  children?: { label: string; view?: AppView; agentSlug?: string }[];
+  /** Opens reporting module in a new tab instead of in-app navigation */
+  openReportingExternal?: boolean;
 }
 
-interface AgentsNavItem {
-  label: string;
-  view?: AppView;
-  agentSlug?: string;
-  expandable?: boolean;
-  defaultExpanded?: boolean;
-  hasAddIcon?: boolean;
-  isSeparator?: boolean;
-  children?: AgentsNavChild[];
-}
-
-const agentsNavItems: AgentsNavItem[] = [
-  { label: "Create agent", view: "agents-builder" as AppView, hasAddIcon: true },
-  { label: "Overview", view: "agents" as AppView },
+/** Myna AI L2: Monitor and Reports (external). Scheduled/automation lives under Reports → Automation reports. */
+const mynaAiL2NavItems: MynaAiL2NavItem[] = [
   { label: "Monitor", view: "agents-monitor" as AppView },
-  {
-    label: "Product agents",
-    expandable: true,
-    defaultExpanded: true,
-    children: [
-      {
-        label: "Reviews",
-        children: [
-          { label: "Review response agent", view: "agent-detail" as AppView, agentSlug: "review-response" },
-          { label: "Review generation agent", view: "agent-detail" as AppView, agentSlug: "review-generation" },
-        ],
-      },
-      {
-        label: "Social",
-        children: [
-          { label: "Publishing agent", view: "agent-detail" as AppView, agentSlug: "social-publishing" },
-          { label: "Engagement agent", view: "agent-detail" as AppView, agentSlug: "social-engagement" },
-        ],
-      },
-      {
-        label: "Listings",
-        children: [
-          { label: "Listing optimization agent", view: "agent-detail" as AppView, agentSlug: "listing-optimization" },
-        ],
-      },
-      {
-        label: "Ticketing",
-        children: [
-          { label: "Ticket resolution agent", view: "agent-detail" as AppView, agentSlug: "ticket-resolution" },
-        ],
-      },
-    ],
-  },
-  {
-    label: "Data & system agents",
-    expandable: true,
-    defaultExpanded: false,
-    children: [
-      { label: "Data source agent", view: "agent-detail" as AppView, agentSlug: "data-source" },
-      { label: "CRM mapping agent", view: "agent-detail" as AppView, agentSlug: "crm-mapping" },
-      { label: "Sync agent", view: "agent-detail" as AppView, agentSlug: "sync" },
-    ],
-  },
-  {
-    label: "Scheduled agents",
-    expandable: true,
-    defaultExpanded: true,
-    children: [
-      { label: "Scheduled reports", view: "agent-detail" as AppView, agentSlug: "scheduled-reports" },
-      { label: "Automation agents", view: "agent-detail" as AppView, agentSlug: "automation" },
-    ],
-  },
-  { label: "Reports", view: "birdai-reports" as AppView },
+  { label: "Reports", openReportingExternal: true },
 ];
 
-export function AgentsL2NavPanel({ currentView, onViewChange, selectedAgentSlug }: AgentsL2NavPanelProps) {
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {};
-    agentsNavItems.forEach(item => {
-      if (item.defaultExpanded) initial[item.label] = true;
-    });
-    return initial;
-  });
+export function AgentsL2NavPanel({ currentView, onViewChange, selectedAgentSlug: _selectedAgentSlug }: AgentsL2NavPanelProps) {
+  void _selectedAgentSlug;
+  const [reportsHandoffShimmer, setReportsHandoffShimmer] = useState(false);
+  const reportsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const toggleSection = (label: string) => {
-    setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
+  useEffect(() => {
+    return () => {
+      if (reportsTimerRef.current) clearTimeout(reportsTimerRef.current);
+    };
+  }, []);
+
+  const startReportsHandoff = () => {
+    if (reportsHandoffShimmer) return;
+    setReportsHandoffShimmer(true);
+    if (reportsTimerRef.current) clearTimeout(reportsTimerRef.current);
+    reportsTimerRef.current = setTimeout(() => {
+      reportsTimerRef.current = null;
+      openReportingModuleInNewTab();
+      setReportsHandoffShimmer(false);
+    }, REPORTS_EXTERNAL_SHIMMER_MS);
   };
 
   return (
-    <div className="w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#f0f1f5] dark:border-[#2e3340] rounded-tl-[3px] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300" data-no-print>
+    <div className="w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#f0f1f5] dark:border-[#2e3340] rounded-tl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300" data-no-print>
       <div className="flex-1 overflow-y-auto px-2 pt-4 pb-2">
         <div className="flex flex-col gap-0.5">
-          {agentsNavItems.map(item => {
-            if (item.isSeparator) {
-              return <div key="sep" className="h-px bg-[#dfe1e6] dark:bg-[#2e3340] mx-1 my-2" />;
-            }
-            const isTopActive = item.view && item.view === currentView;
+          {mynaAiL2NavItems.map(item => {
+            const isExternal = Boolean(item.openReportingExternal);
+            const isTopActive = !isExternal && item.view && item.view === currentView;
             return (
-              <div key={item.label}>
-                <button
-                  onClick={() => {
-                    if (item.view) onViewChange(item.view);
-                    else if (item.expandable) toggleSection(item.label);
-                  }}
-                  className={`flex items-center justify-between px-2 py-1.5 w-full text-[14px] rounded-[4px] transition-colors tracking-[-0.28px] ${
-                    isTopActive
-                      ? "text-[#2552ED] bg-[#e4e6ea] dark:bg-[#252a3a] dark:text-[#6b9bff]"
-                      : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]"
-                  }`}
-                >
-                  <span>{item.label}</span>
-                  {item.hasAddIcon && (
-                    <div className="w-[20px] h-[20px] flex items-center justify-center">
-                      <svg className="w-[15px] h-[15px]" viewBox="0 0 15.1666 15.1666" fill="none">
-                        <path d={svgPathsReviews.p21d4a600} fill="#1976D2" />
-                      </svg>
-                    </div>
-                  )}
-                  {item.expandable && (
-                    <div className="w-[20px] h-[20px] flex items-center justify-center">
-                      {expandedSections[item.label] ? (
-                        <ChevronDown className="w-3 h-3 text-[#303030] dark:text-[#8b92a5]" />
-                      ) : (
-                        <svg className="w-[9px] h-[5px]" viewBox="0 0 9.01782 5.0176" fill="none">
-                          <path d={svgPathsReviews.p5ccaa80} fill="#303030" className="dark:fill-[#8b92a5]" />
-                        </svg>
-                      )}
-                    </div>
-                  )}
-                </button>
-                {/* Children (L2) */}
-                {item.children && expandedSections[item.label] && (
-                  <div className="flex flex-col gap-0.5 mt-0.5">
-                    {item.children.map(child => {
-                      const hasGrandchildren = child.children && child.children.length > 0;
-                      const isChildExpanded = expandedSections[child.label];
-                      const isChildDetailActive = child.view === "agent-detail" && currentView === "agent-detail" && child.agentSlug === selectedAgentSlug;
-                      return (
-                        <div key={child.label}>
-                          <button
-                            onClick={() => {
-                              if (child.view) onViewChange(child.view, child.agentSlug);
-                              else if (hasGrandchildren) toggleSection(child.label);
-                            }}
-                            className={`flex items-center justify-between w-full text-left px-2 pr-2 py-1.5 text-[13px] rounded-[4px] transition-colors tracking-[-0.26px] ${
-                              isChildDetailActive || (child.view && child.view === currentView && !child.agentSlug)
-                                ? "text-[#2552ED] bg-[#e4e6ea] dark:bg-[#252a3a] dark:text-[#6b9bff]"
-                                : "text-[#555] dark:text-[#9ba2b0] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]"
-                            }`}
-                          >
-                            <span>{child.label}</span>
-                            {hasGrandchildren && (
-                              <div className="w-[16px] h-[16px] flex items-center justify-center">
-                                {isChildExpanded ? (
-                                  <ChevronDown className="w-2.5 h-2.5 text-[#888] dark:text-[#6b7280]" />
-                                ) : (
-                                  <svg className="w-[7px] h-[4px]" viewBox="0 0 9.01782 5.0176" fill="none">
-                                    <path d={svgPathsReviews.p5ccaa80} fill="#888" className="dark:fill-[#6b7280]" />
-                                  </svg>
-                                )}
-                              </div>
-                            )}
-                          </button>
-                          {/* Grandchildren (L3) */}
-                          {hasGrandchildren && isChildExpanded && (
-                            <div className="flex flex-col gap-0.5 mt-0.5">
-                              {child.children!.map(gc => {
-                                const isGcActive = currentView === "agent-detail" && gc.agentSlug === selectedAgentSlug;
-                                return (
-                                <button
-                                  key={gc.label}
-                                  onClick={() => gc.view && onViewChange(gc.view, gc.agentSlug)}
-                                  className={`text-left pl-3 pr-2 py-1 text-[12px] rounded-[4px] transition-colors tracking-[-0.24px] ${
-                                    isGcActive
-                                      ? "text-[#2552ED] bg-[#e4e6ea] dark:bg-[#252a3a] dark:text-[#6b9bff]"
-                                      : "text-[#777] dark:text-[#6b7280] hover:text-[#212121] dark:hover:text-[#e4e4e4] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]"
-                                  }`}
-                                >
-                                  {gc.label}
-                                </button>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+              <button
+                key={item.label}
+                type="button"
+                disabled={isExternal && reportsHandoffShimmer}
+                aria-busy={isExternal ? reportsHandoffShimmer : undefined}
+                onClick={() => {
+                  if (isExternal) startReportsHandoff();
+                  else if (item.view) onViewChange(item.view);
+                }}
+                className={`flex items-center justify-between px-2 py-2 w-full text-[14px] rounded-[4px] transition-colors tracking-[-0.28px] disabled:cursor-wait disabled:opacity-100 ${
+                  isTopActive
+                    ? "text-[#212121] dark:text-[#e4e4e4] bg-[#dce5ff] dark:bg-[#1e2d5e]"
+                    : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]"
+                }`}
+              >
+                {isExternal && reportsHandoffShimmer ? (
+                  <span className="flex w-full items-center justify-between gap-2 min-h-[20px]">
+                    <span className="l2-nav-reports-shimmer-line h-3 flex-1 max-w-[120px] rounded-[4px]" />
+                    <span className="l2-nav-reports-shimmer-icon h-3.5 w-3.5 shrink-0 rounded-[4px]" aria-hidden />
+                  </span>
+                ) : (
+                  <>
+                    <span>{item.label}</span>
+                    {isExternal && (
+                      <ExternalLink className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" aria-hidden />
+                    )}
+                  </>
                 )}
-              </div>
+              </button>
             );
           })}
         </div>

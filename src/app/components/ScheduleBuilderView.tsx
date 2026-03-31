@@ -792,7 +792,7 @@ export function ScheduleBuilderView({ onBack }: ScheduleBuilderViewProps) {
   const currentStep = dynamicSteps.find(s => s.id === activeStep);
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300 rounded-tr-[8px]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300">
       {/* Header */}
       <div className="shrink-0 h-[52px] flex items-center justify-between px-4 border-b border-[#eaeaea] dark:border-[#2e3340]">
         <div className="flex items-center gap-3">
