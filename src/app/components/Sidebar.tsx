@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import {
-  ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Palette, Clock, Sparkles, ExternalLink,
+  ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Clock, Sparkles, ExternalLink, Keyboard,
 } from "lucide-react";
 import {
   House, ChatDots, MapPin, Star, Gift, CurrencyDollar,
@@ -41,22 +41,30 @@ const iconStripItems: { label: string; Icon: React.ElementType }[] = [
   { label: "Ticketing",    Icon: Ticket         },
   { label: "Contacts",     Icon: Users          },
   { label: "Campaigns",    Icon: MegaphoneSimple},
-  { label: "Reports",      Icon: Globe          },
+  { label: "Competitors",  Icon: Globe          },
   { label: "Insights",     Icon: Lightbulb      },
-  { label: "Competitors",  Icon: ChartBar       },
+  { label: "Reports",      Icon: ChartBar       },
 ];
 
 /* ═══════════════════════════════════════════
    Icon Strip (L1 nav rail) – exported separately
    ═══════════════════════════════════════════ */
+/** Default Phosphor glyph size (18px − 10%). */
+const L1_STRIP_ICON_SIZE = 16.2;
+/** Stroke weight on Phosphor roots (inherits to paths; thickens regular/fill silhouettes). */
+const L1_STRIP_ICON_STROKE_PX = 1.2;
+/** Bottom Lucide controls: 14px − 10%. */
+const L1_STRIP_AUX_ICON_PX = 12.6;
+
 interface IconStripProps {
   currentView: AppView;
   onViewChange: (view: AppView) => void;
-  /** Icon size in px. Defaults to 18. */
+  /** Icon size in px. Defaults to `L1_STRIP_ICON_SIZE` (16.2). */
   iconSize?: number;
+  onOpenKeyboardShortcuts?: () => void;
 }
 
-export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStripProps) {
+export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_SIZE, onOpenKeyboardShortcuts }: IconStripProps) {
   const [activeIcon, setActiveIcon] = useState("Home");
   const [profileOpen, setProfileOpen] = useState(false);
   // Portal tooltip — fixed position so it escapes overflow-y: auto clipping
@@ -94,7 +102,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
     else if (currentView === "competitors") setActiveIcon("Competitors");
     else if (currentView === "dashboard" || currentView === "shared-by-me") setActiveIcon("Reports");
     else if (currentView === "agents-monitor" || currentView === "agents-builder" || currentView === "agent-detail" || currentView === "agents-onboarding" || currentView === "birdai-reports") setActiveIcon("Agents");
-    // storybook / scheduled-deliveries / schedule-builder: no icon mapping
+    // scheduled-deliveries / schedule-builder: no icon mapping
   }, [currentView]);
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,7 +133,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
     <div className="w-[66px] bg-[#e0e5eb] dark:bg-[#181b22] flex flex-col items-center shrink-0 transition-colors duration-300" data-no-print>
       {/* Birdeye logo */}
       <div className="h-[56px] w-[55px] flex items-center justify-center shrink-0">
-        <svg width="19.5" height="18.75" viewBox="0 0 19.5 18.75" fill="none">
+        <svg width="17.55" height="16.875" viewBox="0 0 19.5 18.75" fill="none">
           <path clipRule="evenodd" d={svgPaths.p23fcc000} fill="#2552ED" fillRule="evenodd" />
         </svg>
       </div>
@@ -166,6 +174,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
               <Icon
                 size={iconSize}
                 weight={isActive ? "fill" : "regular"}
+                stroke="currentColor"
+                strokeWidth={L1_STRIP_ICON_STROKE_PX}
                 className={`transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] ${
                   isActive
                     ? "text-[#1E44CC] dark:text-[#2952E3]"
@@ -188,14 +198,24 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
               : "hover:bg-[#d0d5dc] dark:hover:bg-[#2e3340]"
           }`}
         >
-          <Sparkles className={`w-[14px] h-[14px] ${currentView === "agents-onboarding" ? "text-[#2552ED]" : "text-[#555] dark:text-[#8b92a5]"}`} />
+          <Sparkles
+            width={L1_STRIP_AUX_ICON_PX}
+            height={L1_STRIP_AUX_ICON_PX}
+            strokeWidth={L1_STRIP_ICON_STROKE_PX}
+            className={currentView === "agents-onboarding" ? "text-[#2552ED]" : "text-[#555] dark:text-[#8b92a5]"}
+          />
         </button>
 
         {/* Settings gear */}
         <button
           className="w-[34px] h-[34px] flex items-center justify-center rounded-full hover:bg-[#d0d5dc] dark:hover:bg-[#2e3340] transition-colors"
         >
-          <Settings className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" />
+          <Settings
+            width={L1_STRIP_AUX_ICON_PX}
+            height={L1_STRIP_AUX_ICON_PX}
+            strokeWidth={L1_STRIP_ICON_STROKE_PX}
+            className="text-[#555] dark:text-[#8b92a5]"
+          />
         </button>
 
         <MonitorNotificationsTrigger />
@@ -295,22 +315,20 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
                         <Settings className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
                         Settings
                       </button>
-                      {/* Component showcase */}
-                      <button
-                        onClick={() => {
-                          onViewChange("storybook");
-                          setProfileOpen(false);
-                          setShowAppearance(false);
-                        }}
-                        className={`w-full flex items-center gap-3 px-4 py-2 text-[13px] transition-colors ${
-                          currentView === "storybook"
-                            ? "text-[#2552ED] bg-[#e8effe] dark:bg-[#1e2d5e]"
-                            : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
-                        }`}
-                      >
-                        <Palette className="w-4 h-4" style={{ color: currentView === "storybook" ? "#2552ED" : undefined }} />
-                        Component showcase
-                      </button>
+                      {onOpenKeyboardShortcuts && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onOpenKeyboardShortcuts();
+                            setProfileOpen(false);
+                            setShowAppearance(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+                        >
+                          <Keyboard className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
+                          Keyboard shortcuts
+                        </button>
+                      )}
                       {/* Switch appearance – navigates to sub-panel */}
                       <button
                         onClick={() => setShowAppearance(true)}
@@ -449,7 +467,6 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
 
   const [dashboardExpanded, setDashboardExpanded] = useState<Record<string, boolean>>(() => dashboardExpandedInit);
   const [reportExpanded, setReportExpanded] = useState<Record<string, boolean>>(() => reportExpandedInit);
-  const [automationReportsOpen, setAutomationReportsOpen] = useState(true);
 
   const toggleDashboard = (label: string) =>
     setDashboardExpanded(prev => ({ ...prev, [label]: !prev[label] }));
@@ -565,42 +582,6 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
         {/* Product report catalogs (Listings, Social, …) — no Agent Reports parent */}
         <div className="mt-2 flex flex-col gap-1">
           {reportCatalogSections.map(renderReportSection)}
-        </div>
-
-        {/* Automation reports — scheduled / automation */}
-        <div className="mt-2">
-          <button
-            type="button"
-            onClick={() => setAutomationReportsOpen(o => !o)}
-            className={SECTION_HEADER}
-            style={{ fontWeight: 400 }}
-          >
-            <span>Automation reports</span>
-            {automationReportsOpen
-              ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-              : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-            }
-          </button>
-          {automationReportsOpen && (
-            <div className="flex flex-col gap-1">
-              <button
-                type="button"
-                onClick={() => onViewChange("agent-detail", "scheduled-reports")}
-                className={CHILD_INACTIVE}
-                style={{ fontWeight: 300 }}
-              >
-                Scheduled reports
-              </button>
-              <button
-                type="button"
-                onClick={() => onViewChange("agent-detail", "automation")}
-                className={CHILD_INACTIVE}
-                style={{ fontWeight: 300 }}
-              >
-                Automation agents
-              </button>
-            </div>
-          )}
         </div>
 
       </div>
@@ -997,7 +978,7 @@ interface MynaAiL2NavItem {
   openReportingExternal?: boolean;
 }
 
-/** Myna AI L2: Monitor and Reports (external). Scheduled/automation lives under Reports → Automation reports. */
+/** Myna AI L2: Monitor and Reports (external). */
 const mynaAiL2NavItems: MynaAiL2NavItem[] = [
   { label: "Monitor", view: "agents-monitor" as AppView },
   { label: "Reports", openReportingExternal: true },
@@ -1069,6 +1050,8 @@ export function AgentsL2NavPanel({ currentView, onViewChange, selectedAgentSlug:
     </div>
   );
 }
+
+export { MynaConversationsL2NavPanel } from "./MynaConversationsL2NavPanel";
 
 /* ═══════════════════════════════════════════
    Legacy combined Sidebar export (backward compat)

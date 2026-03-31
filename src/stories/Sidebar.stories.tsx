@@ -32,7 +32,7 @@ const VIEW_OPTIONS: AppView[] = [
 ];
 
 const VIEW_LABELS: Record<string, string> = {
-  "business-overview":     "Business overview (no L2)",
+  "business-overview":     "Overview (no L2)",
   "agents-monitor":        "Myna AI — Monitor",
   "birdai-reports":        "Myna AI — Reports (in-app)",
   "dashboard":             "Reports — Dashboard",
@@ -94,8 +94,8 @@ const meta: Meta = {
     },
     iconSize: {
       name: "Icon size (px)",
-      description: "Phosphor icon size. Default is 18px.",
-      control: { type: "range", min: 12, max: 28, step: 1 },
+      description: "Phosphor icon size. Default is 16.2px (10% under 18px).",
+      control: { type: "range", min: 12, max: 28, step: 0.1 },
     },
   },
 };
@@ -108,7 +108,7 @@ type Story = StoryObj<{ currentView: AppView; iconSize: number }>;
    ══════════════════════════════════════════════════════ */
 export const IconStripOnly: Story = {
   name: "Icon Strip",
-  args: { currentView: "agents-monitor", iconSize: 18 },
+    args: { currentView: "agents-monitor", iconSize: 16.2 },
   render: ({ currentView: argView, iconSize }) => {
     const [view, setView] = useState<AppView>(argView);
     useEffect(() => { setView(argView); }, [argView]);
@@ -127,7 +127,7 @@ export const IconStripOnly: Story = {
    ══════════════════════════════════════════════════════ */
 export const SidebarCombined: Story = {
   name: "Sidebar",
-  args: { currentView: "dashboard", iconSize: 18 },
+    args: { currentView: "dashboard", iconSize: 16.2 },
   render: ({ currentView: argView, iconSize }) => {
     const [view, setView] = useState<AppView>(argView);
     useEffect(() => { setView(argView); }, [argView]);

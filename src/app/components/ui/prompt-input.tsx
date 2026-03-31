@@ -130,7 +130,10 @@ const PromptInputActions = React.forwardRef<
     <div
       ref={ref}
       data-slot="prompt-input-actions"
-      className={cn("flex items-center justify-between px-2 pb-2", className)}
+      className={cn(
+        "flex w-full min-w-0 items-center justify-between gap-2 px-2 pb-2",
+        className,
+      )}
       {...props}
     >
       {children}
@@ -172,6 +175,10 @@ PromptInputAction.displayName = "PromptInputAction";
 /** Apply to `PromptInputAction` for Myna’s circular gradient send. Documented in **UI / PromptInput → Branded send (Myna)**. */
 export const PROMPT_INPUT_BRANDED_SEND_CLASSNAME =
   "rounded-full !bg-gradient-to-r from-[#9970D7] to-[#2552ED] !text-white shadow-sm hover:opacity-95 hover:!text-white disabled:opacity-40 disabled:hover:opacity-40 p-2";
+
+/** Circular primary send/stop layout for prompt-kit–style composers (pair with `Button` variant `default`). */
+export const PROMPT_INPUT_PRIMARY_ICON_SEND_CLASSNAME =
+  "size-8 shrink-0 rounded-full p-0 shadow-sm";
 
 export {
   PromptInput,

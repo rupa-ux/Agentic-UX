@@ -51,19 +51,30 @@ export const FOOTER_ROW_CLS    = `${ROW} ${HOVER} text-[#212121] dark:text-[#e4e
 /* ─────────────────────────────────────────────────────
    Types
    ───────────────────────────────────────────────────── */
+/** String = label and key are the same (legacy panels). Object = visible label + stable key (e.g. conversation id). */
+export type L2SectionChild = string | { label: string; key: string };
+
 export interface L2Section {
   label: string;
-  children: string[];
+  children: L2SectionChild[];
+}
+
+function l2ChildParts(c: L2SectionChild): { label: string; key: string } {
+  return typeof c === "string" ? { label: c, key: c } : c;
 }
 
 export interface L2HeaderAction {
   label: string;
+  onClick?: () => void;
 }
 
 export interface L2FooterLink {
   label: string;
   external?: boolean;
 }
+
+/** Prefix for `flatNavItems` active keys: `flatNav/{key}`. */
+export const L2_FLAT_NAV_KEY_PREFIX = "flatNav";
 
 export interface L2NavLayoutProps {
   /** Top row with a + button (e.g. "Send a review request") */
@@ -72,6 +83,11 @@ export interface L2NavLayoutProps {
   headerActionColor?: "blue" | "green";
   /** Flat clickable items rendered BEFORE sections (key = "standalone/{label}") */
   standaloneItems?: string[];
+  /**
+   * Flat rows with stable keys (no section header). Active key = `flatNav/{key}`.
+   * Renders after standalone items and before collapsible sections.
+   */
+  flatNavItems?: { label: string; key: string }[];
   /** Collapsible sections */
   sections: L2Section[];
   /** Single bottom row, optionally with an external-link icon */
@@ -101,6 +117,7 @@ export function L2NavLayout({
   headerAction,
   headerActionColor = "blue",
   standaloneItems,
+  flatNavItems,
   sections,
   footerLink,
   defaultActive,
@@ -116,11 +133,11 @@ export function L2NavLayout({
   );
 
   // Active item — auto-resolve to first child of expanded section if not provided
+  const defaultSection = sections.find(s => s.label === defaultExpandedLabel);
+  const firstChild = defaultSection?.children[0];
+  const firstKey = firstChild != null ? l2ChildParts(firstChild).key : null;
   const resolvedDefault =
-    defaultActive ??
-    sections.find(s => s.label === defaultExpandedLabel)?.children[0]
-      ? `${defaultExpandedLabel}/${sections.find(s => s.label === defaultExpandedLabel)?.children[0]}`
-      : "";
+    defaultActive ?? (firstKey != null ? `${defaultExpandedLabel}/${firstKey}` : "");
 
   const [internalActive, setInternalActive] = useState(resolvedDefault);
   const active = controlledActive ?? internalActive;
@@ -141,7 +158,12 @@ export function L2NavLayout({
 
         {/* Header action */}
         {headerAction && (
-          <button className={`${FOOTER_ROW_CLS} mb-[6px]`} style={{ fontSize: 14 }}>
+          <button
+            type="button"
+            onClick={headerAction.onClick}
+            className={`${FOOTER_ROW_CLS} mb-[6px]`}
+            style={{ fontSize: 14 }}
+          >
             <span className="text-[14px]">{headerAction.label}</span>
             <div className={`w-[18px] h-[18px] ${plusBg} rounded-full flex items-center justify-center shrink-0`}>
               <span className="text-white text-[12px] leading-none select-none">+</span>
@@ -165,6 +187,22 @@ export function L2NavLayout({
           );
         })}
 
+        {flatNavItems?.map(({ label: rowLabel, key: itemKey }) => {
+          const compoundKey = `${L2_FLAT_NAV_KEY_PREFIX}/${itemKey}`;
+          const isActive = active === compoundKey;
+          return (
+            <button
+              key={itemKey}
+              type="button"
+              onClick={() => activate(compoundKey)}
+              className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
+              style={{ fontWeight: isActive ? 400 : 300 }}
+            >
+              {rowLabel}
+            </button>
+          );
+        })}
+
         {/* Sections */}
         {sections.map(section => (
           <div key={section.label}>
@@ -181,16 +219,17 @@ export function L2NavLayout({
             </button>
 
             {expanded[section.label] && section.children.map(child => {
-              const key = `${section.label}/${child}`;
-              const isActive = active === key;
+              const { label: childLabel, key: childKey } = l2ChildParts(child);
+              const compoundKey = `${section.label}/${childKey}`;
+              const isActive = active === compoundKey;
               return (
                 <button
-                  key={child}
-                  onClick={() => activate(key)}
+                  key={`${section.label}/${childKey}`}
+                  onClick={() => activate(compoundKey)}
                   className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
                   style={{ fontWeight: isActive ? 400 : 300 }}
                 >
-                  {child}
+                  {childLabel}
                 </button>
               );
             })}

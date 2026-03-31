@@ -36,7 +36,13 @@ export function MonitorNotificationsTrigger() {
             "data-[state=open]:bg-[#d0d5dc] dark:data-[state=open]:bg-[#2e3340]",
           )}
         >
-          <Bell className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" aria-hidden />
+          <Bell
+            width={12.6}
+            height={12.6}
+            strokeWidth={1.2}
+            className="text-[#555] dark:text-[#8b92a5]"
+            aria-hidden
+          />
           {unresolvedCount > 0 && (
             <span
               className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center px-0.5 bg-destructive text-destructive-foreground text-[9px] rounded-full tabular-nums"

@@ -14,6 +14,7 @@ import {
   PANEL_WIDTH_MIN,
   useRightChatPanelWidth,
 } from "@/app/hooks/useRightChatPanelWidth";
+import { HorizontalResizeHandle } from "@/app/components/layout/HorizontalResizeHandle";
 
 const SLIDE_MS = 280;
 const SLIDE_EASING = "cubic-bezier(0.4, 0, 0.2, 1)";
@@ -24,6 +25,11 @@ export type ResizableRightChatPanelProps = {
   /** Row width (L2 + main + panel flex area) for clamping */
   layoutRowWidth: number;
   className?: string;
+  /**
+   * When true, the panel fills the chat row (expanded Myna workspace). Same React subtree as docked
+   * mode so the chat panel does not remount when switching layouts.
+   */
+  workspaceExpanded?: boolean;
 };
 
 /**
@@ -35,6 +41,7 @@ export function ResizableRightChatPanel({
   children,
   layoutRowWidth,
   className,
+  workspaceExpanded = false,
 }: ResizableRightChatPanelProps) {
   const { width, setWidth, widthRef } = useRightChatPanelWidth(layoutRowWidth);
   const outerRef = useRef<HTMLDivElement>(null);
@@ -56,10 +63,24 @@ export function ResizableRightChatPanel({
 
   useLayoutEffect(() => {
     if (draggingRef.current) return;
+    const outer = outerRef.current;
+    const inner = innerRef.current;
+    if (!outer || !inner) return;
+
+    if (workspaceExpanded) {
+      outer.style.flex = "1 1 0%";
+      outer.style.minWidth = "0";
+      outer.style.width = "";
+      inner.style.transform = "translateX(0)";
+      return;
+    }
+
+    outer.style.flex = "";
+    outer.style.minWidth = "";
     const w = open ? widthRef.current : 0;
     applyOuterWidth(w);
     applyInnerTransform(open);
-  }, [open, width, applyOuterWidth, applyInnerTransform]);
+  }, [open, width, workspaceExpanded, applyOuterWidth, applyInnerTransform]);
 
   useEffect(() => {
     const outer = outerRef.current;
@@ -67,15 +88,21 @@ export function ResizableRightChatPanel({
     if (!outer || !inner) return;
     if (draggingRef.current) return;
 
+    if (workspaceExpanded) {
+      outer.style.transition = "none";
+      inner.style.transition = "none";
+      return;
+    }
+
     const t = isDragging ? "none" : `width ${SLIDE_MS}ms ${SLIDE_EASING}`;
     const t2 = isDragging ? "none" : `transform ${SLIDE_MS}ms ${SLIDE_EASING}`;
     outer.style.transition = t;
     inner.style.transition = t2;
-  }, [open, isDragging]);
+  }, [open, isDragging, workspaceExpanded]);
 
   const onResizePointerDown = useCallback(
     (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (!open) return;
+      if (!open || workspaceExpanded) return;
       e.preventDefault();
       e.stopPropagation();
       draggingRef.current = true;
@@ -125,20 +152,21 @@ export function ResizableRightChatPanel({
       window.addEventListener("pointerup", onUp);
       window.addEventListener("pointercancel", onUp);
     },
-    [open, applyOuterWidth, layoutRowWidth, setWidth, widthRef]
+    [open, workspaceExpanded, applyOuterWidth, layoutRowWidth, setWidth, widthRef]
   );
 
   const onHandleDoubleClick = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
+      if (workspaceExpanded) return;
       const rowW = layoutRowWidth || outerRef.current?.parentElement?.clientWidth || 0;
       const target = clampPanelWidth(PANEL_WIDTH_DEFAULT, rowW);
       widthRef.current = target;
       setWidth(target);
       if (open) applyOuterWidth(target);
     },
-    [applyOuterWidth, layoutRowWidth, open, setWidth, widthRef]
+    [applyOuterWidth, layoutRowWidth, open, setWidth, widthRef, workspaceExpanded]
   );
 
   const maxW = maxPanelWidthForRow(layoutRowWidth);
@@ -147,31 +175,36 @@ export function ResizableRightChatPanel({
     <div
       ref={outerRef}
       className={[
-        "relative shrink-0 overflow-hidden",
-        "shadow-[-12px_0_24px_-12px_rgba(0,0,0,0.1)] dark:shadow-[-12px_0_24px_-12px_rgba(0,0,0,0.45)]",
+        "relative overflow-hidden",
+        workspaceExpanded ? "min-w-0 flex-1" : "shrink-0",
         className ?? "",
       ].join(" ")}
-      style={{ width: 0 }}
-      aria-hidden={!open}
+      style={{ width: workspaceExpanded ? undefined : 0 }}
+      aria-hidden={!open && !workspaceExpanded}
     >
       <div
         ref={innerRef}
-        className="flex h-full min-h-0 w-full flex-col border-l border-[#e5e9f0] bg-white dark:border-[#333a47] dark:bg-[#1a1d24]"
+        className={[
+          "relative flex h-full min-h-0 w-full flex-col bg-white dark:bg-[#1a1d24]",
+          workspaceExpanded
+            ? ""
+            : "rounded-tl-lg border-l border-t border-[#e5e9f0] dark:border-[#333a47]",
+        ].join(" ")}
         style={{ transform: "translateX(100%)" }}
       >
-        <div
-          role="separator"
-          aria-orientation="vertical"
-          aria-valuenow={Math.round(width)}
-          aria-valuemin={PANEL_WIDTH_MIN}
-          aria-valuemax={Math.round(maxW)}
-          className="absolute left-0 top-0 z-10 flex w-2 -translate-x-1/2 cursor-col-resize items-stretch justify-center"
-          onPointerDown={onResizePointerDown}
-          onDoubleClick={onHandleDoubleClick}
-        >
-          <span className="w-px shrink-0 bg-[#e5e9f0] opacity-80 dark:bg-[#333a47]" />
+        {!workspaceExpanded ? (
+          <HorizontalResizeHandle
+            aria-label="Resize chat panel"
+            aria-valuenow={Math.round(width)}
+            aria-valuemin={PANEL_WIDTH_MIN}
+            aria-valuemax={Math.round(maxW)}
+            onPointerDown={onResizePointerDown}
+            onDoubleClick={onHandleDoubleClick}
+          />
+        ) : null}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          {children}
         </div>
-        <div className="flex min-h-0 flex-1 flex-col pl-2">{children}</div>
       </div>
     </div>
   );

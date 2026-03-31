@@ -1117,9 +1117,7 @@ export function AICustomizePanel({ onClose, themeColor, onThemeColorChange, show
                 {messages.map(msg => (
                   <div key={msg.id}>
                     {msg.role === "assistant" ? (
-                      <div className="flex gap-2">
-                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-[#9970D7] to-[#2552ED] shrink-0 mt-0.5" />
-                        <div className="flex-1">
+                      <div>
                           <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4] whitespace-pre-line leading-relaxed">{msg.content}</p>
                           {msg.colorSuggestions && (
                             <div className="flex flex-wrap gap-2 mt-3">
@@ -1149,7 +1147,6 @@ export function AICustomizePanel({ onClose, themeColor, onThemeColorChange, show
                               ))}
                             </div>
                           )}
-                        </div>
                       </div>
                     ) : (
                       <div className="flex justify-end">
@@ -1161,13 +1158,10 @@ export function AICustomizePanel({ onClose, themeColor, onThemeColorChange, show
                   </div>
                 ))}
                 {isTyping && (
-                  <div className="flex gap-2">
-                    <div className="w-5 h-5 rounded-full bg-gradient-to-r from-[#9970D7] to-[#2552ED] shrink-0" />
-                    <div className="flex gap-1 items-center">
+                  <div className="flex gap-1 items-center">
                       <div className="w-2 h-2 bg-[#ccc] dark:bg-[#4d5568] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                       <div className="w-2 h-2 bg-[#ccc] dark:bg-[#4d5568] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
                       <div className="w-2 h-2 bg-[#ccc] dark:bg-[#4d5568] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                    </div>
                   </div>
                 )}
                 <div ref={messagesEndRef} />

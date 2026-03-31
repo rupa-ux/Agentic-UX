@@ -1,4 +1,8 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, type RefObject } from "react";
+import {
+  INBOX_SHORTCUT_EVENT,
+  type InboxShortcutAction,
+} from "@/app/shortcuts/events";
 import {
   Search,
   SlidersHorizontal,
@@ -378,9 +382,8 @@ function ChatBubble({ msg }: { msg: ChatMessage }) {
 /* ═════════════════════════════════════
    Composer Bar
    ═════════════════════════════════════ */
-function Composer() {
+function Composer({ textareaRef }: { textareaRef: RefObject<HTMLTextAreaElement | null> }) {
   const [message, setMessage] = useState("");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -388,7 +391,7 @@ function Composer() {
       textareaRef.current.style.height =
         Math.min(textareaRef.current.scrollHeight, 120) + "px";
     }
-  }, [message]);
+  }, [message, textareaRef]);
 
   return (
     <div className="border-t border-[#eaeaea] dark:border-[#333a47] bg-white dark:bg-[#1e2229] px-5 py-3 transition-colors duration-300">
@@ -565,14 +568,6 @@ function InboxNav() {
             Saved filters
           </button>
 
-          {/* Reports */}
-          <button className="flex items-center justify-between px-2 py-1.5 w-full text-[14px] text-[#212121] dark:text-[#e4e4e4] rounded-[4px] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340] transition-colors tracking-[-0.28px]">
-            <span>Reports</span>
-            <div className="w-[20px] h-[20px] flex items-center justify-center">
-              <ChevronRight className="w-3 h-3 text-[#303030] dark:text-[#8b92a5]" />
-            </div>
-          </button>
-
           {/* Agents */}
           <button className="flex items-center justify-between px-2 py-1.5 w-full text-[14px] text-[#212121] dark:text-[#e4e4e4] rounded-[4px] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340] transition-colors tracking-[-0.28px]">
             <span>Agents</span>
@@ -608,6 +603,24 @@ export function InboxView() {
   const [statusOpen, setStatusOpen] = useState(false);
   const detail = getDetail(selectedId);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const conversationSearchRef = useRef<HTMLInputElement>(null);
+  const composeTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const onShortcut = (e: Event) => {
+      const detail = (e as CustomEvent<{ action: InboxShortcutAction }>).detail;
+      if (!detail) return;
+      if (detail.action === "focus-compose") {
+        composeTextareaRef.current?.focus();
+      }
+      if (detail.action === "focus-search") {
+        conversationSearchRef.current?.focus();
+        conversationSearchRef.current?.select();
+      }
+    };
+    window.addEventListener(INBOX_SHORTCUT_EVENT, onShortcut);
+    return () => window.removeEventListener(INBOX_SHORTCUT_EVENT, onShortcut);
+  }, []);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -687,6 +700,18 @@ export function InboxView() {
           </div>
 
           {/* Search bar */}
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2 top-1/2 size-[14px] -translate-y-1/2 text-[#555] dark:text-[#8b92a5]" aria-hidden />
+            <input
+              ref={conversationSearchRef}
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search conversations"
+              className="h-9 w-full rounded-lg border border-[#e5e9f0] bg-[#f8f9fa] py-0 pr-2 pl-8 text-[14px] text-[#212121] outline-none transition-colors placeholder:text-[#999] focus:border-[#2552ED] focus:ring-1 focus:ring-[#2552ED] dark:border-[#333a47] dark:bg-[#262b35] dark:text-[#e4e4e4] dark:placeholder:text-[#6b7280]"
+              aria-label="Search conversations"
+            />
+          </div>
         </div>
 
         {/* Conversation list */}
@@ -759,7 +784,7 @@ export function InboxView() {
         </div>
 
         {/* Composer */}
-        <Composer />
+        <Composer textareaRef={composeTextareaRef} />
       </div>
     </div>
   );

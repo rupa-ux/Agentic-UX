@@ -1,4 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  REVIEWS_SHORTCUT_EVENT,
+  type ReviewsShortcutAction,
+} from "@/app/shortcuts/events";
 import { Search, ChevronDown, MoreVertical, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { FunnelSimple } from "@phosphor-icons/react";
 import svgPaths from "../../imports/svg-k7qrt1366a";
@@ -485,6 +489,27 @@ export function ReviewsView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const [filters, setFilters] = useState<FilterItem[]>(reviewFilters);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const aiReplyButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const onShortcut = (e: Event) => {
+      const detail = (e as CustomEvent<{ action: ReviewsShortcutAction }>).detail;
+      if (!detail) return;
+      if (detail.action === "focus-search") {
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+      }
+      if (detail.action === "toggle-filters") {
+        setFilterPanelOpen((open) => !open);
+      }
+      if (detail.action === "focus-ai-reply") {
+        aiReplyButtonRef.current?.focus();
+      }
+    };
+    window.addEventListener(REVIEWS_SHORTCUT_EVENT, onShortcut);
+    return () => window.removeEventListener(REVIEWS_SHORTCUT_EVENT, onShortcut);
+  }, []);
 
   const filteredReviews = mockReviews.filter((review) =>
     searchQuery
@@ -521,10 +546,18 @@ export function ReviewsView() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Search icon button */}
-            <button className="h-[36px] w-[36px] bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] flex items-center justify-center hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
-              <Search className="w-[14px] h-[14px] text-[#303030] dark:text-[#8b92a5]" />
-            </button>
+            <div className="relative h-[36px] min-w-[200px] max-w-[280px]">
+              <Search className="pointer-events-none absolute left-2 top-1/2 size-[14px] -translate-y-1/2 text-[#303030] dark:text-[#8b92a5]" aria-hidden />
+              <input
+                ref={searchInputRef}
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search reviews"
+                className="h-full w-full rounded-[8px] border border-[#e5e9f0] bg-white py-0 pr-2 pl-8 text-[14px] text-[#212121] outline-none transition-colors placeholder:text-[#757575] focus:border-[#2552ED] focus:ring-1 focus:ring-[#2552ED] dark:border-[#333a47] dark:bg-[#262b35] dark:text-[#e4e4e4] dark:placeholder:text-[#8b92a5]"
+                aria-label="Search reviews"
+              />
+            </div>
 
             {/* Recent reviews dropdown */}
             <button className="h-[36px] px-2 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] flex items-center gap-2 text-[14px] text-[#757575] dark:text-[#8b92a5] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
@@ -540,7 +573,12 @@ export function ReviewsView() {
             </button>
 
             {/* AI button */}
-            <button className="h-[36px] w-[36px] bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] flex items-center justify-center hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
+            <button
+              ref={aiReplyButtonRef}
+              type="button"
+              title="AI reply assistant"
+              className="flex h-[36px] w-[36px] items-center justify-center rounded-[8px] border border-[#e5e9f0] bg-white transition-colors hover:bg-[#f5f5f5] focus-visible:ring-2 focus-visible:ring-[#2552ED] focus-visible:outline-none dark:border-[#333a47] dark:bg-[#262b35] dark:hover:bg-[#2e3340]"
+            >
               <svg className="w-[14px] h-[14px]" viewBox="0 0 16.6975 14.8252" fill="none">
                 <path d={svgPaths.p33170700} fill="#6834B7" />
                 <path d={svgPaths.p2d8f3b80} fill="#6834B7" />

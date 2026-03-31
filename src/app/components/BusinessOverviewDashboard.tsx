@@ -170,7 +170,8 @@ const insightRows = [
 // ─── Main Component ───
 export default function BusinessOverviewDashboard() {
   return (
-    <div className="bg-background h-full min-h-0 overflow-y-auto">
+    <div className="h-full min-h-0 overflow-hidden rounded-tl-lg bg-background">
+      <div className="h-full min-h-0 overflow-y-auto">
       <div className="max-w-5xl mx-auto px-6 py-8 flex flex-col gap-5">
 
         {/* 1. Header */}
@@ -521,6 +522,7 @@ export default function BusinessOverviewDashboard() {
           </div>
         </SectionCard>
 
+      </div>
       </div>
     </div>
   );

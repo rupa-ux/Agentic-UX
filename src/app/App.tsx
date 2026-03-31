@@ -2,9 +2,9 @@ import {
   IconStrip, L2NavPanel, ReviewsL2NavPanel, SocialL2NavPanel, SearchAIL2NavPanel,
   ContactsL2NavPanel, AgentsL2NavPanel, ListingsL2NavPanel, TicketingL2NavPanel,
   CampaignsL2NavPanel, SurveysL2NavPanel, InsightsL2NavPanel, CompetitorsL2NavPanel,
-  InboxL2NavPanel,
+  InboxL2NavPanel, MynaConversationsL2NavPanel,
 } from "./components/Sidebar";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Toaster } from "sonner";
 import { MonitorNotificationsProvider } from "./context/MonitorNotificationsContext";
 import { TopBar } from "./components/TopBar";
@@ -28,6 +28,11 @@ import { APP_MAIN_CONTENT_SHELL_CLASS } from "./components/layout/appShellClasse
 import { ResizableRightChatPanel } from "./components/layout/ResizableRightChatPanel";
 import { MynaChatPanel } from "./components/MynaChatPanel";
 import BusinessOverviewDashboard from "./components/BusinessOverviewDashboard";
+import { getAppViewTitle } from "./appViewTitle";
+import { l2KeyFromConversation } from "./myna/mynaL2NavKeys";
+import { useMynaConversations } from "./myna/useMynaConversations";
+import { ShortcutsModal } from "./shortcuts/ShortcutsModal";
+import { useShortcuts } from "./shortcuts/useShortcuts";
 
 export type AppView =
   | "business-overview"
@@ -59,19 +64,24 @@ export default function App() {
   const [editingDraft, setEditingDraft] = useState<DraftReport | null>(null);
   const [selectedAgentSlug, setSelectedAgentSlug] = useState<string>("");
 
-  const handleViewChange = (view: AppView, agentSlug?: string) => {
+  const handleViewChange = useCallback((view: AppView, agentSlug?: string) => {
+    if (view !== currentView) {
+      setMynaChatExpanded(false);
+    }
     setCurrentView(view);
     if (agentSlug) setSelectedAgentSlug(agentSlug);
-  };
+  }, [currentView]);
 
   const handleEditDraft = (draft: DraftReport) => {
     setEditingDraft(draft);
+    setMynaChatExpanded(false);
     setCurrentView("dashboard");
     setAiPanelOpen(true);
   };
 
   const handleViewReport = (_reportName: string) => {
     setEditingDraft(null);
+    setMynaChatExpanded(false);
     setCurrentView("dashboard");
     setAiPanelOpen(true);
   };
@@ -82,6 +92,64 @@ export default function App() {
   };
 
   const [mynaChatOpen, setMynaChatOpen] = useState(false);
+  const [mynaChatExpanded, setMynaChatExpanded] = useState(false);
+  const [mynaComposerFocusNonce, setMynaComposerFocusNonce] = useState(0);
+
+  const {
+    conversations,
+    activeConversationId,
+    setActiveConversationId,
+    activeConversation,
+    screenTitle,
+    appendUserAndAssistant,
+    createEmptyConversation,
+  } = useMynaConversations(getAppViewTitle(currentView));
+
+  useEffect(() => {
+    if (aiPanelOpen) setMynaChatExpanded(false);
+  }, [aiPanelOpen]);
+
+  useEffect(() => {
+    if (!mynaChatOpen) setMynaChatExpanded(false);
+  }, [mynaChatOpen]);
+
+  const mynaWorkspaceExpanded = mynaChatOpen && mynaChatExpanded && !aiPanelOpen;
+
+  const activeL2NavKey = useMemo(() => {
+    if (!activeConversation) return "";
+    return l2KeyFromConversation(activeConversation);
+  }, [activeConversation]);
+
+  const { shortcutsModalOpen, setShortcutsModalOpen } = useShortcuts({
+    currentView,
+    onNavigate: handleViewChange,
+    mynaChatOpen,
+    onMynaChatOpenChange: setMynaChatOpen,
+    aiPanelOpen,
+  });
+
+  /** ChatGPT-style: new thread opens in the side panel composer — no modal. */
+  const startNewMynaChat = useCallback(() => {
+    setMynaChatOpen(true);
+    createEmptyConversation();
+    setMynaComposerFocusNonce((n) => n + 1);
+  }, [createEmptyConversation]);
+
+  const mynaChatPanelEl = (
+    <MynaChatPanel
+      messages={activeConversation?.messages ?? []}
+      onSend={appendUserAndAssistant}
+      onClose={() => setMynaChatOpen(false)}
+      expanded={mynaChatExpanded}
+      onToggleExpand={() => setMynaChatExpanded((e) => !e)}
+      conversations={conversations}
+      activeConversationId={activeConversationId}
+      onSelectConversation={setActiveConversationId}
+      onOpenNewChat={startNewMynaChat}
+      composerFocusNonce={mynaComposerFocusNonce}
+    />
+  );
+
   const chatLayoutRef = useRef<HTMLDivElement>(null);
   const [chatLayoutWidth, setChatLayoutWidth] = useState(0);
 
@@ -119,12 +187,26 @@ export default function App() {
     v === "competitors";
 
   return (
-    <MonitorNotificationsProvider onNavigateToMonitor={() => setCurrentView("agents-monitor")}>
+    <MonitorNotificationsProvider
+      onNavigateToMonitor={() => {
+        setMynaChatExpanded(false);
+        setCurrentView("agents-monitor");
+      }}
+    >
     <div className="h-screen w-screen flex overflow-hidden">
+      <ShortcutsModal
+        open={shortcutsModalOpen}
+        onOpenChange={setShortcutsModalOpen}
+        currentView={currentView}
+      />
       <Toaster position="top-center" richColors />
 
       {/* L1 icon strip – full height on the far left */}
-      <IconStrip currentView={currentView} onViewChange={handleViewChange} />
+      <IconStrip
+        currentView={currentView}
+        onViewChange={handleViewChange}
+        onOpenKeyboardShortcuts={() => setShortcutsModalOpen(true)}
+      />
 
       {/* Everything to the right of the icon strip */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -139,57 +221,67 @@ export default function App() {
         {/* Below TopBar: L2 nav + main content side by side */}
         <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
 
+          {/* Myna fullscreen: conversation L2 replaces product L2 */}
+          {mynaWorkspaceExpanded && (
+            <MynaConversationsL2NavPanel
+              conversations={conversations}
+              activeItem={activeL2NavKey}
+              onSelectConversation={setActiveConversationId}
+              onCreateNewChat={startNewMynaChat}
+            />
+          )}
+
           {/* Default Reports L2 nav panel */}
-          {!aiPanelOpen && !hasOwnL2Panel(currentView) && (
+          {!aiPanelOpen && !mynaWorkspaceExpanded && !hasOwnL2Panel(currentView) && (
             <L2NavPanel currentView={currentView} onViewChange={handleViewChange} />
           )}
 
           {/* Reviews L2 nav panel */}
-          {!aiPanelOpen && currentView === "reviews" && (
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "reviews" && (
             <ReviewsL2NavPanel />
           )}
           {/* Social L2 nav panel */}
-          {!aiPanelOpen && currentView === "social" && (
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "social" && (
             <SocialL2NavPanel />
           )}
           {/* Search AI L2 nav panel */}
-          {!aiPanelOpen && currentView === "searchai" && (
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "searchai" && (
             <SearchAIL2NavPanel />
           )}
           {/* Contacts L2 nav panel */}
-          {!aiPanelOpen && currentView === "contacts" && (
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "contacts" && (
             <ContactsL2NavPanel />
           )}
           {/* Listings L2 nav panel */}
-          {!aiPanelOpen && currentView === "listings" && (
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "listings" && (
             <ListingsL2NavPanel />
           )}
           {/* Surveys L2 nav panel */}
-          {!aiPanelOpen && currentView === "surveys" && (
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "surveys" && (
             <SurveysL2NavPanel />
           )}
           {/* Ticketing L2 nav panel */}
-          {!aiPanelOpen && currentView === "ticketing" && (
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "ticketing" && (
             <TicketingL2NavPanel />
           )}
           {/* Campaigns L2 nav panel */}
-          {!aiPanelOpen && currentView === "campaigns" && (
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "campaigns" && (
             <CampaignsL2NavPanel />
           )}
           {/* Insights L2 nav panel */}
-          {!aiPanelOpen && currentView === "insights" && (
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "insights" && (
             <InsightsL2NavPanel />
           )}
           {/* Competitors L2 nav panel */}
-          {!aiPanelOpen && currentView === "competitors" && (
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "competitors" && (
             <CompetitorsL2NavPanel />
           )}
           {/* Inbox L2 nav panel */}
-          {!aiPanelOpen && currentView === "inbox" && (
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "inbox" && (
             <InboxL2NavPanel />
           )}
           {/* Agents L2 nav panel */}
-          {!aiPanelOpen && (currentView === "agents-monitor" || currentView === "agents-builder" || currentView === "agents-onboarding" || currentView === "agent-detail" || currentView === "birdai-reports") && (
+          {!aiPanelOpen && !mynaWorkspaceExpanded && (currentView === "agents-monitor" || currentView === "agents-builder" || currentView === "agents-onboarding" || currentView === "agent-detail" || currentView === "birdai-reports") && (
             <AgentsL2NavPanel currentView={currentView} onViewChange={handleViewChange} selectedAgentSlug={selectedAgentSlug} />
           )}
 
@@ -198,6 +290,7 @@ export default function App() {
             ref={chatLayoutRef}
             className="flex min-h-0 min-w-0 flex-1 overflow-hidden"
           >
+            {!mynaWorkspaceExpanded ? (
             <div
               className={`${APP_MAIN_CONTENT_SHELL_CLASS} min-h-0 min-w-[60%]`}
             >
@@ -288,8 +381,13 @@ export default function App() {
               />
             )}
             </div>
-            <ResizableRightChatPanel open={mynaChatOpen} layoutRowWidth={chatLayoutWidth}>
-              <MynaChatPanel onClose={() => setMynaChatOpen(false)} />
+            ) : null}
+            <ResizableRightChatPanel
+              open={mynaChatOpen}
+              workspaceExpanded={mynaWorkspaceExpanded}
+              layoutRowWidth={chatLayoutWidth}
+            >
+              {mynaChatPanelEl}
             </ResizableRightChatPanel>
           </div>
         </div>
