@@ -984,7 +984,7 @@ export function AgentsL2NavPanel({ currentView, onViewChange, selectedAgentSlug 
   };
 
   return (
-    <div className="w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#f0f1f5] dark:border-[#2e3340] rounded-tr-[8px] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300" data-no-print>
+    <div className="w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#f0f1f5] dark:border-[#2e3340] rounded-tl-[8px] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300" data-no-print>
       <div className="flex-1 overflow-y-auto px-2 pt-4 pb-2">
         <div className="flex flex-col gap-0.5">
           {agentsNavItems.map(item => {
