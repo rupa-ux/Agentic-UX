@@ -1,6 +1,6 @@
-# Birdeye — Share & Customize Flow
+# Myna AI
 
-UI prototype for the Birdeye Share and Customize flow.
+Myna AI — the intelligent assistant embedded across the Birdeye platform.
 Original Figma file: https://www.figma.com/design/khkMRKdBSWf0LF0NqAvoEe/Prototype-Share-and-Customize-Flow
 
 ---
