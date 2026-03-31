@@ -726,7 +726,7 @@ export function CompetitorsL2NavPanel() {
    Inbox L2 Nav Panel – custom (not using L2NavLayout)
    ═══════════════════════════════════════════ */
 
-const GREEN_BTN = "w-[18px] h-[18px] bg-[#4caf50] rounded-full flex items-center justify-center shrink-0";
+const GREEN_BTN = "w-[18px] h-[18px] bg-[#1E44CC] rounded-full flex items-center justify-center shrink-0";
 
 const inboxSections = [
   {
