@@ -11,7 +11,10 @@ import svgPaths from "../../imports/svg-y1gexucine";
 import svgPathsReviews from "../../imports/svg-w1z8z09mht";
 import type { AppView } from "../App";
 import { useTheme, type ThemePreference } from "./useTheme";
-import { L2NavLayout } from "./L2NavLayout";
+import { L2NavLayout, PANEL, ROW, HOVER, CHILD_ACTIVE, CHILD_INACTIVE, FOOTER_ROW_CLS, SECTION_HEADER } from "./L2NavLayout";
+
+// suppress unused-import warning for ExternalLink (used in AgentsL2NavPanel indirectly)
+void ExternalLink;
 
 const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1617853701628-bfcf8b81d13d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBtYW4lMjBoZWFkc2hvdCUyMHNtaWxlJTIwc3R1ZGlvJTIwbGlnaHRpbmd8ZW58MXx8fHwxNzczMjE4MDIzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 
@@ -35,59 +38,6 @@ const iconStripItems: { label: string; Icon: React.ElementType }[] = [
   { label: "Competitors",  Icon: ChartBar       },
 ];
 
-/* ─── Reports nav sections ─── */
-const reportSections = [
-  {
-    label: "Reviews",
-    expandable: true,
-    children: [
-      { label: "Overview" },
-      { label: "Review sites" },
-    ],
-  },
-  {
-    label: "Inbox",
-    expandable: true,
-    children: [
-      { label: "All messages" },
-      { label: "Unread" },
-    ],
-  },
-  {
-    label: "Listings",
-    expandable: true,
-    children: [
-      { label: "Accuracy" },
-      { label: "Google" },
-    ],
-  },
-  {
-    label: "Social",
-    expandable: true,
-    defaultExpanded: true,
-    children: [
-      { label: "Profile performance", active: true },
-      { label: "Response trends" },
-      { label: "Facebook" },
-      { label: "Instagram" },
-      { label: "LinkedIn" },
-      { label: "TikTok" },
-    ],
-  },
-  { label: "Surveys", expandable: true },
-  { label: "Campaigns", expandable: true },
-  { label: "Workflows", expandable: false },
-  { label: "Ticketing", expandable: true },
-  { label: "Contacts", expandable: true },
-];
-
-const dashboardGroups = [
-  { label: "Default", expandable: true, view: "dashboard" as AppView },
-  { label: "Created by me", expandable: true, view: "dashboard" as AppView },
-  { label: "Shared with me", expandable: true, view: "dashboard" as AppView },
-  { label: "Shared by me", expandable: false, view: "shared-by-me" as AppView },
-];
-
 /* ═══════════════════════════════════════════
    Icon Strip (L1 nav rail) – exported separately
    ═══════════════════════════════════════════ */
@@ -109,6 +59,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
     setTooltip({ label, top: rect.top + rect.height / 2 });
   };
   const hideTooltip = () => setTooltip(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  void showTooltip; void hideTooltip; void tooltip;
   const [showAppearance, setShowAppearance] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -125,6 +77,12 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
     else if (currentView === "social") setActiveIcon("Social");
     else if (currentView === "searchai") setActiveIcon("Insights");
     else if (currentView === "contacts") setActiveIcon("Contacts");
+    else if (currentView === "listings") setActiveIcon("Listings");
+    else if (currentView === "surveys") setActiveIcon("Surveys");
+    else if (currentView === "ticketing") setActiveIcon("Ticketing");
+    else if (currentView === "campaigns") setActiveIcon("Campaigns");
+    else if (currentView === "insights") setActiveIcon("Insights");
+    else if (currentView === "competitors") setActiveIcon("Competitors");
     else if (currentView === "dashboard" || currentView === "shared-by-me") setActiveIcon("Reports");
     else if (currentView === "agents" || currentView === "agents-monitor" || currentView === "agents-builder" || currentView === "agent-detail" || currentView === "agents-onboarding" || currentView === "birdai-reports") setActiveIcon("Agents");
     // storybook doesn't map to any icon strip item
@@ -179,6 +137,11 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
                 else if (label === "Insights") onViewChange("searchai");
                 else if (label === "Contacts") onViewChange("contacts");
                 else if (label === "Agents") onViewChange("agents");
+                else if (label === "Listings") onViewChange("listings");
+                else if (label === "Surveys") onViewChange("surveys");
+                else if (label === "Ticketing") onViewChange("ticketing");
+                else if (label === "Campaigns") onViewChange("campaigns");
+                else if (label === "Competitors") onViewChange("competitors");
               }}
               className={`
                 group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0
@@ -440,110 +403,109 @@ interface L2NavPanelProps {
   onViewChange: (view: AppView) => void;
 }
 
-export function L2NavPanel({ currentView, onViewChange }: L2NavPanelProps) {
-  const [expandedItems, setExpandedItems] = useState<string[]>(["Social"]);
+/* ─── Reporting nav data ─── */
+const dashboardSections = [
+  { label: "Created by Birdeye", children: ["<Default name>", "<Default name>"] },
+  { label: "Created by me", children: ["Palo Alto performance", "2024 Yearly report"] },
+  { label: "Shared with me", children: ["2025 Q1 dashboard", "2025 Q2 dashboard", "2025 Q3 dashboard"] },
+];
 
-  const toggleExpand = (label: string) => {
-    setExpandedItems(prev =>
-      prev.includes(label) ? prev.filter(i => i !== label) : [...prev, label]
+const reportSections2 = [
+  { label: "Custom", children: ["<Custom report name>", "<Custom report name>"] },
+  { label: "Reviews AI", children: ["Overview", "Volume and ratings", "Leaderboard", "Distribution", "Responses", "NPS", "Tags", "QR Codes", "Review impressions"] },
+  { label: "Listings AI", children: ["All", "Google", "Apple", "Facebook", "Bing", "Yelp"] },
+  { label: "Social AI", children: ["All channels", "Post performance", "Response trends", "Best time to post"] },
+  { label: "Campaigns", children: ["Review campaigns", "Referral campaigns", "CX campaigns", "Custom campaigns"] },
+  { label: "Inbox", children: ["Over time", "Location", "Users", "Channels"] },
+  { label: "Surveys AI", children: ["Survey NPS", "Responses"] },
+  { label: "Ticketing AI", children: ["Resolution time", "Volume"] },
+];
+
+export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPanelProps) {
+  // Active item tracked internally
+  const [activeItem, setActiveItem] = useState("Created by Birdeye/<Default name>");
+
+  const activate = (key: string) => {
+    setActiveItem(key);
+    onViewChange("dashboard");
+  };
+
+  // Expansion: "Created by Birdeye" and "Reviews AI" open by default
+  const allSections = [...dashboardSections, ...reportSections2];
+  const [expanded, setExpanded] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(allSections.map(s => [s.label, s.label === "Created by Birdeye" || s.label === "Reviews AI"]))
+  );
+
+  const toggle = (label: string) =>
+    setExpanded(prev => ({ ...prev, [label]: !prev[label] }));
+
+  const renderSection = (section: { label: string; children: string[] }) => {
+    const isExp = expanded[section.label];
+    return (
+      <div key={section.label}>
+        <button
+          onClick={() => toggle(section.label)}
+          className={SECTION_HEADER}
+          style={{ fontWeight: 400 }}
+        >
+          <span>{section.label}</span>
+          {isExp
+            ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+            : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+          }
+        </button>
+        {isExp && section.children.map(child => {
+          const key = `${section.label}/${child}`;
+          const isActive = activeItem === key;
+          return (
+            <button
+              key={key}
+              onClick={() => activate(key)}
+              className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
+              style={{ fontWeight: isActive ? 400 : 300 }}
+            >
+              {child}
+            </button>
+          );
+        })}
+      </div>
     );
   };
 
   return (
-    <div className="w-[220px] bg-[#F0F1F5] dark:bg-[#1e2229] border-r border-[#e5e9f0] dark:border-[#2e3340] rounded-tl-[8px] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300" data-no-print>
-      {/* Header area: Search + Create dashboard */}
-      <div className="px-4 pt-[19px] pb-2 shrink-0">
-        {/* Search */}
-        <div className="flex items-center gap-2 px-[11px] py-[7px] bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] mb-3">
-          <span className="text-[13px] text-[#b0b0b0] dark:text-[#6b7280]" style={{ fontWeight: 400 }}>Search</span>
-        </div>
+    <div className={PANEL} data-no-print>
+      <div className="flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
 
-        {/* Create dashboard */}
-        <button className="flex items-center justify-between w-full px-1 py-1 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] rounded-[8px] mb-1">
-          <div className="flex items-center gap-2">
-            <span>Create dashboard</span>
+        {/* Create dashboard button */}
+        <button
+          className={`${FOOTER_ROW_CLS} mb-[6px]`}
+          style={{ fontSize: 14 }}
+          onClick={() => onViewChange("dashboard")}
+        >
+          <span className="text-[14px]">Create dashboard</span>
+          <div className="w-[18px] h-[18px] bg-[#1E44CC] rounded-full flex items-center justify-center shrink-0">
+            <span className="text-white text-[12px] leading-none select-none">+</span>
           </div>
-          <span className="w-[20px] h-[20px] bg-[#2552ED] rounded-full flex items-center justify-center">
-            <span className="text-white text-[13px]" style={{ fontWeight: 400 }}>+</span>
-          </span>
         </button>
-      </div>
 
-      {/* Scrollable nav */}
-      <div className="flex-1 overflow-y-auto px-3 pb-4">
-        {/* Dashboard groups */}
-        <div className="space-y-[2px] mb-2">
-          {dashboardGroups.map(item => {
-            const isActive = item.view === currentView && item.view !== "dashboard";
-            return (
-              <button
-                key={item.label}
-                onClick={() => onViewChange(item.view)}
-                className={`flex items-center justify-between px-[8px] py-[6px] text-[13px] rounded-[8px] w-full transition-colors ${
-                  isActive
-                    ? "text-[#2552ED] bg-[#e8effe] dark:bg-[#1e2d5e]"
-                    : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
-                }`}
-                style={{ fontWeight: isActive ? 400 : 300 }}
-              >
-                <span>{item.label}</span>
-                {item.expandable && <ChevronDown className="w-[14px] h-[14px] text-[#999] dark:text-[#6b7280]" />}
-              </button>
-            );
-          })}
-        </div>
+        {/* Dashboard sections */}
+        {dashboardSections.map(renderSection)}
 
-        {/* Reports label */}
-        <div className="px-[8px] pt-[12.5px] pb-[6px]">
-          <span className="text-[11px] text-[#999] dark:text-[#6b7280]" style={{ fontWeight: 400 }}>Reports</span>
-        </div>
+        {/* Create report button */}
+        <button
+          className={`${FOOTER_ROW_CLS} mt-[6px] mb-[6px]`}
+          style={{ fontSize: 14 }}
+          onClick={() => onViewChange("dashboard")}
+        >
+          <span className="text-[14px]">Create report</span>
+          <div className="w-[18px] h-[18px] bg-[#1E44CC] rounded-full flex items-center justify-center shrink-0">
+            <span className="text-white text-[12px] leading-none select-none">+</span>
+          </div>
+        </button>
 
         {/* Report sections */}
-        <div className="space-y-[2px]">
-          {reportSections.map(section => {
-            const isExpanded = expandedItems.includes(section.label);
-            return (
-              <div key={section.label}>
-                <button
-                  onClick={() => {
-                    if (section.expandable) toggleExpand(section.label);
-                    onViewChange("dashboard");
-                  }}
-                  className={`flex items-center justify-between px-[8px] py-[6px] text-[13px] rounded-[8px] w-full transition-colors ${
-                    section.label === "Social" && isExpanded
-                      ? "text-[#212121] dark:text-[#e4e4e4]"
-                      : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
-                  }`}
-                >
-                  <span>{section.label}</span>
-                  {section.expandable && (
-                    isExpanded
-                      ? <ChevronUp className="w-[14px] h-[14px] text-[#999] dark:text-[#6b7280]" />
-                      : <ChevronDown className="w-[14px] h-[14px] text-[#999] dark:text-[#6b7280]" />
-                  )}
-                </button>
-                {section.children && isExpanded && (
-                  <div className="mt-[2px] space-y-[2px]">
-                    {section.children.map(child => (
-                      <button
-                        key={child.label}
-                        onClick={() => onViewChange("dashboard")}
-                        className={`px-[8px] py-[5px] text-[13px] rounded-[8px] w-full text-left transition-colors ${
-                          child.active && currentView === "dashboard"
-                            ? "text-[#2552ED] bg-[#e8effe] dark:bg-[#1e2d5e]"
-                            : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
-                        }`}
-                        style={{ fontWeight: child.active && currentView === "dashboard" ? 400 : 300 }}
-                      >
-                        {child.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        {reportSections2.map(renderSection)}
+
       </div>
     </div>
   );
@@ -600,242 +562,323 @@ export function ReviewsL2NavPanel() {
 }
 
 /* ═══════════════════════════════════════════
-   Social L2 Nav Panel – exported separately
+   Social L2 Nav Panel – uses L2NavLayout
    ═══════════════════════════════════════════ */
-interface SocialNavItem {
-  label: string;
-  hasAddIcon?: boolean;
-  expandable?: boolean;
-  defaultExpanded?: boolean;
-  children?: { label: string; active?: boolean }[];
-}
-
-const socialNavItems: SocialNavItem[] = [
-  { label: "Create post", hasAddIcon: true },
-  { label: "Publish", expandable: true },
-  {
-    label: "Engage",
-    expandable: true,
-    defaultExpanded: true,
-    children: [
-      { label: "View all engagements", active: true },
-      { label: "Assigned to me" },
-      { label: "Approve replies" },
-      { label: "Fix rejected replies" },
-      { label: "View spam" },
-    ],
-  },
-  { label: "Reports", expandable: true },
-  { label: "Competitors", expandable: true },
-  { label: "Libraries", expandable: true },
-  { label: "Agents", expandable: true },
-  { label: "Settings", expandable: true },
-];
+const socialConfig = {
+  headerAction: { label: "Create post" },
+  sections: [
+    { label: "Actions", children: ["Reply manually", "Monitor agent replies"] },
+    { label: "Publish", children: ["View calendar", "View drafts", "Approve posts", "Fix failed posts", "Fix rejected posts"] },
+    { label: "Engage", children: ["View all engagements", "Assigned to me", "Approve replies", "Fix rejected replies", "View spam"] },
+    { label: "Reports", children: ["All channels", "Post performance", "Response trends", "Best time to post"] },
+    { label: "Competitors", children: ["Benchmarking", "Posts"] },
+    { label: "Libraries", children: ["Post library", "Media library", "Reply templates"] },
+    { label: "Agents", children: ["Publishing agents", "Engagement agents"] },
+    { label: "Settings", children: ["Approvals", "Link in bio", "Tags", "AI posts", "AI prompts"] },
+  ],
+};
 
 export function SocialL2NavPanel() {
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {};
-    socialNavItems.forEach(item => {
-      if (item.defaultExpanded) initial[item.label] = true;
-    });
-    return initial;
-  });
-
-  const toggleSection = (label: string) => {
-    setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
-  };
-
-  return (
-    <div className="w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#f0f1f5] dark:border-[#2e3340] rounded-tl-[8px] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300" data-no-print>
-      <div className="flex-1 overflow-y-auto px-2 pt-4 pb-2">
-        <div className="flex flex-col gap-0.5">
-          {socialNavItems.map(item => (
-            <div key={item.label}>
-              <button
-                onClick={() => item.expandable && toggleSection(item.label)}
-                className={`flex items-center justify-between px-2 py-1.5 w-full text-[14px] text-[#212121] dark:text-[#e4e4e4] rounded-[4px] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340] transition-colors tracking-[-0.28px]`}
-              >
-                <span>{item.label}</span>
-                {item.hasAddIcon && (
-                  <div className="w-[20px] h-[20px] flex items-center justify-center">
-                    <svg className="w-[15px] h-[15px]" viewBox="0 0 15.1666 15.1666" fill="none">
-                      <path d={svgPathsReviews.p21d4a600} fill="#1976D2" />
-                    </svg>
-                  </div>
-                )}
-                {item.expandable && (
-                  <div className="w-[20px] h-[20px] flex items-center justify-center">
-                    {expandedSections[item.label] ? (
-                      <ChevronDown className="w-3 h-3 text-[#303030] dark:text-[#8b92a5]" />
-                    ) : (
-                      <svg className="w-[9px] h-[5px]" viewBox="0 0 9.01782 5.0176" fill="none">
-                        <path d={svgPathsReviews.p5ccaa80} fill="#303030" className="dark:fill-[#8b92a5]" />
-                      </svg>
-                    )}
-                  </div>
-                )}
-              </button>
-              {/* Children */}
-              {item.children && expandedSections[item.label] && (
-                <div className="flex flex-col gap-0.5 mt-0.5">
-                  {item.children.map(child => (
-                    <button
-                      key={child.label}
-                      className={`text-left px-2 py-1.5 text-[13px] rounded-[4px] transition-colors tracking-[-0.26px] ${
-                        child.active
-                          ? "text-[#2552ED] bg-[#e4e6ea] dark:bg-[#252a3a] dark:text-[#6b9bff]"
-                          : "text-[#555] dark:text-[#9ba2b0] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]"
-                      }`}
-                    >
-                      {child.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+  return <L2NavLayout {...socialConfig} data-no-print />;
 }
 
 /* ═══════════════════════════════════════════
-   Search AI L2 Nav Panel – exported separately
+   Search AI L2 Nav Panel – uses L2NavLayout
    ═══════════════════════════════════════════ */
-interface SearchAINavItem {
-  label: string;
-  expandable?: boolean;
-  defaultExpanded?: boolean;
-  children?: { label: string; active?: boolean }[];
+const searchAIConfig = {
+  sections: [
+    { label: "Actions", children: ["Recommendations", "Track progress"] },
+    { label: "Reports", children: ["Citations", "Visibility", "Rankings", "Accuracy", "Sentiment"] },
+    { label: "Settings", children: ["Prompts"] },
+  ],
+};
+
+export function SearchAIL2NavPanel() {
+  return <L2NavLayout {...searchAIConfig} data-no-print />;
 }
 
-const searchAINavItems: SearchAINavItem[] = [
+/* ═══════════════════════════════════════════
+   Contacts L2 Nav Panel – uses L2NavLayout
+   ═══════════════════════════════════════════ */
+const contactsConfig = {
+  headerAction: { label: "Add a contact" },
+  standaloneItems: ["All contacts", "Lists & segments"],
+  sections: [
+    { label: "Settings", children: ["Custom fields", "Tags"] },
+  ],
+};
+
+export function ContactsL2NavPanel() {
+  return <L2NavLayout {...contactsConfig} data-no-print />;
+}
+
+/* ═══════════════════════════════════════════
+   Listings L2 Nav Panel – new export
+   ═══════════════════════════════════════════ */
+const listingsConfig = {
+  sections: [
+    { label: "Actions", children: ["Recommendations", "Suppress duplicates", "Google suggestions"] },
+    { label: "Ranking reports", children: ["Keywords", "Citations", "Rankings"] },
+    { label: "Search performance", children: ["All sites", "Google", "Apple", "Facebook", "Bing", "Yelp"] },
+    { label: "Accuracy", children: ["Core sites", "Other sites"] },
+    { label: "Publish status", children: ["All listings", "By location", "By site"] },
+    { label: "Agents", children: ["Optimizer agents"] },
+    { label: "Settings", children: ["Profiles", "Keywords", "Ranking report", "FAQs", "Products", "Google services"] },
+  ],
+};
+
+export function ListingsL2NavPanel() {
+  return <L2NavLayout {...listingsConfig} data-no-print />;
+}
+
+/* ═══════════════════════════════════════════
+   Ticketing L2 Nav Panel – new export
+   ═══════════════════════════════════════════ */
+const ticketingConfig = {
+  headerAction: { label: "Create ticket" },
+  sections: [
+    { label: "Actions", children: ["My tickets", "View all tickets"] },
+    { label: "Reports", children: ["Resolution time", "Volume"] },
+    { label: "Agents", children: ["Ticketing agents"] },
+  ],
+};
+
+export function TicketingL2NavPanel() {
+  return <L2NavLayout {...ticketingConfig} data-no-print />;
+}
+
+/* ═══════════════════════════════════════════
+   Campaigns L2 Nav Panel – new export
+   ═══════════════════════════════════════════ */
+const campaignsConfig = {
+  sections: [
+    { label: "Actions", children: ["Manage automations", "Manage campaigns"] },
+    { label: "Libraries", children: ["Templates", "Landing pages"] },
+    { label: "Reports", children: ["Review campaigns", "Referral campaigns", "CX campaigns", "Custom campaigns"] },
+    { label: "Settings", children: ["Workflow tags", "Communication restriction"] },
+  ],
+};
+
+export function CampaignsL2NavPanel() {
+  return <L2NavLayout {...campaignsConfig} data-no-print />;
+}
+
+/* ═══════════════════════════════════════════
+   Surveys L2 Nav Panel – new export
+   ═══════════════════════════════════════════ */
+const surveysConfig = {
+  headerAction: { label: "Create survey" },
+  sections: [
+    { label: "Actions", children: ["Respond to surveys"] },
+    { label: "Surveys", children: ["All surveys", "Standard surveys", "Pulse surveys"] },
+    { label: "Agents", children: ["Survey distribution agent", "Survey tagging agent"] },
+    { label: "Libraries", children: ["Request templates"] },
+  ],
+  footerLink: { label: "Reports", external: true },
+};
+
+export function SurveysL2NavPanel() {
+  return <L2NavLayout {...surveysConfig} data-no-print />;
+}
+
+/* ═══════════════════════════════════════════
+   Insights L2 Nav Panel – new export
+   ═══════════════════════════════════════════ */
+const insightsConfig = {
+  sections: [
+    { label: "Actions", children: ["Recommendations", "Track progress"] },
+    { label: "Analysis", children: ["All signals", "Reviews", "Listings", "Calls"] },
+    { label: "Settings", children: ["Categories & keywords", "Birdeye score"] },
+  ],
+};
+
+export function InsightsL2NavPanel() {
+  return <L2NavLayout {...insightsConfig} data-no-print />;
+}
+
+/* ═══════════════════════════════════════════
+   Competitors L2 Nav Panel – new export
+   ═══════════════════════════════════════════ */
+const competitorsConfig = {
+  sections: [
+    { label: "Actions", children: ["Recommendations", "Track progress"] },
+    { label: "Analysis", children: ["All signals", "Reviews", "Social"] },
+    {
+      label: "Benchmarking",
+      children: [
+        "You vs Industry",
+        "You vs Peach Tree Dental",
+        "You vs Coast Dental",
+        "You vs Altima Dental",
+        "You vs Tooth Works",
+        "You vs White Teeth",
+      ],
+    },
+    { label: "Settings", children: ["Brands & locations", "Categories & keywords", "Birdeye score"] },
+  ],
+};
+
+export function CompetitorsL2NavPanel() {
+  return <L2NavLayout {...competitorsConfig} data-no-print />;
+}
+
+/* ═══════════════════════════════════════════
+   Inbox L2 Nav Panel – custom (not using L2NavLayout)
+   ═══════════════════════════════════════════ */
+
+const GREEN_BTN = "w-[18px] h-[18px] bg-[#4caf50] rounded-full flex items-center justify-center shrink-0";
+
+const inboxSections = [
   {
-    label: "Actions",
-    expandable: true,
-    defaultExpanded: true,
-    children: [
-      { label: "Recommendations" },
-      { label: "Track progress" },
-    ],
+    label: "Assignment",
+    children: ["Assigned to me", "Assigned to AI Agents", "Assigned to others", "Unassigned", "Spam"],
+  },
+  {
+    label: "Leads",
+    children: ["Inquiries", "Missed calls", "Voicemails", "Appointments", "Service inquiry", "Insurance", "Billing", "Lost"],
+  },
+  {
+    label: "Feedback",
+    children: ["Reviews", "Surveys"],
+  },
+  {
+    label: "Saved filters",
+    children: ["My Filter 1", "My Filter 2", "My Filter 3"],
   },
   {
     label: "Reports",
-    expandable: true,
-    defaultExpanded: true,
-    children: [
-      { label: "Citations" },
-      { label: "Visibility", active: true },
-      { label: "Rankings" },
-      { label: "Sentiment" },
-    ],
+    children: ["Over time", "Location", "Users", "Channels"],
+  },
+  {
+    label: "Agents",
+    children: ["Lead generation agents"],
   },
   {
     label: "Settings",
-    expandable: true,
-    defaultExpanded: true,
-    children: [
-      { label: "Prompts" },
-    ],
+    children: ["Chatbot AI", "Receptionist"],
   },
 ];
 
-export function SearchAIL2NavPanel() {
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {};
-    searchAINavItems.forEach(item => {
-      if (item.defaultExpanded) initial[item.label] = true;
-    });
-    return initial;
-  });
-
-  const toggleSection = (label: string) => {
-    setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
-  };
-
-  return (
-    <div className="w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#f0f1f5] dark:border-[#2e3340] rounded-tl-[8px] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300" data-no-print>
-      <div className="flex-1 overflow-y-auto px-2 pt-4 pb-2">
-        <div className="flex flex-col gap-0.5">
-          {searchAINavItems.map(item => (
-            <div key={item.label}>
-              <button
-                onClick={() => item.expandable && toggleSection(item.label)}
-                className="flex items-center justify-between px-2 py-1.5 w-full text-[14px] text-[#212121] dark:text-[#e4e4e4] rounded-[4px] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340] transition-colors tracking-[-0.28px]"
-              >
-                <span>{item.label}</span>
-                {item.expandable && (
-                  <div className="w-[20px] h-[20px] flex items-center justify-center">
-                    {expandedSections[item.label] ? (
-                      <ChevronUp className="w-3 h-3 text-[#303030] dark:text-[#8b92a5]" />
-                    ) : (
-                      <ChevronDown className="w-3 h-3 text-[#303030] dark:text-[#8b92a5]" />
-                    )}
-                  </div>
-                )}
-              </button>
-              {item.children && expandedSections[item.label] && (
-                <div className="flex flex-col gap-0.5 mt-0.5">
-                  {item.children.map(child => (
-                    <button
-                      key={child.label}
-                      className={`text-left px-2 py-1.5 text-[13px] rounded-[4px] transition-colors tracking-[-0.26px] ${
-                        child.active
-                          ? "text-[#2552ED] bg-[#e4e6ea] dark:bg-[#252a3a] dark:text-[#6b9bff]"
-                          : "text-[#555] dark:text-[#9ba2b0] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]"
-                      }`}
-                    >
-                      {child.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════
-   Contacts L2 Nav Panel – exported separately
-   ═══════════════════════════════════════════ */
-const contactsNavItems = [
-  { label: "Add a contact", hasAddIcon: true },
-  { label: "All contacts", active: true },
-  { label: "Lists & segments", expandable: true },
-  { label: "Settings", expandable: true },
+const teamSections = [
+  {
+    label: "Sales Team",
+    children: ["Assigned to me", "Assigned to AI Agents", "Assigned to others", "Unassigned", "Spam"],
+  },
+  {
+    label: "Customer Service Team",
+    children: ["Assigned to me", "Assigned to AI Agents", "Assigned to others", "Unassigned", "Spam"],
+  },
 ];
 
-export function ContactsL2NavPanel() {
+export function InboxL2NavPanel() {
+  const [activeItem, setActiveItem] = useState("standalone/All messages");
+
+  const activate = (key: string) => setActiveItem(key);
+
+  // Inbox sections: "Assignment" expanded by default
+  const [inboxExpanded, setInboxExpanded] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(inboxSections.map(s => [s.label, s.label === "Assignment"]))
+  );
+  // Team sections: all expanded by default
+  const [teamExpanded, setTeamExpanded] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(teamSections.map(s => [s.label, true]))
+  );
+
+  const toggleInbox = (label: string) =>
+    setInboxExpanded(prev => ({ ...prev, [label]: !prev[label] }));
+  const toggleTeam = (label: string) =>
+    setTeamExpanded(prev => ({ ...prev, [label]: !prev[label] }));
+
+  const renderChildren = (sectionLabel: string, children: string[], prefix: string) =>
+    children.map(child => {
+      const key = `${prefix}/${sectionLabel}/${child}`;
+      const isActive = activeItem === key;
+      return (
+        <button
+          key={key}
+          onClick={() => activate(key)}
+          className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
+          style={{ fontWeight: isActive ? 400 : 300 }}
+        >
+          {child}
+        </button>
+      );
+    });
+
   return (
-    <div className="w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#f0f1f5] dark:border-[#2e3340] rounded-tl-[8px] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300" data-no-print>
-      <div className="flex-1 overflow-y-auto px-2 pt-4 pb-2">
-        <div className="flex flex-col gap-1">
-          {contactsNavItems.map(item => (
+    <div className={PANEL} data-no-print>
+      <div className="flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
+
+        {/* Header: New message */}
+        <button className={`${FOOTER_ROW_CLS} mb-[6px]`} style={{ fontSize: 14 }}>
+          <span className="text-[14px]">New message</span>
+          <div className={GREEN_BTN}>
+            <span className="text-white text-[12px] leading-none select-none">+</span>
+          </div>
+        </button>
+
+        {/* Flat item: All messages */}
+        {(() => {
+          const key = "standalone/All messages";
+          const isActive = activeItem === key;
+          return (
             <button
-              key={item.label}
-              className={`flex items-center justify-between px-2 py-1.5 w-full text-[14px] rounded-[4px] transition-colors tracking-[-0.28px] ${
-                item.active
-                  ? "text-[#2552ED] bg-[#e4e6ea] dark:bg-[#252a3a] dark:text-[#6b9bff]"
-                  : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]"
-              }`}
+              onClick={() => activate(key)}
+              className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
+              style={{ fontWeight: isActive ? 400 : 300 }}
+            >
+              All messages
+            </button>
+          );
+        })()}
+
+        {/* Inbox sections */}
+        {inboxSections.map(section => (
+          <div key={section.label}>
+            <button
+              onClick={() => toggleInbox(section.label)}
+              className={SECTION_HEADER}
               style={{ fontWeight: 400 }}
             >
-              <span>{item.label}</span>
-              {item.hasAddIcon && (
-                <span className="w-[20px] h-[20px] bg-[#2552ED] rounded-full flex items-center justify-center">
-                  <span className="text-white text-[13px]" style={{ fontWeight: 400 }}>+</span>
-                </span>
-              )}
-              {item.expandable && (
-                <ChevronDown className="w-3 h-3 text-[#303030] dark:text-[#8b92a5]" />
-              )}
+              <span>{section.label}</span>
+              {inboxExpanded[section.label]
+                ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+                : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+              }
             </button>
-          ))}
-        </div>
+            {inboxExpanded[section.label] && renderChildren(section.label, section.children, "inbox")}
+          </div>
+        ))}
+
+        {/* Divider */}
+        <div className="h-px bg-[#dfe1e6] dark:bg-[#2e3340] mx-1 my-3" />
+
+        {/* Internal team chat header */}
+        <button className={`${FOOTER_ROW_CLS} mb-[6px]`} style={{ fontSize: 14 }}>
+          <span className="text-[14px]">Internal team chat</span>
+          <div className={GREEN_BTN}>
+            <span className="text-white text-[12px] leading-none select-none">+</span>
+          </div>
+        </button>
+
+        {/* Team sections */}
+        {teamSections.map(section => (
+          <div key={section.label}>
+            <button
+              onClick={() => toggleTeam(section.label)}
+              className={SECTION_HEADER}
+              style={{ fontWeight: 400 }}
+            >
+              <span>{section.label}</span>
+              {teamExpanded[section.label]
+                ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+                : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+              }
+            </button>
+            {teamExpanded[section.label] && renderChildren(section.label, section.children, "team")}
+          </div>
+        ))}
+
       </div>
     </div>
   );

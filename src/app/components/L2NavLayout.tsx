@@ -28,19 +28,19 @@ import { ChevronUp, ChevronDown, ExternalLink } from "lucide-react";
 /* ─────────────────────────────────────────────────────
    Design tokens — edit here to update every L2 panel
    ───────────────────────────────────────────────────── */
-const PANEL =
+export const PANEL =
   "w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#e5e9f0] dark:border-[#2e3340] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300";
 
 // Shared row geometry — same for headers, children, footer
-const ROW =
+export const ROW =
   "flex items-center justify-between w-full px-[8px] py-[6px] text-[13px] rounded-[4px] transition-colors tracking-[-0.26px]";
 
-const HOVER = "hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]";
+export const HOVER = "hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]";
 
-const SECTION_HEADER    = `${ROW} ${HOVER} text-[#212121] dark:text-[#e4e4e4]`;
-const CHILD_INACTIVE    = `${ROW} ${HOVER} text-left text-[#555] dark:text-[#9ba2b0]`;
-const CHILD_ACTIVE      = `${ROW} text-left text-[#1E44CC] dark:text-[#7fa8ff] bg-[#dce5ff] dark:bg-[#1e2d5e]`;
-const FOOTER_ROW_CLS    = `${ROW} ${HOVER} text-[#212121] dark:text-[#e4e4e4]`;
+export const SECTION_HEADER    = `${ROW} ${HOVER} text-[#212121] dark:text-[#e4e4e4]`;
+export const CHILD_INACTIVE    = `${ROW} ${HOVER} text-left text-[#555] dark:text-[#9ba2b0]`;
+export const CHILD_ACTIVE      = `${ROW} text-left text-[#1E44CC] dark:text-[#7fa8ff] bg-[#dce5ff] dark:bg-[#1e2d5e]`;
+export const FOOTER_ROW_CLS    = `${ROW} ${HOVER} text-[#212121] dark:text-[#e4e4e4]`;
 
 /* ─────────────────────────────────────────────────────
    Types
@@ -62,6 +62,10 @@ export interface L2FooterLink {
 export interface L2NavLayoutProps {
   /** Top row with a + button (e.g. "Send a review request") */
   headerAction?: L2HeaderAction;
+  /** Color of the + button in the headerAction. Defaults to "blue". */
+  headerActionColor?: "blue" | "green";
+  /** Flat clickable items rendered BEFORE sections (key = "standalone/{label}") */
+  standaloneItems?: string[];
   /** Collapsible sections */
   sections: L2Section[];
   /** Single bottom row, optionally with an external-link icon */
@@ -89,6 +93,8 @@ function resolveDefaultExpanded(sections: L2Section[]): string {
    ───────────────────────────────────────────────────── */
 export function L2NavLayout({
   headerAction,
+  headerActionColor = "blue",
+  standaloneItems,
   sections,
   footerLink,
   defaultActive,
@@ -121,6 +127,8 @@ export function L2NavLayout({
     onActiveItemChange?.(key);
   };
 
+  const plusBg = headerActionColor === "green" ? "bg-[#4caf50]" : "bg-[#1E44CC]";
+
   return (
     <div className={PANEL} data-no-print={noprint}>
       <div className="flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
@@ -129,11 +137,27 @@ export function L2NavLayout({
         {headerAction && (
           <button className={`${FOOTER_ROW_CLS} mb-[6px]`} style={{ fontSize: 14 }}>
             <span className="text-[14px]">{headerAction.label}</span>
-            <div className="w-[18px] h-[18px] bg-[#1E44CC] rounded-full flex items-center justify-center shrink-0">
+            <div className={`w-[18px] h-[18px] ${plusBg} rounded-full flex items-center justify-center shrink-0`}>
               <span className="text-white text-[12px] leading-none select-none">+</span>
             </div>
           </button>
         )}
+
+        {/* Standalone items (flat, before sections) */}
+        {standaloneItems && standaloneItems.map(label => {
+          const key = `standalone/${label}`;
+          const isActive = active === key;
+          return (
+            <button
+              key={label}
+              onClick={() => activate(key)}
+              className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
+              style={{ fontWeight: isActive ? 400 : 300 }}
+            >
+              {label}
+            </button>
+          );
+        })}
 
         {/* Sections */}
         {sections.map(section => (

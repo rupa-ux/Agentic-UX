@@ -8,6 +8,13 @@ import {
   SearchAIL2NavPanel,
   ContactsL2NavPanel,
   AgentsL2NavPanel,
+  ListingsL2NavPanel,
+  TicketingL2NavPanel,
+  CampaignsL2NavPanel,
+  SurveysL2NavPanel,
+  InsightsL2NavPanel,
+  CompetitorsL2NavPanel,
+  InboxL2NavPanel,
 } from "@/app/components/Sidebar";
 import { TopBar } from "@/app/components/TopBar";
 import type { AppView } from "@/app/App";
@@ -17,37 +24,38 @@ const VIEWS: { value: AppView; label: string; group: string }[] = [
   { value: "agents",               label: "Myna AI — Agents",        group: "Myna AI" },
   { value: "agents-monitor",       label: "Myna AI — Monitor",       group: "Myna AI" },
   { value: "birdai-reports",       label: "Myna AI — Reports",       group: "Myna AI" },
-  { value: "dashboard",            label: "Reports — Dashboard",    group: "Reports" },
-  { value: "shared-by-me",         label: "Reports — Shared by me", group: "Reports" },
-  { value: "reviews",              label: "Reviews",                group: "Modules" },
-  { value: "social",               label: "Social AI",              group: "Modules" },
-  { value: "searchai",             label: "Search AI",              group: "Modules" },
-  { value: "contacts",             label: "Contacts",               group: "Modules" },
-  { value: "inbox",                label: "Inbox",                  group: "Modules" },
-  { value: "scheduled-deliveries", label: "Scheduled Deliveries",   group: "Modules" },
+  { value: "dashboard",            label: "Reports — Dashboard",     group: "Reports" },
+  { value: "shared-by-me",         label: "Reports — Shared by me",  group: "Reports" },
+  { value: "reviews",              label: "Reviews",                 group: "Modules" },
+  { value: "social",               label: "Social AI",               group: "Modules" },
+  { value: "searchai",             label: "Search AI",               group: "Modules" },
+  { value: "listings",             label: "Listings",                group: "Modules" },
+  { value: "contacts",             label: "Contacts",                group: "Modules" },
+  { value: "inbox",                label: "Inbox",                   group: "Modules" },
+  { value: "surveys",              label: "Surveys",                 group: "Modules" },
+  { value: "ticketing",            label: "Ticketing",               group: "Modules" },
+  { value: "campaigns",            label: "Campaigns",               group: "Modules" },
+  { value: "insights",             label: "Insights",                group: "Modules" },
+  { value: "competitors",          label: "Competitors",             group: "Modules" },
 ];
 
 /* ─── Resolve which L2 panel to show for a given view ─── */
 function L2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v: AppView) => void }) {
-  if (view === "reviews")      return <ReviewsL2NavPanel />;
-  if (view === "social")       return <SocialL2NavPanel />;
-  if (view === "searchai")     return <SearchAIL2NavPanel />;
-  if (view === "contacts")     return <ContactsL2NavPanel />;
-  if (
-    view === "agents" ||
-    view === "agents-monitor" ||
-    view === "agent-detail" ||
-    view === "birdai-reports"
-  ) return <AgentsL2NavPanel currentView={view} onViewChange={onViewChange} selectedAgentSlug="" />;
-  if (
-    view === "inbox" ||
-    view === "storybook" ||
-    view === "scheduled-deliveries" ||
-    view === "agents-builder" ||
-    view === "agents-onboarding" ||
-    view === "schedule-builder"
-  ) return null;
-  // dashboard, shared-by-me → reports L2
+  if (view === "reviews")     return <ReviewsL2NavPanel />;
+  if (view === "social")      return <SocialL2NavPanel />;
+  if (view === "searchai")    return <SearchAIL2NavPanel />;
+  if (view === "contacts")    return <ContactsL2NavPanel />;
+  if (view === "listings")    return <ListingsL2NavPanel />;
+  if (view === "surveys")     return <SurveysL2NavPanel />;
+  if (view === "ticketing")   return <TicketingL2NavPanel />;
+  if (view === "campaigns")   return <CampaignsL2NavPanel />;
+  if (view === "insights")    return <InsightsL2NavPanel />;
+  if (view === "competitors") return <CompetitorsL2NavPanel />;
+  if (view === "inbox")       return <InboxL2NavPanel />;
+  if (["agents","agents-monitor","agent-detail","birdai-reports"].includes(view))
+    return <AgentsL2NavPanel currentView={view} onViewChange={onViewChange} selectedAgentSlug="" />;
+  if (["scheduled-deliveries","storybook","shared-by-me","agents-builder","agents-onboarding","schedule-builder"].includes(view))
+    return null;
   return <L2NavPanel currentView={view} onViewChange={onViewChange} />;
 }
 

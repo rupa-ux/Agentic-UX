@@ -1,4 +1,9 @@
-import { IconStrip, L2NavPanel, ReviewsL2NavPanel, SocialL2NavPanel, SearchAIL2NavPanel, ContactsL2NavPanel, AgentsL2NavPanel } from "./components/Sidebar";
+import {
+  IconStrip, L2NavPanel, ReviewsL2NavPanel, SocialL2NavPanel, SearchAIL2NavPanel,
+  ContactsL2NavPanel, AgentsL2NavPanel, ListingsL2NavPanel, TicketingL2NavPanel,
+  CampaignsL2NavPanel, SurveysL2NavPanel, InsightsL2NavPanel, CompetitorsL2NavPanel,
+  InboxL2NavPanel,
+} from "./components/Sidebar";
 import { useState } from "react";
 import { Toaster } from "sonner";
 import { TopBar } from "./components/TopBar";
@@ -20,7 +25,29 @@ import { ScheduleBuilderView } from "./components/ScheduleBuilderView";
 import { BirdAIReportsView } from "./components/BirdAIReportsView";
 import { type DraftReport } from "./components/draftStore";
 
-export type AppView = "dashboard" | "shared-by-me" | "inbox" | "storybook" | "reviews" | "social" | "searchai" | "contacts" | "scheduled-deliveries" | "agents" | "agents-monitor" | "agents-builder" | "agent-detail" | "agents-onboarding" | "schedule-builder" | "birdai-reports";
+export type AppView =
+  | "dashboard"
+  | "shared-by-me"
+  | "inbox"
+  | "storybook"
+  | "reviews"
+  | "social"
+  | "searchai"
+  | "contacts"
+  | "scheduled-deliveries"
+  | "agents"
+  | "agents-monitor"
+  | "agents-builder"
+  | "agent-detail"
+  | "agents-onboarding"
+  | "schedule-builder"
+  | "birdai-reports"
+  | "listings"
+  | "surveys"
+  | "ticketing"
+  | "campaigns"
+  | "insights"
+  | "competitors";
 
 export default function App() {
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
@@ -39,7 +66,7 @@ export default function App() {
     setAiPanelOpen(true);
   };
 
-  const handleViewReport = (reportName: string) => {
+  const handleViewReport = (_reportName: string) => {
     setEditingDraft(null);
     setCurrentView("dashboard");
     setAiPanelOpen(true);
@@ -49,6 +76,29 @@ export default function App() {
     setAiPanelOpen(open);
     if (!open) setEditingDraft(null);
   };
+
+  // Views that have their own L2 panels (not the default Reports L2NavPanel)
+  const hasOwnL2Panel = (v: AppView) =>
+    v === "inbox" ||
+    v === "storybook" ||
+    v === "reviews" ||
+    v === "social" ||
+    v === "searchai" ||
+    v === "contacts" ||
+    v === "scheduled-deliveries" ||
+    v === "agents" ||
+    v === "agents-monitor" ||
+    v === "agents-builder" ||
+    v === "agent-detail" ||
+    v === "agents-onboarding" ||
+    v === "schedule-builder" ||
+    v === "birdai-reports" ||
+    v === "listings" ||
+    v === "surveys" ||
+    v === "ticketing" ||
+    v === "campaigns" ||
+    v === "insights" ||
+    v === "competitors";
 
   return (
     <div className="h-screen w-screen flex overflow-hidden">
@@ -64,10 +114,12 @@ export default function App() {
 
         {/* Below TopBar: L2 nav + main content side by side */}
         <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
-          {/* L2 nav panel (hidden when AI panel is open, inbox, storybook, reviews, social, or searchai view) */}
-          {!aiPanelOpen && currentView !== "inbox" && currentView !== "storybook" && currentView !== "reviews" && currentView !== "social" && currentView !== "searchai" && currentView !== "contacts" && currentView !== "scheduled-deliveries" && currentView !== "agents" && currentView !== "agents-monitor" && currentView !== "agents-builder" && currentView !== "agent-detail" && currentView !== "agents-onboarding" && currentView !== "schedule-builder" && currentView !== "birdai-reports" && (
+
+          {/* Default Reports L2 nav panel */}
+          {!aiPanelOpen && !hasOwnL2Panel(currentView) && (
             <L2NavPanel currentView={currentView} onViewChange={handleViewChange} />
           )}
+
           {/* Reviews L2 nav panel */}
           {!aiPanelOpen && currentView === "reviews" && (
             <ReviewsL2NavPanel />
@@ -83,6 +135,34 @@ export default function App() {
           {/* Contacts L2 nav panel */}
           {!aiPanelOpen && currentView === "contacts" && (
             <ContactsL2NavPanel />
+          )}
+          {/* Listings L2 nav panel */}
+          {!aiPanelOpen && currentView === "listings" && (
+            <ListingsL2NavPanel />
+          )}
+          {/* Surveys L2 nav panel */}
+          {!aiPanelOpen && currentView === "surveys" && (
+            <SurveysL2NavPanel />
+          )}
+          {/* Ticketing L2 nav panel */}
+          {!aiPanelOpen && currentView === "ticketing" && (
+            <TicketingL2NavPanel />
+          )}
+          {/* Campaigns L2 nav panel */}
+          {!aiPanelOpen && currentView === "campaigns" && (
+            <CampaignsL2NavPanel />
+          )}
+          {/* Insights L2 nav panel */}
+          {!aiPanelOpen && currentView === "insights" && (
+            <InsightsL2NavPanel />
+          )}
+          {/* Competitors L2 nav panel */}
+          {!aiPanelOpen && currentView === "competitors" && (
+            <CompetitorsL2NavPanel />
+          )}
+          {/* Inbox L2 nav panel */}
+          {!aiPanelOpen && currentView === "inbox" && (
+            <InboxL2NavPanel />
           )}
           {/* Agents L2 nav panel */}
           {!aiPanelOpen && (currentView === "agents" || currentView === "agents-monitor" || currentView === "agent-detail" || currentView === "birdai-reports") && (
@@ -119,7 +199,7 @@ export default function App() {
             ) : currentView === "agent-detail" ? (
               <AgentDetailView
                 agentSlug={selectedAgentSlug}
-                onOpenBuilder={(templateName) => {
+                onOpenBuilder={(_templateName) => {
                   if (selectedAgentSlug === "scheduled-reports") {
                     handleViewChange("schedule-builder");
                   } else {
@@ -137,6 +217,42 @@ export default function App() {
               <ScheduleBuilderView onBack={() => handleViewChange("agent-detail", "scheduled-reports")} />
             ) : currentView === "birdai-reports" ? (
               <BirdAIReportsView />
+            ) : currentView === "listings" ? (
+              <Dashboard
+                aiPanelOpen={aiPanelOpen}
+                onAiPanelChange={handleAiPanelChange}
+                editingDraft={editingDraft}
+              />
+            ) : currentView === "surveys" ? (
+              <Dashboard
+                aiPanelOpen={aiPanelOpen}
+                onAiPanelChange={handleAiPanelChange}
+                editingDraft={editingDraft}
+              />
+            ) : currentView === "ticketing" ? (
+              <Dashboard
+                aiPanelOpen={aiPanelOpen}
+                onAiPanelChange={handleAiPanelChange}
+                editingDraft={editingDraft}
+              />
+            ) : currentView === "campaigns" ? (
+              <Dashboard
+                aiPanelOpen={aiPanelOpen}
+                onAiPanelChange={handleAiPanelChange}
+                editingDraft={editingDraft}
+              />
+            ) : currentView === "insights" ? (
+              <Dashboard
+                aiPanelOpen={aiPanelOpen}
+                onAiPanelChange={handleAiPanelChange}
+                editingDraft={editingDraft}
+              />
+            ) : currentView === "competitors" ? (
+              <Dashboard
+                aiPanelOpen={aiPanelOpen}
+                onAiPanelChange={handleAiPanelChange}
+                editingDraft={editingDraft}
+              />
             ) : (
               <Dashboard
                 aiPanelOpen={aiPanelOpen}

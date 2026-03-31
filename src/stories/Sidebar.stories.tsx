@@ -8,6 +8,13 @@ import {
   SearchAIL2NavPanel,
   ContactsL2NavPanel,
   AgentsL2NavPanel,
+  ListingsL2NavPanel,
+  TicketingL2NavPanel,
+  CampaignsL2NavPanel,
+  SurveysL2NavPanel,
+  InsightsL2NavPanel,
+  CompetitorsL2NavPanel,
+  InboxL2NavPanel,
 } from "@/app/components/Sidebar";
 import type { AppView } from "@/app/App";
 
@@ -15,8 +22,11 @@ import type { AppView } from "@/app/App";
 const VIEW_OPTIONS: AppView[] = [
   "agents", "agents-monitor", "birdai-reports",
   "dashboard", "shared-by-me",
-  "reviews", "social", "searchai", "contacts",
-  "inbox", "scheduled-deliveries",
+  "reviews", "social", "searchai",
+  "listings", "contacts", "inbox",
+  "surveys", "ticketing", "campaigns",
+  "insights", "competitors",
+  "scheduled-deliveries",
 ];
 
 const VIEW_LABELS: Record<string, string> = {
@@ -28,20 +38,33 @@ const VIEW_LABELS: Record<string, string> = {
   "reviews":               "Reviews",
   "social":                "Social AI",
   "searchai":              "Search AI",
+  "listings":              "Listings",
   "contacts":              "Contacts",
-  "inbox":                 "Inbox (no L2)",
+  "inbox":                 "Inbox",
+  "surveys":               "Surveys",
+  "ticketing":             "Ticketing",
+  "campaigns":             "Campaigns",
+  "insights":              "Insights",
+  "competitors":           "Competitors",
   "scheduled-deliveries":  "Scheduled deliveries (no L2)",
 };
 
 // ─── L2 panel resolver ────────────────────────────────
 function ActiveL2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v: AppView) => void }) {
-  if (view === "reviews")  return <ReviewsL2NavPanel />;
-  if (view === "social")   return <SocialL2NavPanel />;
-  if (view === "searchai") return <SearchAIL2NavPanel />;
-  if (view === "contacts") return <ContactsL2NavPanel />;
-  if (["agents","agents-monitor","agent-detail","birdai-reports"].includes(view))
+  if (view === "reviews")     return <ReviewsL2NavPanel />;
+  if (view === "social")      return <SocialL2NavPanel />;
+  if (view === "searchai")    return <SearchAIL2NavPanel />;
+  if (view === "contacts")    return <ContactsL2NavPanel />;
+  if (view === "listings")    return <ListingsL2NavPanel />;
+  if (view === "surveys")     return <SurveysL2NavPanel />;
+  if (view === "ticketing")   return <TicketingL2NavPanel />;
+  if (view === "campaigns")   return <CampaignsL2NavPanel />;
+  if (view === "insights")    return <InsightsL2NavPanel />;
+  if (view === "competitors") return <CompetitorsL2NavPanel />;
+  if (view === "inbox")       return <InboxL2NavPanel />;
+  if (["agents", "agents-monitor", "agent-detail", "birdai-reports"].includes(view))
     return <AgentsL2NavPanel currentView={view} onViewChange={onViewChange} selectedAgentSlug="" />;
-  if (["inbox","storybook","scheduled-deliveries","agents-builder","agents-onboarding","schedule-builder"].includes(view))
+  if (["scheduled-deliveries", "shared-by-me", "storybook"].includes(view))
     return null;
   return <L2NavPanel currentView={view} onViewChange={onViewChange} />;
 }
@@ -111,3 +134,37 @@ export const SidebarCombined: Story = {
     );
   },
 };
+
+/* ══════════════════════════════════════════════════════
+   STORY 3 — All L2 panels reference
+   One story per panel for quick visual review
+   ══════════════════════════════════════════════════════ */
+const panelStories: { name: string; view: AppView }[] = [
+  { name: "L2 / Reports (Dashboard)",  view: "dashboard" },
+  { name: "L2 / Reviews",              view: "reviews" },
+  { name: "L2 / Social AI",            view: "social" },
+  { name: "L2 / Search AI",            view: "searchai" },
+  { name: "L2 / Listings",             view: "listings" },
+  { name: "L2 / Contacts",             view: "contacts" },
+  { name: "L2 / Inbox",                view: "inbox" },
+  { name: "L2 / Surveys",              view: "surveys" },
+  { name: "L2 / Ticketing",            view: "ticketing" },
+  { name: "L2 / Campaigns",            view: "campaigns" },
+  { name: "L2 / Insights",             view: "insights" },
+  { name: "L2 / Competitors",          view: "competitors" },
+  { name: "L2 / Myna AI — Agents",     view: "agents" },
+];
+
+export const L2Reports: Story     = { name: panelStories[0].name,  render: () => <SidebarFrame><L2NavPanel currentView="dashboard" onViewChange={() => {}} /></SidebarFrame> };
+export const L2Reviews: Story     = { name: panelStories[1].name,  render: () => <SidebarFrame><ReviewsL2NavPanel /></SidebarFrame> };
+export const L2Social: Story      = { name: panelStories[2].name,  render: () => <SidebarFrame><SocialL2NavPanel /></SidebarFrame> };
+export const L2SearchAI: Story    = { name: panelStories[3].name,  render: () => <SidebarFrame><SearchAIL2NavPanel /></SidebarFrame> };
+export const L2Listings: Story    = { name: panelStories[4].name,  render: () => <SidebarFrame><ListingsL2NavPanel /></SidebarFrame> };
+export const L2Contacts: Story    = { name: panelStories[5].name,  render: () => <SidebarFrame><ContactsL2NavPanel /></SidebarFrame> };
+export const L2Inbox: Story       = { name: panelStories[6].name,  render: () => <SidebarFrame><InboxL2NavPanel /></SidebarFrame> };
+export const L2Surveys: Story     = { name: panelStories[7].name,  render: () => <SidebarFrame><SurveysL2NavPanel /></SidebarFrame> };
+export const L2Ticketing: Story   = { name: panelStories[8].name,  render: () => <SidebarFrame><TicketingL2NavPanel /></SidebarFrame> };
+export const L2Campaigns: Story   = { name: panelStories[9].name,  render: () => <SidebarFrame><CampaignsL2NavPanel /></SidebarFrame> };
+export const L2Insights: Story    = { name: panelStories[10].name, render: () => <SidebarFrame><InsightsL2NavPanel /></SidebarFrame> };
+export const L2Competitors: Story = { name: panelStories[11].name, render: () => <SidebarFrame><CompetitorsL2NavPanel /></SidebarFrame> };
+export const L2Agents: Story      = { name: panelStories[12].name, render: () => <SidebarFrame><AgentsL2NavPanel currentView="agents" onViewChange={() => {}} selectedAgentSlug="" /></SidebarFrame> };
