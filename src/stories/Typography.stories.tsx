@@ -33,13 +33,13 @@ export const FontFamily: Story = {
       {/* Specimen */}
       <div className="rounded-xl border border-border bg-card p-8 flex flex-col gap-2">
         <p className="text-5xl leading-tight tracking-tight">
-          Figtree
+          Inter
         </p>
         <p className="text-2xl text-muted-foreground">
           The quick brown fox jumps over the lazy dog
         </p>
         <p className="text-sm text-muted-foreground mt-2 font-mono">
-          font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif
+          font-family: 'Inter', ui-sans-serif, system-ui, sans-serif
         </p>
       </div>
 
@@ -47,7 +47,7 @@ export const FontFamily: Story = {
       <div className="grid grid-cols-3 gap-4">
         <div className="rounded-lg border border-border bg-card p-4 flex flex-col gap-1">
           <p className="text-xs text-muted-foreground">Font</p>
-          <p className="text-sm">Figtree</p>
+          <p className="text-sm">Inter</p>
         </div>
         <div className="rounded-lg border border-border bg-card p-4 flex flex-col gap-1">
           <p className="text-xs text-muted-foreground">Source</p>
@@ -341,7 +341,7 @@ export const Specimen: Story = {
   name: "Font / Full Specimen",
   render: () => (
     <div className="flex flex-col gap-10 max-w-3xl">
-      <Label>Full type specimen — Figtree 300 & 400</Label>
+      <Label>Full type specimen — Inter 300 & 400</Label>
 
       {/* Large display */}
       <div className="flex flex-col gap-1">
