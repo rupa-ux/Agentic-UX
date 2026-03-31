@@ -160,39 +160,58 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
         {iconStripItems.map(({ label, Icon }) => {
           const isActive = label === activeIcon;
           return (
-            <button
-              key={label}
-              onClick={() => {
-                setActiveIcon(label);
-                if (label === "Inbox") onViewChange("inbox");
-                else if (label === "Reports") onViewChange("dashboard");
-                else if (label === "Reviews") onViewChange("reviews");
-                else if (label === "Social") onViewChange("social");
-                else if (label === "Insights") onViewChange("searchai");
-                else if (label === "Contacts") onViewChange("contacts");
-                else if (label === "Agents") onViewChange("agents");
-              }}
-              className={`
-                group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0
-                transition-all duration-200 ease-out outline-none
-                focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-[#e0e5eb] dark:focus-visible:ring-offset-[#181b22]
-                ${isActive
-                  ? "bg-[#dae3f0] dark:bg-[#252d42] shadow-[0_0_0_1px_rgba(30,68,204,0.08)]"
-                  : "bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95"
-                }
-              `}
-              title={label}
-            >
-              <Icon
-                size={iconSize}
-                weight={isActive ? "fill" : "regular"}
-                className={`transition-all duration-200 ${
-                  isActive
-                    ? "text-[#1E44CC] dark:text-[#2952E3]"
-                    : "text-[#505050] dark:text-[#9ba2b0] group-hover:scale-110"
-                } ${label === "Agents" && isActive ? "animate-[agents-shimmer_3s_ease-in-out_infinite]" : ""}`}
-              />
-            </button>
+            /* ── Tooltip wrapper ── */
+            <div key={label} className="group/tip relative flex items-center">
+              <button
+                onClick={() => {
+                  setActiveIcon(label);
+                  if (label === "Inbox") onViewChange("inbox");
+                  else if (label === "Reports") onViewChange("dashboard");
+                  else if (label === "Reviews") onViewChange("reviews");
+                  else if (label === "Social") onViewChange("social");
+                  else if (label === "Insights") onViewChange("searchai");
+                  else if (label === "Contacts") onViewChange("contacts");
+                  else if (label === "Agents") onViewChange("agents");
+                }}
+                className={`
+                  group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0
+                  transition-all duration-200 ease-out outline-none
+                  focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-[#e0e5eb] dark:focus-visible:ring-offset-[#181b22]
+                  ${isActive
+                    ? "bg-[#dae3f0] dark:bg-[#252d42] shadow-[0_0_0_1px_rgba(30,68,204,0.08)]"
+                    : "bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95"
+                  }
+                `}
+              >
+                <Icon
+                  size={iconSize}
+                  weight={isActive ? "fill" : "regular"}
+                  className={`transition-all duration-200 ${
+                    isActive
+                      ? "text-[#1E44CC] dark:text-[#2952E3]"
+                      : "text-[#505050] dark:text-[#9ba2b0] group-hover:scale-110"
+                  } ${label === "Agents" && isActive ? "animate-[agents-shimmer_3s_ease-in-out_infinite]" : ""}`}
+                />
+              </button>
+
+              {/* ── Animated tooltip ── */}
+              <div
+                className="
+                  pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2 z-[200]
+                  opacity-0 group-hover/tip:opacity-100
+                  [animation:none] group-hover/tip:[animation:tooltip-in_180ms_ease-out_forwards]
+                "
+              >
+                {/* Arrow */}
+                <div className="flex items-center gap-0">
+                  <div className="w-0 h-0 border-y-[5px] border-y-transparent border-r-[5px] border-r-[#212121]" />
+                  {/* Label */}
+                  <div className="bg-[#212121] text-white text-[11px] px-[8px] py-[5px] rounded-[5px] whitespace-nowrap shadow-lg leading-none">
+                    {label}
+                  </div>
+                </div>
+              </div>
+            </div>
           );
         })}
       </div>
@@ -200,25 +219,39 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
       {/* ─── Bottom: Settings + Profile ─── */}
       <div className="flex flex-col items-center gap-2 pb-3 pt-2 shrink-0">
         {/* Agent setup */}
-        <button
-          onClick={() => onViewChange("agents-onboarding")}
-          className={`w-[34px] h-[34px] flex items-center justify-center rounded-full transition-colors ${
-            currentView === "agents-onboarding"
-              ? "bg-[#dae3f0] dark:bg-[#252d42]"
-              : "hover:bg-[#d0d5dc] dark:hover:bg-[#2e3340]"
-          }`}
-          title="Agent setup"
-        >
-          <Sparkles className={`w-[14px] h-[14px] ${currentView === "agents-onboarding" ? "text-[#2552ED]" : "text-[#555] dark:text-[#8b92a5]"}`} />
-        </button>
+        <div className="group/tip relative flex items-center">
+          <button
+            onClick={() => onViewChange("agents-onboarding")}
+            className={`w-[34px] h-[34px] flex items-center justify-center rounded-full transition-colors ${
+              currentView === "agents-onboarding"
+                ? "bg-[#dae3f0] dark:bg-[#252d42]"
+                : "hover:bg-[#d0d5dc] dark:hover:bg-[#2e3340]"
+            }`}
+          >
+            <Sparkles className={`w-[14px] h-[14px] ${currentView === "agents-onboarding" ? "text-[#2552ED]" : "text-[#555] dark:text-[#8b92a5]"}`} />
+          </button>
+          <div className="pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2 z-[200] opacity-0 group-hover/tip:opacity-100 [animation:none] group-hover/tip:[animation:tooltip-in_180ms_ease-out_forwards]">
+            <div className="flex items-center">
+              <div className="w-0 h-0 border-y-[5px] border-y-transparent border-r-[5px] border-r-[#212121]" />
+              <div className="bg-[#212121] text-white text-[11px] px-[8px] py-[5px] rounded-[5px] whitespace-nowrap shadow-lg leading-none">Agent setup</div>
+            </div>
+          </div>
+        </div>
 
         {/* Settings gear */}
-        <button
-          className="w-[34px] h-[34px] flex items-center justify-center rounded-full hover:bg-[#d0d5dc] dark:hover:bg-[#2e3340] transition-colors"
-          title="Settings"
-        >
-          <Settings className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" />
-        </button>
+        <div className="group/tip relative flex items-center">
+          <button
+            className="w-[34px] h-[34px] flex items-center justify-center rounded-full hover:bg-[#d0d5dc] dark:hover:bg-[#2e3340] transition-colors"
+          >
+            <Settings className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" />
+          </button>
+          <div className="pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2 z-[200] opacity-0 group-hover/tip:opacity-100 [animation:none] group-hover/tip:[animation:tooltip-in_180ms_ease-out_forwards]">
+            <div className="flex items-center">
+              <div className="w-0 h-0 border-y-[5px] border-y-transparent border-r-[5px] border-r-[#212121]" />
+              <div className="bg-[#212121] text-white text-[11px] px-[8px] py-[5px] rounded-[5px] whitespace-nowrap shadow-lg leading-none">Settings</div>
+            </div>
+          </div>
+        </div>
 
         {/* Profile avatar with upward dropdown */}
         <div className="relative" ref={profileRef}>

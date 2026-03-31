@@ -59,7 +59,7 @@ export const FontFamily: Story = {
         </div>
         <div className="rounded-lg border border-border bg-card p-4 flex flex-col gap-1">
           <p className="text-xs text-muted-foreground">Base size</p>
-          <p className="text-sm">16px</p>
+          <p className="text-sm">13px</p>
         </div>
         <div className="rounded-lg border border-border bg-card p-4 flex flex-col gap-1">
           <p className="text-xs text-muted-foreground">Base line height</p>
@@ -100,7 +100,7 @@ export const TypeScale: Story = {
     const scale = [
       { token: "text-xs",   size: "12px", sample: "Extra small — labels, captions, metadata" },
       { token: "text-sm",   size: "14px", sample: "Small — secondary text, table cells, helper text" },
-      { token: "text-base", size: "16px", sample: "Base — body copy, default input text" },
+      { token: "text-base", size: "13px", sample: "Base — body copy, default input text" },
       { token: "text-lg",   size: "18px", sample: "Large — section headings (h3)" },
       { token: "text-xl",   size: "20px", sample: "Extra large — page sub-headings (h2)" },
       { token: "text-2xl",  size: "24px", sample: "2XL — page titles (h1)" },

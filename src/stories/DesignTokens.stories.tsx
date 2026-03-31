@@ -468,3 +468,112 @@ export const ElevationMap: Story = {
     </div>
   ),
 };
+
+/* ══════════════════════════════════════════════════════
+   BUTTON SYSTEM
+   Every interactive button in the product must use these heights.
+   ══════════════════════════════════════════════════════ */
+import { Button } from "@/app/components/ui/button";
+
+export const ButtonSystem: Story = {
+  name: "Button System",
+  render: () => (
+    <div className="flex flex-col gap-10 max-w-2xl">
+
+      <div>
+        <SectionLabel>Button height tokens</SectionLabel>
+        <div className="rounded-xl border border-border overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/50">
+                {["Token", "Value", "Size variant", "Live example"].map(h => (
+                  <th key={h} className="text-left px-4 py-2.5 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { token: "--button-height-sm", value: "32px", size: "sm",      label: "Small" },
+                { token: "--button-height",    value: "38px", size: "default", label: "Default" },
+                { token: "--button-height-lg", value: "44px", size: "lg",      label: "Large" },
+              ].map(({ token, value, size, label }) => (
+                <tr key={token} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                  <td className="px-4 py-3 font-mono text-xs text-primary">{token}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{value}</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">{label}</td>
+                  <td className="px-4 py-3">
+                    <Button size={size as any} variant="outline">{label}</Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <SectionLabel>All variants at 38px default height</SectionLabel>
+        <div className="flex flex-wrap gap-3 items-center">
+          {(["default","secondary","outline","ghost","destructive","link"] as const).map(v => (
+            <Button key={v} variant={v}>{v.charAt(0).toUpperCase() + v.slice(1)}</Button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <SectionLabel>Size comparison</SectionLabel>
+        <div className="flex flex-wrap gap-3 items-end">
+          <div className="flex flex-col items-center gap-1">
+            <Button size="sm">Small — 32px</Button>
+            <span className="font-mono text-[10px] text-muted-foreground">h: 32px</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <Button size="default">Default — 38px</Button>
+            <span className="font-mono text-[10px] text-muted-foreground">h: 38px</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <Button size="lg">Large — 44px</Button>
+            <span className="font-mono text-[10px] text-muted-foreground">h: 44px</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <Button size="icon">⊕</Button>
+            <span className="font-mono text-[10px] text-muted-foreground">h: 38px</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <SectionLabel>Base font size</SectionLabel>
+        <div className="rounded-xl border border-border overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/50">
+                {["Token", "Value", "Effect"].map(h => (
+                  <th key={h} className="text-left px-4 py-2.5 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { token: "--font-size", value: "13px", effect: "Sets root rem — all rem-based sizes scale from here" },
+                { token: "text-xs",    value: "0.75rem ≈ 10px", effect: "Captions, metadata, timestamps" },
+                { token: "text-sm",    value: "0.875rem ≈ 11px", effect: "Secondary text, table cells" },
+                { token: "text-base",  value: "1rem = 13px", effect: "Body copy, inputs, default UI text" },
+                { token: "text-lg",    value: "1.125rem ≈ 15px", effect: "Sub-headings (h3)" },
+                { token: "text-xl",    value: "1.25rem ≈ 16px", effect: "Section headings (h2)" },
+                { token: "text-2xl",   value: "1.5rem ≈ 20px", effect: "Page titles (h1)" },
+              ].map(({ token, value, effect }) => (
+                <tr key={token} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                  <td className="px-4 py-3 font-mono text-xs text-primary">{token}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{value}</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">{effect}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  ),
+};
