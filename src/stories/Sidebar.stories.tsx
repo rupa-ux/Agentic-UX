@@ -20,9 +20,9 @@ const VIEW_OPTIONS: AppView[] = [
 ];
 
 const VIEW_LABELS: Record<string, string> = {
-  "agents":                "BirdAI — Agents",
-  "agents-monitor":        "BirdAI — Monitor",
-  "birdai-reports":        "BirdAI — Reports",
+  "agents":                "Myna AI — Agents",
+  "agents-monitor":        "Myna AI — Monitor",
+  "birdai-reports":        "Myna AI — Reports",
   "dashboard":             "Reports — Dashboard",
   "shared-by-me":          "Reports — Shared by me",
   "reviews":               "Reviews",

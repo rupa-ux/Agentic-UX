@@ -199,7 +199,7 @@ export function ComponentShowcase() {
             <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[8px] hover:bg-[#f5f3ff] dark:hover:bg-[#1e2d5e] transition-colors group border border-[#e8def6] dark:border-[#2d2d50]">
               <Sparkles className="w-3.5 h-3.5 text-[#9970D7]" />
               <span className="text-[11px] bg-gradient-to-r from-[#9970D7] to-[#2552ED] bg-clip-text text-transparent" style={{ fontWeight: 400 }}>
-                Customise with BirdAI
+                Customise with Myna AI
               </span>
             </button>
           </Row>

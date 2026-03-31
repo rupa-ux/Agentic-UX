@@ -14,9 +14,9 @@ import type { AppView } from "@/app/App";
 
 /* ─── View metadata for the view switcher ─── */
 const VIEWS: { value: AppView; label: string; group: string }[] = [
-  { value: "agents",               label: "BirdAI — Agents",        group: "BirdAI" },
-  { value: "agents-monitor",       label: "BirdAI — Monitor",       group: "BirdAI" },
-  { value: "birdai-reports",       label: "BirdAI — Reports",       group: "BirdAI" },
+  { value: "agents",               label: "Myna AI — Agents",        group: "Myna AI" },
+  { value: "agents-monitor",       label: "Myna AI — Monitor",       group: "Myna AI" },
+  { value: "birdai-reports",       label: "Myna AI — Reports",       group: "Myna AI" },
   { value: "dashboard",            label: "Reports — Dashboard",    group: "Reports" },
   { value: "shared-by-me",         label: "Reports — Shared by me", group: "Reports" },
   { value: "reviews",              label: "Reviews",                group: "Modules" },

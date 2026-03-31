@@ -805,7 +805,7 @@ function YelpReplyAs() {
 function Frame45() {
   return (
     <div className="content-stretch flex gap-[8px] items-center relative shrink-0">
-      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[18px] not-italic relative shrink-0 text-[#555] text-[12px] whitespace-nowrap">BirdAI suggested reply</p>
+      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[18px] not-italic relative shrink-0 text-[#555] text-[12px] whitespace-nowrap">Myna AI suggested reply</p>
       <div className="relative shrink-0 size-[4px]">
         <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 4 4">
           <circle cx="2" cy="2" fill="var(--fill-0, #555555)" id="Ellipse 35" r="2" />
@@ -1116,7 +1116,7 @@ function YelpReplyAs1() {
 function Frame46() {
   return (
     <div className="content-stretch flex gap-[8px] items-center relative shrink-0">
-      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[18px] not-italic relative shrink-0 text-[#555] text-[12px] whitespace-nowrap">BirdAI suggested reply</p>
+      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[18px] not-italic relative shrink-0 text-[#555] text-[12px] whitespace-nowrap">Myna AI suggested reply</p>
       <div className="relative shrink-0 size-[4px]">
         <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 4 4">
           <circle cx="2" cy="2" fill="var(--fill-0, #555555)" id="Ellipse 35" r="2" />
@@ -1457,7 +1457,7 @@ function YelpReplyAs2() {
 function Frame47() {
   return (
     <div className="content-stretch flex gap-[8px] items-center relative shrink-0">
-      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[18px] not-italic relative shrink-0 text-[#555] text-[12px] whitespace-nowrap">BirdAI suggested reply</p>
+      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[18px] not-italic relative shrink-0 text-[#555] text-[12px] whitespace-nowrap">Myna AI suggested reply</p>
       <div className="relative shrink-0 size-[4px]">
         <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 4 4">
           <circle cx="2" cy="2" fill="var(--fill-0, #555555)" id="Ellipse 35" r="2" />
@@ -1798,7 +1798,7 @@ function YelpReplyAs3() {
 function Frame48() {
   return (
     <div className="content-stretch flex gap-[8px] items-center relative shrink-0">
-      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[18px] not-italic relative shrink-0 text-[#555] text-[12px] whitespace-nowrap">BirdAI suggested reply</p>
+      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[18px] not-italic relative shrink-0 text-[#555] text-[12px] whitespace-nowrap">Myna AI suggested reply</p>
       <div className="relative shrink-0 size-[4px]">
         <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 4 4">
           <circle cx="2" cy="2" fill="var(--fill-0, #555555)" id="Ellipse 35" r="2" />

@@ -240,7 +240,7 @@ function InsightBlock({ text }: { text: string }) {
         <Sparkles className="w-3.5 h-3.5 text-white" />
       </div>
       <div>
-        <p className="text-[13px] text-[#9970D7] dark:text-[#b89ce6] mb-1 tracking-[-0.26px]" style={{ fontWeight: 400 }}>BirdAI insight</p>
+        <p className="text-[13px] text-[#9970D7] dark:text-[#b89ce6] mb-1 tracking-[-0.26px]" style={{ fontWeight: 400 }}>Myna AI insight</p>
         <p className="text-[13px] text-[#555] dark:text-[#9ba2b0]" style={{ fontWeight: 300 }}>{text}</p>
       </div>
     </div>
@@ -533,7 +533,7 @@ function AdoptionUsagePage() {
    ════════════════════════════════════════════════════════════ */
 
 const reportDescriptions: Record<ReportTab, string> = {
-  executive: "How BirdAI improved your business this period",
+  executive: "How Myna AI improved your business this period",
   "agent-performance": "How each agent is performing across metrics",
   "product-outcomes": "Business outcomes broken down by product area",
   workflow: "Performance of automation workflows and scheduled deliveries",

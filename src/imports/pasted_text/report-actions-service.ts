@@ -51,7 +51,7 @@ These actions should be available as reusable capabilities that can be attached 
 
 Examples of target surfaces:
 
-BirdAI reports
+Myna AI reports
 
 product reports
 
@@ -571,7 +571,7 @@ Run now
 
 Add to workflow
 
-Add to BirdAI reporting agent
+Add to Myna AI reporting agent
 
 Notify via Slack
 

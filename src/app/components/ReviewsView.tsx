@@ -134,14 +134,14 @@ function StarRating({ rating, size = 20 }: { rating: number; size?: number }) {
   );
 }
 
-/* ─── BirdAI Suggested Reply ─── */
-function BirdAIReply({ hasThreeDots }: { hasThreeDots?: boolean }) {
+/* ─── Myna AI Suggested Reply ─── */
+function MynaAIReply({ hasThreeDots }: { hasThreeDots?: boolean }) {
   return (
     <div className="relative bg-[#f9f7fd] dark:bg-[#1e1a2e] rounded-[8px] p-5 w-full">
       <div className="flex flex-col gap-[6px]">
         {/* Header row */}
         <div className="flex items-center gap-2">
-          <span className="text-[12px] text-[#555] dark:text-[#8b92a5]">BirdAI suggested reply</span>
+          <span className="text-[12px] text-[#555] dark:text-[#8b92a5]">Myna AI suggested reply</span>
           <div className="size-[4px] rounded-full bg-[#555] dark:bg-[#8b92a5]" />
           <div className="flex items-center">
             <span className="text-[12px] text-[#555] dark:text-[#8b92a5]">Reply as</span>
@@ -341,8 +341,8 @@ function ReviewCard({ review }: { review: Review }) {
       {/* Photo carousel */}
       {review.photos.length > 0 && <PhotoCarousel photos={review.photos} />}
 
-      {/* BirdAI suggested reply */}
-      <BirdAIReply hasThreeDots={review.hasReplyDots} />
+      {/* Myna AI suggested reply */}
+      <MynaAIReply hasThreeDots={review.hasReplyDots} />
 
       {/* Action row */}
       <ActionRow replyStatus={review.replyStatus} />

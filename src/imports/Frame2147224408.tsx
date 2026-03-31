@@ -493,7 +493,7 @@ function Frame3() {
 function Frame21() {
   return (
     <div className="absolute content-stretch flex h-[26.103px] items-center left-[16.06px] py-[1.004px] top-[13.05px]">
-      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[20.079px] not-italic relative shrink-0 text-[#212121] text-[14.056px] tracking-[-0.2811px] whitespace-nowrap">Customise with BirdAI</p>
+      <p className="font-['Inter:Regular',sans-serif] font-normal leading-[20.079px] not-italic relative shrink-0 text-[#212121] text-[14.056px] tracking-[-0.2811px] whitespace-nowrap">Customise with Myna AI</p>
     </div>
   );
 }
