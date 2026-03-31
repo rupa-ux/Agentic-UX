@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const STORAGE_KEY = "myna-chat-panel-width";
 
-export const PANEL_WIDTH_DEFAULT = 360;
-export const PANEL_WIDTH_MIN = 280;
+export const PANEL_WIDTH_DEFAULT = 380;
+export const PANEL_WIDTH_MIN = 380;
 export const PANEL_WIDTH_MAX = 600;
 
 function readStoredWidth(): number {
