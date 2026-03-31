@@ -623,9 +623,6 @@ export function InboxView() {
 
   return (
     <div className="flex-1 flex min-h-0 overflow-hidden bg-[#f8f9fa] dark:bg-[#13161b] transition-colors duration-300 rounded-tr-[8px]">
-      {/* ═══ FAR LEFT: Inbox nav ═══ */}
-      <InboxNav />
-
       {/* ═══ CENTER-LEFT: Conversation list ═══ */}
       <div className="w-[360px] flex flex-col bg-white dark:bg-[#1e2229] border-r border-[#eaeaea] dark:border-[#333a47] shrink-0 transition-colors duration-300">
         {/* List header */}
