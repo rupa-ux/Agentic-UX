@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
 import {
   ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Palette, Clock, Sparkles, ExternalLink,
 } from "lucide-react";
@@ -171,8 +170,6 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
           return (
             <button
               key={label}
-              onMouseEnter={(e) => showTooltip(e, label)}
-              onMouseLeave={hideTooltip}
               onClick={() => {
                 setActiveIcon(label);
                 if (label === "Inbox") onViewChange("inbox");
@@ -211,8 +208,6 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
       <div className="flex flex-col items-center gap-2 pb-3 pt-2 shrink-0">
         {/* Agent setup */}
         <button
-          onMouseEnter={(e) => showTooltip(e, "Agent setup")}
-          onMouseLeave={hideTooltip}
           onClick={() => onViewChange("agents-onboarding")}
           className={`w-[34px] h-[34px] flex items-center justify-center rounded-full transition-colors ${
             currentView === "agents-onboarding"
@@ -225,8 +220,6 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
 
         {/* Settings gear */}
         <button
-          onMouseEnter={(e) => showTooltip(e, "Settings")}
-          onMouseLeave={hideTooltip}
           className="w-[34px] h-[34px] flex items-center justify-center rounded-full hover:bg-[#d0d5dc] dark:hover:bg-[#2e3340] transition-colors"
         >
           <Settings className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" />
@@ -434,19 +427,6 @@ export function IconStrip({ currentView, onViewChange, iconSize = 18 }: IconStri
         </div>
       </div>
 
-      {/* ── Portal tooltip — renders at document.body to escape overflow clipping ── */}
-      {tooltip && createPortal(
-        <div
-          className="pointer-events-none fixed z-[9999] flex items-center"
-          style={{ top: tooltip.top, left: 78, transform: "translateY(-50%)", animation: "tooltip-in 180ms ease-out forwards" }}
-        >
-          <div className="w-0 h-0 border-y-[5px] border-y-transparent border-r-[5px] border-r-[#212121]" />
-          <div className="bg-[#212121] text-white text-[11px] px-[8px] py-[5px] rounded-[5px] whitespace-nowrap shadow-lg leading-none">
-            {tooltip.label}
-          </div>
-        </div>,
-        document.body
-      )}
 
     </div>
   );
