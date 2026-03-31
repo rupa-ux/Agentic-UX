@@ -114,11 +114,9 @@ export function MynaChatPanel({
     }, 600);
   };
 
-  const headerIconBtn =
-    "rounded-lg p-2 transition-colors " +
-    (expanded
-      ? "text-[#6b6b6b] hover:bg-black/[0.06] dark:text-[#a8a8a8] dark:hover:bg-white/[0.08]"
-      : "text-[#555] hover:bg-[#f0f1f5] dark:text-[#8b92a5] dark:hover:bg-[#2e3340]");
+  const headerIconBtnTone = expanded
+    ? "text-[#6b6b6b] hover:bg-black/[0.06] dark:text-[#a8a8a8] dark:hover:bg-white/[0.08]"
+    : "text-[#555] hover:bg-[#f0f1f5] dark:text-[#8b92a5] dark:hover:bg-[#2e3340]";
 
   const renderComposer = (variant: "docked" | "expanded") => {
     const expandedShell = variant === "expanded";
@@ -253,31 +251,35 @@ export function MynaChatPanel({
           <div className="flex shrink-0 items-center gap-0">
             {!expanded ? (
               <>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={onOpenNewChat}
-                  className={headerIconBtn}
+                  className={cn("rounded-lg transition-colors", headerIconBtnTone)}
                   aria-label="New chat"
                 >
                   <Plus className="size-4" />
-                </button>
+                </Button>
                 <Popover open={historyOpen} onOpenChange={setHistoryOpen}>
                   <PopoverTrigger asChild>
-                    <button
+                    <Button
                       type="button"
-                      className={headerIconBtn}
+                      variant="ghost"
+                      size="icon"
+                      className={cn("rounded-lg transition-colors", headerIconBtnTone)}
                       aria-label="Chat history"
                       aria-expanded={historyOpen}
                       aria-haspopup="dialog"
                     >
                       <History className="size-4" />
-                    </button>
+                    </Button>
                   </PopoverTrigger>
                   <PopoverContent
                     align="end"
                     side="bottom"
                     sideOffset={8}
-                    className="z-[60] w-72 max-w-[min(18rem,calc(100vw-2rem))] border-0 bg-white p-0 shadow-md outline-none dark:bg-[#1a1d24]"
+                    className="z-[60] w-72 max-w-[min(18rem,calc(100vw-2rem))] border-0 bg-white p-0 shadow-sm outline-none dark:bg-[#1a1d24]"
                   >
                     <div className="px-4 pt-3 pb-2">
                       <p
@@ -315,19 +317,28 @@ export function MynaChatPanel({
                     </div>
                   </PopoverContent>
                 </Popover>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={onToggleExpand}
-                  className={headerIconBtn}
+                  className={cn("rounded-lg transition-colors", headerIconBtnTone)}
                   aria-label="Expand chat workspace"
                 >
                   <Maximize2 className="size-4" />
-                </button>
+                </Button>
               </>
             ) : null}
-            <button type="button" onClick={onClose} className={headerIconBtn} aria-label="Close chat">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className={cn("rounded-lg transition-colors", headerIconBtnTone)}
+              aria-label="Close chat"
+            >
               <X className="size-4" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>

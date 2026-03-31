@@ -7,7 +7,6 @@ import {
   Mail,
   Phone,
   MessageSquare,
-  Plus,
   Eye,
   Send,
   Pencil,
@@ -16,6 +15,7 @@ import {
   Trash2,
   Flame,
 } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
 
 /* ─── Types ─── */
 type ScoreLevel = "green" | "yellow" | "red";
@@ -123,20 +123,9 @@ export function ContactsView() {
   const [selectedRow, setSelectedRow] = useState<number | null>(4); // Noah Hayes selected by default
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; contactId: number } | null>(null);
-  const [addMenuOpen, setAddMenuOpen] = useState(false);
-  const addMenuRef = useRef<HTMLDivElement>(null);
-
   const totalContacts = 45867;
   const pageSize = 15;
   const totalPages = Math.ceil(totalContacts / pageSize);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (addMenuRef.current && !addMenuRef.current.contains(e.target as Node)) setAddMenuOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {
@@ -168,39 +157,10 @@ export function ContactsView() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Add contacts CTA */}
-            <div className="relative" ref={addMenuRef}>
-              <button
-                onClick={() => setAddMenuOpen(!addMenuOpen)}
-                className="h-[34px] px-3 flex items-center gap-1.5 bg-[#2552ED] text-white rounded-[8px] hover:bg-[#1e44c4] transition-colors"
-              >
-                <span className="text-[13px]" style={{ fontWeight: 400 }}>
-                  Add contacts
-                </span>
-                <ChevronDown className="w-[14px] h-[14px]" />
-              </button>
-              {addMenuOpen && (
-                <div className="absolute right-0 top-[38px] z-40 bg-white dark:bg-[#1e2229] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] py-1 min-w-[160px]" style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.12)" }}>
-                  <button className="w-full text-left px-3 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors" style={{ fontWeight: 400 }}>
-                    <div className="flex items-center gap-2">
-                      <Plus className="w-[14px] h-[14px]" />
-                      Add single contact
-                    </div>
-                  </button>
-                  <button className="w-full text-left px-3 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors" style={{ fontWeight: 400 }}>
-                    <div className="flex items-center gap-2">
-                      <Plus className="w-[14px] h-[14px]" />
-                      Import contacts
-                    </div>
-                  </button>
-                </div>
-              )}
-            </div>
-
             {/* More options */}
-            <button className="h-[34px] w-[34px] flex items-center justify-center border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] bg-white dark:bg-[#262b35] text-[#555] dark:text-[#8b92a5] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
+            <Button variant="outline" size="icon">
               <MoreVertical className="w-[14px] h-[14px]" />
-            </button>
+            </Button>
           </div>
         </div>
 

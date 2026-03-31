@@ -3,11 +3,11 @@
 export type ActivityStatus = "success" | "warning" | "error" | "processing";
 
 export type ActivityCategory =
-  | "Customer Interaction"
+  | "Customer interaction"
   | "Automation"
-  | "Content Publishing"
-  | "Data Update"
-  | "System Event"
+  | "Content publishing"
+  | "Data update"
+  | "System event"
   | "Error";
 
 export interface TimelineStep {
@@ -45,7 +45,7 @@ export const monitorActivities: MonitorActivity[] = [
     action: "Replied to a 2-star review on Google",
     status: "success",
     detail: "Sentiment: negative • Auto-approved",
-    category: "Customer Interaction",
+    category: "Customer interaction",
     timeline: [
       {
         time: "10:42:01",
@@ -76,7 +76,7 @@ export const monitorActivities: MonitorActivity[] = [
     action: "Scheduled campaign post on Instagram",
     status: "success",
     detail: "Campaign: Spring Sale 2026",
-    category: "Content Publishing",
+    category: "Content publishing",
     timeline: [
       { time: "10:39:01", label: "Campaign trigger activated" },
       { time: "10:39:03", label: "Generated caption and hashtags" },
@@ -92,7 +92,7 @@ export const monitorActivities: MonitorActivity[] = [
     action: "Escalated support request to Tier 2",
     status: "warning",
     detail: "Confidence: low",
-    category: "Customer Interaction",
+    category: "Customer interaction",
     timeline: [
       { time: "10:34:01", label: "Ticket #5201 received" },
       { time: "10:34:04", label: "Agent classified: Billing dispute" },
@@ -128,7 +128,7 @@ export const monitorActivities: MonitorActivity[] = [
     action: "Updated hours on 3 Google Business profiles",
     status: "success",
     detail: "Locations: San Francisco, Austin, Denver",
-    category: "Data Update",
+    category: "Data update",
     timeline: [
       { time: "10:22:01", label: "Holiday schedule detected" },
       { time: "10:22:04", label: "Updated 3 location profiles" },
@@ -163,7 +163,7 @@ export const monitorActivities: MonitorActivity[] = [
     action: "Drafted response for 1-star review (pending approval)",
     status: "warning",
     detail: "Confidence: 0.38 • Requires human review",
-    category: "Customer Interaction",
+    category: "Customer interaction",
     hasDraft: true,
     draftText:
       "We sincerely apologize for your experience. Your feedback is important to us, and we'd like to make things right. Could you reach out to our team directly so we can address your concerns?",
@@ -205,7 +205,7 @@ export const monitorActivities: MonitorActivity[] = [
     action: "Replied to a 5-star review on Yelp",
     status: "success",
     detail: "Sentiment: positive • Auto-approved",
-    category: "Customer Interaction",
+    category: "Customer interaction",
     timeline: [
       { time: "9:48:01", label: "5-star review detected on Yelp" },
       { time: "9:48:03", label: "Sentiment: Positive" },
@@ -220,7 +220,7 @@ export const monitorActivities: MonitorActivity[] = [
     action: "Responded to 8 comments on Facebook",
     status: "success",
     detail: "Avg response time: 2.3 min",
-    category: "Customer Interaction",
+    category: "Customer interaction",
     timeline: [
       { time: "9:42:01", label: "8 new comments detected" },
       { time: "9:42:04", label: "Responses generated and posted" },
@@ -234,7 +234,7 @@ export const monitorActivities: MonitorActivity[] = [
     action: "Detected outdated photo on Google listing",
     status: "warning",
     detail: "Location: Portland • Flagged for review",
-    category: "Data Update",
+    category: "Data update",
     timeline: [
       { time: "9:35:01", label: "Photo audit completed" },
       { time: "9:35:04", label: "1 photo flagged as outdated (>12 months)" },

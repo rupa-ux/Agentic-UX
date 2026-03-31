@@ -1,5 +1,6 @@
 import { useState, Fragment, useMemo } from "react";
 import { ChevronDown, ChevronUp, Filter, MoreVertical, Search } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Cell, PieChart, Pie,
@@ -293,37 +294,37 @@ function CardHeader({ title, subtitle, actions }: { title: React.ReactNode; subt
 /* ─── Reusable: Icon Button ─── */
 function IconBtn({ children }: { children: React.ReactNode }) {
   return (
-    <button className="h-[36px] w-[36px] bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] flex items-center justify-center hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors shrink-0">
+    <Button variant="outline" size="icon" className="shrink-0">
       {children}
-    </button>
+    </Button>
   );
 }
 
 /* ─── Reusable: Dropdown Button ─── */
 function DropdownBtn({ label }: { label: string }) {
   return (
-    <button className="h-[36px] px-3 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] flex items-center gap-2 hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors shrink-0">
+    <Button variant="outline" className="gap-2 shrink-0">
       <span className="text-[14px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.28px]" style={{ fontWeight: 400 }}>{label}</span>
       <ChevronDown className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" />
-    </button>
+    </Button>
   );
 }
 
 /* ─── Reusable: AI Summarize Button ─── */
 function SummarizeBtn() {
   return (
-    <button className="h-[36px] w-[36px] bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] flex items-center justify-center hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors relative shrink-0">
+    <Button variant="outline" size="icon" className="relative shrink-0">
       <svg className="w-[14px] h-[14px]" viewBox="0 0 16 16" fill="none">
         <path d="M5.27 1.34C5.86.49 6.2.15 6.6.04a1 1 0 0 1 .52 0c.4.11.73.45 1.32 1.3l.26.37c.18.26.27.39.4.47a1 1 0 0 0 .26.1c.14.04.3.02.6-.02l.42-.06c1-.14 1.51-.21 1.87-.04a1 1 0 0 1 .38.33c.18.34.14.85-.02 1.85l-.08.42c-.05.3-.08.46-.05.6a1 1 0 0 0 .1.25c.09.13.22.22.48.4l.37.26c.85.59 1.28.88 1.39 1.28a1 1 0 0 1 0 .53c-.11.4-.54.7-1.39 1.28l-.37.26c-.26.18-.39.27-.48.4a1 1 0 0 0-.1.25c-.03.15 0 .3.05.6l.08.43c.16 1 .2 1.5.02 1.85a1 1 0 0 1-.38.32c-.36.18-.87.1-1.87-.04l-.42-.05c-.3-.04-.46-.06-.6-.03a1 1 0 0 0-.26.1c-.13.09-.22.22-.4.48l-.26.37c-.6.85-.93 1.28-1.32 1.39a1 1 0 0 1-.52 0c-.4-.1-.74-.54-1.33-1.39l-.26-.37c-.18-.26-.27-.4-.4-.48a1 1 0 0 0-.26-.1c-.14-.03-.3-.01-.6.03l-.42.05c-1 .14-1.5.22-1.87.04a1 1 0 0 1-.38-.32c-.18-.35-.14-.85.02-1.85l.08-.43c.05-.3.08-.45.05-.6a1 1 0 0 0-.1-.25c-.09-.13-.22-.22-.48-.4l-.37-.26C.49 8.47.06 8.18-.05 7.78a1 1 0 0 1 0-.53C.06 6.85.49 6.56 1.34 5.97l.37-.26c.26-.18.39-.27.48-.4a1 1 0 0 0 .1-.26c.03-.14 0-.3-.05-.6l-.08-.42c-.16-1-.2-1.5-.02-1.85a1 1 0 0 1 .38-.33c.36-.17.87-.1 1.87.04l.42.06c.3.04.46.06.6.03a1 1 0 0 0 .26-.11c.13-.08.22-.21.4-.47z" fill="#6834B7" />
       </svg>
-    </button>
+    </Button>
   );
 }
 
 /* ─── Reusable: Toggle (By locations / By brand) ─── */
 function Toggle({ options, active, onChange }: { options: string[]; active: string; onChange: (v: string) => void }) {
   return (
-    <div className="h-[36px] bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] flex items-center gap-2 p-2 shrink-0">
+    <div className="h-[var(--button-height)] bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] flex items-center gap-2 p-2 shrink-0">
       {options.map(opt => (
         <button
           key={opt}

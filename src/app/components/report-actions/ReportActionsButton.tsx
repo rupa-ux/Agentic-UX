@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
 import { useReportActions, buildReportContext } from "./useReportActions";
 import { ShareReportModal } from "./ShareReportModal";
 import { ScheduleReportModal } from "./ScheduleReportModal";
@@ -68,14 +69,15 @@ export function ReportActionsButton({
     <>
       {/* Trigger */}
       <div className="relative" ref={dropdownRef}>
-        <button
+        <Button
+          type="button"
+          variant="outline"
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="flex items-center gap-1 px-3 py-[7px] bg-white dark:bg-[#1e2229] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors tracking-[-0.26px]"
-          style={{ fontWeight: 400 }}
+          className="gap-1 rounded-[8px] text-[13px] font-normal tracking-[-0.26px] dark:bg-[#1e2229]"
         >
           {label}
           <ChevronDown className="w-3.5 h-3.5 text-[#212121] dark:text-[#e4e4e4]" />
-        </button>
+        </Button>
 
         {/* Dropdown menu */}
         {dropdownOpen && (

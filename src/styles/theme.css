@@ -62,7 +62,7 @@
 :root {
   /* ─── Base scale ─── */
   --font-size: 13px;
-  --button-height: 38px;
+  --button-height: 34px;
   --button-height-sm: 32px;
   --button-height-lg: 44px;
 

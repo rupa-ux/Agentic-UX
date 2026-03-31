@@ -24,6 +24,7 @@ import {
   History,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/app/components/ui/button";
 
 /* ═══════════════════════════════════════════
    Types
@@ -541,12 +542,15 @@ function AgentConfigModal({ agent, onClose }: AgentConfigModalProps) {
           <h2 className="text-[16px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.32px]" style={{ fontWeight: 400 }}>
             Agent configuration
           </h2>
-          <button
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded-[6px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+            className="rounded-[6px] text-[#888] dark:text-[#6b7280]"
           >
-            <X className="w-4 h-4 text-[#888] dark:text-[#6b7280]" />
-          </button>
+            <X className="w-4 h-4" />
+          </Button>
         </div>
 
         {/* Body */}
@@ -699,38 +703,45 @@ function AgentConfigModal({ agent, onClose }: AgentConfigModalProps) {
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-[#e5e9f0] dark:border-[#2e3340]">
           <div className="flex items-center gap-2">
-            <button
+            <Button
+              type="button"
+              variant="outline"
               onClick={handleDuplicate}
-              className="h-[34px] px-3 flex items-center gap-1.5 text-[13px] text-[#555] dark:text-[#8b92a5] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+              className="gap-1.5 rounded-[8px] text-[13px] text-[#555] dark:text-[#8b92a5]"
               style={{ fontWeight: 400 }}
             >
               <Copy className="w-3.5 h-3.5" />
               Duplicate
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
               onClick={handleDelete}
-              className="h-[34px] px-3 flex items-center gap-1.5 text-[13px] text-[#C62828] border border-[#fce4ec] dark:border-[#3a1b1b] rounded-[8px] hover:bg-[#fce4ec] dark:hover:bg-[#3a1b1b] transition-colors"
+              className="gap-1.5 rounded-[8px] text-[13px] text-[#C62828] border-[#fce4ec] dark:border-[#3a1b1b] hover:bg-[#fce4ec] dark:hover:bg-[#3a1b1b]"
               style={{ fontWeight: 400 }}
             >
               <Trash2 className="w-3.5 h-3.5" />
               Delete
-            </button>
+            </Button>
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <Button
+              type="button"
+              variant="outline"
               onClick={onClose}
-              className="h-[34px] px-4 text-[13px] text-[#555] dark:text-[#8b92a5] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+              className="rounded-[8px] px-4 text-[13px] text-[#555] dark:text-[#8b92a5]"
               style={{ fontWeight: 400 }}
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
               onClick={handleSave}
-              className="h-[34px] px-4 text-[13px] text-white bg-[#2552ED] hover:bg-[#1E44CC] rounded-[8px] transition-colors"
+              className="rounded-[8px] px-4 text-[13px] bg-[#2552ED] hover:bg-[#1E44CC] text-white"
               style={{ fontWeight: 400 }}
             >
               Save changes
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -786,20 +797,20 @@ function AgentCard({ agent, onConfigure }: { agent: AgentInstance; onConfigure: 
         </span>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {agent.status === "active" ? (
-            <button onClick={handleToggleStatus} className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors" title="Pause agent">
+            <Button type="button" variant="ghost" size="icon" onClick={handleToggleStatus} className="rounded-[6px]" title="Pause agent">
               <Pause className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280]" />
-            </button>
+            </Button>
           ) : agent.status === "paused" ? (
-            <button onClick={handleToggleStatus} className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors" title="Resume agent">
+            <Button type="button" variant="ghost" size="icon" onClick={handleToggleStatus} className="rounded-[6px]" title="Resume agent">
               <Play className="w-3.5 h-3.5 text-[#2552ED]" />
-            </button>
+            </Button>
           ) : null}
-          <button onClick={(e) => { e.stopPropagation(); onConfigure(agent); }} className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors" title="Settings">
+          <Button type="button" variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onConfigure(agent); }} className="rounded-[6px]" title="Settings">
             <Settings className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280]" />
-          </button>
-          <button onClick={(e) => e.stopPropagation()} className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors" title="More">
+          </Button>
+          <Button type="button" variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} className="rounded-[6px]" title="More">
             <MoreHorizontal className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280]" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -847,17 +858,17 @@ function AgentRow({ agent, onConfigure }: { agent: AgentInstance; onConfigure: (
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {agent.status === "active" ? (
-            <button onClick={handleToggleStatus} className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors" title="Pause">
+            <Button type="button" variant="ghost" size="icon" onClick={handleToggleStatus} className="rounded-[6px]" title="Pause">
               <Pause className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280]" />
-            </button>
+            </Button>
           ) : agent.status === "paused" ? (
-            <button onClick={handleToggleStatus} className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors" title="Resume">
+            <Button type="button" variant="ghost" size="icon" onClick={handleToggleStatus} className="rounded-[6px]" title="Resume">
               <Play className="w-3.5 h-3.5 text-[#2552ED]" />
-            </button>
+            </Button>
           ) : null}
-          <button onClick={(e) => e.stopPropagation()} className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
+          <Button type="button" variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} className="rounded-[6px]">
             <MoreHorizontal className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280]" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -1016,12 +1027,15 @@ export function AgentDetailView({ agentSlug, onOpenBuilder }: AgentDetailViewPro
                 />
               </div>
             ) : (
-              <button
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
                 onClick={() => setSearchOpen(true)}
-                className="h-[36px] w-[36px] bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] flex items-center justify-center hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+                className="rounded-[8px] bg-white dark:bg-[#262b35]"
               >
                 <Search className="w-[14px] h-[14px] text-[#303030] dark:text-[#8b92a5]" />
-              </button>
+              </Button>
             )}
 
             {/* View toggle */}
@@ -1049,16 +1063,19 @@ export function AgentDetailView({ agentSlug, onOpenBuilder }: AgentDetailViewPro
             </div>
 
             {/* Filter button */}
-            <button
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
               onClick={() => setFilterActive(!filterActive)}
-              className={`h-[36px] w-[36px] border rounded-[8px] flex items-center justify-center transition-colors ${
+              className={`rounded-[8px] ${
                 filterActive
                   ? "bg-[#e8effe] dark:bg-[#1e2d5e] border-[#2552ED] dark:border-[#2552ED]"
-                  : "bg-white dark:bg-[#262b35] border-[#e5e9f0] dark:border-[#333a47] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
+                  : "bg-white dark:bg-[#262b35]"
               }`}
             >
               <Filter className={`w-[14px] h-[14px] ${filterActive ? "text-[#2552ED]" : "text-[#555] dark:text-[#8b92a5]"}`} />
-            </button>
+            </Button>
           </div>
         </div>
 

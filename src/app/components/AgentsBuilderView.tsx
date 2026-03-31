@@ -6,6 +6,7 @@ import {
   ArrowRight, Zap, Send, ToggleRight, ToggleLeft,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/app/components/ui/button";
 
 /* ═══════════════════════════════════════════
    Types
@@ -279,19 +280,19 @@ function CanvasPanel({
       {/* Canvas toolbar */}
       <div className="flex justify-center py-2 shrink-0">
         <div className="flex items-center gap-1 bg-white dark:bg-[#1e2229] border border-[#e5e9f0] dark:border-[#2e3340] rounded-[8px] px-1.5 py-1">
-          <button className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
-            <ArrowDown className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
-          </button>
-          <button className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
-            <ArrowRight className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
-          </button>
+          <Button type="button" variant="ghost" size="icon" className="rounded-[6px] text-[#555] dark:text-[#8b92a5]">
+            <ArrowDown className="w-4 h-4" />
+          </Button>
+          <Button type="button" variant="ghost" size="icon" className="rounded-[6px] text-[#555] dark:text-[#8b92a5]">
+            <ArrowRight className="w-4 h-4" />
+          </Button>
           <div className="flex items-center gap-1 px-2">
             <span className="text-[12px] text-[#555] dark:text-[#8b92a5]" style={{ fontWeight: 400 }}>{zoom}%</span>
             <ChevronDown className="w-3 h-3 text-[#888]" />
           </div>
-          <button className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
-            <Play className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
-          </button>
+          <Button type="button" variant="ghost" size="icon" className="rounded-[6px] text-[#555] dark:text-[#8b92a5]">
+            <Play className="w-4 h-4" />
+          </Button>
         </div>
       </div>
 
@@ -448,18 +449,21 @@ function PropertiesPanel({
           {isTrigger ? "Trigger" : "Task"}
         </span>
         <div className="flex items-center gap-1">
-          <button className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
-            <Play className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
-          </button>
-          <button className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
-            <Maximize2 className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
-          </button>
-          <button
+          <Button type="button" variant="ghost" size="icon" className="rounded-[6px] text-[#555] dark:text-[#8b92a5]">
+            <Play className="w-4 h-4" />
+          </Button>
+          <Button type="button" variant="ghost" size="icon" className="rounded-[6px] text-[#555] dark:text-[#8b92a5]">
+            <Maximize2 className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+            className="rounded-[6px] text-[#555] dark:text-[#8b92a5]"
           >
-            <X className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
-          </button>
+            <X className="w-4 h-4" />
+          </Button>
         </div>
       </div>
 
@@ -583,13 +587,14 @@ function PropertiesPanel({
 
       {/* Save button */}
       <div className="px-4 py-4 border-t border-[#e5e9f0] dark:border-[#2e3340] shrink-0">
-        <button
+        <Button
+          type="button"
           onClick={() => toast.success("Configuration saved")}
-          className="w-full h-[36px] bg-[#2552ED] hover:bg-[#1E44CC] text-white text-[13px] rounded-[8px] transition-colors"
+          className="w-full rounded-[8px] bg-[#2552ED] hover:bg-[#1E44CC] text-[13px] text-white"
           style={{ fontWeight: 400 }}
         >
           Save
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -619,27 +624,31 @@ export function AgentsBuilderView({ onBack }: { onBack: () => void }) {
       {/* ─── Top Header ─── */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-[#e5e9f0] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] shrink-0">
         <div className="flex items-center gap-3">
-          <button
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
             onClick={onBack}
-            className="w-7 h-7 flex items-center justify-center rounded-[6px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+            className="rounded-[6px] text-[#555] dark:text-[#8b92a5]"
           >
-            <ChevronLeft className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
-          </button>
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
           <h1 className="text-[15px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.3px]" style={{ fontWeight: 400 }}>
             Review response agent replying autonomously
           </h1>
         </div>
         <div className="flex items-center gap-2">
-          <button className="w-8 h-8 flex items-center justify-center border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
-            <Share2 className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
-          </button>
-          <button
+          <Button type="button" variant="outline" size="icon" className="rounded-[8px] text-[#555] dark:text-[#8b92a5]">
+            <Share2 className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
             onClick={handleSave}
-            className="h-[34px] px-5 bg-[#2552ED] hover:bg-[#1E44CC] text-white text-[13px] rounded-[8px] transition-colors"
+            className="rounded-[8px] px-5 bg-[#2552ED] hover:bg-[#1E44CC] text-[13px] text-white"
             style={{ fontWeight: 400 }}
           >
             Save
-          </button>
+          </Button>
         </div>
       </div>
 

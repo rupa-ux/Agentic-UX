@@ -5,6 +5,7 @@ import {
 } from "@/app/shortcuts/events";
 import { Search, ChevronDown, MoreVertical, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { FunnelSimple } from "@phosphor-icons/react";
+import { Button } from "@/app/components/ui/button";
 import svgPaths from "../../imports/svg-k7qrt1366a";
 // Real placeholder images — replace with actual CDN URLs in production
 const imgRectangle2429 = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop&auto=format";
@@ -207,19 +208,17 @@ function ActionRow({ replyStatus }: { replyStatus: "post" | "edit" }) {
     <div className="flex flex-col gap-6 items-end w-full">
       <div className="flex items-center gap-3">
         {/* Reply CTA */}
-        <button className="px-[15px] py-[8px] rounded-[8px] bg-[#6834b7] dark:bg-[#7c3aed] hover:bg-[#5a2da0] dark:hover:bg-[#6d28d9] transition-colors">
-          <span className="text-[14px] text-white">
-            {replyStatus === "post" ? "Post reply" : "Edit reply"}
-          </span>
-        </button>
+        <Button className="bg-[#6834b7] text-white dark:bg-[#7c3aed] hover:bg-[#5a2da0] dark:hover:bg-[#6d28d9]">
+          {replyStatus === "post" ? "Post reply" : "Edit reply"}
+        </Button>
         {/* Chat button */}
-        <button className="h-[36px] w-[36px] rounded-[8px] border border-[#e5e9f0] dark:border-[#333a47] bg-white dark:bg-[#262b35] flex items-center justify-center hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
+        <Button variant="outline" size="icon">
           <ChatIcon />
-        </button>
+        </Button>
         {/* More button */}
-        <button className="h-[36px] w-[36px] rounded-[8px] border border-[#e5e9f0] dark:border-[#333a47] bg-white dark:bg-[#262b35] flex items-center justify-center hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
+        <Button variant="outline" size="icon">
           <MoreDots />
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -377,20 +376,20 @@ function ReviewCard({ review }: { review: Review }) {
           {review.site === "yelp" ? <YelpLogo /> : <GoogleLogo />}
           <div className="flex flex-col gap-[2px]">
             <StarRating rating={review.rating} />
-            <div className="flex items-center gap-2 text-[15px]">
+            <div className="flex items-center gap-2 text-[12px]">
               <span className="text-[#212121] dark:text-[#e4e4e4]">{review.reviewer}</span>
-              <div className="size-[4px] rounded-full bg-[#555] dark:bg-[#8b92a5]" />
+              <div className="size-[3px] rounded-full bg-[#555] dark:bg-[#8b92a5]" />
               <span className="text-[#555] dark:text-[#8b92a5]">{review.date}</span>
               {review.photoCount && (
                 <>
-                  <div className="size-[4px] rounded-full bg-[#555] dark:bg-[#8b92a5]" />
+                  <div className="size-[3px] rounded-full bg-[#555] dark:bg-[#8b92a5]" />
                   <span className="text-[#555] dark:text-[#8b92a5]">{review.photoCount} Photos</span>
                 </>
               )}
               {review.featured && (
                 <>
-                  <div className="size-[4px] rounded-full bg-[#555] dark:bg-[#8b92a5]" />
-                  <div className="bg-[#eaeaea] dark:bg-[#333a47] px-2 py-1 rounded-[4px]">
+                  <div className="size-[3px] rounded-full bg-[#555] dark:bg-[#8b92a5]" />
+                  <div className="bg-[#eaeaea] dark:bg-[#333a47] px-2 py-0.5 rounded-[4px]">
                     <span className="text-[12px] text-[#212121] dark:text-[#e4e4e4]">Featured</span>
                   </div>
                 </>
@@ -546,7 +545,7 @@ export function ReviewsView() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="relative h-[36px] min-w-[200px] max-w-[280px]">
+            <div className="relative h-[var(--button-height)] min-w-[200px] max-w-[280px]">
               <Search className="pointer-events-none absolute left-2 top-1/2 size-[14px] -translate-y-1/2 text-[#303030] dark:text-[#8b92a5]" aria-hidden />
               <input
                 ref={searchInputRef}
@@ -559,25 +558,18 @@ export function ReviewsView() {
               />
             </div>
 
-            {/* Recent reviews dropdown */}
-            <button className="h-[36px] px-2 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] flex items-center gap-2 text-[14px] text-[#757575] dark:text-[#8b92a5] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
-              <span>Recent reviews</span>
-              <svg className="w-[9px] h-[5px]" viewBox="0 0 9.01782 5.0176" fill="none">
-                <path d={svgPaths.p5ccaa80} fill="#303030" className="dark:fill-[#8b92a5]" />
-              </svg>
-            </button>
-
             {/* More options */}
-            <button className="h-[36px] w-[36px] bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] flex items-center justify-center hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
+            <Button variant="outline" size="icon">
               <MoreVertical className="w-[14px] h-[14px] text-[#303030] dark:text-[#8b92a5]" />
-            </button>
+            </Button>
 
             {/* AI button */}
-            <button
+            <Button
               ref={aiReplyButtonRef}
               type="button"
               title="AI reply assistant"
-              className="flex h-[36px] w-[36px] items-center justify-center rounded-[8px] border border-[#e5e9f0] bg-white transition-colors hover:bg-[#f5f5f5] focus-visible:ring-2 focus-visible:ring-[#2552ED] focus-visible:outline-none dark:border-[#333a47] dark:bg-[#262b35] dark:hover:bg-[#2e3340]"
+              variant="outline"
+              size="icon"
             >
               <svg className="w-[14px] h-[14px]" viewBox="0 0 16.6975 14.8252" fill="none">
                 <path d={svgPaths.p33170700} fill="#6834B7" />
@@ -585,19 +577,20 @@ export function ReviewsView() {
                 <path clipRule="evenodd" d={svgPaths.p1692000} fill="#6834B7" fillRule="evenodd" />
                 <path d={svgPaths.p4cf0c70} fill="#6834B7" />
               </svg>
-            </button>
+            </Button>
 
             {/* Filter button */}
-            <button
+            <Button
               onClick={() => setFilterPanelOpen(!filterPanelOpen)}
-              className={`h-[36px] w-[36px] border rounded-[8px] flex items-center justify-center transition-colors ${
-                filterPanelOpen
-                  ? "bg-[#e8effe] dark:bg-[#1e2d5e] border-[#2552ED] dark:border-[#2552ED]"
-                  : "bg-white dark:bg-[#262b35] border-[#e5e9f0] dark:border-[#333a47] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
-              }`}
+              variant="outline"
+              size="icon"
+              className={filterPanelOpen
+                ? "bg-[#e8effe] dark:bg-[#1e2d5e] border-[#2552ED] dark:border-[#2552ED]"
+                : ""
+              }
             >
               <FunnelSimple size={14} weight={filterPanelOpen ? "fill" : "regular"} className={filterPanelOpen ? "text-[#1E44CC]" : "text-[#555] dark:text-[#8b92a5]"} />
-            </button>
+            </Button>
           </div>
         </div>
 

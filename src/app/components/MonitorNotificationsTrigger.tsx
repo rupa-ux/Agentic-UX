@@ -1,5 +1,6 @@
 import { Bell, CheckCircle2, X } from "lucide-react";
-import { Badge } from "@/app/components/ui/badge";
+import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
+import { Button } from "@/app/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import { cn } from "@/app/components/ui/utils";
 import { useMonitorNotifications } from "@/app/context/MonitorNotificationsContext";
@@ -15,7 +16,6 @@ export function MonitorNotificationsTrigger() {
     notificationItems,
     unresolvedCount,
     resolvedNotifs,
-    readNotifs,
     handleResolveNotif,
     handleNotifClick,
   } = useMonitorNotifications();
@@ -23,24 +23,32 @@ export function MonitorNotificationsTrigger() {
   return (
     <Popover open={notifPanelOpen} onOpenChange={setNotifPanelOpen}>
       <PopoverTrigger asChild>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           title="Notifications"
           aria-label="Notifications"
           aria-expanded={notifPanelOpen}
           aria-haspopup="dialog"
           className={cn(
-            "relative w-[34px] h-[34px] flex items-center justify-center rounded-full transition-colors outline-none",
-            "hover:bg-[#d0d5dc] dark:hover:bg-[#2e3340]",
+            "group relative shrink-0 rounded-[10px] transition-all duration-200 ease-out",
+            "bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95",
             "focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-[#e0e5eb] dark:focus-visible:ring-offset-[#181b22]",
-            "data-[state=open]:bg-[#d0d5dc] dark:data-[state=open]:bg-[#2e3340]",
+            /* Open popover = same surface as L1 active item */
+            "data-[state=open]:bg-[#d4dae3] dark:data-[state=open]:bg-[#282e3a] data-[state=open]:shadow-none",
           )}
         >
           <Bell
-            width={12.6}
-            height={12.6}
-            strokeWidth={1.2}
-            className="text-[#555] dark:text-[#8b92a5]"
+            width={L1_STRIP_ICON_SIZE}
+            height={L1_STRIP_ICON_SIZE}
+            strokeWidth={L1_STRIP_ICON_STROKE_PX}
+            className={cn(
+              "transition-all duration-200",
+              "text-[#505050] dark:text-[#9ba2b0]",
+              "group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3]",
+              "group-data-[state=open]:text-[#1E44CC] dark:group-data-[state=open]:text-[#2952E3] group-hover:scale-110",
+            )}
             aria-hidden
           />
           {unresolvedCount > 0 && (
@@ -51,7 +59,7 @@ export function MonitorNotificationsTrigger() {
               {unresolvedCount > 9 ? "9+" : unresolvedCount}
             </span>
           )}
-        </button>
+        </Button>
       </PopoverTrigger>
       <PopoverContent
         side="right"
@@ -59,7 +67,7 @@ export function MonitorNotificationsTrigger() {
         sideOffset={8}
         aria-label="Notifications"
         className={cn(
-          "w-[min(400px,calc(100vw-88px))] max-h-[min(480px,70vh)] p-0 flex flex-col overflow-hidden rounded-xl shadow-xl z-[100]",
+          "w-[min(400px,calc(100vw-88px))] max-h-[min(480px,70vh)] p-0 flex flex-col overflow-hidden rounded-xl border-0 shadow-sm z-[100]",
         )}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
@@ -75,14 +83,16 @@ export function MonitorNotificationsTrigger() {
                 {unresolvedCount} unresolved
               </span>
             )}
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => setNotifPanelOpen(false)}
-              className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-muted transition-colors"
+              className="shrink-0"
               aria-label="Close notifications"
             >
-              <X className="w-3.5 h-3.5 text-muted-foreground" />
-            </button>
+              <X className="h-3.5 w-3.5 text-muted-foreground" />
+            </Button>
           </div>
         </div>
 
@@ -104,17 +114,8 @@ export function MonitorNotificationsTrigger() {
                     key={n.id}
                     type="button"
                     onClick={() => handleNotifClick(n)}
-                    className={cn(
-                      "w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-muted/80 transition-colors duration-150",
-                      !readNotifs.has(n.id) && "bg-amber-50/80 dark:bg-amber-950/20",
-                    )}
+                    className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-muted/80 transition-colors duration-150"
                   >
-                    <Badge
-                      className="mt-0.5 shrink-0 border-transparent bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200 text-[10px] px-2 py-0.5 font-normal"
-                      variant="outline"
-                    >
-                      Needs review
-                    </Badge>
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] text-foreground truncate" style={{ fontWeight: 400 }}>
                         {n.agentName}
@@ -178,17 +179,8 @@ export function MonitorNotificationsTrigger() {
                     key={n.id}
                     type="button"
                     onClick={() => handleNotifClick(n)}
-                    className={cn(
-                      "w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-muted/80 transition-colors duration-150",
-                      !readNotifs.has(n.id) && "bg-destructive/5 dark:bg-destructive/10",
-                    )}
+                    className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-muted/80 transition-colors duration-150"
                   >
-                    <Badge
-                      className="mt-0.5 shrink-0 border-transparent bg-destructive/15 text-destructive dark:bg-destructive/25 dark:text-destructive-foreground text-[10px] px-2 py-0.5 font-normal"
-                      variant="outline"
-                    >
-                      Failed
-                    </Badge>
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] text-foreground truncate" style={{ fontWeight: 400 }}>
                         {n.agentName}

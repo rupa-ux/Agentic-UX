@@ -10,6 +10,7 @@ import {
   PromptInputActions,
   PromptInputAction,
 } from "./ui/prompt-input";
+import { Button } from "@/app/components/ui/button";
 
 import imgCover from "figma:asset/cf41ec9f747e1d47078180a05f5f2ca35443cb9a.png";
 import reportSvg from "../../imports/svg-ps6vzxz3zm";
@@ -977,9 +978,9 @@ export function AICustomizePanel({ onClose, themeColor, onThemeColorChange, show
       {/* Page-level header bar */}
       <div className="h-[56px] border-b border-[#e5e9f0] dark:border-[#333a47] flex items-center justify-between px-6 shrink-0 bg-white dark:bg-[#1e2229] transition-colors duration-300" data-no-print>
         <div className="flex items-center gap-2">
-          <button onClick={onClose} className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]">
+          <Button type="button" variant="ghost" size="icon" onClick={onClose} className="rounded-md">
             <ArrowLeft className="w-[14px] h-[14px] text-[#303030] dark:text-[#c0c6d4]" />
-          </button>
+          </Button>
           {isEditingName ? (
             <input
               ref={nameInputRef}
@@ -997,36 +998,43 @@ export function AICustomizePanel({ onClose, themeColor, onThemeColorChange, show
           ) : (
             <>
               <span className="text-[16px] text-[#212121] dark:text-[#e4e4e4]">{coverTitle || (editingDraft ? "Edit draft" : "New share")}</span>
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
                 onClick={startEditingName}
-                className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+                className="rounded-md"
                 title="Edit report name"
               >
                 <FileEdit className="w-[14px] h-[14px] text-[#303030] dark:text-[#c0c6d4]" />
-              </button>
+              </Button>
             </>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
+            type="button"
+            variant="outline"
             onClick={handlePrint}
             title="Print report"
-            className="flex items-center justify-center gap-[6px] px-[12px] py-[8px] rounded-[4px] border border-[#d0d5dd] dark:border-[#3d4555] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+            className="gap-[6px] rounded-[4px] border-[#d0d5dd] px-3 font-normal dark:border-[#3d4555]"
           >
             <Printer className="w-[14px] h-[14px] text-[#555] dark:text-[#9ba2b0]" />
             <span className="font-['Roboto',sans-serif] text-[14px] text-[#555] dark:text-[#9ba2b0] tracking-[-0.28px] whitespace-nowrap leading-[24px]" style={{ fontVariationSettings: "'wdth' 100" }}>Print</span>
-          </button>
+          </Button>
           <div className="relative">
-            <button
+            <Button
+              type="button"
+              variant="outline"
               onClick={handleSaveDraft}
               title="Save as draft"
-              className="flex items-center justify-center gap-[6px] px-[12px] py-[8px] rounded-[4px] border border-[#d0d5dd] dark:border-[#3d4555] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+              className="gap-[6px] rounded-[4px] border-[#d0d5dd] px-3 font-normal dark:border-[#3d4555]"
             >
               <Save className="w-[14px] h-[14px] text-[#555] dark:text-[#9ba2b0]" />
               <span className="font-['Roboto',sans-serif] text-[14px] text-[#555] dark:text-[#9ba2b0] tracking-[-0.28px] whitespace-nowrap leading-[24px]" style={{ fontVariationSettings: "'wdth' 100" }}>
                 {currentDraftId ? "Update draft" : "Save draft"}
               </span>
-            </button>
+            </Button>
             {/* Saved confirmation tooltip */}
             {showSavedToast && (
               <div className="absolute right-0 top-full mt-2 px-3 py-1.5 bg-[#323232] text-white text-[12px] rounded-lg shadow-lg whitespace-nowrap z-50 flex items-center gap-1.5">
@@ -1038,20 +1046,22 @@ export function AICustomizePanel({ onClose, themeColor, onThemeColorChange, show
 
           {/* Context-aware primary CTA: Share vs Schedule */}
           {entryMode === "schedule" ? (
-            <button
+            <Button
+              type="button"
               onClick={() => setShowScheduleModal(true)}
-              className="bg-[#2552ED] hover:bg-[#1E44CC] transition-colors flex items-center justify-center gap-[8px] px-[12px] py-[8px] rounded-[4px]"
+              className="rounded-[4px] bg-[#2552ED] px-3 font-normal text-white hover:bg-[#1E44CC]"
             >
-              <span className="font-['Roboto',sans-serif] text-[16px] text-white tracking-[-0.32px] whitespace-nowrap leading-[24px]" style={{ fontVariationSettings: "'wdth' 100" }}>Schedule</span>
-            </button>
+              <span className="font-['Roboto',sans-serif] text-[16px] tracking-[-0.32px] whitespace-nowrap leading-[24px]" style={{ fontVariationSettings: "'wdth' 100" }}>Schedule</span>
+            </Button>
           ) : (
             <div className="relative" ref={shareDropdownRef}>
-              <button
+              <Button
+                type="button"
                 onClick={() => setShowShareModal(true)}
-                className="bg-[#2552ED] hover:bg-[#1E44CC] transition-colors flex items-center justify-center gap-[8px] px-[12px] py-[8px] rounded-[4px]"
+                className="rounded-[4px] bg-[#2552ED] px-3 font-normal text-white hover:bg-[#1E44CC]"
               >
-                <span className="font-['Roboto',sans-serif] text-[16px] text-white tracking-[-0.32px] whitespace-nowrap leading-[24px]" style={{ fontVariationSettings: "'wdth' 100" }}>Share</span>
-              </button>
+                <span className="font-['Roboto',sans-serif] text-[16px] tracking-[-0.32px] whitespace-nowrap leading-[24px]" style={{ fontVariationSettings: "'wdth' 100" }}>Share</span>
+              </Button>
               {shareDropdownOpen && (
                 <div className="absolute right-0 top-full mt-1.5 bg-white dark:bg-[#22262f] rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.12)] dark:shadow-[0px_4px_20px_rgba(0,0,0,0.35)] border border-[#e8eaed] dark:border-[#333a47] py-1.5 w-[210px] z-50">
                   <button
@@ -1186,28 +1196,32 @@ export function AICustomizePanel({ onClose, themeColor, onThemeColorChange, show
                       </PromptInputAction>
                     </div>
                     {isTyping ? (
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon"
                         onClick={() => setIsTyping(false)}
-                        className="w-7 h-7 rounded-lg bg-[#212121] dark:bg-[#e4e4e4] hover:bg-[#333] dark:hover:bg-[#ccc] flex items-center justify-center transition-colors"
+                        className="rounded-lg bg-[#212121] hover:bg-[#333] dark:bg-[#e4e4e4] dark:hover:bg-[#ccc]"
                         title="Stop generating"
                       >
                         <Square className="w-3 h-3 text-white dark:text-[#1e2229] fill-white dark:fill-[#1e2229]" />
-                      </button>
+                      </Button>
                     ) : (
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon"
                         onClick={input.trim() ? handleSend : undefined}
                         disabled={!input.trim()}
-                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200 ${
+                        className={`rounded-lg shadow-sm disabled:opacity-100 ${
                           input.trim()
-                            ? "bg-[#2552ED] hover:bg-[#1E44CC] shadow-sm"
+                            ? "bg-[#2552ED] hover:bg-[#1E44CC]"
                             : "bg-[#e8e8e8] dark:bg-[#333a47]"
                         }`}
                         title="Send message"
                       >
                         <ArrowUp className={`w-[14px] h-[14px] ${input.trim() ? "text-white" : "text-[#bbb] dark:text-[#4d5568]"}`} strokeWidth={2.5} />
-                      </button>
+                      </Button>
                     )}
                   </PromptInputActions>
                 </PromptInput>

@@ -9,6 +9,7 @@ import {
 import svgPaths from "../../imports/svg-zyxavbn7id";
 import { getDrafts, deleteDraft, subscribeDrafts, type DraftReport } from "./draftStore";
 import { toast } from "sonner";
+import { Button } from "@/app/components/ui/button";
 
 /* ─── Types ─── */
 type ShareStatus = "active" | "expired" | "revoked";
@@ -790,12 +791,15 @@ export function SharedByMe({ onEditDraft, onViewReport }: SharedByMeProps) {
                     {/* Actions */}
                     <td className="px-4 py-4 relative">
                       <div ref={actionMenuId === item.id ? actionMenuRef : undefined}>
-                        <button
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
                           onClick={() => setActionMenuId(actionMenuId === item.id ? null : item.id)}
-                          className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#f0f0f0] dark:hover:bg-[#2e3340] transition-colors"
+                          className="text-[#999] dark:text-[#666] hover:bg-[#f0f0f0] dark:hover:bg-[#2e3340]"
                         >
-                          <MoreHorizontal className="w-4 h-4 text-[#999] dark:text-[#666]" />
-                        </button>
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
                         {actionMenuId === item.id && (
                           <div className="absolute right-4 top-full mt-1 bg-white dark:bg-[#262b35] rounded-lg shadow-lg border border-[#e5e9f0] dark:border-[#333a47] py-1 z-50 min-w-[180px]">
                             {/* Copy link */}

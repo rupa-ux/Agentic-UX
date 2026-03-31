@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, type RefObject } from "react";
+import { Button } from "@/app/components/ui/button";
 import {
   INBOX_SHORTCUT_EVENT,
   type InboxShortcutAction,
@@ -426,29 +427,33 @@ function Composer({ textareaRef }: { textareaRef: RefObject<HTMLTextAreaElement 
             { Icon: Smile, label: "Sticker" },
             { Icon: ImageIcon, label: "Image" },
           ].map(({ Icon, label }, i) => (
-            <button
+            <Button
               key={i}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f0f0f0] dark:hover:bg-[#2e3340] transition-colors"
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="rounded-lg hover:bg-[#f0f0f0] dark:hover:bg-[#2e3340]"
               title={label}
             >
               <Icon className="w-[14px] h-[14px] text-[#212121] dark:text-[#c0c6d4]" />
-            </button>
+            </Button>
           ))}
         </div>
 
-        <button
-          className={`flex items-center gap-1.5 pl-4 pr-1 py-1.5 rounded-lg text-[13px] text-white transition-colors ${
+        <Button
+          type="button"
+          className={`gap-1.5 rounded-lg pl-4 pr-1 text-[13px] font-normal text-white ${
             message.trim()
               ? "bg-[#2552ED] hover:bg-[#1E44CC]"
-              : "bg-[#2552ED]/70 dark:bg-[#2552ED]/50"
+              : "bg-[#2552ED]/70 hover:bg-[#2552ED]/75 dark:bg-[#2552ED]/50 dark:hover:bg-[#2552ED]/55"
           }`}
           style={{ fontWeight: 400 }}
         >
           Send
-          <span className="w-6 h-6 flex items-center justify-center rounded-md bg-white/15">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white/15">
             <ChevronDown className="w-3.5 h-3.5" />
           </span>
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -688,13 +693,16 @@ export function InboxView() {
                 { Icon: ArrowUpDown, label: "Sort" },
                 { Icon: MoreVertical, label: "More" },
               ].map(({ Icon, label }) => (
-                <button
+                <Button
                   key={label}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
                   title={label}
                 >
                   <Icon className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" />
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -758,9 +766,15 @@ export function InboxView() {
             </button>
 
             {/* More */}
-            <button className="w-8 h-8 flex items-center justify-center rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
+              aria-label="More options"
+            >
               <MoreVertical className="w-[14px] h-[14px] text-[#212121] dark:text-[#c0c6d4]" />
-            </button>
+            </Button>
           </div>
         </div>
 

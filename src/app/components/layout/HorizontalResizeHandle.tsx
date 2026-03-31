@@ -31,11 +31,11 @@ export function HorizontalResizeHandle({
       aria-valuenow={valueNow}
       aria-valuemin={valueMin}
       aria-valuemax={valueMax}
-      className="group absolute inset-y-0 left-0 z-10 w-[6px] cursor-col-resize touch-none select-none"
+      className="group absolute inset-y-0 -left-[3px] z-10 w-[8px] cursor-col-resize touch-none select-none"
       onPointerDown={onPointerDown}
       onDoubleClick={onDoubleClick}
     >
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-[2px] bg-transparent transition-colors duration-150 group-hover:bg-[#2552ED]/20 group-active:bg-[#2552ED]/40 dark:group-hover:bg-[#5580e0]/25 dark:group-active:bg-[#5580e0]/50" />
+      <div className="pointer-events-none absolute inset-y-0 left-1/2 w-[2px] -translate-x-1/2 bg-transparent transition-colors duration-150 group-hover:bg-[#2552ED]/20 group-active:bg-[#2552ED]/40 dark:group-hover:bg-[#5580e0]/25 dark:group-active:bg-[#5580e0]/50" />
     </div>
   );
 }

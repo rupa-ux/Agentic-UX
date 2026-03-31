@@ -1,4 +1,5 @@
 import { Sparkles } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
 import type { AppView } from "../App";
 import { getAppViewTitle } from "../appViewTitle";
 import { MYNA_CHAT_HEADER_TITLE } from "../myna/mynaChatChrome";
@@ -20,16 +21,17 @@ export function TopBar({ currentView, onToggleMynaChat }: TopBarProps) {
 
       {/* Right: BirdAI button */}
       <div className="flex items-center gap-1">
-        <button
+        <Button
           type="button"
+          variant="outline"
           onClick={onToggleMynaChat}
-          className="flex items-center gap-1 px-2 py-1 rounded-[8px] border border-[#e5e9f0] dark:border-[#333a47] bg-[#f0f1f5] dark:bg-[#252a3a] ml-1"
+          className="ml-1 gap-1 rounded-lg border-[#e5e9f0] bg-[#f0f1f5] dark:border-[#333a47] dark:bg-[#252a3a]"
         >
-          <Sparkles className="w-[14px] h-[14px] text-[#9970D7]" />
-          <span className="text-[12px] bg-gradient-to-r from-[#9970D7] to-[#2552ED] bg-clip-text text-transparent">
+          <Sparkles className="h-[14px] w-[14px] shrink-0 text-[#9970D7]" />
+          <span className="bg-gradient-to-r from-[#9970D7] to-[#2552ED] bg-clip-text text-[12px] text-transparent">
             {MYNA_CHAT_HEADER_TITLE}
           </span>
-        </button>
+        </Button>
       </div>
     </div>
   );

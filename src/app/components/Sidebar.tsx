@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import {
-  ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Clock, Sparkles, ExternalLink, Keyboard,
+  ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Clock, ExternalLink, Keyboard,
 } from "lucide-react";
 import {
   House, ChatDots, MapPin, Star, Gift, CurrencyDollar,
@@ -9,6 +9,8 @@ import {
 } from "@phosphor-icons/react";
 import svgPaths from "../../imports/svg-y1gexucine";
 import type { AppView } from "../App";
+import { Button } from "@/app/components/ui/button";
+import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "./l1StripIconTokens";
 import { MonitorNotificationsTrigger } from "./MonitorNotificationsTrigger";
 import { useTheme, type ThemePreference } from "./useTheme";
 import { L2NavLayout, PANEL, ROW, HOVER, CHILD_ACTIVE, CHILD_INACTIVE, FOOTER_ROW_CLS, SECTION_HEADER } from "./L2NavLayout";
@@ -48,13 +50,8 @@ const iconStripItems: { label: string; Icon: React.ElementType }[] = [
 
 /* ═══════════════════════════════════════════
    Icon Strip (L1 nav rail) – exported separately
+   (sizes / stroke: `l1StripIconTokens`)
    ═══════════════════════════════════════════ */
-/** Default Phosphor glyph size (18px − 10%). */
-const L1_STRIP_ICON_SIZE = 16.2;
-/** Stroke weight on Phosphor roots (inherits to paths; thickens regular/fill silhouettes). */
-const L1_STRIP_ICON_STROKE_PX = 1.2;
-/** Bottom Lucide controls: 14px − 10%. */
-const L1_STRIP_AUX_ICON_PX = 12.6;
 
 interface IconStripProps {
   currentView: AppView;
@@ -189,32 +186,16 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
 
       {/* ─── Bottom: Settings + Profile ─── */}
       <div className="flex flex-col items-center gap-2 pb-3 pt-2 shrink-0">
-        {/* Agent setup */}
+        {/* Settings gear — same surface / hover / focus as L1 nav icons */}
         <button
-          onClick={() => onViewChange("agents-onboarding")}
-          className={`w-[34px] h-[34px] flex items-center justify-center rounded-full transition-colors ${
-            currentView === "agents-onboarding"
-              ? "bg-[#dae3f0] dark:bg-[#252d42]"
-              : "hover:bg-[#d0d5dc] dark:hover:bg-[#2e3340]"
-          }`}
-        >
-          <Sparkles
-            width={L1_STRIP_AUX_ICON_PX}
-            height={L1_STRIP_AUX_ICON_PX}
-            strokeWidth={L1_STRIP_ICON_STROKE_PX}
-            className={currentView === "agents-onboarding" ? "text-[#2552ED]" : "text-[#555] dark:text-[#8b92a5]"}
-          />
-        </button>
-
-        {/* Settings gear */}
-        <button
-          className="w-[34px] h-[34px] flex items-center justify-center rounded-full hover:bg-[#d0d5dc] dark:hover:bg-[#2e3340] transition-colors"
+          type="button"
+          className="group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-[#e0e5eb] dark:focus-visible:ring-offset-[#181b22]"
         >
           <Settings
-            width={L1_STRIP_AUX_ICON_PX}
-            height={L1_STRIP_AUX_ICON_PX}
+            width={L1_STRIP_ICON_SIZE}
+            height={L1_STRIP_ICON_SIZE}
             strokeWidth={L1_STRIP_ICON_STROKE_PX}
-            className="text-[#555] dark:text-[#8b92a5]"
+            className="text-[#505050] dark:text-[#9ba2b0] transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] group-hover:scale-110"
           />
         </button>
 
@@ -222,17 +203,20 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
 
         {/* Profile avatar with upward dropdown */}
         <div className="relative" ref={profileRef}>
-          <button
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => {
               setProfileOpen(!profileOpen);
               if (profileOpen) setShowAppearance(false);
             }}
-            className="relative w-[36px] h-[36px] rounded-full overflow-hidden ring-2 ring-white/80 dark:ring-[#3d4555] shadow-sm hover:ring-white dark:hover:ring-[#4d5568] transition-all cursor-pointer"
+            className="relative shrink-0 cursor-pointer overflow-hidden rounded-full p-0 shadow-sm ring-2 ring-white/80 transition-all hover:ring-white dark:ring-[#3d4555] dark:hover:ring-[#4d5568]"
           >
-            <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+            <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" />
             {/* Online indicator */}
-            <span className="absolute bottom-[1px] right-[1px] w-[10px] h-[10px] bg-[#4caf50] rounded-full border-2 border-[#e0e5eb] dark:border-[#181b22]" />
-          </button>
+            <span className="absolute bottom-[1px] right-[1px] h-[10px] w-[10px] rounded-full border-2 border-[#e0e5eb] bg-[#4caf50] dark:border-[#181b22]" />
+          </Button>
 
           {/* Dropdown - opens UPWARD from bottom-left */}
           {profileOpen && (
@@ -353,12 +337,15 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                   <div className="w-full shrink-0">
                     {/* Header row */}
                     <div className="flex items-center gap-2.5 px-3 py-3 border-b border-[#f0f0f0] dark:border-[#333a47]">
-                      <button
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
                         onClick={() => setShowAppearance(false)}
-                        className="w-7 h-7 rounded-md border-2 border-[#2552ED] flex items-center justify-center hover:bg-[#e8effe] dark:hover:bg-[#1e2d5e] transition-colors"
+                        className="shrink-0 border-2 border-[#2552ED] transition-colors hover:bg-[#e8effe] dark:hover:bg-[#1e2d5e]"
                       >
-                        <ChevronLeft className="w-4 h-4 text-[#2552ED]" />
-                      </button>
+                        <ChevronLeft className="h-4 w-4 text-[#2552ED]" />
+                      </Button>
                       <span className="text-[14px] text-[#212121] dark:text-[#e4e4e4] flex-1" style={{ fontWeight: 400 }}>
                         Switch appearance
                       </span>

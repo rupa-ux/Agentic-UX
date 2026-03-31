@@ -7,6 +7,7 @@ import {
   ArrowDown, Maximize2, Settings, Eye, Save,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/app/components/ui/button";
 
 /* ═══════════════════════════════════════════
    Types
@@ -881,12 +882,12 @@ export function ScheduleBuilderView({ onBack }: ScheduleBuilderViewProps) {
               Workflow
             </span>
             <div className="flex items-center gap-1.5">
-              <button className="w-7 h-7 rounded-[6px] border border-[#e5e9f0] dark:border-[#333a47] flex items-center justify-center hover:bg-white dark:hover:bg-[#2e3340] transition-colors" title="Preview">
+              <Button type="button" variant="outline" size="icon" className="rounded-[6px]" title="Preview">
                 <Eye className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280]" />
-              </button>
-              <button className="w-7 h-7 rounded-[6px] border border-[#e5e9f0] dark:border-[#333a47] flex items-center justify-center hover:bg-white dark:hover:bg-[#2e3340] transition-colors" title="Full screen">
+              </Button>
+              <Button type="button" variant="outline" size="icon" className="rounded-[6px]" title="Full screen">
                 <Maximize2 className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280]" />
-              </button>
+              </Button>
             </div>
           </div>
           <WorkflowCanvas

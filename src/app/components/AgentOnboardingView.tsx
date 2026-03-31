@@ -4,6 +4,7 @@ import {
   CheckCircle2, ChevronRight, ChevronLeft, Sparkles, Play,
   Star, Zap, ArrowRight, X, Bot,
 } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
 
 /* ═══════════════════════════════════════════
    Types & Data
@@ -242,21 +243,24 @@ function WelcomeStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
 
         {/* CTA */}
         <div className="flex flex-col items-center gap-3">
-          <button
+          <Button
+            type="button"
             onClick={onNext}
-            className="w-full h-[40px] bg-[#2552ED] hover:bg-[#1E44CC] text-white text-[14px] rounded-[8px] transition-colors flex items-center justify-center gap-2"
+            className="w-full gap-2 rounded-[8px] bg-[#2552ED] hover:bg-[#1E44CC] text-[14px] text-white"
             style={{ fontWeight: 400 }}
           >
             Get started
             <ArrowRight className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
             onClick={onSkip}
-            className="text-[13px] text-[#999] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#8b92a5] transition-colors"
+            className="text-[13px] text-[#999] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#8b92a5] hover:bg-transparent"
             style={{ fontWeight: 300 }}
           >
             Skip for now
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -332,23 +336,26 @@ function ChooseStep({
         </div>
 
         <div className="flex items-center justify-between">
-          <button
+          <Button
+            type="button"
+            variant="outline"
             onClick={onBack}
-            className="h-[38px] px-4 text-[13px] text-[#555] dark:text-[#8b92a5] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors flex items-center gap-1.5"
+            className="gap-1.5 rounded-[8px] px-4 text-[13px] text-[#555] dark:text-[#8b92a5]"
             style={{ fontWeight: 400 }}
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             Back
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
             onClick={onNext}
             disabled={selected.size === 0}
-            className="h-[38px] px-5 bg-[#2552ED] hover:bg-[#1E44CC] disabled:opacity-40 disabled:cursor-not-allowed text-white text-[13px] rounded-[8px] transition-colors flex items-center gap-1.5"
+            className="gap-1.5 rounded-[8px] px-5 bg-[#2552ED] hover:bg-[#1E44CC] text-[13px] text-white disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ fontWeight: 400 }}
           >
             Continue
             <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -437,23 +444,26 @@ function ContextStep({
         </div>
 
         <div className="flex items-center justify-between">
-          <button
+          <Button
+            type="button"
+            variant="outline"
             onClick={onBack}
-            className="h-[38px] px-4 text-[13px] text-[#555] dark:text-[#8b92a5] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors flex items-center gap-1.5"
+            className="gap-1.5 rounded-[8px] px-4 text-[13px] text-[#555] dark:text-[#8b92a5]"
             style={{ fontWeight: 400 }}
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             Back
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
             onClick={onNext}
             disabled={!allAnswered}
-            className="h-[38px] px-5 bg-[#2552ED] hover:bg-[#1E44CC] disabled:opacity-40 disabled:cursor-not-allowed text-white text-[13px] rounded-[8px] transition-colors flex items-center gap-1.5"
+            className="gap-1.5 rounded-[8px] px-5 bg-[#2552ED] hover:bg-[#1E44CC] text-[13px] text-white disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ fontWeight: 400 }}
           >
             Continue
             <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -509,17 +519,20 @@ function RecommendStep({
                     <h3 className="text-[14px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.28px]" style={{ fontWeight: 400 }}>
                       {agent.name}
                     </h3>
-                    <button
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={agent.enabled ? "default" : "outline"}
                       onClick={() => onToggleAgent(agent.id)}
-                      className={`h-[28px] px-3 rounded-[6px] text-[12px] border transition-all ${
+                      className={`rounded-[6px] px-3 text-[12px] ${
                         agent.enabled
                           ? "bg-[#2552ED] border-[#2552ED] text-white hover:bg-[#1E44CC]"
-                          : "border-[#e5e9f0] dark:border-[#333a47] text-[#555] dark:text-[#8b92a5] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
+                          : "text-[#555] dark:text-[#8b92a5]"
                       }`}
                       style={{ fontWeight: 400 }}
                     >
                       {agent.enabled ? "Enabled" : "Enable"}
-                    </button>
+                    </Button>
                   </div>
                   <p className="text-[12px] text-[#888] dark:text-[#6b7280] mb-2.5" style={{ fontWeight: 300 }}>
                     {agent.description}
@@ -545,27 +558,30 @@ function RecommendStep({
         </div>
 
         <div className="flex items-center justify-between">
-          <button
+          <Button
+            type="button"
+            variant="outline"
             onClick={onBack}
-            className="h-[38px] px-4 text-[13px] text-[#555] dark:text-[#8b92a5] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors flex items-center gap-1.5"
+            className="gap-1.5 rounded-[8px] px-4 text-[13px] text-[#555] dark:text-[#8b92a5]"
             style={{ fontWeight: 400 }}
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             Back
-          </button>
+          </Button>
           <div className="flex items-center gap-3">
             <span className="text-[12px] text-[#888] dark:text-[#6b7280]" style={{ fontWeight: 300 }}>
               {enabledCount} of {agents.length} enabled
             </span>
-            <button
+            <Button
+              type="button"
               onClick={onNext}
               disabled={enabledCount === 0}
-              className="h-[38px] px-5 bg-[#2552ED] hover:bg-[#1E44CC] disabled:opacity-40 disabled:cursor-not-allowed text-white text-[13px] rounded-[8px] transition-colors flex items-center gap-1.5"
+              className="gap-1.5 rounded-[8px] px-5 bg-[#2552ED] hover:bg-[#1E44CC] text-[13px] text-white disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ fontWeight: 400 }}
             >
               Continue
               <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -642,14 +658,16 @@ function TestStep({
             </div>
 
             {!showAiResponse && !isGenerating && (
-              <button
+              <Button
+                type="button"
+                variant="outline"
                 onClick={handleTest}
-                className="h-[36px] px-4 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors flex items-center gap-2"
+                className="gap-2 rounded-[8px] px-4 bg-white dark:bg-[#262b35] text-[13px] text-[#212121] dark:text-[#e4e4e4]"
                 style={{ fontWeight: 400 }}
               >
                 <Play className="w-3.5 h-3.5 text-[#2552ED]" />
                 Test with this review
-              </button>
+              </Button>
             )}
 
             {isGenerating && (
@@ -715,22 +733,25 @@ function TestStep({
         )}
 
         <div className="flex items-center justify-between">
-          <button
+          <Button
+            type="button"
+            variant="outline"
             onClick={onBack}
-            className="h-[38px] px-4 text-[13px] text-[#555] dark:text-[#8b92a5] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors flex items-center gap-1.5"
+            className="gap-1.5 rounded-[8px] px-4 text-[13px] text-[#555] dark:text-[#8b92a5]"
             style={{ fontWeight: 400 }}
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             Back
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
             onClick={onNext}
-            className="h-[38px] px-5 bg-[#2552ED] hover:bg-[#1E44CC] text-white text-[13px] rounded-[8px] transition-colors flex items-center gap-1.5"
+            className="gap-1.5 rounded-[8px] px-5 bg-[#2552ED] hover:bg-[#1E44CC] text-[13px] text-white"
             style={{ fontWeight: 400 }}
           >
             Activate agents
             <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -780,14 +801,15 @@ function DoneStep({
         </div>
 
         <div className="flex flex-col items-center gap-3">
-          <button
+          <Button
+            type="button"
             onClick={onGoToMonitor}
-            className="h-[40px] px-6 bg-[#2552ED] hover:bg-[#1E44CC] text-white text-[14px] rounded-[8px] transition-colors flex items-center gap-2"
+            className="gap-2 rounded-[8px] px-6 bg-[#2552ED] hover:bg-[#1E44CC] text-[14px] text-white"
             style={{ fontWeight: 400 }}
           >
             Go to monitor
             <ArrowRight className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -868,12 +890,15 @@ export function AgentOnboardingView({ onComplete, onSkip, onGoToMonitor }: Agent
         {/* Minimal header with close button */}
         <div className="shrink-0 h-[61px] flex items-center justify-end px-6">
           {step !== "done" && (
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               onClick={onSkip}
-              className="w-7 h-7 flex items-center justify-center rounded-[6px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+              className="rounded-[6px] text-[#888] dark:text-[#6b7280]"
             >
-              <X className="w-4 h-4 text-[#888] dark:text-[#6b7280]" />
-            </button>
+              <X className="w-4 h-4" />
+            </Button>
           )}
         </div>
 

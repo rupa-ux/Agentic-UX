@@ -175,33 +175,34 @@ export function ResizableRightChatPanel({
     <div
       ref={outerRef}
       className={[
-        "relative overflow-hidden",
-        workspaceExpanded ? "min-w-0 flex-1" : "shrink-0",
+        "relative",
+        workspaceExpanded ? "min-w-0 flex-1" : "shrink-0 overflow-hidden",
         className ?? "",
       ].join(" ")}
       style={{ width: workspaceExpanded ? undefined : 0 }}
       aria-hidden={!open && !workspaceExpanded}
     >
+      {/* Resize handle lives on the outer div so overflow-hidden on outer doesn't clip it */}
+      {!workspaceExpanded ? (
+        <HorizontalResizeHandle
+          aria-label="Resize chat panel"
+          aria-valuenow={Math.round(width)}
+          aria-valuemin={PANEL_WIDTH_MIN}
+          aria-valuemax={Math.round(maxW)}
+          onPointerDown={onResizePointerDown}
+          onDoubleClick={onHandleDoubleClick}
+        />
+      ) : null}
       <div
         ref={innerRef}
         className={[
-          "relative flex h-full min-h-0 w-full flex-col bg-white dark:bg-[#1a1d24]",
+          "flex h-full min-h-0 w-full flex-col bg-white dark:bg-[#1a1d24]",
           workspaceExpanded
             ? ""
             : "rounded-tl-lg border-l border-t border-[#e5e9f0] dark:border-[#333a47]",
         ].join(" ")}
         style={{ transform: "translateX(100%)" }}
       >
-        {!workspaceExpanded ? (
-          <HorizontalResizeHandle
-            aria-label="Resize chat panel"
-            aria-valuenow={Math.round(width)}
-            aria-valuemin={PANEL_WIDTH_MIN}
-            aria-valuemax={Math.round(maxW)}
-            onPointerDown={onResizePointerDown}
-            onDoubleClick={onHandleDoubleClick}
-          />
-        ) : null}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {children}
         </div>

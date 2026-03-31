@@ -11,6 +11,7 @@ import {
   Legend,
 } from "recharts";
 import { Share2, ChevronDown, Maximize2, Info, Star } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
 
 // ─── Chart series (neutral at rest; brand blue reserved for hover/focus on links) ───
 const CHART_STROKE = "#525252";
@@ -58,13 +59,10 @@ function StatGrid({ children, cols = 4 }: { children: React.ReactNode; cols?: nu
 
 function TimeChip({ label = "All time" }: { label?: string }) {
   return (
-    <span
-      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs border border-border rounded-[4px] text-muted-foreground bg-background cursor-pointer"
-      style={{ fontWeight: 400 }}
-    >
+    <Button variant="outline" className="gap-1 text-muted-foreground font-normal">
       {label}
       <ChevronDown className="w-3 h-3" />
-    </span>
+    </Button>
   );
 }
 
@@ -172,7 +170,7 @@ export default function BusinessOverviewDashboard() {
   return (
     <div className="h-full min-h-0 overflow-hidden rounded-tl-lg bg-background">
       <div className="h-full min-h-0 overflow-y-auto">
-      <div className="max-w-5xl mx-auto px-6 py-8 flex flex-col gap-5">
+      <div className="px-6 py-8 flex flex-col gap-5">
 
         {/* 1. Header */}
         <div className="flex items-start justify-between">
@@ -182,9 +180,9 @@ export default function BusinessOverviewDashboard() {
               Here are the things which need your attention.
             </p>
           </div>
-          <button className="flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-card hover:bg-muted transition-colors">
+          <Button variant="outline" size="icon">
             <Share2 className="w-4 h-4 text-muted-foreground" />
-          </button>
+          </Button>
         </div>
 
         {/* 2. Attention Cards Row */}
@@ -227,9 +225,9 @@ export default function BusinessOverviewDashboard() {
           </p>
           <div className="flex items-center gap-2">
             <TimeChip />
-            <button className="flex items-center justify-center w-7 h-7 rounded border border-border bg-card hover:bg-muted transition-colors">
+            <Button variant="outline" size="icon">
               <Maximize2 className="w-3.5 h-3.5 text-muted-foreground" />
-            </button>
+            </Button>
           </div>
         </div>
 

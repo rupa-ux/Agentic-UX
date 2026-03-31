@@ -14,6 +14,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Badge } from "@/app/components/ui/badge";
+import { Button } from "@/app/components/ui/button";
 import { cn } from "@/app/components/ui/utils";
 import {
   monitorActivities,
@@ -33,7 +34,15 @@ const monitorMetrics = [
 
 const agentOptions = ["All agents", "Review response agent", "Review generation agent", "Listing optimization agent", "Social publishing agent", "Social engagement agent", "Ticketing agent"];
 const statusOptions = ["All statuses", "Success", "Needs review", "Failed", "Processing"];
-const categoryOptions: ("All categories" | ActivityCategory)[] = ["All categories", "Customer Interaction", "Automation", "Content Publishing", "Data Update", "System Event", "Error"];
+const categoryOptions: ("All categories" | ActivityCategory)[] = [
+  "All categories",
+  "Customer interaction",
+  "Automation",
+  "Content publishing",
+  "Data update",
+  "System event",
+  "Error",
+];
 const dateOptions = ["Today", "Last 7 days", "Last 30 days", "Custom range"];
 
 /* ─── Status / category labels (text badges; design tokens via UI Badge) ─── */
@@ -114,9 +123,15 @@ function InspectionPanel({ activity, onClose }: { activity: MonitorActivity; onC
         <h3 className="text-[14px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.28px] truncate" style={{ fontWeight: 400 }}>
           Activity details
         </h3>
-        <button onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded-[4px] hover:bg-[#f0f0f0] dark:hover:bg-[#2e3340] transition-colors shrink-0">
-          <X className="w-3.5 h-3.5 text-[#999] dark:text-[#6b7280]" />
-        </button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="shrink-0 rounded-[4px] text-[#999] dark:text-[#6b7280]"
+        >
+          <X className="w-3.5 h-3.5" />
+        </Button>
       </div>
 
       {/* Content */}
@@ -429,12 +444,13 @@ export function AgentsMonitorView({ onBack }: { onBack: () => void }) {
                 </button>
               </div>
             ) : (
-              <button
+              <Button
                 onClick={() => { setSearchExpanded(true); closeAllDropdowns(); }}
-                className="flex items-center justify-center size-[38px] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+                variant="outline"
+                size="icon"
               >
                 <Search className="w-3.5 h-3.5 text-[#999] dark:text-[#6b7280]" />
-              </button>
+              </Button>
             )}
 
             <FilterDropdown label={agentFilter} options={agentOptions} isOpen={agentDropOpen} onToggle={() => { setAgentDropOpen(!agentDropOpen); setStatusDropOpen(false); setCategoryDropOpen(false); setDateDropOpen(false); }} onSelect={v => { setAgentFilter(v); setAgentDropOpen(false); }} />
@@ -564,10 +580,10 @@ function FilterDropdown({ label, options, isOpen, onToggle, onSelect }: {
 }) {
   return (
     <div className="relative">
-      <button onClick={onToggle} className="flex items-center gap-1.5 px-3 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors whitespace-nowrap" style={{ fontWeight: 400 }}>
+      <Button onClick={onToggle} variant="outline" className="gap-1.5 whitespace-nowrap font-normal">
         {label}
         <ChevronDown className="w-3 h-3 text-[#999] dark:text-[#6b7280]" />
-      </button>
+      </Button>
       {isOpen && (
         <div className="absolute top-full mt-1 right-0 bg-white dark:bg-[#22262f] rounded-[8px] shadow-lg border border-[#e5e9f0] dark:border-[#333a47] py-1 z-50 min-w-[180px]">
           {options.map(opt => (

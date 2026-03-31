@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ChevronDown, X, Link2, Copy, Check } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
 import { toast } from "sonner";
 import imgCover from "figma:asset/cf41ec9f747e1d47078180a05f5f2ca35443cb9a.png";
 import imgChart from "figma:asset/65e6c1159ecfae396cecb0e51b02f35873df9382.png";
@@ -111,12 +112,15 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
             >
               Share
             </h2>
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               onClick={onClose}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-[#aaa] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+              className="rounded-lg text-[#aaa] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#e4e4e4]"
             >
               <X className="w-[14px] h-[14px]" />
-            </button>
+            </Button>
           </div>
 
           {/* Tabs — pill style */}
@@ -151,26 +155,27 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
                 {/* Share link */}
                 <div>
                   <label className="block text-[11px] text-[#888] dark:text-[#6b7280] mb-1.5" style={{ fontWeight: 400 }}>Share link</label>
-                  <div className="flex items-center gap-2 bg-[#f8f9fb] dark:bg-[#262b35] border border-[#eceef2] dark:border-[#333a47] rounded-lg px-3 h-[36px]">
+                  <div className="flex items-center gap-2 bg-[#f8f9fb] dark:bg-[#262b35] border border-[#eceef2] dark:border-[#333a47] rounded-lg px-3 min-h-[38px] py-1">
                     <Link2 className="w-3.5 h-3.5 text-[#b0b0b0] dark:text-[#4d5568] shrink-0" />
                     <span className="flex-1 text-[12px] text-[#2552ED] dark:text-[#6b9bff] truncate select-all font-['Inter',sans-serif]">
                       share.birdeye.com/view/cc6fe16f
                     </span>
-                    <button
+                    <Button
+                      type="button"
+                      variant="outline"
                       onClick={handleCopyLink}
-                      className={`shrink-0 h-[26px] px-2.5 rounded-md text-[11px] flex items-center gap-1 transition-all ${
+                      className={`shrink-0 gap-1 px-2.5 text-[11px] font-normal ${
                         justCopied
-                          ? "bg-[#d4edda] dark:bg-[#1a3328] text-[#28a745] dark:text-[#6fcf73]"
-                          : "bg-white dark:bg-[#262b35] border border-[#e5e7eb] dark:border-[#3d4555] text-[#555] dark:text-[#9ba2b0] hover:bg-[#f3f4f6] dark:hover:bg-[#2e3340] shadow-sm"
+                          ? "border-transparent bg-[#d4edda] dark:bg-[#1a3328] text-[#28a745] dark:text-[#6fcf73] hover:bg-[#d4edda] dark:hover:bg-[#1a3328]"
+                          : "bg-white dark:bg-[#262b35] shadow-sm"
                       }`}
-                      style={{ fontWeight: 400 }}
                     >
                       {justCopied ? (
                         <><Check className="w-3 h-3" /> Copied</>
                       ) : (
                         <><Copy className="w-3 h-3" /> Copy</>
                       )}
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -178,13 +183,15 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
                 <div>
                   <label className="block text-[11px] text-[#888] dark:text-[#6b7280] mb-1.5" style={{ fontWeight: 400 }}>Who can access?</label>
                   <div className="relative">
-                    <button
+                    <Button
+                      type="button"
+                      variant="outline"
                       onClick={() => setAccessOpen(!accessOpen)}
-                      className="w-full flex items-center justify-between bg-white dark:bg-[#1e2229] border border-[#eceef2] dark:border-[#333a47] rounded-lg px-3 h-[36px] hover:border-[#d0d5dd] dark:hover:border-[#3d4555] transition-colors"
+                      className="w-full justify-between rounded-lg border-[#eceef2] bg-white px-3 font-normal hover:border-[#d0d5dd] dark:border-[#333a47] dark:bg-[#1e2229] dark:hover:border-[#3d4555]"
                     >
                       <span className="text-[12px] text-[#333] dark:text-[#e4e4e4] font-['Inter',sans-serif]">{access}</span>
                       <ChevronDown className={`w-4 h-4 text-[#aaa] dark:text-[#6b7280] transition-transform ${accessOpen ? "rotate-180" : ""}`} />
-                    </button>
+                    </Button>
                     {accessOpen && (
                       <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#22262f] border border-[#eceef2] dark:border-[#333a47] rounded-lg shadow-[0_6px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.3)] z-30 py-1 overflow-hidden">
                         {["Only invited users", "Anyone with the link", "Public"].map(opt => (
@@ -301,22 +308,24 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
               </button>
             )}
             <div className="flex items-center gap-2">
-              <button
+              <Button
+                type="button"
+                variant="ghost"
                 onClick={onClose}
-                className="px-3 py-[6px] text-[12px] text-[#666] dark:text-[#9ba2b0] rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors font-['Inter',sans-serif]"
-                style={{ fontWeight: 400 }}
+                className="px-3 text-[12px] text-[#666] dark:text-[#9ba2b0] rounded-lg font-['Inter',sans-serif] font-normal"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                type="button"
                 onClick={handleShare}
-                className="px-4 py-[6px] text-[12px] text-white rounded-lg transition-all font-['Inter',sans-serif] shadow-sm hover:shadow"
-                style={{ fontWeight: 400, backgroundColor: accentColor }}
+                className="rounded-lg px-4 text-[12px] font-normal text-white shadow-sm hover:shadow hover:text-white font-['Inter',sans-serif]"
+                style={{ backgroundColor: accentColor }}
                 onMouseEnter={e => (e.currentTarget.style.filter = "brightness(0.92)")}
                 onMouseLeave={e => (e.currentTarget.style.filter = "none")}
               >
                 {activeTab === "share" ? "Share" : activeTab === "export" ? "Export" : "Send"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

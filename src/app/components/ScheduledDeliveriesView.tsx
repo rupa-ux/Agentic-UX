@@ -5,6 +5,7 @@ import {
   Filter, X, CheckCircle2
 } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/app/components/ui/button";
 
 /* ─── Types ─── */
 type ScheduleStatus = "active" | "paused" | "draft" | "failed" | "expired";
@@ -374,12 +375,15 @@ function RowActionMenu({ schedule, onAction }: {
 
   return (
     <div className="relative" ref={ref}>
-      <button
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
-        className="w-7 h-7 rounded-lg flex items-center justify-center text-[#888] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+        className="rounded-lg text-[#888] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
       >
         <MoreHorizontal className="w-[14px] h-[14px]" />
-      </button>
+      </Button>
       {open && (
         <div className="absolute right-0 top-full mt-1 bg-white dark:bg-[#22262f] border border-[#eceef2] dark:border-[#333a47] rounded-lg shadow-[0_6px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.3)] z-40 py-1 min-w-[160px]">
           {actions.map((a, i) =>

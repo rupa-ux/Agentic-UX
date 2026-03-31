@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { ReportActionsButton, buildReportContext } from "./report-actions/ReportActionsButton";
 import type { ReportActionId } from "./report-actions/types";
+import { Button } from "@/app/components/ui/button";
 
 /* ─── Report tab definitions ─── */
 type ReportTab =
@@ -602,16 +603,17 @@ export function BirdAIReportsView() {
             />
 
             {/* Filter button — same icon & pattern as ReviewsView */}
-            <button
+            <Button
               onClick={() => setFilterPanelOpen(!filterPanelOpen)}
-              className={`h-[36px] w-[36px] border rounded-[8px] flex items-center justify-center transition-colors ${
-                filterPanelOpen
-                  ? "bg-[#e8effe] dark:bg-[#1e2d5e] border-[#2552ED] dark:border-[#2552ED]"
-                  : "bg-white dark:bg-[#262b35] border-[#e5e9f0] dark:border-[#333a47] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
-              }`}
+              variant="outline"
+              size="icon"
+              className={filterPanelOpen
+                ? "bg-[#e8effe] dark:bg-[#1e2d5e] border-[#2552ED] dark:border-[#2552ED]"
+                : ""
+              }
             >
               <Filter className={`w-[14px] h-[14px] ${filterPanelOpen ? "text-[#2552ED]" : "text-[#555] dark:text-[#8b92a5]"}`} />
-            </button>
+            </Button>
           </div>
         </div>
 

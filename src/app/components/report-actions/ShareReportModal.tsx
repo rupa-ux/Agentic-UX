@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X, Link2, Copy, Check, Users } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
 import { toast } from "sonner";
 import { reportShareService, trackReportAction, buildEvent } from "./services";
 import type { ReportContext } from "./types";
@@ -71,9 +72,9 @@ export function ShareReportModal({ open, onClose, context }: ShareReportModalPro
               Share report
             </h2>
           </div>
-          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-[6px] hover:bg-[#f0f1f5] dark:hover:bg-[#2e3340] transition-colors">
+          <Button type="button" variant="ghost" size="icon" onClick={onClose} aria-label="Close">
             <X className="w-4 h-4 text-[#888] dark:text-[#6b7280]" />
-          </button>
+          </Button>
         </div>
 
         {/* Body */}

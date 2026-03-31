@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Filter, MoreHorizontal, Sparkles } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
 
-/* ─── Figma asset imports ─── */
-import imgFrame1000003570 from "figma:asset/5fa8e2d27efb6a1d73a2b607ee453dd748e19c31.png";
-import imgFrame1000003571 from "figma:asset/b02d8eb38c1d177bcca63435c9b2546ed537ed5a.png";
-import imgFrame1000003572 from "figma:asset/53ba32b140e0144827b89f92c60270fd654ab262.png";
-import imgFrame1000003573 from "figma:asset/99486f3e380310a13db0d29bf715c31a0e9fd24e.png";
-import imgFrame1000003574 from "figma:asset/9c4435513555e801c3f8dc2964ed6b7010ff3e4f.png";
-import imgRectangle4668 from "figma:asset/672cafad19c90505197a5876326a0532277bdb2a.png";
-import imgRectangle4669 from "figma:asset/852279b4af87b2c81eae20af6151ed18044ec26c.png";
-import imgBitmapCopy1 from "figma:asset/07f55cb4dc9076729807bf360ffceba0f970bd1f.png";
+const imgFrame1000003570 = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop&auto=format";
+const imgFrame1000003571 = "https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&h=300&fit=crop&auto=format";
+const imgFrame1000003572 = "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop&auto=format";
+const imgFrame1000003573 = "https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=400&h=300&fit=crop&auto=format";
+const imgFrame1000003574 = "https://images.unsplash.com/photo-1586816001966-79b736744398?w=400&h=300&fit=crop&auto=format";
+const imgRectangle4668 = "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=300&fit=crop&auto=format";
+const imgRectangle4669 = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop&auto=format";
+const imgBitmapCopy1 = "https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=400&h=300&fit=crop&auto=format";
 
 /* ─── Platform icons ─── */
 function FacebookIcon({ size = 16 }: { size?: number }) {
@@ -284,18 +284,18 @@ export function SocialView() {
       <div className="flex items-center justify-between px-6 py-4 shrink-0">
         {/* Left: month nav */}
         <div className="flex items-center gap-1">
-          <button className="w-8 h-8 flex items-center justify-center rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
+          <Button variant="ghost" size="icon">
             <ChevronLeft className="w-[14px] h-[14px] text-[#303030] dark:text-[#c0c6d4]" />
-          </button>
+          </Button>
           <span className="text-[17px] text-[#212121] dark:text-[#e4e4e4] mx-1" style={{ fontWeight: 400 }}>
             {currentMonth}
           </span>
-          <button className="w-8 h-8 flex items-center justify-center rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
+          <Button variant="ghost" size="icon">
             <ChevronRight className="w-[14px] h-[14px] text-[#303030] dark:text-[#c0c6d4]" />
-          </button>
-          <button className="ml-2 px-3 py-1 text-[14px] text-[#1976d2] hover:bg-[#e8effe] dark:hover:bg-[#1e2d5e] rounded-[8px] transition-colors">
+          </Button>
+          <Button variant="ghost" className="ml-2 text-[#1976d2] hover:bg-[#e8effe] dark:hover:bg-[#1e2d5e]">
             Today
-          </button>
+          </Button>
         </div>
 
         {/* Right: view toggle + filter */}
@@ -319,9 +319,9 @@ export function SocialView() {
           </div>
 
           {/* Filter button */}
-          <button className="h-[36px] w-[36px] bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] flex items-center justify-center hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
+          <Button variant="outline" size="icon">
             <Filter className="w-[14px] h-[14px]" />
-          </button>
+          </Button>
         </div>
       </div>
 

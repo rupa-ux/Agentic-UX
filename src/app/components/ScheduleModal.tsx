@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, ChevronDown, Clock, Calendar, FileText, Users, Mail, Type } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
 import { toast } from "sonner";
 import imgCover from "figma:asset/cf41ec9f747e1d47078180a05f5f2ca35443cb9a.png";
 import imgChart from "figma:asset/65e6c1159ecfae396cecb0e51b02f35873df9382.png";
@@ -100,16 +101,18 @@ export function ScheduleModal({ open, onClose, onCustomize, themeColor, showSumm
     icon?: React.ReactNode;
   }) => (
     <div className="relative">
-      <button
+      <Button
+        type="button"
+        variant="outline"
         onClick={onToggle}
-        className="w-full flex items-center justify-between bg-white dark:bg-[#1e2229] border border-[#eceef2] dark:border-[#333a47] rounded-lg px-3 h-[36px] hover:border-[#d0d5dd] dark:hover:border-[#3d4555] transition-colors"
+        className="w-full justify-between rounded-lg border-[#eceef2] bg-white px-3 font-normal hover:border-[#d0d5dd] dark:border-[#333a47] dark:bg-[#1e2229] dark:hover:border-[#3d4555]"
       >
         <div className="flex items-center gap-2">
           {icon}
           <span className="text-[12px] text-[#333] dark:text-[#e4e4e4] font-['Inter',sans-serif]">{value}</span>
         </div>
         <ChevronDown className={`w-4 h-4 text-[#aaa] dark:text-[#6b7280] transition-transform ${isOpen ? "rotate-180" : ""}`} />
-      </button>
+      </Button>
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#22262f] border border-[#eceef2] dark:border-[#333a47] rounded-lg shadow-[0_6px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.3)] z-30 py-1 overflow-hidden max-h-[200px] overflow-y-auto">
           {options.map(opt => (
@@ -152,12 +155,15 @@ export function ScheduleModal({ open, onClose, onCustomize, themeColor, showSumm
                 Schedule report
               </h2>
             </div>
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               onClick={onClose}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-[#aaa] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+              className="rounded-lg text-[#aaa] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#e4e4e4]"
             >
               <X className="w-[14px] h-[14px]" />
-            </button>
+            </Button>
           </div>
 
           {/* Scrollable content */}
@@ -283,30 +289,33 @@ export function ScheduleModal({ open, onClose, onCustomize, themeColor, showSumm
 
           {/* Footer */}
           <div className="flex items-center justify-between px-5 py-3 border-t border-[#f0f0f0] dark:border-[#333a47] shrink-0">
-            <button
+            <Button
+              type="button"
+              variant="ghost"
               onClick={() => setStep("configure")}
-              className="px-3 py-[6px] text-[12px] text-[#666] dark:text-[#9ba2b0] rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors font-['Inter',sans-serif]"
-              style={{ fontWeight: 400 }}
+              className="px-3 text-[12px] text-[#666] dark:text-[#9ba2b0] rounded-lg font-['Inter',sans-serif] font-normal"
             >
               Back
-            </button>
+            </Button>
             <div className="flex items-center gap-2">
-              <button
+              <Button
+                type="button"
+                variant="ghost"
                 onClick={onClose}
-                className="px-3 py-[6px] text-[12px] text-[#666] dark:text-[#9ba2b0] rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors font-['Inter',sans-serif]"
-                style={{ fontWeight: 400 }}
+                className="px-3 text-[12px] text-[#666] dark:text-[#9ba2b0] rounded-lg font-['Inter',sans-serif] font-normal"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                type="button"
                 onClick={handleCreateSchedule}
-                className="px-4 py-[6px] text-[12px] text-white rounded-lg transition-all font-['Inter',sans-serif] shadow-sm hover:shadow"
-                style={{ fontWeight: 400, backgroundColor: accentColor }}
+                className="rounded-lg px-4 text-[12px] font-normal text-white font-['Inter',sans-serif] shadow-sm hover:shadow"
+                style={{ backgroundColor: accentColor }}
                 onMouseEnter={e => (e.currentTarget.style.filter = "brightness(0.92)")}
                 onMouseLeave={e => (e.currentTarget.style.filter = "none")}
               >
                 Create schedule
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -337,12 +346,15 @@ export function ScheduleModal({ open, onClose, onCustomize, themeColor, showSumm
                 Schedule report
               </h2>
             </div>
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               onClick={onClose}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-[#aaa] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+              className="rounded-lg text-[#aaa] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#e4e4e4]"
             >
               <X className="w-[14px] h-[14px]" />
-            </button>
+            </Button>
           </div>
 
           {/* Schedule info summary */}
@@ -480,22 +492,24 @@ export function ScheduleModal({ open, onClose, onCustomize, themeColor, showSumm
               </span>
             </button>
             <div className="flex items-center gap-2">
-              <button
+              <Button
+                type="button"
+                variant="ghost"
                 onClick={onClose}
-                className="px-3 py-[6px] text-[12px] text-[#666] dark:text-[#9ba2b0] rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors font-['Inter',sans-serif]"
-                style={{ fontWeight: 400 }}
+                className="px-3 text-[12px] text-[#666] dark:text-[#9ba2b0] rounded-lg font-['Inter',sans-serif] font-normal"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                type="button"
                 onClick={handleCreateSchedule}
-                className="px-4 py-[6px] text-[12px] text-white rounded-lg transition-all font-['Inter',sans-serif] shadow-sm hover:shadow"
-                style={{ fontWeight: 400, backgroundColor: accentColor }}
+                className="rounded-lg px-4 text-[12px] font-normal text-white font-['Inter',sans-serif] shadow-sm hover:shadow"
+                style={{ backgroundColor: accentColor }}
                 onMouseEnter={e => (e.currentTarget.style.filter = "brightness(0.92)")}
                 onMouseLeave={e => (e.currentTarget.style.filter = "none")}
               >
                 Schedule
-              </button>
+              </Button>
             </div>
           </div>
         </div>
