@@ -137,7 +137,7 @@ function OnboardingSidebar({ current }: { current: OnboardingStep }) {
   const currentIdx = stepOrder.indexOf(current);
 
   return (
-    <div className="w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#f0f1f5] dark:border-[#2e3340] rounded-tl-[8px] flex flex-col h-full shrink-0 transition-colors duration-300">
+    <div className="w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#f0f1f5] dark:border-[#2e3340] rounded-tl-lg flex flex-col h-full shrink-0 transition-colors duration-300">
       <div className="flex flex-col gap-2 px-6 pt-7">
         {/* Title */}
         <p className="text-[14px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.28px] mb-1" style={{ fontWeight: 400 }}>

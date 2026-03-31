@@ -1,6 +1,12 @@
 /**
  * L2NavLayout — shared layout primitive for ALL L2 navigation panels.
  *
+ * APP SHELL — L2 COLUMN (required for new products):
+ *   The exported `PANEL` class string includes `rounded-tl-lg` (8px top-left) so the L2
+ *   column matches the rest of the app below the top bar. Custom L2 sidebars (220px) must
+ *   use `PANEL` or replicate the same radius and surface tokens — see Storybook:
+ *   Design System → Tokens → Border Radius → App shell.
+ *
  * DEFAULT EXPANSION RULE (applies to every panel automatically):
  *   • If a section named "Actions" exists → expand only that section.
  *   • If no "Actions" section exists → expand only the first section.

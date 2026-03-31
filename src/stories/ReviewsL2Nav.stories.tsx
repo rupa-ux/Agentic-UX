@@ -222,7 +222,8 @@ export const AllExpanded: Story = {
 function AllExpandedPanel({ active, onActive }: { active: string; onActive: (k: string) => void }) {
   const { ChevronUp, ChevronDown, ExternalLink } = require("lucide-react");
 
-  const PANEL = "w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#e5e9f0] dark:border-[#2e3340] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300";
+  const PANEL =
+    "w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#e5e9f0] dark:border-[#2e3340] rounded-tl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300";
   const ROW = "flex items-center justify-between w-full px-[8px] py-[6px] text-[13px] rounded-[4px] transition-colors tracking-[-0.26px]";
   const HOVER = "hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]";
 

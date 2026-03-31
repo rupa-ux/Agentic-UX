@@ -194,6 +194,12 @@ const meta: Meta = {
   title: "App/AppShell",
   parameters: {
     layout: "fullscreen",
+    docs: {
+      description: {
+        component:
+          "Canonical app chrome: L1 icon strip, TopBar (`rounded-tr-lg`), L2 column via `PANEL` from `L2NavLayout` (8px top-left `rounded-tl-lg`), main column via `APP_MAIN_CONTENT_SHELL_CLASS`. When you add a new module, reuse those tokens so corners stay consistent. See Design System → Tokens → Border Radius → App shell.",
+      },
+    },
   },
 };
 

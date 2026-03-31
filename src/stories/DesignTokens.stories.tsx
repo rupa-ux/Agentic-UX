@@ -254,6 +254,44 @@ export const BorderRadius: Story = {
         </div>
       </div>
 
+      <div>
+        <SectionLabel>App shell — L2 and main</SectionLabel>
+        <p className="text-sm text-muted-foreground max-w-2xl mb-4">
+          New product areas must reuse the same chrome so L2 and main line up with the rest of the app.
+          Do not add a new 220px secondary nav without this top-left radius on the L2 column.
+        </p>
+        <ul className="text-sm text-foreground max-w-2xl list-disc pl-4 space-y-2 mb-6">
+          <li>
+            L2 navigation column: use the exported <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">PANEL</code>{" "}
+            from <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">L2NavLayout.tsx</code> (includes{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">rounded-tl-lg</code>, 8px top-left).
+          </li>
+          <li>
+            Main content column: <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">APP_MAIN_CONTENT_SHELL_CLASS</code>{" "}
+            in <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">appShellClasses.ts</code>{" "}
+            (<code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">rounded-tr-lg</code>, white surface).
+          </li>
+          <li>
+            Top bar: <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">rounded-tr-lg</code> in{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">TopBar.tsx</code>.
+          </li>
+        </ul>
+        <div className="flex max-w-md border border-border rounded-lg overflow-hidden bg-[#e0e5eb] h-24">
+          <div
+            className="w-24 shrink-0 bg-[#f0f1f5] border-r border-[#e5e9f0] rounded-tl-lg flex items-end justify-center pb-2 text-[10px] text-muted-foreground"
+            title="L2 — rounded-tl-lg"
+          >
+            L2
+          </div>
+          <div
+            className="flex-1 min-w-0 bg-white rounded-tr-lg flex items-end justify-center pb-2 text-[10px] text-muted-foreground"
+            title="Main — rounded-tr-lg"
+          >
+            Main
+          </div>
+        </div>
+      </div>
+
     </div>
   ),
 };
