@@ -184,7 +184,7 @@ type Story = StoryObj;
 export const Default: Story = {
   name: "App Shell — interactive",
   render: () => {
-    const [view, setView] = useState<AppView>("dashboard");
+    const [view, setView] = useState<AppView>("agents");
 
     return (
       <div className="relative h-screen w-screen flex overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">

@@ -11,6 +11,7 @@ import svgPaths from "../../imports/svg-y1gexucine";
 import svgPathsReviews from "../../imports/svg-w1z8z09mht";
 import type { AppView } from "../App";
 import { useTheme, type ThemePreference } from "./useTheme";
+import { L2NavLayout } from "./L2NavLayout";
 
 const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1617853701628-bfcf8b81d13d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBtYW4lMjBoZWFkc2hvdCUyMHNtaWxlJTIwc3R1ZGlvJTIwbGlnaHRpbmd8ZW58MXx8fHwxNzczMjE4MDIzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 
@@ -542,137 +543,53 @@ export function L2NavPanel({ currentView, onViewChange }: L2NavPanelProps) {
 }
 
 /* ═══════════════════════════════════════════
-   Reviews L2 Nav Panel – exported separately
+   Reviews L2 Nav Panel – uses L2NavLayout
    ═══════════════════════════════════════════ */
 
-const reviewsSections = [
-  {
-    label: "Actions",
-    children: [
-      { label: "Reply manually" },
-      { label: "Monitor agent replies" },
-    ],
-  },
-  {
-    label: "Reviews",
-    children: [
-      { label: "All" },
-      { label: "Google" },
-      { label: "Yelp" },
-      { label: "This month" },
-      { label: "Last 30 days" },
-      { label: "Last 7 days" },
-      { label: "High rated (4, 5 stars)" },
-      { label: "Low rated (1, 2, 3 stars)" },
-      { label: "Archived" },
-    ],
-  },
-  {
-    label: "Competitors",
-    children: [
-      { label: "Benchmarking" },
-      { label: "Head to head" },
-      { label: "Reviews" },
-    ],
-  },
-  {
-    label: "Agents",
-    children: [
-      { label: "Review generation agents" },
-      { label: "Review response agents" },
-      { label: "Review monitoring agents" },
-      { label: "Review marketing agents" },
-    ],
-  },
-  {
-    label: "Libraries",
-    children: [
-      { label: "Request templates" },
-      { label: "Response templates" },
-      { label: "QR codes" },
-      { label: "Widgets" },
-    ],
-  },
-];
+const reviewsConfig = {
+  headerAction: { label: "Send a review request" },
+  sections: [
+    {
+      label: "Actions",
+      children: ["Reply manually", "Monitor agent replies"],
+    },
+    {
+      label: "Reviews",
+      children: [
+        "All",
+        "Google",
+        "Yelp",
+        "This month",
+        "Last 30 days",
+        "Last 7 days",
+        "High rated (4, 5 stars)",
+        "Low rated (1, 2, 3 stars)",
+        "Archived",
+      ],
+    },
+    {
+      label: "Competitors",
+      children: ["Benchmarking", "Head to head", "Reviews"],
+    },
+    {
+      label: "Agents",
+      children: [
+        "Review generation agents",
+        "Review response agents",
+        "Review monitoring agents",
+        "Review marketing agents",
+      ],
+    },
+    {
+      label: "Libraries",
+      children: ["Request templates", "Response templates", "QR codes", "Widgets"],
+    },
+  ],
+  footerLink: { label: "Reports", external: true },
+};
 
 export function ReviewsL2NavPanel() {
-  const [expanded, setExpanded] = useState<Record<string, boolean>>(
-    () => Object.fromEntries(reviewsSections.map(s => [s.label, true]))
-  );
-  const [activeItem, setActiveItem] = useState("Reviews/All");
-
-  const toggle = (label: string) =>
-    setExpanded(prev => ({ ...prev, [label]: !prev[label] }));
-
-  const panelCls = "w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#e5e9f0] dark:border-[#2e3340] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300";
-  const childCls = (active: boolean) =>
-    `text-left w-full px-[14px] py-[6px] text-[13px] rounded-[4px] transition-colors tracking-[-0.26px] ${
-      active
-        ? "text-[#1E44CC] bg-[#dce5ff] dark:bg-[#1e2d5e] dark:text-[#7fa8ff]"
-        : "text-[#555] dark:text-[#9ba2b0] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]"
-    }`;
-
-  return (
-    <div className={panelCls} data-no-print>
-      <div className="flex-1 overflow-y-auto px-2 pt-3 pb-4 flex flex-col gap-0.5">
-
-        {/* Send a review request */}
-        <button className="flex items-center justify-between px-2 py-[7px] w-full rounded-[4px] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340] transition-colors mb-1">
-          <span className="text-[14px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.28px]">
-            Send a review request
-          </span>
-          <div className="w-5 h-5 bg-[#1E44CC] rounded-full flex items-center justify-center shrink-0">
-            <span className="text-white text-[13px] leading-none select-none">+</span>
-          </div>
-        </button>
-
-        {/* Collapsible sections */}
-        {reviewsSections.map(section => (
-          <div key={section.label}>
-            <button
-              onClick={() => toggle(section.label)}
-              className="flex items-center justify-between px-2 py-[7px] w-full rounded-[4px] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340] transition-colors"
-            >
-              <span className="text-[13px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.26px]" style={{ fontWeight: 400 }}>
-                {section.label}
-              </span>
-              {expanded[section.label]
-                ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-                : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-              }
-            </button>
-
-            {expanded[section.label] && (
-              <div className="flex flex-col gap-0.5 mb-1">
-                {section.children.map(child => {
-                  const key = `${section.label}/${child.label}`;
-                  return (
-                    <button
-                      key={child.label}
-                      onClick={() => setActiveItem(key)}
-                      className={childCls(activeItem === key)}
-                      style={{ fontWeight: activeItem === key ? 400 : 300 }}
-                    >
-                      {child.label}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        ))}
-
-        {/* Reports — external link */}
-        <button className="flex items-center justify-between px-2 py-[7px] w-full rounded-[4px] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340] transition-colors mt-0.5">
-          <span className="text-[13px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.26px]" style={{ fontWeight: 400 }}>
-            Reports
-          </span>
-          <ExternalLink className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-        </button>
-
-      </div>
-    </div>
-  );
+  return <L2NavLayout {...reviewsConfig} data-no-print />;
 }
 
 /* ═══════════════════════════════════════════
