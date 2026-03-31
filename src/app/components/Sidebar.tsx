@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import {
-  ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Palette, Clock, Sparkles,
+  ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Palette, Clock, Sparkles, ExternalLink,
 } from "lucide-react";
 import {
   House, ChatDots, MapPin, Star, Gift, CurrencyDollar,
@@ -544,43 +544,132 @@ export function L2NavPanel({ currentView, onViewChange }: L2NavPanelProps) {
 /* ═══════════════════════════════════════════
    Reviews L2 Nav Panel – exported separately
    ═══════════════════════════════════════════ */
-const reviewsNavItems = [
-  { label: "Send a review request", hasAddIcon: true },
-  { label: "Actions", expandable: true },
-  { label: "Reports", expandable: true },
-  { label: "Competitors", expandable: true },
-  { label: "Agents", expandable: true },
-  { label: "Settings", expandable: true },
+
+const reviewsSections = [
+  {
+    label: "Actions",
+    children: [
+      { label: "Reply manually" },
+      { label: "Monitor agent replies" },
+    ],
+  },
+  {
+    label: "Reviews",
+    children: [
+      { label: "All" },
+      { label: "Google" },
+      { label: "Yelp" },
+      { label: "This month" },
+      { label: "Last 30 days" },
+      { label: "Last 7 days" },
+      { label: "High rated (4, 5 stars)" },
+      { label: "Low rated (1, 2, 3 stars)" },
+      { label: "Archived" },
+    ],
+  },
+  {
+    label: "Competitors",
+    children: [
+      { label: "Benchmarking" },
+      { label: "Head to head" },
+      { label: "Reviews" },
+    ],
+  },
+  {
+    label: "Agents",
+    children: [
+      { label: "Review generation agents" },
+      { label: "Review response agents" },
+      { label: "Review monitoring agents" },
+      { label: "Review marketing agents" },
+    ],
+  },
+  {
+    label: "Libraries",
+    children: [
+      { label: "Request templates" },
+      { label: "Response templates" },
+      { label: "QR codes" },
+      { label: "Widgets" },
+    ],
+  },
 ];
 
 export function ReviewsL2NavPanel() {
+  const [expanded, setExpanded] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(reviewsSections.map(s => [s.label, true]))
+  );
+  const [activeItem, setActiveItem] = useState("Reviews/All");
+
+  const toggle = (label: string) =>
+    setExpanded(prev => ({ ...prev, [label]: !prev[label] }));
+
+  const panelCls = "w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#e5e9f0] dark:border-[#2e3340] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300";
+  const childCls = (active: boolean) =>
+    `text-left w-full px-[14px] py-[6px] text-[13px] rounded-[4px] transition-colors tracking-[-0.26px] ${
+      active
+        ? "text-[#1E44CC] bg-[#dce5ff] dark:bg-[#1e2d5e] dark:text-[#7fa8ff]"
+        : "text-[#555] dark:text-[#9ba2b0] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]"
+    }`;
+
   return (
-    <div className="w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#f0f1f5] dark:border-[#2e3340] rounded-tl-[8px] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300" data-no-print>
-      <div className="flex-1 overflow-y-auto px-2 pt-4 pb-2">
-        <div className="flex flex-col gap-1">
-          {reviewsNavItems.map(item => (
+    <div className={panelCls} data-no-print>
+      <div className="flex-1 overflow-y-auto px-2 pt-3 pb-4 flex flex-col gap-0.5">
+
+        {/* Send a review request */}
+        <button className="flex items-center justify-between px-2 py-[7px] w-full rounded-[4px] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340] transition-colors mb-1">
+          <span className="text-[14px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.28px]">
+            Send a review request
+          </span>
+          <div className="w-5 h-5 bg-[#1E44CC] rounded-full flex items-center justify-center shrink-0">
+            <span className="text-white text-[13px] leading-none select-none">+</span>
+          </div>
+        </button>
+
+        {/* Collapsible sections */}
+        {reviewsSections.map(section => (
+          <div key={section.label}>
             <button
-              key={item.label}
-              className="flex items-center justify-between px-2 py-1 h-[28px] w-[190px] text-[14px] text-[#212121] dark:text-[#e4e4e4] rounded-[4px] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340] transition-colors tracking-[-0.28px]"
+              onClick={() => toggle(section.label)}
+              className="flex items-center justify-between px-2 py-[7px] w-full rounded-[4px] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340] transition-colors"
             >
-              <span>{item.label}</span>
-              {item.hasAddIcon && (
-                <div className="w-[20px] h-[20px] flex items-center justify-center">
-                  <svg className="w-[15px] h-[15px]" viewBox="0 0 15.1666 15.1666" fill="none">
-                    <path d={svgPathsReviews.p21d4a600} fill="#1976D2" />
-                  </svg>
-                </div>
-              )}
-              {item.expandable && (
-                <div className="w-[20px] h-[20px] flex items-center justify-center">
-                  <svg className="w-[9px] h-[5px]" viewBox="0 0 9.01782 5.0176" fill="none">
-                    <path d={svgPathsReviews.p5ccaa80} fill="#303030" className="dark:fill-[#8b92a5]" />
-                  </svg>
-                </div>
-              )}
+              <span className="text-[13px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.26px]" style={{ fontWeight: 400 }}>
+                {section.label}
+              </span>
+              {expanded[section.label]
+                ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+                : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+              }
             </button>
-          ))}
-        </div>
+
+            {expanded[section.label] && (
+              <div className="flex flex-col gap-0.5 mb-1">
+                {section.children.map(child => {
+                  const key = `${section.label}/${child.label}`;
+                  return (
+                    <button
+                      key={child.label}
+                      onClick={() => setActiveItem(key)}
+                      className={childCls(activeItem === key)}
+                      style={{ fontWeight: activeItem === key ? 400 : 300 }}
+                    >
+                      {child.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ))}
+
+        {/* Reports — external link */}
+        <button className="flex items-center justify-between px-2 py-[7px] w-full rounded-[4px] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340] transition-colors mt-0.5">
+          <span className="text-[13px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.26px]" style={{ fontWeight: 400 }}>
+            Reports
+          </span>
+          <ExternalLink className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+        </button>
+
       </div>
     </div>
   );
