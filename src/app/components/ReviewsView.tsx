@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Search, ChevronDown, Filter, MoreVertical, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import svgPaths from "../../imports/svg-k7qrt1366a";
-import imgRectangle2429 from "figma:asset/446cb492f3fe73044c118c6d9307137e24590ff8.png";
-import imgRectangle2430 from "figma:asset/1a7a907737a6c2339fef56676725c1199e301f9b.png";
-import imgRectangle2431 from "figma:asset/57a5d0bf0d5a390c1d7dcf58044f6d1bf9302043.png";
-import imgRectangle2432 from "figma:asset/af71c7009ab80e3144130b7e0ae3de25145587b4.png";
-import imgRectangle2436 from "figma:asset/ea0dd05780c7ac1c213dfa21dd362e49975c1e8a.png";
-import imgRectangle2437 from "figma:asset/5d5e04295f071059b2e008ccd620f3c679cac0dc.png";
-import imgRectangle2435 from "figma:asset/2530e5b572972c8fac2f940c826bbb855650f616.png";
+// Real placeholder images — replace with actual CDN URLs in production
+const imgRectangle2429 = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop&auto=format";
+const imgRectangle2430 = "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop&auto=format";
+const imgRectangle2431 = "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=300&fit=crop&auto=format";
+const imgRectangle2432 = "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=400&h=300&fit=crop&auto=format";
+const imgRectangle2436 = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop&auto=format";
+const imgRectangle2437 = "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop&auto=format";
+const imgRectangle2435 = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=300&fit=crop&auto=format";
 import { FilterPanel, type FilterItem } from "./FilterPanel";
 
 // Types
@@ -219,13 +220,67 @@ function ActionRow({ replyStatus }: { replyStatus: "post" | "edit" }) {
   );
 }
 
+/* ─── Lightbox ─── */
+function Lightbox({ photos, index, onClose, onPrev, onNext }: {
+  photos: string[];
+  index: number;
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center"
+      onClick={onClose}
+    >
+      {/* Close */}
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 text-white/80 hover:text-white text-2xl leading-none p-2"
+      >
+        ✕
+      </button>
+      {/* Counter */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white/60 text-sm">
+        {index + 1} / {photos.length}
+      </div>
+      {/* Prev */}
+      {index > 0 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onPrev(); }}
+          className="absolute left-4 top-1/2 -translate-y-1/2 size-[44px] rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+      )}
+      {/* Image */}
+      <img
+        src={photos[index]}
+        alt={`Photo ${index + 1}`}
+        className="max-h-[85vh] max-w-[90vw] object-contain rounded-[8px] shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      />
+      {/* Next */}
+      {index < photos.length - 1 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onNext(); }}
+          className="absolute right-4 top-1/2 -translate-y-1/2 size-[44px] rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      )}
+    </div>
+  );
+}
+
 /* ─── Photo Carousel ─── */
 function PhotoCarousel({ photos }: { photos: string[] }) {
   const [scrollOffset, setScrollOffset] = useState(0);
-  const visibleCount = 6;
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const visibleCount = 4;
 
   const canScrollLeft = scrollOffset > 0;
-  const canScrollRight = scrollOffset < photos.length - visibleCount;
+  const canScrollRight = scrollOffset + visibleCount < photos.length;
 
   const scrollLeft = () => setScrollOffset((prev) => Math.max(0, prev - 1));
   const scrollRight = () => setScrollOffset((prev) => Math.min(photos.length - visibleCount, prev + 1));
@@ -233,20 +288,39 @@ function PhotoCarousel({ photos }: { photos: string[] }) {
   const visiblePhotos = photos.slice(scrollOffset, scrollOffset + visibleCount + 1);
 
   return (
+    <>
+      {lightboxIndex !== null && (
+        <Lightbox
+          photos={photos}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onPrev={() => setLightboxIndex((i) => Math.max(0, (i ?? 0) - 1))}
+          onNext={() => setLightboxIndex((i) => Math.min(photos.length - 1, (i ?? 0) + 1))}
+        />
+      )}
     <div className="relative w-full">
-      <div className="flex gap-[2px] overflow-hidden">
+      <div className="flex gap-[6px] overflow-hidden">
         {visiblePhotos.map((photo, idx) => {
-          const isLast = idx === visiblePhotos.length - 1 && scrollOffset + visibleCount < photos.length;
+          const absoluteIdx = scrollOffset + idx;
+          const isLast = idx === visiblePhotos.length - 1 && canScrollRight;
           return (
             <div
-              key={scrollOffset + idx}
-              className="w-[180px] h-[120px] rounded-[4px] overflow-hidden shrink-0 relative"
+              key={absoluteIdx}
+              onClick={() => setLightboxIndex(absoluteIdx)}
+              className="w-[180px] h-[120px] rounded-[6px] overflow-hidden shrink-0 relative cursor-pointer group/photo"
             >
               <img
                 src={photo}
-                alt={`Review photo ${scrollOffset + idx + 1}`}
-                className="w-full h-full object-cover"
+                alt={`Review photo ${absoluteIdx + 1}`}
+                className="w-full h-full object-cover transition-transform duration-200 group-hover/photo:scale-105"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = `https://picsum.photos/seed/review${absoluteIdx}/400/300`;
+                }}
               />
+              {/* Hover overlay */}
+              <div className="absolute inset-0 bg-black/0 group-hover/photo:bg-black/20 transition-colors duration-200 flex items-center justify-center">
+                <span className="text-white opacity-0 group-hover/photo:opacity-100 text-xs transition-opacity">View</span>
+              </div>
               <div className="absolute inset-0 border border-[#f4f6f7] dark:border-[#333a47] rounded-[4px]" />
               {/* Fade gradient on last visible photo */}
               {isLast && (
@@ -284,6 +358,7 @@ function PhotoCarousel({ photos }: { photos: string[] }) {
         </>
       )}
     </div>
+    </>
   );
 }
 
