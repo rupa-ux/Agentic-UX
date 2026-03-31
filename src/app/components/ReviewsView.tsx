@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Search, ChevronDown, Filter, MoreVertical, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronDown, MoreVertical, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { FunnelSimple } from "@phosphor-icons/react";
 import svgPaths from "../../imports/svg-k7qrt1366a";
 // Real placeholder images — replace with actual CDN URLs in production
 const imgRectangle2429 = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop&auto=format";
@@ -557,7 +558,7 @@ export function ReviewsView() {
                   : "bg-white dark:bg-[#262b35] border-[#e5e9f0] dark:border-[#333a47] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
               }`}
             >
-              <Filter className={`w-[14px] h-[14px] ${filterPanelOpen ? "text-[#2552ED]" : "text-[#555] dark:text-[#8b92a5]"}`} />
+              <FunnelSimple size={14} weight={filterPanelOpen ? "fill" : "regular"} className={filterPanelOpen ? "text-[#1E44CC]" : "text-[#555] dark:text-[#8b92a5]"} />
             </button>
           </div>
         </div>
