@@ -29,7 +29,7 @@ import { ChevronUp, ChevronDown, ExternalLink } from "lucide-react";
    Design tokens — edit here to update every L2 panel
    ───────────────────────────────────────────────────── */
 export const PANEL =
-  "w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#e5e9f0] dark:border-[#2e3340] rounded-tl-[2px] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300";
+  "w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#e5e9f0] dark:border-[#2e3340] rounded-tl-[3px] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300";
 
 // Shared row geometry — same for headers, children, footer
 export const ROW =
