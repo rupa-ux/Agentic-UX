@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
 import {
   ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Clock, ExternalLink, Keyboard,
 } from "lucide-react";
@@ -13,7 +13,8 @@ import { Button } from "@/app/components/ui/button";
 import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "./l1StripIconTokens";
 import { MonitorNotificationsTrigger } from "./MonitorNotificationsTrigger";
 import { useTheme, type ThemePreference } from "./useTheme";
-import { L2NavLayout, PANEL, ROW, HOVER, CHILD_ACTIVE, CHILD_INACTIVE, FOOTER_ROW_CLS, SECTION_HEADER } from "./L2NavLayout";
+import { L2NavLayout, L2_FLAT_NAV_KEY_PREFIX, PANEL, ROW, HOVER, CHILD_ACTIVE, CHILD_INACTIVE, FOOTER_ROW_CLS, SECTION_HEADER } from "./L2NavLayout";
+import { agentSections } from "@/app/data/agentsPerformanceMock";
 
 /** How long to show the Reports-row shimmer before opening the tab (~sub-second “micro” handoff). */
 export const REPORTS_EXTERNAL_SHIMMER_MS = 480;
@@ -98,7 +99,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
     else if (currentView === "insights") setActiveIcon("Insights");
     else if (currentView === "competitors") setActiveIcon("Competitors");
     else if (currentView === "dashboard" || currentView === "shared-by-me") setActiveIcon("Reports");
-    else if (currentView === "agents-monitor" || currentView === "agents-builder" || currentView === "agent-detail" || currentView === "agents-onboarding" || currentView === "birdai-reports") setActiveIcon("Agents");
+    else if (currentView === "agents-monitor" || currentView === "agents-analyze-performance" || currentView === "agents-builder" || currentView === "agent-detail" || currentView === "agents-onboarding" || currentView === "birdai-reports") setActiveIcon("Agents");
     // scheduled-deliveries / schedule-builder: no icon mapping
   }, [currentView]);
 
@@ -954,87 +955,43 @@ export function InboxL2NavPanel() {
    ═══════════════════════════════════════════ */
 interface AgentsL2NavPanelProps {
   currentView: AppView;
-  onViewChange: (view: AppView, agentSlug?: string) => void;
+  onViewChange: (view: AppView, slug?: string) => void;
   selectedAgentSlug?: string;
+  selectedAnalyzeItem?: string;
 }
 
-interface MynaAiL2NavItem {
-  label: string;
-  view?: AppView;
-  /** Opens reporting module in a new tab instead of in-app navigation */
-  openReportingExternal?: boolean;
+function resolveAnalyzeActiveKey(currentView: AppView, selectedAnalyzeItem: string): string {
+  if (currentView !== "agents-analyze-performance") return `${L2_FLAT_NAV_KEY_PREFIX}/monitor`;
+  return `Analyze Performance/${selectedAnalyzeItem}`;
 }
 
-/** Myna AI L2: Monitor and Reports (external). */
-const mynaAiL2NavItems: MynaAiL2NavItem[] = [
-  { label: "Monitor", view: "agents-monitor" as AppView },
-  { label: "Reports", openReportingExternal: true },
-];
-
-export function AgentsL2NavPanel({ currentView, onViewChange, selectedAgentSlug: _selectedAgentSlug }: AgentsL2NavPanelProps) {
-  void _selectedAgentSlug;
-  const [reportsHandoffShimmer, setReportsHandoffShimmer] = useState(false);
-  const reportsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (reportsTimerRef.current) clearTimeout(reportsTimerRef.current);
-    };
-  }, []);
-
-  const startReportsHandoff = () => {
-    if (reportsHandoffShimmer) return;
-    setReportsHandoffShimmer(true);
-    if (reportsTimerRef.current) clearTimeout(reportsTimerRef.current);
-    reportsTimerRef.current = setTimeout(() => {
-      reportsTimerRef.current = null;
-      openReportingModuleInNewTab();
-      setReportsHandoffShimmer(false);
-    }, REPORTS_EXTERNAL_SHIMMER_MS);
-  };
+export function AgentsL2NavPanel({ currentView, onViewChange, selectedAnalyzeItem = "overview" }: AgentsL2NavPanelProps) {
+  const handleActiveItemChange = useCallback((key: string) => {
+    const slashIdx = key.indexOf("/");
+    const prefix = key.slice(0, slashIdx);
+    const id = key.slice(slashIdx + 1);
+    if (prefix === L2_FLAT_NAV_KEY_PREFIX) {
+      onViewChange("agents-monitor");
+    } else {
+      onViewChange("agents-analyze-performance", id);
+    }
+  }, [onViewChange]);
 
   return (
-    <div className="w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#f0f1f5] dark:border-[#2e3340] rounded-tl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300" data-no-print>
-      <div className="flex-1 overflow-y-auto px-2 pt-4 pb-2">
-        <div className="flex flex-col gap-0.5">
-          {mynaAiL2NavItems.map(item => {
-            const isExternal = Boolean(item.openReportingExternal);
-            const isTopActive = !isExternal && item.view && item.view === currentView;
-            return (
-              <button
-                key={item.label}
-                type="button"
-                disabled={isExternal && reportsHandoffShimmer}
-                aria-busy={isExternal ? reportsHandoffShimmer : undefined}
-                onClick={() => {
-                  if (isExternal) startReportsHandoff();
-                  else if (item.view) onViewChange(item.view);
-                }}
-                className={`flex items-center justify-between px-2 py-2 w-full text-[14px] rounded-[4px] transition-colors tracking-[-0.28px] disabled:cursor-wait disabled:opacity-100 ${
-                  isTopActive
-                    ? "text-[#212121] dark:text-[#e4e4e4] bg-[#dce5ff] dark:bg-[#1e2d5e]"
-                    : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]"
-                }`}
-              >
-                {isExternal && reportsHandoffShimmer ? (
-                  <span className="flex w-full items-center justify-between gap-2 min-h-[20px]">
-                    <span className="l2-nav-reports-shimmer-line h-3 flex-1 max-w-[120px] rounded-[4px]" />
-                    <span className="l2-nav-reports-shimmer-icon h-3.5 w-3.5 shrink-0 rounded-[4px]" aria-hidden />
-                  </span>
-                ) : (
-                  <>
-                    <span>{item.label}</span>
-                    {isExternal && (
-                      <ExternalLink className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" aria-hidden />
-                    )}
-                  </>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+    <L2NavLayout
+      flatNavItems={[{ label: "Monitor", key: "monitor" }]}
+      sections={[{
+        label: "Analyze Performance",
+        children: [
+          { label: "Overview", key: "overview" },
+          ...agentSections.map(a => ({ label: a.label, key: a.id })),
+        ],
+      }]}
+      activeItem={resolveAnalyzeActiveKey(currentView, selectedAnalyzeItem)}
+      onActiveItemChange={handleActiveItemChange}
+      defaultExpandedSections={["Analyze Performance"]}
+      data-no-print
+    />
   );
 }
 

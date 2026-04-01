@@ -37,6 +37,7 @@ export function getAppViewTitle(view: AppView): string {
     case "schedule-builder":
       return "Scheduled deliveries";
     case "agents-monitor":
+    case "agents-analyze-performance":
     case "agents-builder":
     case "agent-detail":
     case "birdai-reports":

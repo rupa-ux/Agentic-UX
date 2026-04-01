@@ -71,6 +71,8 @@ export interface L2HeaderAction {
 export interface L2FooterLink {
   label: string;
   external?: boolean;
+  onClick?: () => void;
+  disabled?: boolean;
 }
 
 /** Prefix for `flatNavItems` active keys: `flatNav/{key}`. */
@@ -100,6 +102,8 @@ export interface L2NavLayoutProps {
   /** Controlled active item (for Storybook stories / testing) */
   activeItem?: string;
   onActiveItemChange?: (key: string) => void;
+  /** Section labels to expand on initial mount (overrides default expansion rule) */
+  defaultExpandedSections?: string[];
   "data-no-print"?: boolean;
 }
 
@@ -123,13 +127,19 @@ export function L2NavLayout({
   defaultActive,
   activeItem: controlledActive,
   onActiveItemChange,
+  defaultExpandedSections,
   "data-no-print": noprint,
 }: L2NavLayoutProps) {
 
-  // Expansion state — only the default section is open initially
+  // Expansion state — respects defaultExpandedSections if provided, else default rule
   const defaultExpandedLabel = resolveDefaultExpanded(sections);
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(sections.map(s => [s.label, s.label === defaultExpandedLabel]))
+    Object.fromEntries(sections.map(s => [
+      s.label,
+      defaultExpandedSections
+        ? defaultExpandedSections.includes(s.label)
+        : s.label === defaultExpandedLabel,
+    ]))
   );
 
   // Active item — auto-resolve to first child of expanded section if not provided
@@ -238,9 +248,14 @@ export function L2NavLayout({
 
         {/* Footer link */}
         {footerLink && (
-          <button className={`${FOOTER_ROW_CLS} mt-[2px]`} style={{ fontWeight: 400 }}>
+          <button
+            className={`${FOOTER_ROW_CLS} mt-[2px]`}
+            style={{ fontWeight: 400, opacity: footerLink.disabled ? 0.5 : 1 }}
+            onClick={footerLink.onClick}
+            disabled={footerLink.disabled}
+          >
             <span>{footerLink.label}</span>
-            {footerLink.external && (
+            {footerLink.external && !footerLink.disabled && (
               <ExternalLink className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
             )}
           </button>

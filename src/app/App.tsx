@@ -18,6 +18,7 @@ import { SearchAIView } from "./components/SearchAIView";
 import { ContactsView } from "./components/ContactsView";
 import { ScheduledDeliveriesView } from "./components/ScheduledDeliveriesView";
 import { AgentsMonitorView } from "./components/AgentsMonitorView";
+import { AnalyzePerformanceView } from "./components/AnalyzePerformanceView";
 import { AgentsBuilderView } from "./components/AgentsBuilderView";
 import { AgentDetailView } from "./components/AgentDetailView";
 import { AgentOnboardingView } from "./components/AgentOnboardingView";
@@ -46,6 +47,7 @@ export type AppView =
   | "contacts"
   | "scheduled-deliveries"
   | "agents-monitor"
+  | "agents-analyze-performance"
   | "agents-builder"
   | "agent-detail"
   | "agents-onboarding"
@@ -63,13 +65,20 @@ export default function App() {
   const [currentView, setCurrentView] = useState<AppView>("agents-monitor");
   const [editingDraft, setEditingDraft] = useState<DraftReport | null>(null);
   const [selectedAgentSlug, setSelectedAgentSlug] = useState<string>("");
+  const [selectedAnalyzeItem, setSelectedAnalyzeItem] = useState<string>("overview");
 
-  const handleViewChange = useCallback((view: AppView, agentSlug?: string) => {
+  const handleViewChange = useCallback((view: AppView, slug?: string) => {
     if (view !== currentView) {
       setMynaChatExpanded(false);
     }
     setCurrentView(view);
-    if (agentSlug) setSelectedAgentSlug(agentSlug);
+    if (slug) {
+      if (view === "agents-analyze-performance") {
+        setSelectedAnalyzeItem(slug);
+      } else {
+        setSelectedAgentSlug(slug);
+      }
+    }
   }, [currentView]);
 
   const handleEditDraft = (draft: DraftReport) => {
@@ -175,6 +184,7 @@ export default function App() {
     v === "contacts" ||
     v === "scheduled-deliveries" ||
     v === "agents-monitor" ||
+    v === "agents-analyze-performance" ||
     v === "agents-builder" ||
     v === "agent-detail" ||
     v === "agents-onboarding" ||
@@ -281,8 +291,8 @@ export default function App() {
             <InboxL2NavPanel />
           )}
           {/* Agents L2 nav panel */}
-          {!aiPanelOpen && !mynaWorkspaceExpanded && (currentView === "agents-monitor" || currentView === "agents-builder" || currentView === "agents-onboarding" || currentView === "agent-detail" || currentView === "birdai-reports") && (
-            <AgentsL2NavPanel currentView={currentView} onViewChange={handleViewChange} selectedAgentSlug={selectedAgentSlug} />
+          {!aiPanelOpen && !mynaWorkspaceExpanded && (currentView === "agents-monitor" || currentView === "agents-analyze-performance" || currentView === "agents-builder" || currentView === "agents-onboarding" || currentView === "agent-detail" || currentView === "birdai-reports") && (
+            <AgentsL2NavPanel currentView={currentView} onViewChange={handleViewChange} selectedAgentSlug={selectedAgentSlug} selectedAnalyzeItem={selectedAnalyzeItem} />
           )}
 
           {/* Main content + optional Myna chat (flex row, main keeps ≥60% when possible) */}
@@ -314,6 +324,8 @@ export default function App() {
               <ScheduledDeliveriesView onCreateSchedule={() => handleViewChange("schedule-builder")} />
             ) : currentView === "agents-monitor" ? (
               <AgentsMonitorView onBack={() => setCurrentView("agents-monitor")} />
+            ) : currentView === "agents-analyze-performance" ? (
+              <AnalyzePerformanceView selectedItem={selectedAnalyzeItem} />
             ) : currentView === "agents-builder" ? (
               <AgentsBuilderView onBack={() => handleViewChange("agents-monitor")} />
             ) : currentView === "agent-detail" ? (

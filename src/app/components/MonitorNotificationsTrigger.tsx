@@ -110,13 +110,15 @@ export function MonitorNotificationsTrigger() {
               {notificationItems
                 .filter(n => n.severity === "warning" && !resolvedNotifs.has(n.id))
                 .map(n => (
-                  <button
+                  <div
                     key={n.id}
-                    type="button"
-                    onClick={() => handleNotifClick(n)}
-                    className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-muted/80 transition-colors duration-150"
+                    className="w-full flex items-start gap-3 px-4 py-3 hover:bg-muted/80 transition-colors duration-150"
                   >
-                    <div className="flex-1 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => handleNotifClick(n)}
+                      className="flex-1 min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
+                    >
                       <p className="text-[13px] text-foreground truncate" style={{ fontWeight: 400 }}>
                         {n.agentName}
                       </p>
@@ -126,33 +128,19 @@ export function MonitorNotificationsTrigger() {
                       <span className="text-[10px] text-muted-foreground tabular-nums" style={{ fontWeight: 300 }}>
                         {n.time}
                       </span>
-                    </div>
+                    </button>
                     <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={e => {
-                          e.stopPropagation();
-                          handleNotifClick(n);
-                        }}
-                        onKeyDown={e => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleNotifClick(n);
-                          }
-                        }}
-                        className="text-[11px] text-primary hover:underline cursor-pointer"
+                      <button
+                        type="button"
+                        onClick={() => handleNotifClick(n)}
+                        className="text-[11px] text-primary hover:underline rounded-sm px-0.5 py-0.5 -my-0.5"
                         style={{ fontWeight: 400 }}
                       >
                         {n.quickAction}
-                      </span>
+                      </button>
                       <button
                         type="button"
-                        onClick={e => {
-                          e.stopPropagation();
-                          handleResolveNotif(n.id);
-                        }}
+                        onClick={() => handleResolveNotif(n.id)}
                         className="w-5 h-5 flex items-center justify-center rounded hover:bg-muted transition-colors"
                         title="Mark as resolved"
                         aria-label="Mark as resolved"
@@ -160,7 +148,7 @@ export function MonitorNotificationsTrigger() {
                         <CheckCircle2 className="w-3 h-3 text-muted-foreground" />
                       </button>
                     </div>
-                  </button>
+                  </div>
                 ))}
             </div>
           )}
@@ -175,13 +163,15 @@ export function MonitorNotificationsTrigger() {
               {notificationItems
                 .filter(n => n.severity === "error" && !resolvedNotifs.has(n.id))
                 .map(n => (
-                  <button
+                  <div
                     key={n.id}
-                    type="button"
-                    onClick={() => handleNotifClick(n)}
-                    className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-muted/80 transition-colors duration-150"
+                    className="w-full flex items-start gap-3 px-4 py-3 hover:bg-muted/80 transition-colors duration-150"
                   >
-                    <div className="flex-1 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => handleNotifClick(n)}
+                      className="flex-1 min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
+                    >
                       <p className="text-[13px] text-foreground truncate" style={{ fontWeight: 400 }}>
                         {n.agentName}
                       </p>
@@ -191,33 +181,19 @@ export function MonitorNotificationsTrigger() {
                       <span className="text-[10px] text-muted-foreground tabular-nums" style={{ fontWeight: 300 }}>
                         {n.time}
                       </span>
-                    </div>
+                    </button>
                     <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={e => {
-                          e.stopPropagation();
-                          handleNotifClick(n);
-                        }}
-                        onKeyDown={e => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleNotifClick(n);
-                          }
-                        }}
-                        className="text-[11px] text-primary hover:underline cursor-pointer"
+                      <button
+                        type="button"
+                        onClick={() => handleNotifClick(n)}
+                        className="text-[11px] text-primary hover:underline rounded-sm px-0.5 py-0.5 -my-0.5"
                         style={{ fontWeight: 400 }}
                       >
                         {n.quickAction}
-                      </span>
+                      </button>
                       <button
                         type="button"
-                        onClick={e => {
-                          e.stopPropagation();
-                          handleResolveNotif(n.id);
-                        }}
+                        onClick={() => handleResolveNotif(n.id)}
                         className="w-5 h-5 flex items-center justify-center rounded hover:bg-muted transition-colors"
                         title="Mark as resolved"
                         aria-label="Mark as resolved"
@@ -225,7 +201,7 @@ export function MonitorNotificationsTrigger() {
                         <CheckCircle2 className="w-3 h-3 text-muted-foreground" />
                       </button>
                     </div>
-                  </button>
+                  </div>
                 ))}
             </div>
           )}
