@@ -1,5 +1,8 @@
 import type { Preview } from "@storybook/react";
 import React, { useEffect } from "react";
+import { DESIGN_VERSION } from "../src/config/designVersion";
+
+void import(`../src/themes/${DESIGN_VERSION}/tokens.css`);
 import "../src/styles/index.css";
 
 const preview: Preview = {

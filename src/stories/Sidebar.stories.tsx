@@ -16,6 +16,10 @@ import {
   CompetitorsL2NavPanel,
   InboxL2NavPanel,
 } from "@/app/components/Sidebar";
+import { ReviewsL2NavPanel as ReviewsL2NavPanelV1 } from "@/app/components/Sidebar.v1";
+import { ReviewsL2NavPanel as ReviewsL2NavPanelV2 } from "@/app/components/Sidebar.v2";
+import { AgentsL2NavPanel as AgentsL2NavPanelV1 } from "@/app/components/AgentsL2NavPanel.v1";
+import { AgentsL2NavPanel as AgentsL2NavPanelV2 } from "@/app/components/AgentsL2NavPanel.v2";
 import type { AppView } from "@/app/App";
 import { MonitorNotificationsProvider } from "@/app/context/MonitorNotificationsContext";
 
@@ -164,6 +168,24 @@ const panelStories: { name: string; view: AppView }[] = [
 
 export const L2Reports: Story     = { name: panelStories[0].name,  render: () => <SidebarFrame><L2NavPanel currentView="dashboard" onViewChange={() => {}} /></SidebarFrame> };
 export const L2Reviews: Story     = { name: panelStories[1].name,  render: () => <SidebarFrame><ReviewsL2NavPanel /></SidebarFrame> };
+
+/** Explicit design-version snapshots (import `.v1` / `.v2` sources directly). */
+export const L2ReviewsDesignV1: Story = {
+  name: "L2 / Reviews (Sidebar v1)",
+  render: () => (
+    <SidebarFrame>
+      <ReviewsL2NavPanelV1 />
+    </SidebarFrame>
+  ),
+};
+export const L2ReviewsDesignV2: Story = {
+  name: "L2 / Reviews (Sidebar v2)",
+  render: () => (
+    <SidebarFrame>
+      <ReviewsL2NavPanelV2 />
+    </SidebarFrame>
+  ),
+};
 export const L2Social: Story      = { name: panelStories[2].name,  render: () => <SidebarFrame><SocialL2NavPanel /></SidebarFrame> };
 export const L2SearchAI: Story    = { name: panelStories[3].name,  render: () => <SidebarFrame><SearchAIL2NavPanel /></SidebarFrame> };
 export const L2Listings: Story    = { name: panelStories[4].name,  render: () => <SidebarFrame><ListingsL2NavPanel /></SidebarFrame> };
@@ -175,3 +197,21 @@ export const L2Campaigns: Story   = { name: panelStories[9].name,  render: () =>
 export const L2Insights: Story    = { name: panelStories[10].name, render: () => <SidebarFrame><InsightsL2NavPanel /></SidebarFrame> };
 export const L2Competitors: Story = { name: panelStories[11].name, render: () => <SidebarFrame><CompetitorsL2NavPanel /></SidebarFrame> };
 export const L2Agents: Story      = { name: panelStories[12].name, render: () => <SidebarFrame><AgentsL2NavPanel currentView="agents-monitor" onViewChange={() => {}} selectedAgentSlug="" /></SidebarFrame> };
+
+/** Explicit design-version snapshots for Agents L2 panel. */
+export const L2AgentsDesignV1: Story = {
+  name: "L2 / Agents (v1)",
+  render: () => (
+    <SidebarFrame>
+      <AgentsL2NavPanelV1 currentView="agents-monitor" onViewChange={() => {}} selectedAgentSlug="" />
+    </SidebarFrame>
+  ),
+};
+export const L2AgentsDesignV2: Story = {
+  name: "L2 / Agents (v2)",
+  render: () => (
+    <SidebarFrame>
+      <AgentsL2NavPanelV2 currentView="agents-monitor" onViewChange={() => {}} selectedAgentSlug="" />
+    </SidebarFrame>
+  ),
+};
