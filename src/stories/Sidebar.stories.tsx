@@ -37,8 +37,8 @@ const VIEW_OPTIONS: AppView[] = [
 
 const VIEW_LABELS: Record<string, string> = {
   "business-overview":     "Overview (no L2)",
-  "agents-monitor":        "Myna AI — Monitor",
-  "birdai-reports":        "Myna AI — Reports (in-app)",
+  "agents-monitor":        "BirdAI — Monitor",
+  "birdai-reports":        "BirdAI — Reports (in-app)",
   "dashboard":             "Reports — Dashboard",
   "shared-by-me":          "Reports — Shared by me",
   "reviews":               "Reviews",
@@ -163,7 +163,7 @@ const panelStories: { name: string; view: AppView }[] = [
   { name: "L2 / Campaigns",            view: "campaigns" },
   { name: "L2 / Insights",             view: "insights" },
   { name: "L2 / Competitors",          view: "competitors" },
-  { name: "L2 / Myna AI — Monitor",     view: "agents-monitor" },
+  { name: "L2 / BirdAI — Monitor",     view: "agents-monitor" },
 ];
 
 export const L2Reports: Story     = { name: panelStories[0].name,  render: () => <SidebarFrame><L2NavPanel currentView="dashboard" onViewChange={() => {}} /></SidebarFrame> };

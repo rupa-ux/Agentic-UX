@@ -50,7 +50,7 @@ const scopeLabel: Record<ShortcutScope, string> = {
   global: "Everywhere",
   reviews: "Reviews",
   inbox: "Inbox",
-  agents: "Myna AI",
+  agents: "BirdAI",
   social: "Social",
   dashboard: "Reports & dashboards",
   ticketing: "Ticketing",

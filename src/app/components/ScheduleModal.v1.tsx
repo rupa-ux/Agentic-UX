@@ -488,7 +488,7 @@ export function ScheduleModal({ open, onClose, onCustomize, themeColor, showSumm
                 </defs>
               </svg>
               <span className="text-[11px] text-[#6d28d9] dark:text-[#a78bfa] group-hover:text-[#5b21b6] dark:group-hover:text-[#c4b5fd] font-['Inter',sans-serif]" style={{ fontWeight: 400 }}>
-                Customise with Myna AI
+                Customise with BirdAI
               </span>
             </button>
             <div className="flex items-center gap-2">

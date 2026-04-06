@@ -25,8 +25,8 @@ import BusinessOverviewDashboard from "@/app/components/BusinessOverviewDashboar
 /* ─── View metadata for the view switcher ─── */
 const VIEWS: { value: AppView; label: string; group: string }[] = [
   { value: "business-overview",    label: "Overview",                group: "Home" },
-  { value: "agents-monitor",       label: "Myna AI — Monitor", group: "Myna AI" },
-  { value: "birdai-reports",       label: "Myna AI — Reports (in-app)", group: "Myna AI" },
+  { value: "agents-monitor",       label: "BirdAI — Monitor", group: "BirdAI" },
+  { value: "birdai-reports",       label: "BirdAI — Reports (in-app)", group: "BirdAI" },
   { value: "dashboard",            label: "Reports — Dashboard",     group: "Reports" },
   { value: "shared-by-me",         label: "Reports — Shared by me",  group: "Reports" },
   { value: "reviews",              label: "Reviews",                 group: "Modules" },

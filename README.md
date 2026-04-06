@@ -1,6 +1,6 @@
-# Myna AI
+# BirdAI
 
-Myna AI — the intelligent assistant embedded across the Birdeye platform.
+BirdAI — the intelligent assistant embedded across the Birdeye platform.
 Original Figma file: https://www.figma.com/design/khkMRKdBSWf0LF0NqAvoEe/Prototype-Share-and-Customize-Flow
 
 ---

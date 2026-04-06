@@ -41,7 +41,7 @@ export function getAppViewTitle(view: AppView): string {
     case "agents-builder":
     case "agent-detail":
     case "birdai-reports":
-      return "Myna AI";
+      return "BirdAI";
     case "agents-onboarding":
       return "BirdAI setup";
     default:

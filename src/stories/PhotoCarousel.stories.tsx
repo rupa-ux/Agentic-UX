@@ -219,7 +219,7 @@ export const InReviewCard: Story = {
       <PhotoCarousel photos={FOOD_PHOTOS} />
       {/* Reply */}
       <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
-        <span className="text-xs text-muted-foreground">Myna AI suggested reply · </span>
+        <span className="text-xs text-muted-foreground">BirdAI suggested reply · </span>
         We appreciate your feedback! Thank you for taking the time to share your experience with us.
       </div>
     </div>

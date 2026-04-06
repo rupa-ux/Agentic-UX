@@ -75,7 +75,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
   {
     id: "go-monitor",
     keys: ["G", "M"],
-    description: "Go to Myna AI (Monitor)",
+    description: "Go to BirdAI (Monitor)",
     scope: "global",
   },
   {

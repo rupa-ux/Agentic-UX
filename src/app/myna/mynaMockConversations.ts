@@ -75,7 +75,7 @@ export const MYNA_SEED_CONVERSATIONS: MynaConversation[] = [
     id: "myna-seed-agents-health",
     title: "Monitor health check",
     conversationType: "agents",
-    screenLabel: "Myna AI",
+    screenLabel: "BirdAI",
     messages: [
       m("m-health-a", "assistant", "All monitored agents are **healthy**. Last errors cleared 2h ago."),
       m("m-health-u", "user", "Any queued jobs stuck?"),

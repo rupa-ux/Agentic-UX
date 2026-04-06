@@ -8,13 +8,13 @@ import { l2KeyFromConversation } from "@/app/myna/mynaL2NavKeys";
 import { MYNA_SEED_CONVERSATIONS } from "@/app/myna/mynaMockConversations";
 
 const meta = {
-  title: "Design System / Myna AI",
+  title: "Design System / BirdAI",
   parameters: {
     layout: "centered",
     docs: {
       description: {
         component:
-          "Myna AI chat surfaces. Spacing follows the **8px + 4px dense** grid; see **Design System → Tokens → Spacing**.",
+          "BirdAI chat surfaces. Spacing follows the **8px + 4px dense** grid; see **Design System → Tokens → Spacing**.",
       },
     },
   },
@@ -106,7 +106,7 @@ export const NewChatOverlay: StoryObj = {
         <MynaNewChatOverlay
           open={open}
           onOpenChange={setOpen}
-          screenTitle="Myna AI"
+          screenTitle="BirdAI"
           onSubmitFirstMessage={() => setOpen(false)}
         />
       </div>

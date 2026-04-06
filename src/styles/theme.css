@@ -14,7 +14,7 @@
   50% { opacity: 0.6; }
 }
 
-/** Brief L2 nav row shimmer (e.g. Myna AI → Reports handoff to reporting module) */
+/** Brief L2 nav row shimmer (e.g. BirdAI → Reports handoff to reporting module) */
 @keyframes l2-nav-shimmer {
   0% {
     background-position: 200% 0;
