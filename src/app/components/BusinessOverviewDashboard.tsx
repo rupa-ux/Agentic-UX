@@ -452,7 +452,7 @@ export default function BusinessOverviewDashboard() {
 
         {/* 11. Insights AI Card */}
         <SectionCard>
-          <SectionHeader title="Insights AI" />
+          <SectionHeader title="Insights" />
 
           {/* Score row */}
           <div className="grid grid-cols-4 gap-6 mb-6">

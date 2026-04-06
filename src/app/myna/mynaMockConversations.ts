@@ -90,7 +90,7 @@ export const MYNA_SEED_CONVERSATIONS: MynaConversation[] = [
     id: "myna-seed-general-social",
     title: "Social campaign ideas",
     conversationType: "general",
-    screenLabel: "Social AI",
+    screenLabel: "Social",
     messages: [
       m("m-soc-u", "user", "Ideas for a product launch thread."),
       m(

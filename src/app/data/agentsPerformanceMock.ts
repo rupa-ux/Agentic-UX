@@ -101,7 +101,7 @@ export const agentGroups: { label: string; agentIds: string[] }[] = [
   { label: "Reviews",   agentIds: ["review-response","review-generation","review-amplification","review-monitoring","review-aggregation","review-marketing"] },
   { label: "Social",    agentIds: ["social-publishing","social-engagement"] },
   { label: "Listings",  agentIds: ["listing-ranking","duplicate-suppression","auto-fix"] },
-  { label: "Search AI", agentIds: ["search-ai"] },
+  { label: "Search", agentIds: ["search-ai"] },
   { label: "Support",   agentIds: ["messaging","ticketing","scheduled-report"] },
 ];
 
@@ -284,7 +284,7 @@ export const agentSections: AgentSection[] = [
   },
   {
     id: "search-ai",
-    label: "Search AI Agent",
+    label: "Search Agent",
     description: "Optimizes presence in AI-driven search surfaces (Google AI Overviews, Bing Copilot) and tracks AI search visibility.",
     status: "active",
     metrics: [

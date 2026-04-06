@@ -23,6 +23,13 @@ export interface AgentReasoning {
   confidence: number;
 }
 
+export interface ReviewLink {
+  platform: string;
+  rating: number;
+  reviewText: string;
+  generatedResponse: string;
+}
+
 export interface MonitorActivity {
   id: string;
   time: string;
@@ -35,6 +42,8 @@ export interface MonitorActivity {
   reasoning?: AgentReasoning;
   hasDraft?: boolean;
   draftText?: string;
+  /** Set on review-related activities to enable deep-link into Reviews tab */
+  reviewLink?: ReviewLink;
 }
 
 export const monitorActivities: MonitorActivity[] = [
@@ -67,6 +76,12 @@ export const monitorActivities: MonitorActivity[] = [
       topic: "Service delay",
       customerHistory: "First-time reviewer",
       confidence: 0.92,
+    },
+    reviewLink: {
+      platform: "Google",
+      rating: 2,
+      reviewText: "Food was terrible and the wait was over an hour.",
+      generatedResponse: "I'm sorry your experience didn't meet expectations. We take feedback seriously and would love the chance to make it right...",
     },
   },
   {
@@ -182,6 +197,12 @@ export const monitorActivities: MonitorActivity[] = [
       customerHistory: "Repeat customer, 2 prior reviews",
       confidence: 0.38,
     },
+    reviewLink: {
+      platform: "Google",
+      rating: 1,
+      reviewText: "Worst experience I've had. Product broke after two days and support was unhelpful.",
+      generatedResponse: "We sincerely apologize for your experience. Your feedback is important to us, and we'd like to make things right. Could you reach out to our team directly so we can address your concerns?",
+    },
   },
   {
     id: "m8",
@@ -212,6 +233,12 @@ export const monitorActivities: MonitorActivity[] = [
       { time: "9:48:05", label: "Thank-you response generated and posted" },
     ],
     reasoning: { sentiment: "Positive", topic: "Positive feedback", confidence: 0.96 },
+    reviewLink: {
+      platform: "Yelp",
+      rating: 5,
+      reviewText: "Amazing food and service! The staff went above and beyond to make our evening special.",
+      generatedResponse: "Thank you so much for the kind words! We're thrilled you had a great experience and hope to see you again soon.",
+    },
   },
   {
     id: "m10",

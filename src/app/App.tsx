@@ -323,7 +323,10 @@ export default function App() {
             ) : currentView === "scheduled-deliveries" ? (
               <ScheduledDeliveriesView onCreateSchedule={() => handleViewChange("schedule-builder")} />
             ) : currentView === "agents-monitor" ? (
-              <AgentsMonitorView onBack={() => setCurrentView("agents-monitor")} />
+              <AgentsMonitorView
+                onBack={() => setCurrentView("agents-monitor")}
+                onNavigateToReviews={() => handleViewChange("reviews")}
+              />
             ) : currentView === "agents-analyze-performance" ? (
               <AnalyzePerformanceView selectedItem={selectedAnalyzeItem} />
             ) : currentView === "agents-builder" ? (

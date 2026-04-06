@@ -112,13 +112,10 @@ export function MonitorNotificationsTrigger() {
                 .map(n => (
                   <div
                     key={n.id}
-                    className="w-full flex items-start gap-3 px-4 py-3 hover:bg-muted/80 transition-colors duration-150"
+                    onClick={() => handleNotifClick(n)}
+                    className="w-full flex items-start gap-3 px-4 py-3 hover:bg-muted/80 transition-colors duration-150 cursor-pointer"
                   >
-                    <button
-                      type="button"
-                      onClick={() => handleNotifClick(n)}
-                      className="flex-1 min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
-                    >
+                    <div className="flex-1 min-w-0">
                       <p className="text-[13px] text-foreground truncate" style={{ fontWeight: 400 }}>
                         {n.agentName}
                       </p>
@@ -128,19 +125,17 @@ export function MonitorNotificationsTrigger() {
                       <span className="text-[10px] text-muted-foreground tabular-nums" style={{ fontWeight: 300 }}>
                         {n.time}
                       </span>
-                    </button>
+                    </div>
                     <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                      <button
-                        type="button"
-                        onClick={() => handleNotifClick(n)}
-                        className="text-[11px] text-primary hover:underline rounded-sm px-0.5 py-0.5 -my-0.5"
+                      <span
+                        className="text-[11px] text-primary hover:underline"
                         style={{ fontWeight: 400 }}
                       >
                         {n.quickAction}
-                      </button>
+                      </span>
                       <button
                         type="button"
-                        onClick={() => handleResolveNotif(n.id)}
+                        onClick={e => { e.stopPropagation(); handleResolveNotif(n.id); }}
                         className="w-5 h-5 flex items-center justify-center rounded hover:bg-muted transition-colors"
                         title="Mark as resolved"
                         aria-label="Mark as resolved"
@@ -165,13 +160,10 @@ export function MonitorNotificationsTrigger() {
                 .map(n => (
                   <div
                     key={n.id}
-                    className="w-full flex items-start gap-3 px-4 py-3 hover:bg-muted/80 transition-colors duration-150"
+                    onClick={() => handleNotifClick(n)}
+                    className="w-full flex items-start gap-3 px-4 py-3 hover:bg-muted/80 transition-colors duration-150 cursor-pointer"
                   >
-                    <button
-                      type="button"
-                      onClick={() => handleNotifClick(n)}
-                      className="flex-1 min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
-                    >
+                    <div className="flex-1 min-w-0">
                       <p className="text-[13px] text-foreground truncate" style={{ fontWeight: 400 }}>
                         {n.agentName}
                       </p>
@@ -181,19 +173,17 @@ export function MonitorNotificationsTrigger() {
                       <span className="text-[10px] text-muted-foreground tabular-nums" style={{ fontWeight: 300 }}>
                         {n.time}
                       </span>
-                    </button>
+                    </div>
                     <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                      <button
-                        type="button"
-                        onClick={() => handleNotifClick(n)}
-                        className="text-[11px] text-primary hover:underline rounded-sm px-0.5 py-0.5 -my-0.5"
+                      <span
+                        className="text-[11px] text-primary hover:underline"
                         style={{ fontWeight: 400 }}
                       >
                         {n.quickAction}
-                      </button>
+                      </span>
                       <button
                         type="button"
-                        onClick={() => handleResolveNotif(n.id)}
+                        onClick={e => { e.stopPropagation(); handleResolveNotif(n.id); }}
                         className="w-5 h-5 flex items-center justify-center rounded hover:bg-muted transition-colors"
                         title="Mark as resolved"
                         aria-label="Mark as resolved"

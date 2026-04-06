@@ -12,9 +12,9 @@ export function getAppViewTitle(view: AppView): string {
     case "reviews":
       return "Reviews";
     case "social":
-      return "Social AI";
+      return "Social";
     case "searchai":
-      return "Search AI";
+      return "Search";
     case "contacts":
       return "Contacts";
     case "listings":

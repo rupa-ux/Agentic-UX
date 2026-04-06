@@ -429,12 +429,12 @@ const dashboardSections = [
 
 /** Product report catalogs in Reports L2 (no "Agent Reports" parent). */
 const reportCatalogSections = [
-  { label: "Listings AI", children: ["All", "Google", "Apple", "Facebook", "Bing", "Yelp"] },
-  { label: "Social AI", children: ["All channels", "Post performance", "Response trends", "Best time to post"] },
+  { label: "Listings", children: ["All", "Google", "Apple", "Facebook", "Bing", "Yelp"] },
+  { label: "Social", children: ["All channels", "Post performance", "Response trends", "Best time to post"] },
   { label: "Campaigns", children: ["Review campaigns", "Referral campaigns", "CX campaigns", "Custom campaigns"] },
   { label: "Inbox", children: ["Over time", "Location", "Users", "Channels"] },
-  { label: "Surveys AI", children: ["Survey NPS", "Responses"] },
-  { label: "Ticketing AI", children: ["Resolution time", "Volume"] },
+  { label: "Surveys", children: ["Survey NPS", "Responses"] },
+  { label: "Ticketing", children: ["Resolution time", "Volume"] },
 ];
 
 export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPanelProps) {
@@ -450,7 +450,7 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
     dashboardSections.map(s => [s.label, s.label === "Created by me"])
   );
   const reportExpandedInit = Object.fromEntries(
-    reportCatalogSections.map(s => [s.label, s.label === "Listings AI"])
+    reportCatalogSections.map(s => [s.label, s.label === "Listings"])
   );
 
   const [dashboardExpanded, setDashboardExpanded] = useState<Record<string, boolean>>(() => dashboardExpandedInit);
@@ -821,7 +821,7 @@ const inboxSections = [
   },
   {
     label: "Settings",
-    children: ["Chatbot AI", "Receptionist"],
+    children: ["Chatbot", "Receptionist"],
   },
 ];
 

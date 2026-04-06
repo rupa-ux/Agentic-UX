@@ -12,6 +12,8 @@ import {
   Pencil,
   Sparkles,
   Zap,
+  ArrowRight,
+  Star,
 } from "lucide-react";
 import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
@@ -113,7 +115,24 @@ function ConfidenceMeter({ value }: { value: number }) {
 /* ═══════════════════════════════════════════
    Inspection Panel (Right Side)
    ═══════════════════════════════════════════ */
-function InspectionPanel({ activity, onClose }: { activity: MonitorActivity; onClose: () => void }) {
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <span className="flex items-center gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Star
+          key={i}
+          className={cn("w-2.5 h-2.5", i < rating ? "fill-amber-400 text-amber-400" : "text-[#ddd] dark:text-[#444]")}
+        />
+      ))}
+    </span>
+  );
+}
+
+function InspectionPanel({ activity, onClose, onNavigateToReviews }: {
+  activity: MonitorActivity;
+  onClose: () => void;
+  onNavigateToReviews?: () => void;
+}) {
   const [explainOpen, setExplainOpen] = useState(false);
 
   return (
@@ -227,6 +246,50 @@ function InspectionPanel({ activity, onClose }: { activity: MonitorActivity; onC
           </div>
         )}
 
+        {/* Linked Review */}
+        {activity.reviewLink && (
+          <div>
+            <h4 className="text-[12px] text-[#888] dark:text-[#6b7280] mb-2 tracking-[-0.24px]" style={{ fontWeight: 400 }}>
+              Linked review
+            </h4>
+            <div className="border border-[#E5E7EB] dark:border-[#2e3340] rounded-[8px] overflow-hidden">
+              {/* Review content */}
+              <div className="px-4 py-3 space-y-2 bg-[#f8f9fa] dark:bg-[#1a1e26]">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] px-1.5 py-0.5 bg-[#e8f0fe] text-[#2552ED] dark:bg-[#1e2d5e] dark:text-[#6b9bff] rounded-[3px] font-medium">
+                    {activity.reviewLink.platform}
+                  </span>
+                  <StarRating rating={activity.reviewLink.rating} />
+                </div>
+                <p className="text-[11px] text-[#555] dark:text-[#9ba2b0] italic" style={{ fontWeight: 300 }}>
+                  "{activity.reviewLink.reviewText}"
+                </p>
+              </div>
+              {/* Generated response */}
+              <div className="px-4 py-3 border-t border-[#E5E7EB] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] space-y-1.5">
+                <p className="text-[10px] text-[#888] dark:text-[#6b7280] uppercase tracking-wide" style={{ fontWeight: 400 }}>
+                  {activity.status === "warning" ? "Drafted response" : "Response sent"}
+                </p>
+                <p className="text-[11px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 300 }}>
+                  "{activity.reviewLink.generatedResponse}"
+                </p>
+              </div>
+              {/* Navigate link */}
+              {onNavigateToReviews && (
+                <button
+                  onClick={onNavigateToReviews}
+                  className="w-full flex items-center justify-between px-4 py-2.5 border-t border-[#E5E7EB] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] hover:bg-[#f0f4ff] dark:hover:bg-[#1a2040] transition-colors group"
+                >
+                  <span className="text-[11px] text-[#2552ED] dark:text-[#6b9bff]" style={{ fontWeight: 400 }}>
+                    View in Reviews
+                  </span>
+                  <ArrowRight className="w-3 h-3 text-[#2552ED] dark:text-[#6b9bff] group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* AI Explain */}
         <div>
           <button
@@ -330,7 +393,7 @@ function InspectionPanel({ activity, onClose }: { activity: MonitorActivity; onC
 /* ═══════════════════════════════════════════
    Monitor View
    ═══════════════════════════════════════════ */
-export function AgentsMonitorView({ onBack }: { onBack: () => void }) {
+export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () => void; onNavigateToReviews?: () => void }) {
   void onBack;
   const [searchQuery, setSearchQuery] = useState("");
   const [agentFilter, setAgentFilter] = useState("All agents");
@@ -563,7 +626,11 @@ export function AgentsMonitorView({ onBack }: { onBack: () => void }) {
 
         {/* Inspection Panel (Right) */}
         {selectedActivity && (
-          <InspectionPanel activity={selectedActivity} onClose={() => setSelectedActivityId(null)} />
+          <InspectionPanel
+            activity={selectedActivity}
+            onClose={() => setSelectedActivityId(null)}
+            onNavigateToReviews={selectedActivity.reviewLink ? onNavigateToReviews : undefined}
+          />
         )}
       </div>
     </div>
