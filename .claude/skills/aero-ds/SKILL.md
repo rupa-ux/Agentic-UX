@@ -1,8 +1,8 @@
 ---
-name: ui-ux-pro-max
-description: "UI/UX intelligence for this repo only: ShareConsolidated (Bird AI) SaaS shell—dashboards, agents, settings, workflows, in-app surfaces. Stack: React, Vite, Tailwind, shadcn-style primitives. Verify in Storybook (Design System/Tokens) and theme.css. Not for generic websites, portfolios, or marketing landing systems unless explicitly requested."
+name: aero-ds
+description: "Aero DS: design intelligence for this repo only—ShareConsolidated (Bird AI) SaaS shell (dashboards, agents, settings, workflows, in-app surfaces). Stack: React, Vite, Tailwind, shadcn-style primitives. Verify in Storybook (Design System/Tokens) and theme.css. Not for generic websites, portfolios, or marketing landing systems unless explicitly requested."
 ---
-# UI/UX Pro Max - Design Intelligence
+# Aero DS - Design Intelligence
 
 Searchable design guidance (styles, palettes, UX rules, charts) with priority-based recommendations. **Scope is this product only:** the ShareConsolidated **SaaS application** (shell navigation, agents, tasks, reports, settings, data-heavy views). Do **not** apply generic marketing-site, portfolio, or unrelated product patterns unless the user explicitly asks for out-of-app or non-product UI.
 
@@ -158,7 +158,7 @@ Extract key information from the user request:
 **Always start with `--design-system`** to get comprehensive recommendations with reasoning:
 
 ```bash
-python3 .claude/skills/ui-ux-pro-max/scripts/search.py "<product_type> <industry> <keywords>" --design-system [-p "Project Name"]
+python3 .claude/skills/aero-ds/scripts/search.py "<product_type> <industry> <keywords>" --design-system [-p "Project Name"]
 ```
 
 This command:
@@ -173,7 +173,7 @@ This command:
 **Example (SaaS):**
 
 ```bash
-python3 .claude/skills/ui-ux-pro-max/scripts/search.py "B2B SaaS admin dashboard settings permissions" --design-system -p "ShareConsolidated"
+python3 .claude/skills/aero-ds/scripts/search.py "B2B SaaS admin dashboard settings permissions" --design-system -p "ShareConsolidated"
 ```
 
 ### Step 2b: Persist Design System (Master + Overrides Pattern)
@@ -181,7 +181,7 @@ python3 .claude/skills/ui-ux-pro-max/scripts/search.py "B2B SaaS admin dashboard
 To save the design system for hierarchical retrieval across sessions, add `--persist`:
 
 ```bash
-python3 .claude/skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --persist -p "Project Name"
+python3 .claude/skills/aero-ds/scripts/search.py "<query>" --design-system --persist -p "Project Name"
 ```
 
 This creates:
@@ -192,7 +192,7 @@ This creates:
 **With page-specific override:**
 
 ```bash
-python3 .claude/skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --persist -p "Project Name" --page "dashboard"
+python3 .claude/skills/aero-ds/scripts/search.py "<query>" --design-system --persist -p "Project Name" --page "dashboard"
 ```
 
 This also creates:
@@ -210,7 +210,7 @@ This also creates:
 After getting the design system, use domain searches to get additional details:
 
 ```bash
-python3 .claude/skills/ui-ux-pro-max/scripts/search.py "<keyword>" --domain <domain> [-n <max_results>]
+python3 .claude/skills/aero-ds/scripts/search.py "<keyword>" --domain <domain> [-n <max_results>]
 ```
 
 **When to use detailed searches:**
@@ -228,8 +228,8 @@ python3 .claude/skills/ui-ux-pro-max/scripts/search.py "<keyword>" --domain <dom
 Get implementation-specific best practices. For **this repository**, prefer:
 
 ```bash
-python3 .claude/skills/ui-ux-pro-max/scripts/search.py "<keyword>" --stack react
-python3 .claude/skills/ui-ux-pro-max/scripts/search.py "<keyword>" --stack shadcn
+python3 .claude/skills/aero-ds/scripts/search.py "<keyword>" --stack react
+python3 .claude/skills/aero-ds/scripts/search.py "<keyword>" --stack shadcn
 ```
 
 Available stacks: `html-tailwind`, `react`, `nextjs`, `vue`, `svelte`, `swiftui`, `react-native`, `flutter`, `shadcn`, `jetpack-compose`
@@ -284,7 +284,7 @@ Available stacks: `html-tailwind`, `react`, `nextjs`, `vue`, `svelte`, `swiftui`
 ### Step 2: Generate Design System (REQUIRED)
 
 ```bash
-python3 .claude/skills/ui-ux-pro-max/scripts/search.py "B2B SaaS team permissions roles table bulk actions" --design-system -p "ShareConsolidated"
+python3 .claude/skills/aero-ds/scripts/search.py "B2B SaaS team permissions roles table bulk actions" --design-system -p "ShareConsolidated"
 ```
 
 **Output:** Design system hints — **implement** using `theme.css` tokens and existing table/button patterns.
@@ -292,14 +292,14 @@ python3 .claude/skills/ui-ux-pro-max/scripts/search.py "B2B SaaS team permission
 ### Step 3: Supplement with Detailed Searches (as needed)
 
 ```bash
-python3 .claude/skills/ui-ux-pro-max/scripts/search.py "data table keyboard screen reader" --domain ux
-python3 .claude/skills/ui-ux-pro-max/scripts/search.py "role badge status" --domain ux
+python3 .claude/skills/aero-ds/scripts/search.py "data table keyboard screen reader" --domain ux
+python3 .claude/skills/aero-ds/scripts/search.py "role badge status" --domain ux
 ```
 
 ### Step 4: Stack Guidelines
 
 ```bash
-python3 .claude/skills/ui-ux-pro-max/scripts/search.py "form layout data grid" --stack shadcn
+python3 .claude/skills/aero-ds/scripts/search.py "form layout data grid" --stack shadcn
 ```
 
 **Then:** Implement with semantic colours (`bg-card`, `border-border`, `text-destructive`, etc.) and verify in Storybook if components are documented there.
@@ -312,10 +312,10 @@ The `--design-system` flag supports two output formats:
 
 ```bash
 # ASCII box (default) - best for terminal display
-python3 .claude/skills/ui-ux-pro-max/scripts/search.py "fintech b2b saas" --design-system
+python3 .claude/skills/aero-ds/scripts/search.py "fintech b2b saas" --design-system
 
 # Markdown - best for documentation
-python3 .claude/skills/ui-ux-pro-max/scripts/search.py "fintech b2b saas" --design-system -f markdown
+python3 .claude/skills/aero-ds/scripts/search.py "fintech b2b saas" --design-system -f markdown
 ```
 
 ---

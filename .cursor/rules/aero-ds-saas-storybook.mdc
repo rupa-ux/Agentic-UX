@@ -1,9 +1,9 @@
 ---
-description: SaaS-only UI scope + Storybook + theme.css alignment (mirrors ui-ux-pro-max skill)
+description: SaaS-only UI scope + Storybook + theme.css alignment (mirrors aero-ds skill)
 alwaysApply: true
 ---
 
-# UI/UX Pro Max — SaaS product + Storybook
+# Aero DS — SaaS product + Storybook
 
 This workspace is **one SaaS product** (ShareConsolidated / Bird AI shell): dashboards, agents, tasks, settings, workflows, in-app data views. **Do not** default to marketing landing pages, portfolio layouts, or generic “website” patterns unless the user explicitly asks for out-of-app marketing UI.
 
@@ -21,4 +21,4 @@ This workspace is **one SaaS product** (ShareConsolidated / Bird AI shell): dash
 
 ## Optional deep reference
 
-The Claude skill `.claude/skills/ui-ux-pro-max/SKILL.md` has full workflows and `search.py` CLI usage (run from repo root).
+The Claude skill `.claude/skills/aero-ds/SKILL.md` has full workflows and `search.py` CLI usage (run from repo root).
