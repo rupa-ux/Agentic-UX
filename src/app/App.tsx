@@ -35,6 +35,7 @@ import { useMynaConversations } from "./myna/useMynaConversations";
 import { ShortcutsModal } from "./shortcuts/ShortcutsModal";
 import { useShortcuts } from "./shortcuts/useShortcuts";
 import { BirdAILoginPage } from "./components/auth/BirdAILoginPage";
+import { AppBootShimmer } from "./components/layout/AppBootShimmer";
 
 const AUTH_STORAGE_KEY = "birdai_demo_authenticated";
 
@@ -72,8 +73,12 @@ export type AppView =
   | "insights"
   | "competitors";
 
+/** Brief shell shimmer after login so the first paint mirrors real app loading. */
+const POST_LOGIN_BOOT_MS = 1200;
+
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => readDemoAuthenticated());
+  const [postLoginBoot, setPostLoginBoot] = useState(false);
 
   const signIn = useCallback(() => {
     try {
@@ -82,7 +87,14 @@ export default function App() {
       /* ignore */
     }
     setIsAuthenticated(true);
+    setPostLoginBoot(true);
   }, []);
+
+  useEffect(() => {
+    if (!postLoginBoot) return;
+    const t = window.setTimeout(() => setPostLoginBoot(false), POST_LOGIN_BOOT_MS);
+    return () => window.clearTimeout(t);
+  }, [postLoginBoot]);
 
   const signOut = useCallback(() => {
     try {
@@ -211,6 +223,15 @@ export default function App() {
       <>
         <Toaster position="top-center" richColors />
         <BirdAILoginPage onAuthenticated={signIn} />
+      </>
+    );
+  }
+
+  if (postLoginBoot) {
+    return (
+      <>
+        <Toaster position="top-center" richColors />
+        <AppBootShimmer />
       </>
     );
   }

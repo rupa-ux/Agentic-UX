@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo, useEffect } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect, useLayoutEffect } from "react";
 import {
   Search,
   CheckCircle2,
@@ -39,6 +39,19 @@ import { L2_CONTENT_MUTED_BAND } from "@/app/components/L2NavLayout";
 /** Selected activity row: blue highlight on the title (agent name) only. */
 const ACTIVITY_ROW_TITLE_SELECTED =
   "text-[#1E44CC] dark:text-[#6b9bff]";
+
+/** Default share of the feed/detail row for the activity list (~⅓ list, ~⅔ detail). */
+const DEFAULT_ACTIVITY_LIST_FRACTION = 1 / 3;
+
+function clampActivityListDividerLeft(
+  containerWidth: number,
+  leftPx: number,
+  minLeft: number,
+  minRight: number,
+): number {
+  const maxLeft = containerWidth - minRight;
+  return Math.min(maxLeft, Math.max(minLeft, leftPx));
+}
 
 /* ─── Mock Data ─── */
 const monitorMetrics = [
@@ -438,6 +451,22 @@ export function AgentsMonitorView({
   const MIN_LEFT = 320;
   const MIN_RIGHT = 300;
 
+  /** When a row is selected and there is no explicit split yet (or reset via double-click), default list ≈⅓ width. */
+  useLayoutEffect(() => {
+    if (!selectedActivity || dividerPos !== null) return;
+    const container = containerRef.current;
+    if (!container) return;
+    const apply = () => {
+      const w = container.getBoundingClientRect().width;
+      if (w <= 0) return;
+      const target = Math.round(w * DEFAULT_ACTIVITY_LIST_FRACTION);
+      setDividerPos(clampActivityListDividerLeft(w, target, MIN_LEFT, MIN_RIGHT));
+    };
+    apply();
+    const id = requestAnimationFrame(apply);
+    return () => cancelAnimationFrame(id);
+  }, [selectedActivity, dividerPos]);
+
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
     isDragging.current = true;
@@ -446,7 +475,14 @@ export function AgentsMonitorView({
     const container = containerRef.current;
     if (!container) return;
     const containerRect = container.getBoundingClientRect();
-    startPos.current = dividerPos ?? containerRect.width - 400;
+    const w = containerRect.width;
+    const fallback = clampActivityListDividerLeft(
+      w,
+      Math.round(w * DEFAULT_ACTIVITY_LIST_FRACTION),
+      MIN_LEFT,
+      MIN_RIGHT,
+    );
+    startPos.current = dividerPos ?? fallback;
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   }, [dividerPos]);
 
@@ -498,9 +534,9 @@ export function AgentsMonitorView({
       {/* ─── Greeting + hero (metrics) ─── */}
       <div className="shrink-0 px-6 pt-6 pb-0 flex flex-col gap-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <h2 className="text-2xl text-foreground tracking-tight" style={{ fontWeight: 300 }}>
-            Hi, {userDisplayName}!
-          </h2>
+          <h1 className="min-w-0 text-xl text-foreground tracking-tight md:text-2xl" style={{ fontWeight: 400 }}>
+            Monitor
+          </h1>
           <div className="flex items-center gap-2">
             {searchExpanded ? (
               <div className="flex w-[220px] min-w-0 items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 transition-all">
@@ -547,9 +583,9 @@ export function AgentsMonitorView({
         <div className={cn("rounded-xl p-6", L2_CONTENT_MUTED_BAND)}>
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
             <div className="min-w-0 max-w-md shrink-0 space-y-2">
-              <h1 className="text-xl text-foreground tracking-tight md:text-2xl" style={{ fontWeight: 400 }}>
-                Monitor
-              </h1>
+              <p className="text-base text-foreground/80" style={{ fontWeight: 300 }}>
+                Hi, {userDisplayName}!
+              </p>
               <p className="text-sm text-muted-foreground" style={{ fontWeight: 400 }}>
                 Track what your agents did today, spot items that need review, and dig into each run from one place.
               </p>
@@ -592,10 +628,6 @@ export function AgentsMonitorView({
           }
         >
           <div className="px-6 pt-4 pb-4">
-            <div className="mb-2 flex items-center justify-between py-2">
-              <h3 className="text-[14px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.28px]" style={{ fontWeight: 400 }}>Agent activity</h3>
-              
-            </div>
             <div className="rounded-lg p-2">
               {filteredActivities.map((item) => {
                 const isSelected = selectedActivity?.id === item.id;
