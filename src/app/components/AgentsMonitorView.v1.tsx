@@ -34,10 +34,7 @@ import {
   FilterPane,
   FilterPaneTriggerButton,
 } from "@/app/components/FilterPane";
-import {
-  HOVER as L2_ROW_HOVER,
-  L2_CONTENT_MUTED_BAND,
-} from "@/app/components/L2NavLayout";
+import { L2_CONTENT_MUTED_BAND } from "@/app/components/L2NavLayout";
 
 /** Selected activity row: blue highlight on the title (agent name) only. */
 const ACTIVITY_ROW_TITLE_SELECTED =
@@ -611,7 +608,6 @@ export function AgentsMonitorView({
                       "group w-full flex cursor-pointer items-start gap-2 rounded-[4px] px-2 py-4 text-left",
                       "transition-colors duration-200",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E44CC]/40 focus-visible:ring-offset-1 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#13161b]",
-                      !isSelected && L2_ROW_HOVER,
                     )}
                   >
                     <span
