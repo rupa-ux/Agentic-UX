@@ -21,6 +21,38 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
+export const FloatingRight: Story = {
+  render: () => (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline">Open floating drawer</Button>
+      </SheetTrigger>
+      <SheetContent side="right" inset="floating" className="gap-0 p-0">
+        <SheetHeader className="border-b border-border px-6 py-4 text-left">
+          <SheetTitle className="text-base">Narrow floating panel</SheetTitle>
+          <SheetDescription>
+            Use <code className="text-xs">inset=&quot;floating&quot;</code> on{" "}
+            <code className="text-xs">SheetContent</code> for a 340px card inset
+            from the top, right, and bottom (rounded on all sides). Pair with{" "}
+            <code className="text-xs">SheetFooter</code> for bottom-right actions.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="px-6 py-4">
+          <p className="text-sm text-muted-foreground">
+            Body scrolls inside the panel when content is long.
+          </p>
+        </div>
+        <SheetFooter className="border-t border-border px-6 py-4">
+          <SheetClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </SheetClose>
+          <Button>Save</Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  ),
+};
+
 export const Right: Story = {
   render: () => (
     <Sheet>

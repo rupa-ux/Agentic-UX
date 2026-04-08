@@ -48,21 +48,36 @@ function SheetContent({
   className,
   children,
   side = "right",
+  inset = "edge",
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left";
+  /** `floating`: narrow card inset from viewport (right/left only). Default full-bleed edge sheet. */
+  inset?: "edge" | "floating";
 }) {
+  const isFloating =
+    inset === "floating" && (side === "right" || side === "left");
+
   return (
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Content
         data-slot="sheet-content"
+        data-inset={isFloating ? "floating" : "edge"}
         className={cn(
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-4 shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
           side === "right" &&
+            inset === "edge" &&
             "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm",
+          side === "right" &&
+            inset === "floating" &&
+            "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right top-4 right-4 bottom-4 left-auto h-[calc(100vh-2rem)] w-[340px] max-w-[min(340px,calc(100vw-2rem))] overflow-y-auto rounded-xl border",
           side === "left" &&
+            inset === "edge" &&
             "data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm",
+          side === "left" &&
+            inset === "floating" &&
+            "data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left top-4 bottom-4 left-4 right-auto h-[calc(100vh-2rem)] w-[340px] max-w-[min(340px,calc(100vw-2rem))] overflow-y-auto rounded-xl border",
           side === "top" &&
             "data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top inset-x-0 top-0 h-auto border-b",
           side === "bottom" &&
@@ -95,7 +110,10 @@ function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="sheet-footer"
-      className={cn("mt-auto flex flex-col gap-2 p-4", className)}
+      className={cn(
+        "mt-auto flex flex-col-reverse gap-2 p-4 sm:flex-row sm:justify-end",
+        className,
+      )}
       {...props}
     />
   );
