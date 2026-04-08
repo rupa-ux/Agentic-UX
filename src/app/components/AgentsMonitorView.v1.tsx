@@ -37,8 +37,11 @@ import {
 import {
   HOVER as L2_ROW_HOVER,
   L2_CONTENT_MUTED_BAND,
-  L2_ROW_SELECTED_BG,
 } from "@/app/components/L2NavLayout";
+
+/** Selected activity row: blue highlight on the title (agent name) only. */
+const ACTIVITY_ROW_TITLE_SELECTED =
+  "text-[#1E44CC] dark:text-[#6b9bff]";
 
 /* ─── Mock Data ─── */
 const monitorMetrics = [
@@ -608,19 +611,22 @@ export function AgentsMonitorView({
                       "group w-full flex cursor-pointer items-start gap-2 rounded-[4px] px-2 py-4 text-left",
                       "transition-colors duration-200",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E44CC]/40 focus-visible:ring-offset-1 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#13161b]",
-                      isSelected
-                        ? L2_ROW_SELECTED_BG
-                        : L2_ROW_HOVER,
+                      !isSelected && L2_ROW_HOVER,
                     )}
                   >
-                    <span className="text-[11px] text-[#999] dark:text-[#6b7280] whitespace-nowrap mt-0.5 w-[65px] shrink-0 tabular-nums" style={{ fontWeight: 300 }}>{item.time}</span>
+                    <span
+                      className="text-[11px] text-[#999] dark:text-[#6b7280] whitespace-nowrap mt-0.5 w-[65px] shrink-0 tabular-nums"
+                      style={{ fontWeight: 300 }}
+                    >
+                      {item.time}
+                    </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap mb-0.5">
                         <span
                           className={cn(
                             "text-[13px] transition-colors duration-200",
                             isSelected
-                              ? "text-[#212121] dark:text-[#e4e4e4]"
+                              ? ACTIVITY_ROW_TITLE_SELECTED
                               : "text-[#212121] dark:text-[#e4e4e4] group-hover:text-[#1E44CC] dark:group-hover:text-[#6b9bff] group-focus-visible:text-[#1E44CC] dark:group-focus-visible:text-[#6b9bff]",
                           )}
                           style={{ fontWeight: 400 }}
@@ -630,9 +636,13 @@ export function AgentsMonitorView({
                         <ActivityCategoryBadge category={item.category} />
                         <ActivityStatusBadge status={item.status} />
                       </div>
-                      <span className="text-[13px] text-[#555] dark:text-[#9ba2b0] block" style={{ fontWeight: 300 }}>{item.action}</span>
+                      <span className="text-[13px] text-[#555] dark:text-[#9ba2b0] block" style={{ fontWeight: 300 }}>
+                        {item.action}
+                      </span>
                       {item.detail && (
-                        <p className="text-[11px] text-[#999] dark:text-[#6b7280] mt-0.5" style={{ fontWeight: 300 }}>{item.detail}</p>
+                        <p className="text-[11px] text-[#999] dark:text-[#6b7280] mt-0.5" style={{ fontWeight: 300 }}>
+                          {item.detail}
+                        </p>
                       )}
                     </div>
                   </button>
