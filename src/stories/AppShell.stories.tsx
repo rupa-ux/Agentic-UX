@@ -20,7 +20,6 @@ import { TopBar } from "@/app/components/TopBar";
 import { MonitorNotificationsProvider } from "@/app/context/MonitorNotificationsContext";
 import { APP_MAIN_CONTENT_SHELL_CLASS } from "@/app/components/layout/appShellClasses";
 import type { AppView } from "@/app/App";
-import BusinessOverviewDashboard from "@/app/components/BusinessOverviewDashboard";
 
 /* ─── View metadata for the view switcher ─── */
 const VIEWS: { value: AppView; label: string; group: string }[] = [
@@ -67,8 +66,11 @@ function L2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v: AppV
 function ContentPlaceholder({ view }: { view: AppView }) {
   if (view === "business-overview") {
     return (
-      <div className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden bg-background">
-        <BusinessOverviewDashboard />
+      <div className="flex-1 min-h-0 min-w-0 flex flex-col items-center justify-center gap-2 overflow-hidden bg-white dark:bg-[#13161b] px-8 transition-colors duration-300">
+        <p className="text-sm font-medium text-foreground">Overview</p>
+        <p className="text-[13px] text-muted-foreground text-center max-w-sm">
+          Empty state — content is shown on the real Overview page in the app.
+        </p>
       </div>
     );
   }
