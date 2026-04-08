@@ -229,7 +229,7 @@ export default function App() {
         />
 
         {/* Below TopBar: L2 nav + main content side by side */}
-        <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
+        <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] pr-[10px] pb-[10px] pl-0 transition-colors duration-300">
 
           {/* Myna fullscreen: conversation L2 replaces product L2 */}
           {mynaWorkspaceExpanded && (

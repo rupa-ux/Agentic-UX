@@ -151,7 +151,7 @@ export const SidebarCombined: Story = {
    One story per panel for quick visual review
    ══════════════════════════════════════════════════════ */
 const panelStories: { name: string; view: AppView }[] = [
-  { name: "L2 / Reports (Dashboard)",  view: "dashboard" },
+  { name: "L2 / Dashboard", view: "dashboard" },
   { name: "L2 / Reviews",              view: "reviews" },
   { name: "L2 / Social AI",            view: "social" },
   { name: "L2 / Search AI",            view: "searchai" },
@@ -166,7 +166,14 @@ const panelStories: { name: string; view: AppView }[] = [
   { name: "L2 / BirdAI — Monitor",     view: "agents-monitor" },
 ];
 
-export const L2Reports: Story     = { name: panelStories[0].name,  render: () => <SidebarFrame><L2NavPanel currentView="dashboard" onViewChange={() => {}} /></SidebarFrame> };
+export const L2Dashboard: Story = {
+  name: panelStories[0].name,
+  render: () => (
+    <SidebarFrame>
+      <L2NavPanel currentView="dashboard" onViewChange={() => {}} />
+    </SidebarFrame>
+  ),
+};
 export const L2Reviews: Story     = { name: panelStories[1].name,  render: () => <SidebarFrame><ReviewsL2NavPanel /></SidebarFrame> };
 
 /** Explicit design-version snapshots (import `.v1` / `.v2` sources directly). */

@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { X, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
+import { cn } from "@/app/components/ui/utils";
 
 /* ─── Types ─── */
 export interface FilterItem {
@@ -18,6 +19,9 @@ interface FilterPanelProps {
   collapsed?: boolean;
   onToggleCollapse?: () => void;
   storageKey?: string;
+  /** Docked column edge: `right` matches Reviews; `left` matches Agents Monitor. */
+  edge?: "left" | "right";
+  className?: string;
 }
 
 /* ─── Filter row ─── */
@@ -50,7 +54,7 @@ function FilterRow({
           </button>
 
           {open && filter.options && (
-            <div className="mt-1 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-lg shadow-sm overflow-hidden z-10 relative">
+            <div className="absolute top-full right-0 mt-1 min-w-full bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-lg shadow-sm overflow-hidden z-20 origin-top-right">
               {filter.options.map((option) => (
                 <button
                   key={option}
@@ -86,6 +90,8 @@ export function FilterPanel({
   collapsed = false,
   onToggleCollapse,
   storageKey,
+  edge = "right",
+  className,
 }: FilterPanelProps) {
   const [filters, setFilters] = useState<FilterItem[]>(() => {
     if (storageKey) {
@@ -110,6 +116,13 @@ export function FilterPanel({
     }
   }, [filters, storageKey]);
 
+  const didNotifyMount = useRef(false);
+  useLayoutEffect(() => {
+    if (didNotifyMount.current) return;
+    didNotifyMount.current = true;
+    onFiltersChange?.(filters);
+  }, [filters, onFiltersChange]);
+
   const handleValueChange = useCallback(
     (id: string, value: string) => {
       const updated = filters.map((f) =>
@@ -132,7 +145,12 @@ export function FilterPanel({
     return (
       <button
         onClick={onToggleCollapse}
-        className="h-full w-10 bg-white dark:bg-[#1e2229] border-l border-[#e5e9f0] dark:border-[#333a47] flex flex-col items-center justify-start pt-4 shrink-0 transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#262b35]"
+        className={cn(
+          "h-full w-10 bg-white dark:bg-[#1e2229] flex flex-col items-center justify-start pt-4 shrink-0 transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#262b35]",
+          edge === "left"
+            ? "border-r border-[#e5e9f0] dark:border-[#333a47]"
+            : "border-l border-[#e5e9f0] dark:border-[#333a47]",
+        )}
         title="Expand filters"
       >
         <span
@@ -150,7 +168,15 @@ export function FilterPanel({
   }
 
   return (
-    <div className="w-[260px] bg-white dark:bg-[#1e2229] border-l border-[#e5e9f0] dark:border-[#333a47] flex flex-col h-full shrink-0 transition-colors">
+    <div
+      className={cn(
+        "bg-white dark:bg-[#1e2229] flex flex-col h-full min-h-0 shrink-0 transition-colors w-[260px]",
+        edge === "left"
+          ? "border-r border-[#e5e9f0] dark:border-[#333a47]"
+          : "border-l border-[#e5e9f0] dark:border-[#333a47]",
+        className,
+      )}
+    >
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e9f0] dark:border-[#333a47] shrink-0">
         <span
           className="text-sm text-[#212121] dark:text-[#e4e4e4]"

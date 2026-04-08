@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import {
   Search,
-  ChevronDown,
   CheckCircle2,
   Clock,
   Activity,
@@ -24,7 +23,17 @@ import {
   type ActivityStatus,
   type ActivityCategory,
 } from "@/app/data/agentsMonitorMock";
+import {
+  AGENTS_MONITOR_FILTER_IDS,
+  AGENTS_MONITOR_FILTERS_STORAGE_KEY,
+  createInitialAgentsMonitorFilters,
+} from "@/app/data/agentsMonitorFilters";
+import { filterValue } from "@/app/data/filterUtils";
 import { useMonitorNotifications } from "@/app/context/MonitorNotificationsContext";
+import {
+  FilterPane,
+  FilterPaneTriggerButton,
+} from "@/app/components/FilterPane";
 
 /* ─── Mock Data ─── */
 const monitorMetrics = [
@@ -33,19 +42,6 @@ const monitorMetrics = [
   { label: "Automation rate", value: "93%", icon: Zap, color: "#9970D7" },
   { label: "Avg response time", value: "4.2s", icon: Clock, color: "#F59E0B" },
 ];
-
-const agentOptions = ["All agents", "Review response agent", "Review generation agent", "Listing optimization agent", "Social publishing agent", "Social engagement agent", "Ticketing agent"];
-const statusOptions = ["All statuses", "Success", "Needs review", "Failed", "Processing"];
-const categoryOptions: ("All categories" | ActivityCategory)[] = [
-  "All categories",
-  "Customer interaction",
-  "Automation",
-  "Content publishing",
-  "Data update",
-  "System event",
-  "Error",
-];
-const dateOptions = ["Today", "Last 7 days", "Last 30 days", "Custom range"];
 
 /* ─── Status / category labels (text badges; design tokens via UI Badge) ─── */
 function statusLabel(status: ActivityStatus) {
@@ -396,14 +392,10 @@ function InspectionPanel({ activity, onClose, onNavigateToReviews }: {
 export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () => void; onNavigateToReviews?: () => void }) {
   void onBack;
   const [searchQuery, setSearchQuery] = useState("");
-  const [agentFilter, setAgentFilter] = useState("All agents");
-  const [statusFilter, setStatusFilter] = useState("All statuses");
-  const [categoryFilter, setCategoryFilter] = useState<string>("All categories");
-  const [dateFilter, setDateFilter] = useState("Today");
-  const [agentDropOpen, setAgentDropOpen] = useState(false);
-  const [statusDropOpen, setStatusDropOpen] = useState(false);
-  const [categoryDropOpen, setCategoryDropOpen] = useState(false);
-  const [dateDropOpen, setDateDropOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [appliedFilters, setAppliedFilters] = useState(() =>
+    createInitialAgentsMonitorFilters(),
+  );
   const [searchExpanded, setSearchExpanded] = useState(false);
 
   const { selectedActivityId, setSelectedActivityId } = useMonitorNotifications();
@@ -459,21 +451,28 @@ export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () 
     setDividerPos(null);
   }, []);
 
-  const closeAllDropdowns = () => {
-    setAgentDropOpen(false);
-    setStatusDropOpen(false);
-    setCategoryDropOpen(false);
-    setDateDropOpen(false);
-  };
+  const agentFilter =
+    filterValue(appliedFilters, AGENTS_MONITOR_FILTER_IDS.agent) ?? "All agents";
+  const statusFilter =
+    filterValue(appliedFilters, AGENTS_MONITOR_FILTER_IDS.status) ?? "All statuses";
+  const categoryFilter =
+    filterValue(appliedFilters, AGENTS_MONITOR_FILTER_IDS.category) ??
+    "All categories";
 
-  const filteredActivities = monitorActivities.filter(a => {
-    if (searchQuery && !a.action.toLowerCase().includes(searchQuery.toLowerCase()) && !a.agentName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+  const filteredActivities = monitorActivities.filter((a) => {
+    if (
+      searchQuery &&
+      !a.action.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !a.agentName.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+      return false;
     if (agentFilter !== "All agents" && a.agentName !== agentFilter) return false;
     if (statusFilter === "Success" && a.status !== "success") return false;
     if (statusFilter === "Needs review" && a.status !== "warning") return false;
     if (statusFilter === "Failed" && a.status !== "error") return false;
     if (statusFilter === "Processing" && a.status !== "processing") return false;
-    if (categoryFilter !== "All categories" && a.category !== categoryFilter) return false;
+    if (categoryFilter !== "All categories" && a.category !== categoryFilter)
+      return false;
     return true;
   });
 
@@ -487,43 +486,50 @@ export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () 
             <h1 className="text-[20px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.4px]" style={{ fontWeight: 400 }}>Monitor</h1>
             <p className="text-[13px] text-[#888] dark:text-[#6b7280] mt-0.5" style={{ fontWeight: 300 }}>What did your AI team do today?</p>
           </div>
-          {/* ─── Filters (inline with title) ─── */}
-          <div className="flex items-center gap-2.5">
-            {/* Search icon button */}
+          <div className="flex items-center gap-2">
             {searchExpanded ? (
-              <div className="flex items-center gap-2 px-3 py-[7px] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] bg-white dark:bg-[#1e2229] w-[220px] transition-all">
+              <div className="flex items-center gap-2 px-3 py-2 border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] bg-white dark:bg-[#1e2229] w-[220px] transition-all">
                 <Search className="w-3.5 h-3.5 text-[#999] dark:text-[#6b7280] shrink-0" />
                 <input
                   autoFocus
                   value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  onBlur={() => { if (!searchQuery) setSearchExpanded(false); }}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onBlur={() => {
+                    if (!searchQuery) setSearchExpanded(false);
+                  }}
                   placeholder="Search activities..."
                   className="flex-1 bg-transparent text-[13px] text-[#212121] dark:text-[#e4e4e4] placeholder:text-[#b0b0b0] dark:placeholder:text-[#4d5568] outline-none min-w-0"
                   style={{ fontWeight: 400 }}
                 />
-                <button onClick={() => { setSearchQuery(""); setSearchExpanded(false); }} className="shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSearchExpanded(false);
+                  }}
+                  className="shrink-0"
+                >
                   <X className="w-3 h-3 text-[#999] dark:text-[#6b7280]" />
                 </button>
               </div>
             ) : (
               <Button
-                onClick={() => { setSearchExpanded(true); closeAllDropdowns(); }}
+                type="button"
+                onClick={() => setSearchExpanded(true)}
                 variant="outline"
                 size="icon"
               >
                 <Search className="w-3.5 h-3.5 text-[#999] dark:text-[#6b7280]" />
               </Button>
             )}
-
-            <FilterDropdown label={agentFilter} options={agentOptions} isOpen={agentDropOpen} onToggle={() => { setAgentDropOpen(!agentDropOpen); setStatusDropOpen(false); setCategoryDropOpen(false); setDateDropOpen(false); }} onSelect={v => { setAgentFilter(v); setAgentDropOpen(false); }} />
-            <FilterDropdown label={statusFilter} options={statusOptions} isOpen={statusDropOpen} onToggle={() => { setStatusDropOpen(!statusDropOpen); setAgentDropOpen(false); setCategoryDropOpen(false); setDateDropOpen(false); }} onSelect={v => { setStatusFilter(v); setStatusDropOpen(false); }} />
-            <FilterDropdown label={categoryFilter} options={categoryOptions} isOpen={categoryDropOpen} onToggle={() => { setCategoryDropOpen(!categoryDropOpen); setAgentDropOpen(false); setStatusDropOpen(false); setDateDropOpen(false); }} onSelect={v => { setCategoryFilter(v); setCategoryDropOpen(false); }} />
-            <FilterDropdown label={dateFilter} options={dateOptions} isOpen={dateDropOpen} onToggle={() => { setDateDropOpen(!dateDropOpen); setAgentDropOpen(false); setStatusDropOpen(false); setCategoryDropOpen(false); }} onSelect={v => { setDateFilter(v); setDateDropOpen(false); }} />
+            <FilterPaneTriggerButton
+              open={filterOpen}
+              onOpenChange={setFilterOpen}
+            />
           </div>
         </div>
 
-        {/* ��── Operational Metrics ─── */}
+        {/* ─── Operational Metrics ─── */}
         <div className="grid grid-cols-4 gap-4 mb-5">
           {monitorMetrics.map(m => (
             <div key={m.label} className="bg-white dark:bg-[#1e2229] border border-[#E5E7EB] dark:border-[#2e3340] rounded-[12px] px-5 py-4 transition-colors">
@@ -537,8 +543,12 @@ export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () 
         </div>
       </div>
 
-      {/* ─── Two-Panel Body ─── */}
-      <div className={`flex-1 flex min-h-0 overflow-hidden ${isResizing ? "select-none" : ""}`} ref={containerRef}>
+      {/* ─── Feed / details + right filter pane ─── */}
+      <div className="flex min-h-0 flex-1 flex-row overflow-hidden">
+        <div
+          className={`flex min-h-0 flex-1 overflow-hidden ${isResizing ? "select-none" : ""}`}
+          ref={containerRef}
+        >
         {/* Activity Feed (Left) */}
         <div
           className="overflow-y-auto min-w-0"
@@ -632,34 +642,17 @@ export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () 
             onNavigateToReviews={selectedActivity.reviewLink ? onNavigateToReviews : undefined}
           />
         )}
-      </div>
-    </div>
-  );
-}
-
-/* ─── Reusable Filter Dropdown ─── */
-function FilterDropdown({ label, options, isOpen, onToggle, onSelect }: {
-  label: string;
-  options: string[];
-  isOpen: boolean;
-  onToggle: () => void;
-  onSelect: (v: string) => void;
-}) {
-  return (
-    <div className="relative">
-      <Button onClick={onToggle} variant="outline" className="gap-1.5 whitespace-nowrap font-normal">
-        {label}
-        <ChevronDown className="w-3 h-3 text-[#999] dark:text-[#6b7280]" />
-      </Button>
-      {isOpen && (
-        <div className="absolute top-full mt-1 right-0 bg-white dark:bg-[#22262f] rounded-[8px] shadow-lg border border-[#e5e9f0] dark:border-[#333a47] py-1 z-50 min-w-[180px]">
-          {options.map(opt => (
-            <button key={opt} onClick={() => onSelect(opt)} className={`w-full text-left px-3 py-1.5 text-[13px] transition-colors ${opt === label ? "text-[#2552ED] bg-[#e8effe] dark:bg-[#1e2d5e]" : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"}`} style={{ fontWeight: 400 }}>
-              {opt}
-            </button>
-          ))}
         </div>
-      )}
+        <FilterPane
+          initialFilters={appliedFilters}
+          open={filterOpen}
+          onOpenChange={setFilterOpen}
+          onFiltersChange={setAppliedFilters}
+          motion="slide"
+          dock="right"
+          storageKey={AGENTS_MONITOR_FILTERS_STORAGE_KEY}
+        />
+      </div>
     </div>
   );
 }

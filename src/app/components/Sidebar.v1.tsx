@@ -557,10 +557,6 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
   return (
     <div className={PANEL} data-no-print>
       <div className="flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
-        <p className="px-2 pb-2 text-[11px] uppercase tracking-wide text-[#888] dark:text-[#6b7280]" style={{ fontWeight: 500 }}>
-          Reports
-        </p>
-
         {/* Create dashboard button */}
         <button
           type="button"

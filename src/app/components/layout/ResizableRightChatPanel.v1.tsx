@@ -15,9 +15,11 @@ import {
   useRightChatPanelWidth,
 } from "@/app/hooks/useRightChatPanelWidth";
 import { HorizontalResizeHandle } from "@/app/components/layout/HorizontalResizeHandle";
-
-const SLIDE_MS = 280;
-const SLIDE_EASING = "cubic-bezier(0.4, 0, 0.2, 1)";
+import {
+  SLIDE_MS,
+  SLIDE_EASING,
+  closedTransform,
+} from "@/app/components/layout/slidePanelConstants";
 
 export type ResizableRightChatPanelProps = {
   open: boolean;
@@ -58,7 +60,8 @@ export function ResizableRightChatPanel({
 
   const applyInnerTransform = useCallback((openState: boolean) => {
     const el = innerRef.current;
-    if (el) el.style.transform = openState ? "translateX(0)" : "translateX(100%)";
+    if (el)
+      el.style.transform = openState ? "translateX(0)" : closedTransform("right");
   }, []);
 
   useLayoutEffect(() => {
@@ -201,7 +204,7 @@ export function ResizableRightChatPanel({
             ? ""
             : "rounded-tl-lg border-l border-t border-[#e5e9f0] dark:border-[#333a47]",
         ].join(" ")}
-        style={{ transform: "translateX(100%)" }}
+        style={{ transform: closedTransform("right") }}
       >
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {children}

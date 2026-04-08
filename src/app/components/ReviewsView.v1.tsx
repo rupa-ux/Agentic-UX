@@ -4,7 +4,6 @@ import {
   type ReviewsShortcutAction,
 } from "@/app/shortcuts/events";
 import { Search, ChevronDown, MoreVertical, Star, ChevronLeft, ChevronRight } from "lucide-react";
-import { FunnelSimple } from "@phosphor-icons/react";
 import { Button } from "@/app/components/ui/button";
 import svgPaths from "../../imports/svg-k7qrt1366a";
 // Real placeholder images — replace with actual CDN URLs in production
@@ -15,7 +14,14 @@ const imgRectangle2432 = "https://images.unsplash.com/photo-1482049016688-2d3e1b
 const imgRectangle2436 = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop&auto=format";
 const imgRectangle2437 = "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop&auto=format";
 const imgRectangle2435 = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=300&fit=crop&auto=format";
-import { FilterPanel, type FilterItem } from "./FilterPanel";
+import type { FilterItem } from "@/app/components/FilterPanel.v1";
+import {
+  FilterPane,
+  FilterPaneTriggerButton,
+} from "@/app/components/FilterPane";
+import {
+  createInitialReviewsFilters,
+} from "@/app/data/reviewsFilters";
 
 // Types
 interface Review {
@@ -429,65 +435,13 @@ function ReviewCard({ review }: { review: Review }) {
   );
 }
 
-/* ─── Reviews filter definitions ─── */
-const reviewFilters: FilterItem[] = [
-  {
-    id: "review_source",
-    label: "Source",
-    options: ["All sources", "Google", "Yelp", "Facebook", "TripAdvisor"],
-  },
-  {
-    id: "review_rating",
-    label: "Rating",
-    options: ["All ratings", "5 stars", "4 stars", "3 stars", "2 stars", "1 star"],
-  },
-  {
-    id: "review_status",
-    label: "Reply status",
-    options: ["All statuses", "Replied", "Not replied", "Draft"],
-  },
-  {
-    id: "review_date",
-    label: "Date range",
-    options: ["All time", "Today", "Last 7 days", "Last 30 days", "Last 90 days", "Last year"],
-  },
-  {
-    id: "review_location",
-    label: "Location",
-    options: ["All locations", "Georgia", "New York", "California", "Texas", "Florida"],
-  },
-  {
-    id: "review_sentiment",
-    label: "Sentiment",
-    options: ["All sentiments", "Positive", "Neutral", "Negative"],
-  },
-  {
-    id: "review_keyword",
-    label: "Keywords",
-    options: ["All keywords", "Ambience", "Food", "Service", "Price", "Cleanliness"],
-  },
-  {
-    id: "review_featured",
-    label: "Featured",
-    options: ["All", "Featured only", "Not featured"],
-  },
-  {
-    id: "review_photos",
-    label: "Has photos",
-    options: ["All", "With photos", "Without photos"],
-  },
-  {
-    id: "review_employee",
-    label: "Employee",
-    options: ["All employees", "Unassigned", "Sampada", "John", "Maria"],
-  },
-];
-
 /* ─── Main ReviewsView ─── */
 export function ReviewsView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
-  const [filters, setFilters] = useState<FilterItem[]>(reviewFilters);
+  const [filters, setFilters] = useState<FilterItem[]>(() =>
+    createInitialReviewsFilters(),
+  );
   const searchInputRef = useRef<HTMLInputElement>(null);
   const aiReplyButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -579,18 +533,10 @@ export function ReviewsView() {
               </svg>
             </Button>
 
-            {/* Filter button */}
-            <Button
-              onClick={() => setFilterPanelOpen(!filterPanelOpen)}
-              variant="outline"
-              size="icon"
-              className={filterPanelOpen
-                ? "bg-[#e8effe] dark:bg-[#1e2d5e] border-[#2552ED] dark:border-[#2552ED]"
-                : ""
-              }
-            >
-              <FunnelSimple size={14} weight={filterPanelOpen ? "fill" : "regular"} className={filterPanelOpen ? "text-[#1E44CC]" : "text-[#555] dark:text-[#8b92a5]"} />
-            </Button>
+            <FilterPaneTriggerButton
+              open={filterPanelOpen}
+              onOpenChange={setFilterPanelOpen}
+            />
           </div>
         </div>
 
@@ -604,16 +550,15 @@ export function ReviewsView() {
         </div>
       </div>
 
-      {/* ─── Filter panel (collapsible) ─── */}
-      {filterPanelOpen && (
-        <FilterPanel
-          filters={filters}
-          onFiltersChange={setFilters}
-          collapsed={false}
-          onToggleCollapse={() => setFilterPanelOpen(false)}
-          storageKey="birdeye_reviews_filters"
-        />
-      )}
+      <FilterPane
+        initialFilters={filters}
+        open={filterPanelOpen}
+        onOpenChange={setFilterPanelOpen}
+        onFiltersChange={setFilters}
+        motion="static"
+        dock="right"
+        storageKey="birdeye_reviews_filters"
+      />
     </div>
   );
 }

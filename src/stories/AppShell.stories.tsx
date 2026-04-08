@@ -23,7 +23,6 @@ import type { AppView } from "@/app/App";
 
 /* ─── View metadata for the view switcher ─── */
 const VIEWS: { value: AppView; label: string; group: string }[] = [
-  { value: "business-overview",    label: "Overview",                group: "Home" },
   { value: "agents-monitor",       label: "BirdAI — Monitor", group: "BirdAI" },
   { value: "birdai-reports",       label: "BirdAI — Reports (in-app)", group: "BirdAI" },
   { value: "dashboard",            label: "Reports — Dashboard",     group: "Reports" },
@@ -199,7 +198,7 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          "Canonical app chrome: L1 icon strip, TopBar (`rounded-tr-lg`), L2 column via `PANEL` from `L2NavLayout` (8px top-left `rounded-tl-lg`), main column via `APP_MAIN_CONTENT_SHELL_CLASS`. When you add a new module, reuse those tokens so corners stay consistent. See Design System → Tokens → Border Radius → App shell.",
+          "Canonical app chrome: L1 icon strip, TopBar (`rounded-tr-lg`), L2 column via `PANEL` from `L2NavLayout` (8px left corners: `rounded-tl-lg rounded-bl-lg`), main column via `APP_MAIN_CONTENT_SHELL_CLASS` (8px right corners: `rounded-tr-lg rounded-br-lg`), with a 10px inset below the top bar. When you add a new module, reuse those tokens so corners stay consistent. See Design System → Tokens → Border Radius → App shell.",
       },
     },
   },
@@ -225,7 +224,7 @@ export const Default: Story = {
             <TopBar currentView={view} onViewChange={setView} />
 
             {/* L2 nav + main content */}
-            <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
+            <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] pr-[10px] pb-[10px] pl-0 transition-colors duration-300">
               <L2Panel view={view} onViewChange={setView} />
               <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
                 <ContentPlaceholder view={view} />
@@ -252,7 +251,7 @@ export const StartingWithAgents: Story = {
           <IconStrip currentView={view} onViewChange={setView} />
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
             <TopBar currentView={view} onViewChange={setView} />
-            <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
+            <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] pr-[10px] pb-[10px] pl-0 transition-colors duration-300">
               <L2Panel view={view} onViewChange={setView} />
               <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
                 <ContentPlaceholder view={view} />
@@ -277,7 +276,7 @@ export const StartingWithReviews: Story = {
           <IconStrip currentView={view} onViewChange={setView} />
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
             <TopBar currentView={view} onViewChange={setView} />
-            <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
+            <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] pr-[10px] pb-[10px] pl-0 transition-colors duration-300">
               <L2Panel view={view} onViewChange={setView} />
               <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
                 <ContentPlaceholder view={view} />
@@ -302,7 +301,7 @@ export const NoL2Panel: Story = {
           <IconStrip currentView={view} onViewChange={setView} />
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
             <TopBar currentView={view} onViewChange={setView} />
-            <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
+            <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] pr-[10px] pb-[10px] pl-0 transition-colors duration-300">
               <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
                 <ContentPlaceholder view={view} />
               </div>

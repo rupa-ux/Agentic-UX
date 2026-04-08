@@ -470,7 +470,6 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: { curren
   return (
     <div className={PANEL} data-no-print>
       <div className="flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
-        <p className="px-2 pb-2 text-[11px] uppercase tracking-wide text-muted-foreground" style={{ fontWeight: 500 }}>Reports</p>
         <button type="button" className={`${FOOTER_ROW_CLS} mb-2`} style={{ fontSize: 14 }} onClick={() => onViewChange("dashboard")}>
           <span className="text-[14px]">Create dashboard</span>
           <div className="w-[18px] h-[18px] bg-primary rounded-full flex items-center justify-center shrink-0"><span className="text-primary-foreground text-[12px] leading-none select-none">+</span></div>
