@@ -34,6 +34,18 @@ import { l2KeyFromConversation } from "./myna/mynaL2NavKeys";
 import { useMynaConversations } from "./myna/useMynaConversations";
 import { ShortcutsModal } from "./shortcuts/ShortcutsModal";
 import { useShortcuts } from "./shortcuts/useShortcuts";
+import { BirdAILoginPage } from "./components/auth/BirdAILoginPage";
+
+const AUTH_STORAGE_KEY = "birdai_demo_authenticated";
+
+function readDemoAuthenticated(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    return sessionStorage.getItem(AUTH_STORAGE_KEY) !== "false";
+  } catch {
+    return true;
+  }
+}
 
 export type AppView =
   | "business-overview"
@@ -61,6 +73,26 @@ export type AppView =
   | "competitors";
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => readDemoAuthenticated());
+
+  const signIn = useCallback(() => {
+    try {
+      sessionStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+    setIsAuthenticated(true);
+  }, []);
+
+  const signOut = useCallback(() => {
+    try {
+      sessionStorage.setItem(AUTH_STORAGE_KEY, "false");
+    } catch {
+      /* ignore */
+    }
+    setIsAuthenticated(false);
+  }, []);
+
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [currentView, setCurrentView] = useState<AppView>("agents-monitor");
   const [editingDraft, setEditingDraft] = useState<DraftReport | null>(null);
@@ -174,6 +206,15 @@ export default function App() {
   }, []);
 
   // Views that have their own L2 panels (not the default Reports L2NavPanel)
+  if (!isAuthenticated) {
+    return (
+      <>
+        <Toaster position="top-center" richColors />
+        <BirdAILoginPage onAuthenticated={signIn} />
+      </>
+    );
+  }
+
   const hasOwnL2Panel = (v: AppView) =>
     v === "business-overview" ||
     v === "inbox" ||
@@ -216,6 +257,7 @@ export default function App() {
         currentView={currentView}
         onViewChange={handleViewChange}
         onOpenKeyboardShortcuts={() => setShortcutsModalOpen(true)}
+        onSignOut={signOut}
       />
 
       {/* Everything to the right of the icon strip */}

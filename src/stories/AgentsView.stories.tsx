@@ -12,12 +12,12 @@ const viewMeta: Meta = {
 export default viewMeta;
 type Story = StoryObj;
 
-function MonitorShell() {
+function MonitorShell(props: { userDisplayName?: string }) {
   return (
     <MonitorNotificationsProvider onNavigateToMonitor={() => {}}>
       <div className="h-screen flex flex-col min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
         <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
-          <AgentsMonitorView onBack={() => {}} />
+          <AgentsMonitorView onBack={() => {}} userDisplayName={props.userDisplayName} />
         </div>
       </div>
     </MonitorNotificationsProvider>
@@ -25,7 +25,22 @@ function MonitorShell() {
 }
 
 export const AgentsMonitor: Story = {
-  render: () => <MonitorShell />,
+  args: {
+    userDisplayName: "John",
+  },
+  argTypes: {
+    userDisplayName: { control: "text", name: "Display name" },
+  },
+  render: (args) => <MonitorShell userDisplayName={args.userDisplayName} />,
+};
+
+/** Same layout with a custom greeting for design review. */
+export const AgentsMonitorPersonalized: Story = {
+  args: {
+    userDisplayName: "Alex",
+  },
+  argTypes: AgentsMonitor.argTypes,
+  render: (args) => <MonitorShell userDisplayName={args.userDisplayName} />,
 };
 
 export const AgentsBuilder: Story = {

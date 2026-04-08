@@ -34,6 +34,11 @@ import {
   FilterPane,
   FilterPaneTriggerButton,
 } from "@/app/components/FilterPane";
+import {
+  HOVER as L2_ROW_HOVER,
+  L2_CONTENT_MUTED_BAND,
+  L2_ROW_SELECTED_BG,
+} from "@/app/components/L2NavLayout";
 
 /* ─── Mock Data ─── */
 const monitorMetrics = [
@@ -134,16 +139,14 @@ function InspectionPanel({ activity, onClose, onNavigateToReviews }: {
   return (
     <div className="flex-1 min-w-0 bg-white dark:bg-[#1e2229] flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3.5 shrink-0">
-        <h3 className="text-[14px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.28px] truncate" style={{ fontWeight: 400 }}>
-          Activity details
-        </h3>
+      <div className="flex items-center justify-end px-5 py-3.5 shrink-0">
         <Button
           type="button"
           variant="ghost"
           size="icon"
           onClick={onClose}
           className="shrink-0 rounded-[4px] text-[#999] dark:text-[#6b7280]"
+          aria-label="Close activity details"
         >
           <X className="w-3.5 h-3.5" />
         </Button>
@@ -389,7 +392,21 @@ function InspectionPanel({ activity, onClose, onNavigateToReviews }: {
 /* ═══════════════════════════════════════════
    Monitor View
    ═══════════════════════════════════════════ */
-export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () => void; onNavigateToReviews?: () => void }) {
+
+const DEFAULT_MONITOR_USER_DISPLAY_NAME = "John";
+
+export type AgentsMonitorViewProps = {
+  onBack: () => void;
+  onNavigateToReviews?: () => void;
+  /** First name or short name for the greeting row (demo default matches shell profile). */
+  userDisplayName?: string;
+};
+
+export function AgentsMonitorView({
+  onBack,
+  onNavigateToReviews,
+  userDisplayName = DEFAULT_MONITOR_USER_DISPLAY_NAME,
+}: AgentsMonitorViewProps) {
   void onBack;
   const [searchQuery, setSearchQuery] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
@@ -478,18 +495,16 @@ export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () 
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300">
-      {/* ─── Page Header ─── */}
-      <div className="px-6 pt-6 pb-0 shrink-0">
-        {/* Title row with filters inline */}
-        <div className="flex items-start justify-between mb-5">
-          <div className="shrink-0">
-            <h1 className="text-[20px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.4px]" style={{ fontWeight: 400 }}>Monitor</h1>
-            <p className="text-[13px] text-[#888] dark:text-[#6b7280] mt-0.5" style={{ fontWeight: 300 }}>What did your AI team do today?</p>
-          </div>
+      {/* ─── Greeting + hero (metrics) ─── */}
+      <div className="shrink-0 px-6 pt-6 pb-0 flex flex-col gap-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h2 className="text-2xl text-foreground tracking-tight" style={{ fontWeight: 300 }}>
+            Hi, {userDisplayName}!
+          </h2>
           <div className="flex items-center gap-2">
             {searchExpanded ? (
-              <div className="flex items-center gap-2 px-3 py-2 border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] bg-white dark:bg-[#1e2229] w-[220px] transition-all">
-                <Search className="w-3.5 h-3.5 text-[#999] dark:text-[#6b7280] shrink-0" />
+              <div className="flex w-[220px] min-w-0 items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 transition-all">
+                <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 <input
                   autoFocus
                   value={searchQuery}
@@ -498,7 +513,7 @@ export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () 
                     if (!searchQuery) setSearchExpanded(false);
                   }}
                   placeholder="Search activities..."
-                  className="flex-1 bg-transparent text-[13px] text-[#212121] dark:text-[#e4e4e4] placeholder:text-[#b0b0b0] dark:placeholder:text-[#4d5568] outline-none min-w-0"
+                  className="min-w-0 flex-1 bg-transparent text-[13px] text-foreground outline-none placeholder:text-muted-foreground"
                   style={{ fontWeight: 400 }}
                 />
                 <button
@@ -509,7 +524,7 @@ export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () 
                   }}
                   className="shrink-0"
                 >
-                  <X className="w-3 h-3 text-[#999] dark:text-[#6b7280]" />
+                  <X className="h-3 w-3 text-muted-foreground" />
                 </button>
               </div>
             ) : (
@@ -519,7 +534,7 @@ export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () 
                 variant="outline"
                 size="icon"
               >
-                <Search className="w-3.5 h-3.5 text-[#999] dark:text-[#6b7280]" />
+                <Search className="h-3.5 w-3.5 text-muted-foreground" />
               </Button>
             )}
             <FilterPaneTriggerButton
@@ -529,17 +544,35 @@ export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () 
           </div>
         </div>
 
-        {/* ─── Operational Metrics ─── */}
-        <div className="grid grid-cols-4 gap-4 mb-5">
-          {monitorMetrics.map(m => (
-            <div key={m.label} className="bg-white dark:bg-[#1e2229] border border-[#E5E7EB] dark:border-[#2e3340] rounded-[12px] px-5 py-4 transition-colors">
-              <div className="flex items-baseline gap-2 mb-1">
-                <p className="text-[24px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.5px]" style={{ fontWeight: 400 }}>{m.value}</p>
-                <m.icon className="w-4 h-4 self-center" style={{ color: m.color }} />
-              </div>
-              <span className="text-[12px] text-[#888] dark:text-[#6b7280] tracking-[-0.24px]" style={{ fontWeight: 400 }}>{m.label}</span>
+        <div className={cn("rounded-xl p-6", L2_CONTENT_MUTED_BAND)}>
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
+            <div className="min-w-0 max-w-md shrink-0 space-y-2">
+              <h1 className="text-xl text-foreground tracking-tight md:text-2xl" style={{ fontWeight: 400 }}>
+                Monitor
+              </h1>
+              <p className="text-sm text-muted-foreground" style={{ fontWeight: 400 }}>
+                Track what your agents did today, spot items that need review, and dig into each run from one place.
+              </p>
             </div>
-          ))}
+            <div className="grid min-w-0 flex-1 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {monitorMetrics.map((m) => (
+                <div
+                  key={m.label}
+                  className="rounded-lg border border-border bg-card px-6 py-4 transition-colors"
+                >
+                  <div className="mb-1 flex items-baseline gap-2">
+                    <p className="text-2xl tabular-nums tracking-tight text-foreground" style={{ fontWeight: 400 }}>
+                      {m.value}
+                    </p>
+                    <m.icon className="h-4 w-4 self-center" style={{ color: m.color }} />
+                  </div>
+                  <span className="text-xs text-muted-foreground" style={{ fontWeight: 400 }}>
+                    {m.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -558,12 +591,12 @@ export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () 
               : { flex: 1 }
           }
         >
-          <div className="px-6 pt-2 pb-4">
-            <div className="flex items-center justify-between py-2 mb-1">
+          <div className="px-6 pt-4 pb-4">
+            <div className="mb-2 flex items-center justify-between py-2">
               <h3 className="text-[14px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.28px]" style={{ fontWeight: 400 }}>Agent activity</h3>
               
             </div>
-            <div>
+            <div className="rounded-lg p-2">
               {filteredActivities.map((item) => {
                 const isSelected = selectedActivity?.id === item.id;
                 return (
@@ -572,12 +605,12 @@ export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () 
                     type="button"
                     onClick={() => setSelectedActivityId(isSelected ? null : item.id)}
                     className={cn(
-                      "group w-full flex items-start gap-2 px-3 py-3.5 rounded-[6px] text-left cursor-pointer",
+                      "group w-full flex cursor-pointer items-start gap-2 rounded-[4px] px-2 py-4 text-left",
                       "transition-colors duration-200",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E44CC]/40 focus-visible:ring-offset-1 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#13161b]",
                       isSelected
-                        ? "bg-[#f0f4ff] dark:bg-[#1e2d5e]/40"
-                        : "hover:bg-[#f8f9fa] dark:hover:bg-[#1a1e26]",
+                        ? L2_ROW_SELECTED_BG
+                        : L2_ROW_HOVER,
                     )}
                   >
                     <span className="text-[11px] text-[#999] dark:text-[#6b7280] whitespace-nowrap mt-0.5 w-[65px] shrink-0 tabular-nums" style={{ fontWeight: 300 }}>{item.time}</span>
@@ -587,7 +620,7 @@ export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () 
                           className={cn(
                             "text-[13px] transition-colors duration-200",
                             isSelected
-                              ? "text-[#1E44CC] dark:text-[#6b9bff]"
+                              ? "text-[#212121] dark:text-[#e4e4e4]"
                               : "text-[#212121] dark:text-[#e4e4e4] group-hover:text-[#1E44CC] dark:group-hover:text-[#6b9bff] group-focus-visible:text-[#1E44CC] dark:group-focus-visible:text-[#6b9bff]",
                           )}
                           style={{ fontWeight: 400 }}
@@ -648,7 +681,7 @@ export function AgentsMonitorView({ onBack, onNavigateToReviews }: { onBack: () 
           open={filterOpen}
           onOpenChange={setFilterOpen}
           onFiltersChange={setAppliedFilters}
-          motion="slide"
+          motion="static"
           dock="right"
           storageKey={AGENTS_MONITOR_FILTERS_STORAGE_KEY}
         />

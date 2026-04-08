@@ -34,8 +34,11 @@ import { ChevronUp, ChevronDown, ExternalLink } from "lucide-react";
 /* ─────────────────────────────────────────────────────
    Design tokens — edit here to update every L2 panel
    ───────────────────────────────────────────────────── */
+/** L2 column background only (matches `PANEL`) — use behind main-content lists that mirror L2 selection. */
+export const L2_PANEL_SURFACE = "bg-[#f0f1f5] dark:bg-[#1e2229]";
+
 export const PANEL =
-  "w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#e5e9f0] dark:border-[#2e3340] rounded-tl-lg rounded-bl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300";
+  `w-[220px] ${L2_PANEL_SURFACE} border-r border-[#e5e9f0] dark:border-[#2e3340] rounded-tl-lg rounded-bl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300`;
 
 // Shared row geometry — same for headers, children, footer
 export const ROW =
@@ -45,8 +48,28 @@ export const HOVER = "hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]";
 
 export const SECTION_HEADER    = `${ROW} ${HOVER} text-[#212121] dark:text-[#e4e4e4]`;
 export const CHILD_INACTIVE    = `${ROW} ${HOVER} text-left text-[#555] dark:text-[#9ba2b0]`;
-export const CHILD_ACTIVE      = `${ROW} text-left text-[#212121] dark:text-[#e4e4e4] bg-[#dce5ff] dark:bg-[#1e2d5e]`;
+/**
+ * Neutral selected row — a touch darker than HOVER (#e4e6ea), lighter than the previous #d8dce4 wash.
+ * Use anywhere L2 selection should match in-content lists (e.g. Monitor activity feed).
+ */
+export const L2_ROW_SELECTED_BG = "bg-[#e2e4ea] dark:bg-[#454d5c]";
+export const CHILD_ACTIVE      = `${ROW} text-left text-[#212121] dark:text-[#e4e4e4] ${L2_ROW_SELECTED_BG}`;
 export const FOOTER_ROW_CLS    = `${ROW} ${HOVER} text-[#212121] dark:text-[#e4e4e4]`;
+
+/** Muted band on main content (e.g. Monitor hero) — aligns with L2 gray family, borderless. */
+export const L2_CONTENT_MUTED_BAND = "bg-[#f2f3f6] dark:bg-[#252b34]";
+
+/** L2 header row “+” — soft primary tint + primary glyph (shared across L2 panels + custom sidebars). */
+export const L2_HEADER_PLUS_WRAPPER_BLUE =
+  "w-[18px] h-[18px] bg-primary/15 dark:bg-primary/20 rounded-full flex items-center justify-center shrink-0";
+export const L2_HEADER_PLUS_GLYPH_BLUE =
+  "text-primary text-[12px] leading-none select-none";
+
+/** Same shape for `headerActionColor="green"` (pale green surface + darker plus). */
+export const L2_HEADER_PLUS_WRAPPER_GREEN =
+  "w-[18px] h-[18px] bg-[#4caf50]/20 dark:bg-[#4caf50]/25 rounded-full flex items-center justify-center shrink-0";
+export const L2_HEADER_PLUS_GLYPH_GREEN =
+  "text-[#1b5e20] dark:text-[#a5d6a7] text-[12px] leading-none select-none";
 
 /* ─────────────────────────────────────────────────────
    Types
@@ -160,7 +183,10 @@ export function L2NavLayout({
     onActiveItemChange?.(key);
   };
 
-  const plusBg = headerActionColor === "green" ? "bg-[#4caf50]" : "bg-[#1E44CC]";
+  const plusWrapper =
+    headerActionColor === "green" ? L2_HEADER_PLUS_WRAPPER_GREEN : L2_HEADER_PLUS_WRAPPER_BLUE;
+  const plusGlyph =
+    headerActionColor === "green" ? L2_HEADER_PLUS_GLYPH_GREEN : L2_HEADER_PLUS_GLYPH_BLUE;
 
   return (
     <div className={PANEL} data-no-print={noprint}>
@@ -175,8 +201,8 @@ export function L2NavLayout({
             style={{ fontSize: 14 }}
           >
             <span className="text-[14px]">{headerAction.label}</span>
-            <div className={`w-[18px] h-[18px] ${plusBg} rounded-full flex items-center justify-center shrink-0`}>
-              <span className="text-white text-[12px] leading-none select-none">+</span>
+            <div className={plusWrapper}>
+              <span className={plusGlyph}>+</span>
             </div>
           </button>
         )}

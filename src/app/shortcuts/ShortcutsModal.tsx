@@ -11,6 +11,7 @@ import type { AppView } from "@/app/App";
 import {
   shortcutScopeFromView,
   shortcutsForModal,
+  type ShortcutDefinition,
   type ShortcutScope,
 } from "./shortcuts";
 
@@ -23,7 +24,7 @@ function KeyChip({ children, className }: { children: ReactNode; className?: str
   return (
     <kbd
       className={cn(
-        "pointer-events-none inline-flex h-6 min-w-6 select-none items-center justify-center rounded border border-border bg-muted px-2 font-mono text-[11px] font-medium text-muted-foreground",
+        "pointer-events-none inline-flex h-5 min-w-5 select-none items-center justify-center rounded border border-border bg-muted px-2 font-mono text-[10px] font-medium text-muted-foreground",
         className,
       )}
     >
@@ -46,6 +47,31 @@ function KeySequence({ keys }: { keys: string[] }) {
   );
 }
 
+function ShortcutKeys({ def }: { def: ShortcutDefinition }) {
+  if (def.keySequences?.length) {
+    return (
+      <span className="flex flex-wrap items-center gap-2">
+        {def.keySequences.map((seq, i) => (
+          <span key={seq.join("-")} className="flex flex-wrap items-center gap-2">
+            {i > 0 && <span className="text-muted-foreground text-xs">or</span>}
+            <KeySequence keys={seq} />
+          </span>
+        ))}
+      </span>
+    );
+  }
+  if (def.id.startsWith("go-") && def.keys.length > 1) {
+    return (
+      <span className="flex shrink-0 flex-wrap items-center gap-1">
+        <KeyChip>G</KeyChip>
+        <span className="text-muted-foreground text-xs">then</span>
+        <KeyChip>{def.keys[1]}</KeyChip>
+      </span>
+    );
+  }
+  return <KeySequence keys={def.keys} />;
+}
+
 const scopeLabel: Record<ShortcutScope, string> = {
   global: "Everywhere",
   reviews: "Reviews",
@@ -58,6 +84,28 @@ const scopeLabel: Record<ShortcutScope, string> = {
   default: "This view",
 };
 
+function groupRowsBySection(rows: ShortcutDefinition[]): {
+  sectionKey: ShortcutScope | "global";
+  heading: string;
+  rows: ShortcutDefinition[];
+}[] {
+  const groups: { sectionKey: ShortcutScope | "global"; heading: string; rows: ShortcutDefinition[] }[] = [];
+  for (const row of rows) {
+    const sectionKey = row.scope === "global" ? "global" : row.scope;
+    const heading =
+      sectionKey === "global"
+        ? scopeLabel.global
+        : scopeLabel[row.scope as ShortcutScope] ?? row.scope;
+    const last = groups[groups.length - 1];
+    if (!last || last.sectionKey !== sectionKey) {
+      groups.push({ sectionKey, heading, rows: [row] });
+    } else {
+      last.rows.push(row);
+    }
+  }
+  return groups;
+}
+
 interface ShortcutsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -67,57 +115,50 @@ interface ShortcutsModalProps {
 export function ShortcutsModal({ open, onOpenChange, currentView }: ShortcutsModalProps) {
   const scope = shortcutScopeFromView(currentView);
   const rows = shortcutsForModal(scope);
-
-  let lastSection: ShortcutScope | "global" | null = null;
+  const sectionGroups = groupRowsBySection(rows);
+  const mod = modifierLabel();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-h-[min(560px,85vh)] gap-0 overflow-hidden p-0 sm:max-w-lg"
+        className="max-h-[min(640px,90vh)] gap-0 overflow-hidden p-0 sm:max-w-5xl"
         data-shortcuts-ignore
       >
         <DialogHeader className="border-b border-border px-6 py-4 text-left">
           <DialogTitle>Keyboard shortcuts</DialogTitle>
           <DialogDescription className="text-left">
-            Press <KeySequence keys={["?"]} /> or <KeySequence keys={["⌘", "K"]} /> anytime to open this
-            panel. <span className="text-foreground/80">G</span> then a letter jumps to a main area.
+            Press ? or {mod}+K anytime to open this panel. Press G, then a letter, to jump to a main area.
           </DialogDescription>
         </DialogHeader>
-        <div className="max-h-[min(420px,65vh)] overflow-y-auto px-6 py-4">
-          <ul className="flex flex-col gap-2">
-            {rows.map((row) => {
-              const section = row.scope === "global" ? "global" : row.scope;
-              const showHeading = section !== lastSection;
-              lastSection = section;
-              const heading =
-                section === "global"
-                  ? scopeLabel.global
-                  : scopeLabel[row.scope as ShortcutScope] ?? row.scope;
-              return (
-                <li key={row.id}>
-                  {showHeading && (
-                    <p className="text-muted-foreground mb-2 mt-4 text-[11px] font-semibold uppercase tracking-wide first:mt-0">
-                      {heading}
-                    </p>
-                  )}
-                  <div className="flex items-start justify-between gap-4 py-1">
-                    <span className="text-foreground text-sm">{row.description}</span>
-                    <div className="flex shrink-0 flex-col items-end gap-1">
-                      {row.keys.length > 1 && row.id.startsWith("go-") ? (
-                        <span className="flex items-center gap-1">
-                          <KeyChip>G</KeyChip>
-                          <span className="text-muted-foreground text-xs">then</span>
-                          <KeyChip>{row.keys[1]}</KeyChip>
-                        </span>
-                      ) : (
-                        <KeySequence keys={row.keys} />
-                      )}
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+        <div className="max-h-[min(480px,70vh)] overflow-y-auto px-6 py-4">
+          <div className="flex flex-col gap-8">
+            {sectionGroups.map((group) => (
+              <section
+                key={group.sectionKey}
+                aria-label={group.heading}
+                className="flex flex-col gap-4"
+              >
+                <h2 className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
+                  {group.heading}
+                </h2>
+                <ul className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {group.rows.map((row) => (
+                    <li key={row.id} className="flex min-w-0 items-start gap-4">
+                      <div className="min-h-5 shrink-0 pt-1">
+                        <ShortcutKeys def={row} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-foreground text-sm font-semibold">{row.description}</p>
+                        {row.detail ? (
+                          <p className="text-muted-foreground mt-1 text-xs leading-snug">{row.detail}</p>
+                        ) : null}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

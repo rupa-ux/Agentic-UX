@@ -12,8 +12,20 @@ import type { AppView } from "../App";
 import { Button } from "@/app/components/ui/button";
 import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "./l1StripIconTokens";
 import { MonitorNotificationsTrigger } from "./MonitorNotificationsTrigger";
+import { AccountSettingsSheet } from "./settings/AccountSettingsSheet";
 import { useTheme, type ThemePreference } from "./useTheme";
-import { L2NavLayout, PANEL, ROW, HOVER, CHILD_ACTIVE, CHILD_INACTIVE, FOOTER_ROW_CLS, SECTION_HEADER } from "./L2NavLayout";
+import {
+  L2NavLayout,
+  PANEL,
+  ROW,
+  HOVER,
+  CHILD_ACTIVE,
+  CHILD_INACTIVE,
+  FOOTER_ROW_CLS,
+  SECTION_HEADER,
+  L2_HEADER_PLUS_WRAPPER_BLUE,
+  L2_HEADER_PLUS_GLYPH_BLUE,
+} from "./L2NavLayout";
 
 /** How long to show the Reports-row shimmer before opening the tab (~sub-second “micro” handoff). */
 export const REPORTS_EXTERNAL_SHIMMER_MS = 480;
@@ -58,11 +70,14 @@ interface IconStripProps {
   /** Icon size in px. Defaults to `L1_STRIP_ICON_SIZE` (16.2). */
   iconSize?: number;
   onOpenKeyboardShortcuts?: () => void;
+  /** Demo auth: clear session and show login (wired from App). */
+  onSignOut?: () => void;
 }
 
-export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_SIZE, onOpenKeyboardShortcuts }: IconStripProps) {
+export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_SIZE, onOpenKeyboardShortcuts, onSignOut }: IconStripProps) {
   const [activeIcon, setActiveIcon] = useState("Agents");
   const [profileOpen, setProfileOpen] = useState(false);
+  const [accountSheetOpen, setAccountSheetOpen] = useState(false);
   // Portal tooltip — fixed position so it escapes overflow-y: auto clipping
   const [tooltip, setTooltip] = useState<{ label: string; top: number } | null>(null);
 
@@ -283,7 +298,15 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                     </div>
                     {/* Menu items */}
                     <div className="py-1.5">
-                      <button className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAccountSheetOpen(true);
+                          setProfileOpen(false);
+                          setShowAppearance(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+                      >
                         <User className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
                         My profile
                       </button>
@@ -348,7 +371,15 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                       </button>
                     </div>
                     <div className="border-t border-[#f0f0f0] dark:border-[#333a47] py-1.5">
-                      <button className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#C62828] hover:bg-[#fce4ec] dark:hover:bg-[#352530] transition-colors">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfileOpen(false);
+                          setShowAppearance(false);
+                          onSignOut?.();
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#C62828] hover:bg-[#fce4ec] dark:hover:bg-[#352530] transition-colors"
+                      >
                         <LogOut className="w-4 h-4" />
                         Sign out
                       </button>
@@ -429,7 +460,15 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
         </div>
       </div>
 
-
+      <AccountSettingsSheet
+        open={accountSheetOpen}
+        onOpenChange={setAccountSheetOpen}
+        avatarUrl={avatarUrl}
+        onAvatarUpload={handleAvatarUpload}
+        defaultFirstName="John"
+        defaultLastName="Doe"
+        defaultEmail="john.doe@acmecorp.com"
+      />
     </div>
   );
 }
@@ -563,8 +602,8 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
           onClick={() => onViewChange("dashboard")}
         >
           <span className="text-[14px]">Create dashboard</span>
-          <div className="w-[18px] h-[18px] bg-[#1E44CC] rounded-full flex items-center justify-center shrink-0">
-            <span className="text-white text-[12px] leading-none select-none">+</span>
+          <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
+            <span className={L2_HEADER_PLUS_GLYPH_BLUE}>+</span>
           </div>
         </button>
 
@@ -579,8 +618,8 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
           onClick={() => onViewChange("dashboard")}
         >
           <span className="text-[14px]">Create report</span>
-          <div className="w-[18px] h-[18px] bg-[#1E44CC] rounded-full flex items-center justify-center shrink-0">
-            <span className="text-white text-[12px] leading-none select-none">+</span>
+          <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
+            <span className={L2_HEADER_PLUS_GLYPH_BLUE}>+</span>
           </div>
         </button>
 
@@ -823,7 +862,6 @@ export function CompetitorsL2NavPanel() {
    Inbox L2 Nav Panel – custom (not using L2NavLayout)
    ═══════════════════════════════════════════ */
 
-const GREEN_BTN = "w-[18px] h-[18px] bg-[#1E44CC] rounded-full flex items-center justify-center shrink-0";
 
 const inboxSections = [
   {
@@ -909,8 +947,8 @@ export function InboxL2NavPanel() {
         {/* Header: New message */}
         <button className={`${FOOTER_ROW_CLS} mb-[6px]`} style={{ fontSize: 14 }}>
           <span className="text-[14px]">New message</span>
-          <div className={GREEN_BTN}>
-            <span className="text-white text-[12px] leading-none select-none">+</span>
+          <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
+            <span className={L2_HEADER_PLUS_GLYPH_BLUE}>+</span>
           </div>
         </button>
 
@@ -953,8 +991,8 @@ export function InboxL2NavPanel() {
         {/* Internal team chat header */}
         <button className={`${FOOTER_ROW_CLS} mb-[6px]`} style={{ fontSize: 14 }}>
           <span className="text-[14px]">Internal team chat</span>
-          <div className={GREEN_BTN}>
-            <span className="text-white text-[12px] leading-none select-none">+</span>
+          <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
+            <span className={L2_HEADER_PLUS_GLYPH_BLUE}>+</span>
           </div>
         </button>
 

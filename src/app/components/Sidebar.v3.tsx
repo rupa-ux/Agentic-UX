@@ -13,7 +13,18 @@ import { Button } from "@/app/components/ui/button";
 import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "./l1StripIconTokens";
 import { MonitorNotificationsTrigger } from "./MonitorNotificationsTrigger";
 import { useTheme, type ThemePreference } from "./useTheme";
-import { L2NavLayout, PANEL, ROW, HOVER, CHILD_ACTIVE, CHILD_INACTIVE, FOOTER_ROW_CLS, SECTION_HEADER } from "./L2NavLayout";
+import {
+  L2NavLayout,
+  PANEL,
+  ROW,
+  HOVER,
+  CHILD_ACTIVE,
+  CHILD_INACTIVE,
+  FOOTER_ROW_CLS,
+  SECTION_HEADER,
+  L2_HEADER_PLUS_WRAPPER_BLUE,
+  L2_HEADER_PLUS_GLYPH_BLUE,
+} from "./L2NavLayout";
 
 export const REPORTS_EXTERNAL_SHIMMER_MS = 480;
 
@@ -45,9 +56,10 @@ interface IconStripProps {
   onViewChange: (view: AppView) => void;
   iconSize?: number;
   onOpenKeyboardShortcuts?: () => void;
+  onSignOut?: () => void;
 }
 
-export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_SIZE, onOpenKeyboardShortcuts }: IconStripProps) {
+export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_SIZE, onOpenKeyboardShortcuts, onSignOut }: IconStripProps) {
   const [activeIcon, setActiveIcon] = useState("BirdAI");
   const [profileOpen, setProfileOpen] = useState(false);
   const [showAppearance, setShowAppearance] = useState(false);
@@ -255,7 +267,15 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                       </button>
                     </div>
                     <div className="border-t border-border py-1.5">
-                      <button className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-destructive hover:bg-destructive/10 transition-colors">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfileOpen(false);
+                          setShowAppearance(false);
+                          onSignOut?.();
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-destructive hover:bg-destructive/10 transition-colors"
+                      >
                         <LogOut className="w-4 h-4" /> Sign out
                       </button>
                     </div>
@@ -472,12 +492,12 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: { curren
       <div className="flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
         <button type="button" className={`${FOOTER_ROW_CLS} mb-2`} style={{ fontSize: 14 }} onClick={() => onViewChange("dashboard")}>
           <span className="text-[14px]">Create dashboard</span>
-          <div className="w-[18px] h-[18px] bg-primary rounded-full flex items-center justify-center shrink-0"><span className="text-primary-foreground text-[12px] leading-none select-none">+</span></div>
+          <div className={L2_HEADER_PLUS_WRAPPER_BLUE}><span className={L2_HEADER_PLUS_GLYPH_BLUE}>+</span></div>
         </button>
         {dashboardSections.map(s => renderSection(s, dashboardExpanded, toggleDashboard))}
         <button type="button" className={`${FOOTER_ROW_CLS} mt-2 mb-2`} style={{ fontSize: 14 }} onClick={() => onViewChange("dashboard")}>
           <span className="text-[14px]">Create report</span>
-          <div className="w-[18px] h-[18px] bg-primary rounded-full flex items-center justify-center shrink-0"><span className="text-primary-foreground text-[12px] leading-none select-none">+</span></div>
+          <div className={L2_HEADER_PLUS_WRAPPER_BLUE}><span className={L2_HEADER_PLUS_GLYPH_BLUE}>+</span></div>
         </button>
         <div className="mt-2 flex flex-col gap-1">{reportCatalogSections.map(s => renderSection(s, reportExpanded, toggleReport))}</div>
       </div>

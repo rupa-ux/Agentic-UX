@@ -12,8 +12,13 @@ export type ShortcutScope =
 
 export interface ShortcutDefinition {
   id: string;
+  /** Single chord; not used for display when `keySequences` is set. */
   keys: string[];
+  /** Multiple alternative chords (e.g. ? vs ⌘K); each inner array is one chord. */
+  keySequences?: string[][];
   description: string;
+  /** Optional helper line under the title in the shortcuts modal. */
+  detail?: string;
   /** Shown in modal; global shortcuts always listed */
   scope: ShortcutScope;
 }
@@ -50,110 +55,122 @@ export function shortcutScopeFromView(view: string): ShortcutScope {
 export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
   {
     id: "open-help",
-    keys: ["?"],
+    keys: [],
+    keySequences: [["?"], ["⌘", "K"]],
     description: "Show keyboard shortcuts",
-    scope: "global",
-  },
-  {
-    id: "open-help-cmdk",
-    keys: ["⌘", "K"],
-    description: "Show keyboard shortcuts",
+    detail: "Open this panel from anywhere.",
     scope: "global",
   },
   {
     id: "go-ticketing",
     keys: ["G", "T"],
     description: "Go to Ticketing",
+    detail: "Jump to the ticketing workspace.",
     scope: "global",
   },
   {
     id: "go-reviews",
     keys: ["G", "V"],
     description: "Go to Reviews",
+    detail: "Jump to reviews.",
     scope: "global",
   },
   {
     id: "go-monitor",
     keys: ["G", "M"],
     description: "Go to BirdAI (Monitor)",
+    detail: "Jump to the BirdAI monitor.",
     scope: "global",
   },
   {
     id: "go-shared",
     keys: ["G", "P"],
     description: "Go to Shared by me",
+    detail: "Jump to content you have shared.",
     scope: "global",
   },
   {
     id: "go-overview",
     keys: ["G", "O"],
     description: "Go to Overview",
+    detail: "Jump to business overview.",
     scope: "global",
   },
   {
     id: "reviews-search",
     keys: ["/"],
     description: "Focus reviews search",
+    detail: "Move focus to the search field.",
     scope: "reviews",
   },
   {
     id: "reviews-filters",
     keys: ["F"],
     description: "Toggle review filters",
+    detail: "Show or hide filter controls.",
     scope: "reviews",
   },
   {
     id: "reviews-ai",
     keys: ["C"],
     description: "Focus AI reply assistant",
+    detail: "Move focus to the AI reply assistant.",
     scope: "reviews",
   },
   {
     id: "inbox-compose",
     keys: ["C"],
     description: "Focus message composer",
+    detail: "Move focus to the composer.",
     scope: "inbox",
   },
   {
     id: "inbox-search",
     keys: ["R"],
     description: "Focus conversation search",
+    detail: "Move focus to conversation search.",
     scope: "inbox",
   },
   {
     id: "agents-builder",
     keys: ["B"],
     description: "Open Agent builder",
+    detail: "Open the agent builder.",
     scope: "agents",
   },
   {
     id: "agents-home",
     keys: ["H"],
     description: "Open Myna monitor",
+    detail: "Return to the Myna monitor.",
     scope: "agents",
   },
   {
     id: "social-new",
     keys: ["N"],
     description: "New post (coming soon)",
+    detail: "Reserved for a new post flow.",
     scope: "social",
   },
   {
     id: "dashboard-refresh",
     keys: ["R"],
     description: "Refresh reports (coming soon)",
+    detail: "Reserved for refreshing reports.",
     scope: "dashboard",
   },
   {
     id: "ticketing-new",
     keys: ["N"],
     description: "New ticket (coming soon)",
+    detail: "Reserved for creating a ticket.",
     scope: "ticketing",
   },
   {
     id: "surveys-new",
     keys: ["N"],
     description: "New survey (coming soon)",
+    detail: "Reserved for creating a survey.",
     scope: "surveys",
   },
 ];

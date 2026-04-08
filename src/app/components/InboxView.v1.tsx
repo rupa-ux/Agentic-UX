@@ -11,11 +11,11 @@ import {
   MoreVertical,
   ChevronDown,
   ChevronRight,
-  Smile,
   Paperclip,
   Image as ImageIcon,
+  AtSign,
+  ArrowUp,
   Reply,
-  AlignLeft,
   MessageSquarePlus,
   Mail,
 } from "lucide-react";
@@ -394,66 +394,77 @@ function Composer({ textareaRef }: { textareaRef: RefObject<HTMLTextAreaElement 
     }
   }, [message, textareaRef]);
 
-  return (
-    <div className="border-t border-[#eaeaea] dark:border-[#333a47] bg-white dark:bg-[#1e2229] px-5 py-3 transition-colors duration-300">
-      {/* Channel selector */}
-      <div className="flex items-center gap-1 mb-2">
-        <button className="flex items-center gap-1 text-[13px] text-[#2552ED] hover:text-[#1E44CC] transition-colors">
-          <span style={{ fontWeight: 400 }}>Text</span>
-          <ChevronDown className="w-3.5 h-3.5" />
-        </button>
-      </div>
+  const canSend = Boolean(message.trim());
 
-      {/* Input area */}
-      <div className="bg-[#f8f9fa] dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-xl px-4 py-2.5 transition-colors duration-300 focus-within:border-[#2552ED] dark:focus-within:border-[#2552ED]">
+  return (
+    <div className="border-t border-[#eaeaea] dark:border-[#333a47] bg-white dark:bg-[#1e2229] px-4 py-4 transition-colors duration-300">
+      <div className="bg-[#f8f9fa] dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-xl px-4 py-2 transition-colors duration-300 focus-within:border-[#2552ED] dark:focus-within:border-[#2552ED]">
         <textarea
           ref={textareaRef}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type your message or use a template"
+          placeholder="Ask anything, use @ to tag files and collections"
           rows={1}
           className="w-full bg-transparent text-[14px] text-[#212121] dark:text-[#e4e4e4] placeholder:text-[#b0b0b0] dark:placeholder:text-[#4d5568] outline-none resize-none"
           style={{ fontWeight: 400 }}
         />
-      </div>
 
-      {/* Toolbar */}
-      <div className="flex items-center justify-between mt-2.5">
-        <div className="flex items-center gap-1">
-          {[
-            { Icon: AlignLeft, label: "Templates" },
-            { Icon: Smile, label: "Emoji" },
-            { Icon: Paperclip, label: "Attach" },
-            { Icon: Smile, label: "Sticker" },
-            { Icon: ImageIcon, label: "Image" },
-          ].map(({ Icon, label }, i) => (
+        <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#e5e9f0] dark:border-[#333a47]">
+          <div className="flex items-center gap-1">
             <Button
-              key={i}
               type="button"
               variant="ghost"
               size="icon"
-              className="rounded-lg hover:bg-[#f0f0f0] dark:hover:bg-[#2e3340]"
-              title={label}
+              className="rounded-lg hover:bg-[#eaecef] dark:hover:bg-[#2e3340]"
+              title="Attach"
             >
-              <Icon className="w-[14px] h-[14px] text-[#212121] dark:text-[#c0c6d4]" />
+              <Paperclip className="w-[14px] h-[14px] text-[#212121] dark:text-[#c0c6d4]" />
             </Button>
-          ))}
-        </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="rounded-lg hover:bg-[#eaecef] dark:hover:bg-[#2e3340]"
+              title="Image"
+            >
+              <ImageIcon className="w-[14px] h-[14px] text-[#212121] dark:text-[#c0c6d4]" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="rounded-lg hover:bg-[#eaecef] dark:hover:bg-[#2e3340]"
+              title="Mention"
+            >
+              <AtSign className="w-[14px] h-[14px] text-[#212121] dark:text-[#c0c6d4]" />
+            </Button>
+            <div
+              className="mx-1 h-4 w-px shrink-0 bg-[#e5e9f0] dark:bg-[#333a47]"
+              aria-hidden
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="rounded-lg hover:bg-[#eaecef] dark:hover:bg-[#2e3340]"
+              title="Settings"
+            >
+              <SlidersHorizontal className="w-[14px] h-[14px] text-[#212121] dark:text-[#c0c6d4]" />
+            </Button>
+          </div>
 
-        <Button
-          type="button"
-          className={`gap-1.5 rounded-lg pl-4 pr-1 text-[13px] font-normal text-white ${
-            message.trim()
-              ? "bg-[#2552ED] hover:bg-[#1E44CC]"
-              : "bg-[#2552ED]/70 hover:bg-[#2552ED]/75 dark:bg-[#2552ED]/50 dark:hover:bg-[#2552ED]/55"
-          }`}
-          style={{ fontWeight: 400 }}
-        >
-          Send
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white/15">
-            <ChevronDown className="w-3.5 h-3.5" />
-          </span>
-        </Button>
+          <Button
+            type="button"
+            aria-label="Send"
+            className={`h-10 w-10 shrink-0 rounded-lg p-0 text-white ${
+              canSend
+                ? "bg-[#2552ED] hover:bg-[#1E44CC]"
+                : "bg-[#2552ED]/70 hover:bg-[#2552ED]/75 dark:bg-[#2552ED]/50 dark:hover:bg-[#2552ED]/55"
+            }`}
+          >
+            <ArrowUp className="mx-auto h-4 w-4" strokeWidth={2} />
+          </Button>
+        </div>
       </div>
     </div>
   );
