@@ -1,5 +1,7 @@
 # Birdeye — Share & Customize Flow
 
+**GitHub:** https://github.com/balajik-cmyk/birdeyev2
+
 UI prototype for the Birdeye Share and Customize flow.
 Original Figma file: https://www.figma.com/design/khkMRKdBSWf0LF0NqAvoEe/Prototype-Share-and-Customize-Flow
 
@@ -9,12 +11,12 @@ Original Figma file: https://www.figma.com/design/khkMRKdBSWf0LF0NqAvoEe/Prototy
 
 **This repository is the single source of truth** for Storybook in this project: `.storybook/`, stories under `src/stories/`, and the documented UI. Host the canonical copy in **one** org or public GitHub repository so everyone clones the same remote. You do not need a separate “Storybook-only” repo unless your team splits the app and design system later—this repo is already the place to **pull, install, and run** Storybook.
 
-**Ownership:** Decide which account or org owns the official remote (for example your company org on GitHub). Document that URL in your internal wiki if needed; the clone URL is always `https://github.com/<org-or-user>/<repo>.git` or the SSH equivalent.
+**Canonical remote:** `https://github.com/balajik-cmyk/birdeyev2.git` (HTTPS) or `git@github.com:balajik-cmyk/birdeyev2.git` (SSH, using your usual GitHub host alias if you use one).
 
 **Private forks:** If someone works from a fork under their own account, add the canonical repo as **`upstream`** and pull from it to stay current:
 
 ```bash
-git remote add upstream https://github.com/<org-or-user>/<repo>.git
+git remote add upstream https://github.com/balajik-cmyk/birdeyev2.git
 git fetch upstream
 git checkout main   # or your default branch
 git pull upstream main
@@ -57,11 +59,11 @@ app view, design token, and copy guideline in one place.
 
 Use this when you open the project on a new machine or after cloning from the canonical remote.
 
-1. **Clone** the repository (replace the URL with your canonical remote).
+1. **Clone** the repository.
 
    ```bash
-   git clone https://github.com/<org-or-user>/<repo>.git
-   cd <repo>
+   git clone https://github.com/balajik-cmyk/birdeyev2.git
+   cd birdeyev2
    ```
 
 2. **Install** dependencies.
