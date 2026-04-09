@@ -50,6 +50,36 @@ Opens at `http://localhost:5173`
 
 ---
 
+## End-to-end tests (Playwright)
+
+Browser automation tests run against the **real Vite app**. They complement **Storybook**, which focuses on components, tokens, and isolated views—not full navigation in the running product.
+
+**First-time browser install** (if tests fail with a missing-browser error):
+
+```bash
+npx playwright install
+```
+
+On Linux CI agents, system deps are installed via `npx playwright install chromium --with-deps` (see [`.github/workflows/playwright.yml`](.github/workflows/playwright.yml)).
+
+**Commands** (see [`package.json`](package.json)):
+
+| Script | What it does |
+| --- | --- |
+| `npm run test:e2e` | Run all E2E tests (headless) |
+| `npm run test:e2e:ui` | Playwright UI mode |
+| `npm run test:e2e:headed` | Run with a visible browser |
+| `npm run test:e2e:debug` | Step through with the inspector |
+| `npm run test:e2e:report` | Open the last HTML report (`playwright show-report`) |
+
+**Where tests live:** `tests/` (`*.spec.ts`). [`playwright.config.ts`](playwright.config.ts) sets `baseURL` to the Vite dev server and starts it automatically via `webServer` (`npm run dev` on `http://127.0.0.1:5173`). You do not need to run `npm run dev` in a separate terminal unless you are debugging the app while writing tests.
+
+**CI:** GitHub Actions workflow [`.github/workflows/playwright.yml`](.github/workflows/playwright.yml) runs on **every push and pull request** (any branch), installs Chromium with `npm ci`, then `npx playwright test`. You can also run it **manually** from the Actions tab (**Run workflow**).
+
+API and fixtures: [Playwright Test docs](https://playwright.dev/docs/intro).
+
+---
+
 ## Storybook
 
 Storybook is the living design system for this project — every UI component,
