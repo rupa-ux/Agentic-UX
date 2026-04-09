@@ -17,7 +17,7 @@ export function LoginMarketingPanel({ className }: { className?: string }) {
         className,
       )}
     >
-      <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-b from-emerald-100/90 via-teal-200/80 to-cyan-800/90 dark:from-emerald-950/50 dark:via-teal-950/40 dark:to-slate-950/80">
+      <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-2xl bg-gradient-to-b from-emerald-100/90 via-teal-200/80 to-cyan-800/90 ring-1 ring-border/60 dark:from-emerald-950/50 dark:via-teal-950/40 dark:to-slate-950/80">
         <img
           src={HERO_IMAGE}
           alt=""
