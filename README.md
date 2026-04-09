@@ -1,15 +1,15 @@
-# Birdeye — Share & Customize Flow
+# Birdeye v2 — Share & Customize Flow
 
 **GitHub:** https://github.com/balajik-cmyk/birdeyev2
 
-UI prototype for the Birdeye Share and Customize flow.
+Birdeye v2 UI prototype for the Share and Customize flow (Bird AI shell).
 Original Figma file: https://www.figma.com/design/khkMRKdBSWf0LF0NqAvoEe/Prototype-Share-and-Customize-Flow
 
 ---
 
 ## Shared Storybook (canonical workflow)
 
-**This repository is the single source of truth** for Storybook in this project: `.storybook/`, stories under `src/stories/`, and the documented UI. Host the canonical copy in **one** org or public GitHub repository so everyone clones the same remote. You do not need a separate “Storybook-only” repo unless your team splits the app and design system later—this repo is already the place to **pull, install, and run** Storybook.
+**This repository is the single source of truth** for Storybook in **Birdeye v2**: `.storybook/`, stories under `src/stories/`, and the documented UI. Host the canonical copy in **one** org or public GitHub repository so everyone clones the same remote. You do not need a separate “Storybook-only” repo unless your team splits the app and design system later—this repo is already the place to **pull, install, and run** Storybook.
 
 **Canonical remote:** `https://github.com/balajik-cmyk/birdeyev2.git` (HTTPS) or `git@github.com:balajik-cmyk/birdeyev2.git` (SSH, using your usual GitHub host alias if you use one).
 
@@ -82,7 +82,7 @@ API and fixtures: [Playwright Test docs](https://playwright.dev/docs/intro).
 
 ## Storybook
 
-Storybook is the living design system for this project — every UI component,
+Storybook is the living design system for **Birdeye v2** — every UI component,
 app view, design token, and copy guideline in one place.
 
 ### Quick start (clone → install → run)
