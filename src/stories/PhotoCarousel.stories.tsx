@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, MessageCircle, MoreVertical, Send, Star } from "lucide-react";
+import { formatReviewDateRelative, ReviewBody } from "@/app/components/ReviewsView";
+import { ManusToolbarIconHit } from "@/app/components/ManusToolbarIconHit";
+import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 
 /* ── Real photo sets using Unsplash (food / restaurant theme) ── */
 const FOOD_PHOTOS = [
@@ -86,60 +89,60 @@ function PhotoCarousel({ photos, visibleCount = 4 }: { photos: string[]; visible
         />
       )}
 
-      <div className="relative w-full">
-        <div className="flex gap-[6px] overflow-hidden">
+      <div className="relative w-full min-w-0">
+        {canLeft ? (
+          <div
+            className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-14 rounded-l-lg bg-gradient-to-r from-background from-35% to-transparent dark:from-[#1e2229]"
+            aria-hidden
+          />
+        ) : null}
+        {canRight ? (
+          <div
+            className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-16 rounded-r-lg bg-gradient-to-l from-background from-35% to-transparent dark:from-[#1e2229]"
+            aria-hidden
+          />
+        ) : null}
+
+        <div className="flex gap-2 overflow-hidden rounded-lg">
           {visible.map((src, idx) => {
             const absIdx = offset + idx;
-            const isLast = idx === visible.length - 1 && canRight;
             return (
               <div
                 key={absIdx}
                 onClick={() => setLightboxIndex(absIdx)}
-                className="w-[180px] h-[120px] rounded-[6px] overflow-hidden shrink-0 relative cursor-pointer group/photo"
+                className="relative h-[120px] w-[180px] shrink-0 cursor-pointer overflow-hidden rounded-lg"
               >
                 <img
                   src={src}
                   alt={`Photo ${absIdx + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-200 group-hover/photo:scale-105"
+                  className="h-full w-full object-cover"
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).src =
                       `https://picsum.photos/seed/fallback${absIdx}/400/300`;
                   }}
                 />
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover/photo:bg-black/20 transition-colors duration-200 flex items-center justify-center">
-                  <span className="text-white text-xs opacity-0 group-hover/photo:opacity-100 transition-opacity">
-                    View
-                  </span>
-                </div>
-                <div className="absolute inset-0 border border-black/[0.06] rounded-[6px] pointer-events-none" />
-                {/* Right-edge fade on last photo when more exist */}
-                {isLast && (
-                  <div
-                    className="absolute inset-0 rounded-[6px]"
-                    style={{ backgroundImage: "linear-gradient(-90deg, rgba(20,20,20,0.85) 0%, transparent 60%)" }}
-                  />
-                )}
+                <div className="pointer-events-none absolute inset-0 rounded-lg border border-border shadow-sm" />
               </div>
             );
           })}
         </div>
 
-        {/* Prev / Next buttons */}
         {canLeft && (
           <button
-            onClick={() => setOffset(o => Math.max(0, o - 1))}
-            className="absolute left-2 top-1/2 -translate-y-1/2 size-[36px] rounded-full bg-white/70 dark:bg-black/50 border border-black/10 dark:border-white/20 flex items-center justify-center shadow-sm hover:bg-white dark:hover:bg-black/70 transition-all"
+            type="button"
+            onClick={() => setOffset((o) => Math.max(0, o - 1))}
+            className="absolute left-2 top-1/2 z-[2] flex size-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-muted dark:bg-[#1e2229]/90 dark:hover:bg-muted"
           >
-            <ChevronLeft className="w-4 h-4 text-[#212121] dark:text-white" />
+            <ChevronLeft className="size-5" aria-hidden />
           </button>
         )}
         {canRight && (
           <button
-            onClick={() => setOffset(o => Math.min(photos.length - visibleCount, o + 1))}
-            className="absolute right-2 top-1/2 -translate-y-1/2 size-[36px] rounded-full bg-white/70 dark:bg-black/50 border border-black/10 dark:border-white/20 flex items-center justify-center shadow-sm hover:bg-white dark:hover:bg-black/70 transition-all"
+            type="button"
+            onClick={() => setOffset((o) => Math.min(photos.length - visibleCount, o + 1))}
+            className="absolute right-2 top-1/2 z-[2] flex size-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-muted dark:bg-[#1e2229]/90 dark:hover:bg-muted"
           >
-            <ChevronRight className="w-4 h-4 text-[#212121] dark:text-white" />
+            <ChevronRight className="size-5" aria-hidden />
           </button>
         )}
       </div>
@@ -193,35 +196,98 @@ export const CustomVisibleCount: Story = {
   ),
 };
 
+/** Matches `ReviewCard` header: gold stars, relative date; `nowMs` fixed for stable Storybook copy. */
+function ReviewCardHeaderDemoStars({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-[2px] shrink-0" aria-hidden>
+      {Array.from({ length: 5 }).map((_, i) => {
+        const filled = i < rating;
+        return (
+          <Star
+            key={i}
+            className={`h-[14px] w-[14px] ${filled ? "fill-[#D4A017] stroke-[#D4A017]" : "fill-none stroke-[#D4A017]"}`}
+            strokeWidth={filled ? 0 : L1_STRIP_ICON_STROKE_PX}
+            absoluteStrokeWidth={!filled}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 export const InReviewCard: Story = {
   name: "In review card context",
-  render: () => (
-    <div className="max-w-[800px] bg-white dark:bg-card rounded-xl border border-border p-6 flex flex-col gap-4">
-      {/* Reviewer */}
-      <div className="flex items-center gap-2">
-        <div className="w-9 h-9 rounded-full bg-[#e1306c] flex items-center justify-center text-white text-sm shrink-0">A</div>
-        <div className="flex flex-col">
-          <span className="text-sm text-foreground">Arya Stark</span>
-          <span className="text-xs text-muted-foreground">Jan 7, 2023 · 12 Photos · Featured</span>
+  render: () => {
+    const storyNow = new Date("2026-04-09T12:00:00Z").getTime();
+    const posted = formatReviewDateRelative("Jan 7, 2023", storyNow);
+    return (
+      <div className="max-w-[800px] bg-white dark:bg-card rounded-xl border border-border p-6 flex flex-col gap-4">
+        <div className="flex w-full items-start justify-between gap-4">
+          <div className="flex min-w-0 items-start gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#e1306c] text-sm font-semibold text-white">
+              A
+            </div>
+            <div className="flex min-w-0 flex-col gap-1">
+              <span className="text-[13px] font-semibold leading-tight text-foreground">Arya Stark</span>
+              <div className="flex flex-wrap items-center gap-2 text-[12px]">
+                <ReviewCardHeaderDemoStars rating={5} />
+                <span className="text-[#555] dark:text-[#8b92a5]" title="Jan 7, 2023">
+                  {posted}
+                </span>
+                <div className="size-[3px] shrink-0 rounded-full bg-[#555] dark:bg-[#8b92a5]" />
+                <span className="text-[#555] dark:text-[#8b92a5]">12 photos</span>
+                <div className="size-[3px] shrink-0 rounded-full bg-[#555] dark:bg-[#8b92a5]" />
+                <div className="rounded-[4px] bg-[#eaeaea] px-2 py-0.5 dark:bg-[#333a47]">
+                  <span className="text-[12px] text-[#212121] dark:text-[#e4e4e4]">Featured</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-2 text-[12px] text-[#555] dark:text-[#8b92a5]">
+            <span className="whitespace-nowrap">2 employees</span>
+            <div className="size-[3px] shrink-0 rounded-full bg-[#555] dark:bg-[#8b92a5]" />
+            <span className="whitespace-nowrap">Georgia</span>
+          </div>
         </div>
-        <div className="ml-auto flex gap-0.5">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <span key={i} className="text-[#f59e0b] text-sm">★</span>
-          ))}
+        <ReviewBody text="I had a great time here, the place is situated near Wagle circle. It has top notch ambience and a really cool vibe. The food and drinks were pretty good and I would definitely recommend this to all the non veg lovers. The restaurant is pretty big and can accommodate a huge crowd with indoor as well as outdoor seating.\n\nMy personal favorites were the desserts, especially the DIY cake station where you pick toppings and sauces. The staff explained every course without rushing us, and water refills were constant without having to wave someone down. We also tried the chef’s special grill platter: smoky, tender, and seasoned well without hiding the ingredients.\n\nIf I had to nitpick, the music near the bar was a touch loud for conversation, but tables farther in were perfect. Parking nearby can fill up on weekends, so plan a few extra minutes. Overall this was one of the better dining experiences I have had in the area, and I would gladly return with friends or family. Would definitely visit again! ❤️" />
+        <PhotoCarousel photos={FOOD_PHOTOS} />
+        <div className="rounded-lg bg-muted/50 p-4 text-[13px] leading-[18px] text-muted-foreground">
+          <span className="text-[12px] text-muted-foreground">BirdAI suggested reply · </span>
+          We appreciate your feedback! Thank you for taking the time to share your experience with us.
+        </div>
+        <div className="flex w-full flex-wrap items-center gap-1">
+          <ManusToolbarIconHit aria-label="Post reply" title="Post reply">
+            <Send
+              width={L1_STRIP_ICON_SIZE}
+              height={L1_STRIP_ICON_SIZE}
+              strokeWidth={1.2}
+              absoluteStrokeWidth
+              className="shrink-0"
+              aria-hidden
+            />
+          </ManusToolbarIconHit>
+          <ManusToolbarIconHit aria-label="Open chat" title="Open chat">
+            <MessageCircle
+              width={L1_STRIP_ICON_SIZE}
+              height={L1_STRIP_ICON_SIZE}
+              strokeWidth={1.2}
+              absoluteStrokeWidth
+              className="shrink-0"
+              aria-hidden
+            />
+          </ManusToolbarIconHit>
+          <ManusToolbarIconHit aria-label="More actions" title="More actions">
+            <MoreVertical
+              width={L1_STRIP_ICON_SIZE}
+              height={L1_STRIP_ICON_SIZE}
+              strokeWidth={1.2}
+              absoluteStrokeWidth
+              className="shrink-0"
+              aria-hidden
+            />
+          </ManusToolbarIconHit>
         </div>
       </div>
-      {/* Review text */}
-      <p className="text-sm text-foreground leading-relaxed">
-        I had a great time here, the place is situated near Wagle circle. It has top notch ambience and a really cool vibe.
-        The food and drinks were pretty good and would definitely recommend this out to all the non veg lovers. ❤️
-      </p>
-      {/* Carousel */}
-      <PhotoCarousel photos={FOOD_PHOTOS} />
-      {/* Reply */}
-      <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
-        <span className="text-xs text-muted-foreground">BirdAI suggested reply · </span>
-        We appreciate your feedback! Thank you for taking the time to share your experience with us.
-      </div>
-    </div>
-  ),
+    );
+  },
 };

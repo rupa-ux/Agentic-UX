@@ -6,6 +6,11 @@ import { AICustomizePanel } from "./AICustomizePanel";
 import { ScheduleModal } from "./ScheduleModal";
 import { type DraftReport } from "./draftStore";
 import svgPaths from "../../imports/svg-mh0ycv9qll";
+import { cn } from "@/lib/utils";
+import {
+  FLOATING_PANEL_LIST_PADDING_CLASSNAME,
+  FLOATING_PANEL_SURFACE_CLASSNAME,
+} from "@/app/components/ui/floatingPanelSurface";
 
 // ─── Generate chart data for Mar 1–28 ───
 function generateChartData(series: { key: string; base: number; variance: number }[]) {
@@ -485,24 +490,30 @@ export function Dashboard({ aiPanelOpen, onAiPanelChange, editingDraft }: { aiPa
               <ChevronDown className="w-4 h-4 text-[#212121] dark:text-[#e4e4e4]" />
             </button>
             {shareDropdownOpen && (
-              <div className="absolute right-0 top-full mt-1 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-lg shadow-[0px_20px_34px_rgba(33,33,33,0.16)] dark:shadow-[0px_20px_34px_rgba(0,0,0,0.35)] z-20 min-w-[160px]">
+              <div
+                className={cn(
+                  "absolute right-0 top-full z-20 mt-1 flex min-w-[160px] flex-col gap-1",
+                  FLOATING_PANEL_SURFACE_CLASSNAME,
+                  FLOATING_PANEL_LIST_PADDING_CLASSNAME,
+                )}
+              >
                 <button
                   onClick={() => { setShareDropdownOpen(false); setShareModalOpen(true); }}
-                  className="w-full px-4 py-2.5 text-left text-[13px] text-[#1e1e1e] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] rounded-t-lg"
+                  className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-foreground transition-colors duration-150 hover:bg-muted"
                   style={{ fontWeight: 400 }}
                 >
                   Share report
                 </button>
                 <button
                   onClick={() => { setShareDropdownOpen(false); setAiEntryMode("share"); onAiPanelChange(true); }}
-                  className="w-full px-4 py-2.5 text-left text-[13px] text-[#1e1e1e] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
+                  className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-foreground transition-colors duration-150 hover:bg-muted"
                   style={{ fontWeight: 400 }}
                 >
                   Customize & share
                 </button>
                 <button
                   onClick={() => { setShareDropdownOpen(false); setScheduleModalOpen(true); }}
-                  className="w-full px-4 py-2.5 text-left text-[13px] text-[#1e1e1e] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] rounded-b-lg"
+                  className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-foreground transition-colors duration-150 hover:bg-muted"
                   style={{ fontWeight: 400 }}
                 >
                   Schedule

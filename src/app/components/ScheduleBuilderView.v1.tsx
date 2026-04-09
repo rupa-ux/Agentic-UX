@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/app/components/ui/button";
+import { InlineSelectField } from "@/app/components/ui/inline-select-field";
 
 /* ═══════════════════════════════════════════
    Types
@@ -146,42 +147,6 @@ const themes = ["Executive", "Modern", "Minimal", "Dark analytics", "Corporate",
 const layouts = ["Standard", "Compact", "Presentation", "Dashboard"];
 const fonts = ["Inter", "Roboto", "Helvetica", "Georgia", "Merriweather"];
 const spacings = ["Comfortable", "Compact", "Spacious"];
-
-/* ═══════════════════════════════════════════
-   Select field (reusable)
-   ═══════════════════════════════════════════ */
-function SelectField({ value, options, onChange }: { value: string; options: string[]; onChange: (v: string) => void }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative w-full">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] text-[12px] text-[#212121] dark:text-[#e4e4e4] hover:border-[#c0c6d4] dark:hover:border-[#4d5568] transition-colors"
-        style={{ fontWeight: 400 }}
-      >
-        <span>{value}</span>
-        <ChevronDown className={`w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] shadow-lg py-1 max-h-[180px] overflow-y-auto">
-            {options.map(opt => (
-              <button
-                key={opt}
-                onClick={() => { onChange(opt); setOpen(false); }}
-                className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors ${opt === value ? "text-[#2552ED]" : "text-[#212121] dark:text-[#e4e4e4]"}`}
-                style={{ fontWeight: 400 }}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
 
 /* ═══════════════════════════════════════════
    Left Panel – AI Mode
@@ -472,27 +437,27 @@ function TriggerConfig({ config, onChange }: { config: ScheduleConfig; onChange:
       </div>
       <div>
         <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Frequency</label>
-        <SelectField value={config.frequency.charAt(0).toUpperCase() + config.frequency.slice(1)} options={["Daily", "Weekly", "Monthly"]} onChange={v => onChange({ ...config, frequency: v.toLowerCase() as Frequency })} />
+        <InlineSelectField value={config.frequency.charAt(0).toUpperCase() + config.frequency.slice(1)} options={["Daily", "Weekly", "Monthly"]} onChange={v => onChange({ ...config, frequency: v.toLowerCase() as Frequency })} />
       </div>
       {config.frequency === "weekly" && (
         <div>
           <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Day of week</label>
-          <SelectField value={config.dayOfWeek} options={["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]} onChange={v => onChange({ ...config, dayOfWeek: v })} />
+          <InlineSelectField value={config.dayOfWeek} options={["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]} onChange={v => onChange({ ...config, dayOfWeek: v })} />
         </div>
       )}
       {config.frequency === "monthly" && (
         <div>
           <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Day of month</label>
-          <SelectField value={config.dayOfMonth} options={["1st", "5th", "10th", "15th", "20th", "25th", "Last day"]} onChange={v => onChange({ ...config, dayOfMonth: v })} />
+          <InlineSelectField value={config.dayOfMonth} options={["1st", "5th", "10th", "15th", "20th", "25th", "Last day"]} onChange={v => onChange({ ...config, dayOfMonth: v })} />
         </div>
       )}
       <div>
         <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Time</label>
-        <SelectField value={config.time} options={["6:00 AM", "7:00 AM", "7:30 AM", "8:00 AM", "9:00 AM", "10:00 AM", "12:00 PM", "2:00 PM", "5:00 PM"]} onChange={v => onChange({ ...config, time: v })} />
+        <InlineSelectField value={config.time} options={["6:00 AM", "7:00 AM", "7:30 AM", "8:00 AM", "9:00 AM", "10:00 AM", "12:00 PM", "2:00 PM", "5:00 PM"]} onChange={v => onChange({ ...config, time: v })} />
       </div>
       <div>
         <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Timezone</label>
-        <SelectField value={config.timezone} options={timezones} onChange={v => onChange({ ...config, timezone: v })} />
+        <InlineSelectField value={config.timezone} options={timezones} onChange={v => onChange({ ...config, timezone: v })} />
       </div>
     </div>
   );
@@ -565,19 +530,19 @@ function CustomizeConfig({ config, onChange }: { config: CustomizationConfig; on
     <div className="space-y-4">
       <div>
         <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Theme</label>
-        <SelectField value={config.theme} options={themes} onChange={v => onChange({ ...config, theme: v })} />
+        <InlineSelectField value={config.theme} options={themes} onChange={v => onChange({ ...config, theme: v })} />
       </div>
       <div>
         <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Layout</label>
-        <SelectField value={config.layout} options={layouts} onChange={v => onChange({ ...config, layout: v })} />
+        <InlineSelectField value={config.layout} options={layouts} onChange={v => onChange({ ...config, layout: v })} />
       </div>
       <div>
         <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Font</label>
-        <SelectField value={config.font} options={fonts} onChange={v => onChange({ ...config, font: v })} />
+        <InlineSelectField value={config.font} options={fonts} onChange={v => onChange({ ...config, font: v })} />
       </div>
       <div>
         <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Spacing</label>
-        <SelectField value={config.spacing} options={spacings} onChange={v => onChange({ ...config, spacing: v })} />
+        <InlineSelectField value={config.spacing} options={spacings} onChange={v => onChange({ ...config, spacing: v })} />
       </div>
       <div className="flex items-center justify-between">
         <span className="text-[12px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>Page cover</span>
@@ -607,7 +572,7 @@ function SummaryConfig() {
     <div className="space-y-4">
       <div>
         <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Summary type</label>
-        <SelectField value={summaryType} options={["Executive", "Detailed", "Key metrics only", "Custom"]} onChange={setSummaryType} />
+        <InlineSelectField value={summaryType} options={["Executive", "Detailed", "Key metrics only", "Custom"]} onChange={setSummaryType} />
       </div>
       <div className="bg-[#f8f9fb] dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] p-3">
         <div className="flex items-center gap-1.5 mb-2">

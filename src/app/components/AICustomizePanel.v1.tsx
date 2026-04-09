@@ -11,6 +11,7 @@ import {
   PromptInputAction,
 } from "./ui/prompt-input";
 import { Button } from "@/app/components/ui/button";
+import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 
 import imgCover from "figma:asset/cf41ec9f747e1d47078180a05f5f2ca35443cb9a.png";
 import reportSvg from "../../imports/svg-ps6vzxz3zm";
@@ -1220,7 +1221,7 @@ export function AICustomizePanel({ onClose, themeColor, onThemeColorChange, show
                         }`}
                         title="Send message"
                       >
-                        <ArrowUp className={`w-[14px] h-[14px] ${input.trim() ? "text-white" : "text-[#bbb] dark:text-[#4d5568]"}`} strokeWidth={2.5} />
+                        <ArrowUp className={`w-[14px] h-[14px] ${input.trim() ? "text-white" : "text-[#bbb] dark:text-[#4d5568]"}`} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
                       </Button>
                     )}
                   </PromptInputActions>

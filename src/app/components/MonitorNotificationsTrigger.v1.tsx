@@ -3,6 +3,7 @@ import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1
 import { Button } from "@/app/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import { cn } from "@/app/components/ui/utils";
+import { FLOATING_PANEL_SURFACE_CLASSNAME } from "@/app/components/ui/floatingPanelSurface";
 import { useMonitorNotifications } from "@/app/context/MonitorNotificationsContext";
 
 /**
@@ -67,7 +68,8 @@ export function MonitorNotificationsTrigger() {
         sideOffset={8}
         aria-label="Notifications"
         className={cn(
-          "w-[min(400px,calc(100vw-88px))] max-h-[min(480px,70vh)] p-0 flex flex-col overflow-hidden rounded-xl border-0 shadow-sm z-[100]",
+          FLOATING_PANEL_SURFACE_CLASSNAME,
+          "z-[100] flex max-h-[min(480px,70vh)] w-[min(400px,calc(100vw-88px))] flex-col overflow-hidden p-0",
         )}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">

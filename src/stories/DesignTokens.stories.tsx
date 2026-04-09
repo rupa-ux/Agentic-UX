@@ -2,7 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta = {
   title: "Design System/Tokens",
-  parameters: { layout: "padded" },
+  parameters: {
+    layout: "padded",
+    docs: {
+      description: {
+        component:
+          "Before adding new UI primitives or Storybook stories, read **Design System → Before you add a component** (checklist + Sheet/floating panels).",
+      },
+    },
+  },
 };
 
 export default meta;
@@ -512,6 +520,8 @@ export const ElevationMap: Story = {
    Every interactive button in the product must use these heights.
    ══════════════════════════════════════════════════════ */
 import { Button } from "@/app/components/ui/button";
+import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
+import { Star } from "lucide-react";
 
 export const ButtonSystem: Story = {
   name: "Button System",
@@ -530,9 +540,19 @@ export const ButtonSystem: Story = {
               </tr>
             </thead>
             <tbody>
+              <tr className="border-b border-border hover:bg-muted/30 transition-colors">
+                <td className="px-4 py-2 font-mono text-xs text-primary">--button-height-xs</td>
+                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">24px</td>
+                <td className="px-4 py-2 text-xs text-muted-foreground">iconXs</td>
+                <td className="px-4 py-2">
+                  <Button size="iconXs" variant="outline" aria-label="24px icon button">
+                    <span className="font-mono text-[10px] leading-none">24</span>
+                  </Button>
+                </td>
+              </tr>
               {[
                 { token: "--button-height-sm", value: "32px", size: "sm",      label: "Small" },
-                { token: "--button-height",    value: "38px", size: "default", label: "Default" },
+                { token: "--button-height",    value: "34px", size: "default", label: "Default" },
                 { token: "--button-height-lg", value: "44px", size: "lg",      label: "Large" },
               ].map(({ token, value, size, label }) => (
                 <tr key={token} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
@@ -550,7 +570,7 @@ export const ButtonSystem: Story = {
       </div>
 
       <div>
-        <SectionLabel>All variants at 38px default height</SectionLabel>
+        <SectionLabel>All variants at default height (34px)</SectionLabel>
         <div className="flex flex-wrap gap-4 items-center">
           {(["default","secondary","outline","ghost","destructive","link"] as const).map(v => (
             <Button key={v} variant={v}>{v.charAt(0).toUpperCase() + v.slice(1)}</Button>
@@ -562,12 +582,18 @@ export const ButtonSystem: Story = {
         <SectionLabel>Size comparison</SectionLabel>
         <div className="flex flex-wrap gap-4 items-end">
           <div className="flex flex-col items-center gap-1">
+            <Button size="iconXs" variant="outline" aria-label="24px">
+              <span className="font-mono text-[10px] leading-none">24</span>
+            </Button>
+            <span className="font-mono text-[10px] text-muted-foreground">24px (iconXs)</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
             <Button size="sm">Small — 32px</Button>
             <span className="font-mono text-[10px] text-muted-foreground">h: 32px</span>
           </div>
           <div className="flex flex-col items-center gap-1">
-            <Button size="default">Default — 38px</Button>
-            <span className="font-mono text-[10px] text-muted-foreground">h: 38px</span>
+            <Button size="default">Default — 34px</Button>
+            <span className="font-mono text-[10px] text-muted-foreground">h: 34px</span>
           </div>
           <div className="flex flex-col items-center gap-1">
             <Button size="lg">Large — 44px</Button>
@@ -575,7 +601,7 @@ export const ButtonSystem: Story = {
           </div>
           <div className="flex flex-col items-center gap-1">
             <Button size="icon">⊕</Button>
-            <span className="font-mono text-[10px] text-muted-foreground">h: 38px</span>
+            <span className="font-mono text-[10px] text-muted-foreground">34px (icon)</span>
           </div>
         </div>
       </div>
@@ -612,6 +638,66 @@ export const ButtonSystem: Story = {
         </div>
       </div>
 
+    </div>
+  ),
+};
+
+/* ══════════════════════════════════════════════════════
+   ICON STROKE (Lucide / product icons)
+   ══════════════════════════════════════════════════════ */
+
+export const IconStroke: Story = {
+  name: "Icon stroke",
+  render: () => (
+    <div className="flex flex-col gap-10 max-w-2xl">
+      <div>
+        <SectionLabel>Product outline icons — 1.2px</SectionLabel>
+        <p className="text-sm text-muted-foreground max-w-xl mb-4">
+          Hand-written UI icons (Lucide, Phosphor on the L1 rail) use{" "}
+          <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">L1_STRIP_ICON_STROKE_PX</code>{" "}
+          (<strong>{L1_STRIP_ICON_STROKE_PX}px</strong>) from{" "}
+          <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">l1StripIconTokens.ts</code>.
+          Lucide defaults to a heavier stroke; do not rely on that for new product UI.
+        </p>
+        <ul className="text-sm text-foreground max-w-xl list-disc pl-4 space-y-2 mb-6">
+          <li>
+            Pass <code className="font-mono text-xs bg-muted px-1 rounded">strokeWidth=&#123;L1_STRIP_ICON_STROKE_PX&#125;</code>{" "}
+            (or literal <code className="font-mono text-xs bg-muted px-1 rounded">1.2</code>).
+          </li>
+          <li>
+            When width/height are not the default 24px, add{" "}
+            <code className="font-mono text-xs bg-muted px-1 rounded">absoluteStrokeWidth</code>{" "}
+            so the stroke stays 1.2px on screen (see JSDoc in the tokens file).
+          </li>
+          <li>
+            <code className="font-mono text-xs bg-muted px-1 rounded">strokeWidth=&#123;0&#125;</code>{" "}
+            is fine for filled-only glyphs (e.g. filled stars).
+          </li>
+          <li>
+            Not applicable: Recharts <code className="font-mono text-xs bg-muted px-1 rounded">strokeWidth</code> on lines/areas, and generated SVG under{" "}
+            <code className="font-mono text-xs bg-muted px-1 rounded">src/imports/</code>.
+          </li>
+        </ul>
+        <div className="flex flex-wrap items-end gap-6">
+          <div className="flex flex-col gap-2 items-center">
+            <Star
+              className="h-6 w-6 text-foreground fill-none stroke-current"
+              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              absoluteStrokeWidth
+              aria-hidden
+            />
+            <span className="font-mono text-[10px] text-muted-foreground">16px + absoluteStrokeWidth</span>
+          </div>
+          <div className="flex flex-col gap-2 items-center">
+            <Star
+              className="h-6 w-6 text-foreground fill-[#D4A017] stroke-[#D4A017]"
+              strokeWidth={0}
+              aria-hidden
+            />
+            <span className="font-mono text-[10px] text-muted-foreground">Filled — stroke 0</span>
+          </div>
+        </div>
+      </div>
     </div>
   ),
 };

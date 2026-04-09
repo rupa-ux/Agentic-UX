@@ -24,6 +24,8 @@ const buttonVariants = cva(
         default: "h-[var(--button-height)] px-4 has-[>svg]:px-3",
         sm: "h-[var(--button-height-sm)] rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
         lg: "h-[var(--button-height-lg)] rounded-md px-6 has-[>svg]:px-4",
+        /** 24px square — matches `--button-height-xs` (e.g. sidebar avatar). */
+        iconXs: "size-[var(--button-height-xs)] rounded-md",
         icon: "size-[var(--button-height)] rounded-md",
       },
     },

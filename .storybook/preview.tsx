@@ -30,6 +30,13 @@ const preview: Preview = {
     },
     // Remove the default backgrounds addon — theme is controlled by the toolbar above
     backgrounds: { disable: true },
+    options: {
+      // Serializable form only — Storybook evals this; no arrow functions here.
+      storySort: {
+        method: "alphabetical",
+        order: ["Design System", "UI", "App", "Content"],
+      },
+    },
   },
   decorators: [
     (Story, context) => {

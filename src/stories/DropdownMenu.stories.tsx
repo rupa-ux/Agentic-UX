@@ -19,6 +19,14 @@ import { ChevronDown, Copy, Edit, Share, Trash, User } from "lucide-react";
 const meta: Meta = {
   title: "UI/DropdownMenu",
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "**DropdownMenuContent** uses the same floating shell as **Popover** (`FLOATING_PANEL_SURFACE_CLASSNAME` + list inset padding). Items use rounded `lg` rows and `muted` highlight to match the profile menu pattern.",
+      },
+    },
+  },
 };
 
 export default meta;

@@ -3,10 +3,12 @@ import { Upload } from "lucide-react";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
+  type SheetFloatingSize,
 } from "@/app/components/ui/sheet";
+import {
+  FLOATING_SHEET_FRAME_CONTENT_CLASS,
+  FloatingSheetFrame,
+} from "@/app/components/layout/FloatingSheetFrame";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
@@ -24,11 +26,13 @@ export type AccountSettingsSheetProps = {
   defaultLastName?: string;
   defaultEmail?: string;
   className?: string;
+  /** Floating panel width; account settings use **medium** (480px) in product. */
+  floatingSize?: SheetFloatingSize;
 };
 
 /**
- * Account settings (profile + password) in a right-side sheet, using design tokens for light/dark.
- * Body content stays inside sheet content so it remains within the drawer and scrolls there.
+ * Account settings (profile + password) in a right-side floating sheet, using design tokens for
+ * light/dark. **`FloatingSheetFrame`** keeps the header and footer fixed; the form scrolls in the body.
  */
 export function AccountSettingsSheet({
   open,
@@ -39,6 +43,7 @@ export function AccountSettingsSheet({
   defaultLastName = "Doe",
   defaultEmail = "john.doe@acmecorp.com",
   className,
+  floatingSize = "md",
 }: AccountSettingsSheetProps) {
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -47,19 +52,15 @@ export function AccountSettingsSheet({
       <SheetContent
         side="right"
         inset="floating"
-        className={cn("gap-0 p-0", className)}
+        floatingSize={floatingSize}
+        className={cn(FLOATING_SHEET_FRAME_CONTENT_CLASS, className)}
       >
-        <div className="px-6 pb-8 pt-4 pr-14">
-          <SheetHeader className="gap-2 p-0 text-left">
-            <SheetTitle className="text-xl font-semibold tracking-tight">
-              Account
-            </SheetTitle>
-            <SheetDescription>
-              Update your profile and personal details here
-            </SheetDescription>
-          </SheetHeader>
-
-          <div className="mt-8 flex flex-col gap-8">
+        <FloatingSheetFrame
+          title="Account"
+          description="Update your profile and personal details here"
+          primaryAction={{ label: "Change password" }}
+        >
+          <div className="flex flex-col gap-8 pb-4">
             <section className="flex flex-col gap-6" aria-labelledby="account-profile-heading">
               <h2
                 id="account-profile-heading"
@@ -186,13 +187,10 @@ export function AccountSettingsSheet({
                   />
                 </div>
 
-                <div className="flex justify-end pt-2">
-                  <Button type="button">Change password</Button>
-                </div>
               </div>
             </section>
           </div>
-        </div>
+        </FloatingSheetFrame>
       </SheetContent>
     </Sheet>
   );

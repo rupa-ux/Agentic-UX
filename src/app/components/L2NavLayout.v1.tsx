@@ -59,17 +59,17 @@ export const FOOTER_ROW_CLS    = `${ROW} ${HOVER} text-[#212121] dark:text-[#e4e
 /** Muted band on main content (e.g. Monitor hero) — aligns with L2 gray family, borderless. */
 export const L2_CONTENT_MUTED_BAND = "bg-[#f2f3f6] dark:bg-[#252b34]";
 
-/** L2 header row “+” — soft primary tint + primary glyph (shared across L2 panels + custom sidebars). */
+/** L2 header row “+” — primary tint + primary glyph; soft lift (shared across L2 + custom sidebars). */
 export const L2_HEADER_PLUS_WRAPPER_BLUE =
-  "w-[18px] h-[18px] bg-primary/15 dark:bg-primary/20 rounded-full flex items-center justify-center shrink-0";
+  "w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-primary/15 dark:bg-primary/20 shadow-[0_1px_2px_rgba(15,23,42,0.06)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.35)]";
 export const L2_HEADER_PLUS_GLYPH_BLUE =
-  "text-primary text-[12px] leading-none select-none";
+  "text-primary text-base font-medium leading-none select-none";
 
 /** Same shape for `headerActionColor="green"` (pale green surface + darker plus). */
 export const L2_HEADER_PLUS_WRAPPER_GREEN =
-  "w-[18px] h-[18px] bg-[#4caf50]/20 dark:bg-[#4caf50]/25 rounded-full flex items-center justify-center shrink-0";
+  "w-8 h-8 bg-[#4caf50]/20 dark:bg-[#4caf50]/25 rounded-full flex items-center justify-center shrink-0";
 export const L2_HEADER_PLUS_GLYPH_GREEN =
-  "text-[#1b5e20] dark:text-[#a5d6a7] text-[12px] leading-none select-none";
+  "text-[#1b5e20] dark:text-[#a5d6a7] text-base leading-none select-none";
 
 /* ─────────────────────────────────────────────────────
    Types

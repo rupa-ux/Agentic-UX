@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
 import {
-  ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Clock, ExternalLink, Keyboard, Sparkles,
+  ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Sparkles,
 } from "lucide-react";
 import {
   ChatDots, MapPin, Star, Gift, CurrencyDollar,
@@ -10,6 +10,7 @@ import {
 import svgPaths from "../../imports/svg-y1gexucine";
 import type { AppView } from "../App";
 import { Button } from "@/app/components/ui/button";
+import { FLOATING_PANEL_SURFACE_CLASSNAME } from "@/app/components/ui/floatingPanelSurface";
 import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "./l1StripIconTokens";
 import { MonitorNotificationsTrigger } from "./MonitorNotificationsTrigger";
 import { AccountSettingsSheet } from "./settings/AccountSettingsSheet";
@@ -243,21 +244,21 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
           <Button
             type="button"
             variant="ghost"
-            size="icon"
+            size="iconXs"
             onClick={() => {
               setProfileOpen(!profileOpen);
               if (profileOpen) setShowAppearance(false);
             }}
-            className="relative shrink-0 cursor-pointer overflow-hidden rounded-full p-0 shadow-sm ring-2 ring-white/80 transition-all hover:ring-white dark:ring-[#3d4555] dark:hover:ring-[#4d5568]"
+            className="relative min-h-0 min-w-0 shrink-0 cursor-pointer overflow-hidden rounded-full p-0 shadow-sm ring-2 ring-white/80 transition-all hover:ring-white dark:ring-[#3d4555] dark:hover:ring-[#4d5568]"
           >
             <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" />
-            {/* Online indicator */}
-            <span className="absolute bottom-[1px] right-[1px] h-[10px] w-[10px] rounded-full border-2 border-[#e0e5eb] bg-[#4caf50] dark:border-[#181b22]" />
           </Button>
 
           {/* Dropdown - opens UPWARD from bottom-left */}
           {profileOpen && (
-            <div className="absolute left-[calc(100%+8px)] bottom-0 bg-white dark:bg-[#22262f] rounded-xl shadow-[0px_4px_24px_rgba(0,0,0,0.14)] dark:shadow-[0px_4px_24px_rgba(0,0,0,0.4)] border border-[#e8eaed] dark:border-[#333a47] w-[260px] z-50 overflow-hidden transition-colors duration-300">
+            <div
+              className={`absolute bottom-0 left-[calc(100%+8px)] z-50 w-[260px] overflow-hidden transition-colors duration-300 ${FLOATING_PANEL_SURFACE_CLASSNAME}`}
+            >
               {/* Slide between main menu and appearance sub-panel */}
               <div className="relative overflow-hidden">
                 <div
@@ -266,8 +267,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                 >
                   {/* ─── Main menu panel ─── */}
                   <div className="w-full shrink-0">
-                    {/* Profile header */}
-                    <div className="px-4 py-3 border-b border-[#f0f0f0] dark:border-[#333a47]">
+                    {/* Profile header — inset from card edge (Subframe-style shell) */}
+                    <div className="px-4 pb-2 pt-4">
                       <div className="flex items-center gap-3">
                         <div className="relative group shrink-0">
                           <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-[#e8eaed] dark:ring-[#3d4555]">
@@ -296,8 +297,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                         </div>
                       </div>
                     </div>
-                    {/* Menu items */}
-                    <div className="py-1.5">
+                    {/* Text-only rows: inset pill hovers (Subframe-style), no icons */}
+                    <div className="flex flex-col gap-1 px-2 pb-3">
                       <button
                         type="button"
                         onClick={() => {
@@ -305,43 +306,44 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                           setProfileOpen(false);
                           setShowAppearance(false);
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
                       >
-                        <User className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
                         My profile
                       </button>
                       <button
+                        type="button"
                         onClick={() => {
                           onViewChange("shared-by-me");
                           setProfileOpen(false);
                           setShowAppearance(false);
                         }}
-                        className={`w-full flex items-center gap-3 px-4 py-2 text-[13px] transition-colors ${
+                        className={`w-full rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150 ${
                           currentView === "shared-by-me"
-                            ? "text-[#2552ED] bg-[#e8effe] dark:bg-[#1e2d5e]"
-                            : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
+                            ? "bg-[#e8effe] text-[#2552ED] dark:bg-[#1e2d5e] dark:text-[#6b9bff]"
+                            : "text-[#212121] hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
                         }`}
                       >
-                        <Share2 className="w-4 h-4" style={{ color: currentView === "shared-by-me" ? "#2552ED" : undefined }} />
                         Shared by me
                       </button>
                       <button
+                        type="button"
                         onClick={() => {
                           onViewChange("scheduled-deliveries");
                           setProfileOpen(false);
                           setShowAppearance(false);
                         }}
-                        className={`w-full flex items-center gap-3 px-4 py-2 text-[13px] transition-colors ${
+                        className={`w-full rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150 ${
                           currentView === "scheduled-deliveries"
-                            ? "text-[#2552ED] bg-[#e8effe] dark:bg-[#1e2d5e]"
-                            : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
+                            ? "bg-[#e8effe] text-[#2552ED] dark:bg-[#1e2d5e] dark:text-[#6b9bff]"
+                            : "text-[#212121] hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
                         }`}
                       >
-                        <Clock className="w-4 h-4" style={{ color: currentView === "scheduled-deliveries" ? "#2552ED" : undefined }} />
                         Scheduled deliveries
                       </button>
-                      <button className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
-                        <Settings className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
+                      <button
+                        type="button"
+                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
+                      >
                         Settings
                       </button>
                       {onOpenKeyboardShortcuts && (
@@ -352,25 +354,18 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                             setProfileOpen(false);
                             setShowAppearance(false);
                           }}
-                          className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+                          className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
                         >
-                          <Keyboard className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
                           Keyboard shortcuts
                         </button>
                       )}
-                      {/* Switch appearance – navigates to sub-panel */}
                       <button
+                        type="button"
                         onClick={() => setShowAppearance(true)}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
                       >
-                        <Moon
-                          className="w-4 h-4 text-[#555] dark:text-[#8b92a5] transition-transform duration-500"
-                          style={{ transform: isDark ? "rotate(-30deg)" : "rotate(0deg)" }}
-                        />
                         Switch appearance
                       </button>
-                    </div>
-                    <div className="border-t border-[#f0f0f0] dark:border-[#333a47] py-1.5">
                       <button
                         type="button"
                         onClick={() => {
@@ -378,9 +373,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                           setShowAppearance(false);
                           onSignOut?.();
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#C62828] hover:bg-[#fce4ec] dark:hover:bg-[#352530] transition-colors"
+                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-[#C62828] transition-colors duration-150 hover:bg-[#fce4ec] dark:hover:bg-[#3d2528]"
                       >
-                        <LogOut className="w-4 h-4" />
                         Sign out
                       </button>
                     </div>
@@ -389,7 +383,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                   {/* ─── Appearance sub-panel ─── */}
                   <div className="w-full shrink-0">
                     {/* Header row */}
-                    <div className="flex items-center gap-2.5 px-3 py-3 border-b border-[#f0f0f0] dark:border-[#333a47]">
+                    <div className="flex items-center gap-2 border-b border-[#f0f0f0] px-4 py-2 dark:border-[#333a47]">
                       <Button
                         type="button"
                         variant="outline"
@@ -407,8 +401,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                         style={{ transform: isDark ? "rotate(-30deg)" : "rotate(0deg)" }}
                       />
                     </div>
-                    {/* Theme options */}
-                    <div className="py-2">
+                    {/* Theme options — same inset pill rows as main profile menu */}
+                    <div className="flex flex-col gap-1 px-2 pb-3 pt-1">
                       {([
                         { value: "light" as ThemePreference, label: "Light", Icon: Sun },
                         { value: "dark" as ThemePreference, label: "Dark", Icon: Moon },
@@ -419,10 +413,10 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                           <button
                             key={value}
                             onClick={() => setPreference(value)}
-                            className={`w-full flex items-center justify-between px-4 py-2.5 text-[13px] transition-colors ${
+                            className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-[13px] transition-colors duration-150 ${
                               isSelected
-                                ? "text-[#2552ED] bg-[#e8effe] dark:bg-[#1e2d5e]"
-                                : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
+                                ? "bg-[#e8effe] text-[#2552ED] dark:bg-[#1e2d5e] dark:text-[#6b9bff]"
+                                : "text-[#212121] hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
                             }`}
                           >
                             <span className="flex items-center gap-3">

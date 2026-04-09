@@ -7,7 +7,9 @@ import {
   LineChart, Line,
   ComposedChart,
 } from "recharts";
-import imgMap from "figma:asset/bf80a96c14e50ef92a57fc0098164cd207b9809f.png";
+/** Map placeholder — Figma export not in repo; use a stable remote map-style image for production builds. */
+const imgMap =
+  "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200&h=800&fit=crop&auto=format";
 
 /* ─── Platform Tabs ─── */
 const platformTabs = ["ChatGPT", "Gemini", "Perplexity", "Google AI Mode", "Google AI Overviews", "All sites"] as const;

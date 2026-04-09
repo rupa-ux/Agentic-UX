@@ -85,6 +85,8 @@ API and fixtures: [Playwright Test docs](https://playwright.dev/docs/intro).
 Storybook is the living design system for **Birdeye v2** — every UI component,
 app view, design token, and copy guideline in one place.
 
+**New UI in Storybook:** follow **Design System → Before you add a component** so new primitives reuse or extend existing ones (floating side panels use **UI/Sheet**).
+
 ### Quick start (clone → install → run)
 
 Use this when you open the project on a new machine or after cloning from the canonical remote.

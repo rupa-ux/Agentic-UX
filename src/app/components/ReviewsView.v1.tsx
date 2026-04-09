@@ -1,10 +1,21 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   REVIEWS_SHORTCUT_EVENT,
   type ReviewsShortcutAction,
 } from "@/app/shortcuts/events";
-import { Search, ChevronDown, MoreVertical, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Search,
+  MoreVertical,
+  Star,
+  ChevronLeft,
+  ChevronRight,
+  Send,
+  Pencil,
+  MessageCircle,
+} from "lucide-react";
 import { Button } from "@/app/components/ui/button";
+import { ManusToolbarIconHit } from "@/app/components/ManusToolbarIconHit";
+import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 import svgPaths from "../../imports/svg-k7qrt1366a";
 // Real placeholder images — replace with actual CDN URLs in production
 const imgRectangle2429 = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop&auto=format";
@@ -14,6 +25,18 @@ const imgRectangle2432 = "https://images.unsplash.com/photo-1482049016688-2d3e1b
 const imgRectangle2436 = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop&auto=format";
 const imgRectangle2437 = "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop&auto=format";
 const imgRectangle2435 = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=300&fit=crop&auto=format";
+
+/** Full set for reviews that show a longer carousel in demo data. */
+const GALLERY_FULL = [
+  imgRectangle2429,
+  imgRectangle2430,
+  imgRectangle2431,
+  imgRectangle2432,
+  imgRectangle2436,
+  imgRectangle2437,
+  imgRectangle2435,
+];
+
 import type { FilterItem } from "@/app/components/FilterPanel.v1";
 import {
   FilterPane,
@@ -26,7 +49,7 @@ import {
 // Types
 interface Review {
   id: number;
-  site: "yelp" | "google";
+  site: "yelp" | "google" | "facebook" | "tripadvisor";
   rating: number;
   reviewer: string;
   date: string;
@@ -38,6 +61,155 @@ interface Review {
   text: string;
   replyStatus: "post" | "edit";
   hasReplyDots?: boolean;
+}
+
+/** Parses `review.date` strings like `Jan 7, 2023`; falls back to the raw string if invalid. */
+export function formatReviewDateRelative(dateStr: string, nowMs: number = Date.now()): string {
+  const then = new Date(dateStr).getTime();
+  if (Number.isNaN(then)) return dateStr;
+  const diffSec = Math.floor((nowMs - then) / 1000);
+  if (diffSec < 45) return "Just now";
+  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+  const minutes = Math.floor(diffSec / 60);
+  if (minutes < 60) return rtf.format(-minutes, "minute");
+  const hours = Math.floor(diffSec / 3600);
+  if (hours < 24) return rtf.format(-hours, "hour");
+  const days = Math.floor(diffSec / 86400);
+  if (days < 7) return rtf.format(-days, "day");
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return rtf.format(-weeks, "week");
+  const months = Math.floor(days / 30);
+  if (months < 12) return rtf.format(-months, "month");
+  const years = Math.floor(days / 365);
+  return rtf.format(-years, "year");
+}
+
+const REVIEW_BODY_LINE_HEIGHT_PX = 18;
+const REVIEW_BODY_MAX_LINES = 5;
+
+/** Word-boundary clamp: binary search on word count so truncation never splits a word (only between words). */
+function buildClampedReviewText(
+  fullText: string,
+  widthPx: number,
+  maxLines: number,
+  lineHeightPx: number,
+  font: { fontFamily: string; fontSize: string; fontWeight: string; letterSpacing: string },
+): { collapsed: string; needsToggle: boolean } {
+  const maxH = maxLines * lineHeightPx + 1;
+  const probe = document.createElement("p");
+  probe.style.position = "fixed";
+  probe.style.visibility = "hidden";
+  probe.style.left = "-99999px";
+  probe.style.top = "0";
+  probe.style.width = `${Math.max(32, Math.floor(widthPx))}px`;
+  probe.style.margin = "0";
+  probe.style.padding = "0";
+  probe.style.boxSizing = "border-box";
+  probe.style.fontFamily = font.fontFamily;
+  probe.style.fontSize = font.fontSize;
+  probe.style.fontWeight = font.fontWeight;
+  probe.style.letterSpacing = font.letterSpacing;
+  probe.style.lineHeight = `${lineHeightPx}px`;
+  probe.style.wordBreak = "normal";
+  probe.style.overflowWrap = "break-word";
+  probe.style.whiteSpace = "normal";
+  document.body.appendChild(probe);
+
+  const normalized = fullText.replace(/\s+/g, " ").trim();
+  const words = normalized.length > 0 ? normalized.split(" ") : [];
+  if (words.length === 0) {
+    document.body.removeChild(probe);
+    return { collapsed: fullText, needsToggle: false };
+  }
+
+  let lo = 0;
+  let hi = words.length;
+  let best = 0;
+  while (lo <= hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    probe.textContent = words.slice(0, mid).join(" ");
+    if (probe.scrollHeight <= maxH) {
+      best = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+
+  document.body.removeChild(probe);
+
+  if (best >= words.length) {
+    return { collapsed: fullText, needsToggle: false };
+  }
+  if (best === 0) {
+    return { collapsed: fullText, needsToggle: false };
+  }
+  return { collapsed: `${words.slice(0, best).join(" ")}…`, needsToggle: true };
+}
+
+export function ReviewBody({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [collapsedDisplay, setCollapsedDisplay] = useState(text);
+  const [needsToggle, setNeedsToggle] = useState(false);
+  const [measured, setMeasured] = useState(false);
+
+  const measure = useCallback(() => {
+    const el = wrapRef.current;
+    if (!el || expanded) return;
+    const w = el.getBoundingClientRect().width;
+    if (w < 32) return;
+    const cs = getComputedStyle(el);
+    const { collapsed, needsToggle: toggle } = buildClampedReviewText(
+      text,
+      w,
+      REVIEW_BODY_MAX_LINES,
+      REVIEW_BODY_LINE_HEIGHT_PX,
+      {
+        fontFamily: cs.fontFamily,
+        fontSize: cs.fontSize,
+        fontWeight: cs.fontWeight,
+        letterSpacing: cs.letterSpacing,
+      },
+    );
+    setCollapsedDisplay(collapsed);
+    setNeedsToggle(toggle);
+    setMeasured(true);
+  }, [expanded, text]);
+
+  useLayoutEffect(() => {
+    measure();
+  }, [measure]);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => measure());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [measure]);
+
+  const showLineClampFallback = !expanded && !measured;
+  const paragraphText = expanded ? text : measured ? collapsedDisplay : text;
+
+  return (
+    <div ref={wrapRef} className="w-full min-w-0">
+      <p
+        className={`whitespace-pre-wrap break-words text-[13px] leading-[18px] text-[#212121] dark:text-[#d0d0d0] ${showLineClampFallback ? "line-clamp-5" : ""}`}
+      >
+        {paragraphText}
+      </p>
+      {needsToggle ? (
+        <button
+          type="button"
+          className="mt-1 text-left text-[12px] font-medium text-[#1976d2] hover:underline dark:text-[#90caf9]"
+          onClick={() => setExpanded((v) => !v)}
+        >
+          {expanded ? "View less" : "View more"}
+        </button>
+      ) : null}
+    </div>
+  );
 }
 
 // Mock data matching Figma reference 2
@@ -52,8 +224,8 @@ const mockReviews: Review[] = [
     featured: true,
     employees: 2,
     location: "Georgia",
-    photos: [imgRectangle2429, imgRectangle2430, imgRectangle2431, imgRectangle2432, imgRectangle2436, imgRectangle2437, imgRectangle2435],
-    text: "I had a great time here, the place is situated near Wagle circle. It has top notch ambience and a really cool vibe. The food and drinks were pretty good and would definitely recommend this out to all the non veg lovers. The restaurant is pretty big and can accommodate a huge crowd with indoor as well as an outdoor seating. The prices for the dishes are pretty reasonable and totally worth it! My personal preference were the desserts, especially the DIY cake. Would definitely visit again! ❤️",
+    photos: GALLERY_FULL,
+    text: "I had a great time here, the place is situated near Wagle circle. It has top notch ambience and a really cool vibe. The food and drinks were pretty good and I would definitely recommend this to all the non veg lovers. The restaurant is pretty big and can accommodate a huge crowd with indoor as well as outdoor seating. The prices for the dishes are reasonable and totally worth it.\n\nMy personal favorites were the desserts, especially the DIY cake station where you pick toppings and sauces. The staff explained every course without rushing us, and water refills were constant without having to wave someone down. We also tried the chef’s special grill platter: smoky, tender, and seasoned well without hiding the ingredients.\n\nIf I had to nitpick, the music near the bar was a touch loud for conversation, but tables farther in were perfect. Parking nearby can fill up on weekends, so plan a few extra minutes. Overall this was one of the better dining experiences I have had in the area, and I would gladly return with friends or family. Would definitely visit again! ❤️",
     replyStatus: "post",
   },
   {
@@ -64,8 +236,9 @@ const mockReviews: Review[] = [
     date: "Jan 7, 2023",
     employees: 2,
     location: "Georgia",
-    photos: [],
-    text: "I recently had a experience of dining at Magna and I must say that it was an outstanding experience from start to end. The menu is so diverse and thoughtfully curated.",
+    photos: GALLERY_FULL.slice(0, 6),
+    photoCount: 9,
+    text: "I recently had the pleasure of dining at Magna and it was an outstanding experience from start to finish. The menu is diverse and thoughtfully curated, with enough variety that every person in our group found something they were excited about. We started with small plates to share and each dish arrived at a comfortable pace.\n\nThe servers were attentive and knowledgeable when we asked about allergens and spice levels. Wine suggestions paired well with our mains, and nobody felt rushed even though the dining room was full. Lighting and table spacing made it easy to hear each other, which matters for a celebratory dinner.\n\nDesserts were a highlight: not overly sweet, and plated with care. I would recommend Magna for date nights, small team dinners, or visitors who want a reliable splurge without gimmicks. I am already planning a return visit to work through more of the menu.",
     replyStatus: "post",
   },
   {
@@ -76,8 +249,8 @@ const mockReviews: Review[] = [
     date: "Jan 7, 2023",
     employees: 2,
     location: "Georgia",
-    photos: [],
-    text: "A huge place where you can hang out with your friend/relative. A huge place where you can hang out with your friend/relative. A huge place where you can hang out with your friend/relative.",
+    photos: GALLERY_FULL.slice(2, 6),
+    text: "This is a huge place where you can hang out with friends or relatives without feeling cramped. There are several seating zones, from quieter corners to a livelier central area, so you can match the mood to your group. We visited on a Saturday evening and still found a comfortable table within ten minutes.\n\nThe portions are generous and easy to share. We ordered a mix of appetizers and mains and everything arrived hot. Staff checked in at the right moments and cleared plates promptly. The only minor issue was a short wait for the first round of drinks while the bar caught up with the rush.\n\nIf you are planning a birthday or casual reunion, this spot works well because you can linger without pressure to turn the table. I would come back for the relaxed atmosphere and the variety on the menu.",
     replyStatus: "edit",
     hasReplyDots: true,
   },
@@ -89,10 +262,163 @@ const mockReviews: Review[] = [
     date: "Jan 7, 2023",
     employees: 2,
     location: "Georgia",
-    photos: [],
-    text: "This place is super amazing. The ambience is beautiful. The staff is very cooperative. I tried out there lunch express you should definitely try it out. The menu have variety of dishes. The best part was that desert. I ordered paint pastry. It was super delicious.",
+    photos: GALLERY_FULL.slice(0, 5),
+    text: "This place is amazing. The ambience is beautiful without feeling stiff, and the staff are cooperative and friendly from the moment you walk in. I tried the lunch express menu and you should definitely consider it if you want speed without sacrificing flavor. The regular menu also has plenty of variety, from lighter salads to hearty comfort plates.\n\nThe best part of our meal was dessert. I ordered the pastry special and it was flaky, balanced, and not cloying. Coffee was strong and served at the right temperature, which sounds small but makes a difference. Bathrooms were clean and stocked, always a good sign of how a restaurant is run day to day.\n\nWe sat near the window and had great natural light for photos, if that matters to you. Noise levels stayed reasonable even as more guests arrived. I would recommend this spot for a weekday lunch treat or a low key weekend meal.",
     replyStatus: "post",
     hasReplyDots: true,
+  },
+  {
+    id: 5,
+    site: "facebook",
+    rating: 5,
+    reviewer: "Priya Nandakumar",
+    date: "Feb 2, 2024",
+    employees: 3,
+    location: "New York",
+    photos: GALLERY_FULL,
+    photoCount: 10,
+    text: "We hosted a team dinner here and everything ran smoothly from the first email confirmation to the final bill. Reservations were honored on time, dietary restrictions were taken seriously, and the manager checked in once without hovering. The private dining area was set up with name cards and pitchers of water before we arrived, which made our kickoff feel organized.\n\nFood was plated consistently across a long table, so nobody waited awkwardly while others ate. Vegetarian and gluten free requests were handled confidently, and the kitchen split a few dishes so we could sample more items. Audio in the room was clear enough for short toasts without shouting.\n\nPricing matched what we were quoted, and gratuity options were explained upfront. Several colleagues asked for the name of the restaurant afterward, which is the best endorsement I can give. We will book again for our quarterly outing and probably for client dinners too.",
+    replyStatus: "post",
+  },
+  {
+    id: 6,
+    site: "tripadvisor",
+    rating: 3,
+    reviewer: "Marco Benedetti",
+    date: "Mar 18, 2024",
+    employees: 2,
+    location: "California",
+    photos: [imgRectangle2431, imgRectangle2432],
+    text: "The food itself was fine: flavors were balanced and plating looked thoughtful. Unfortunately we waited almost forty minutes past our reservation time before we were seated, and the host stand updates were vague. Noise near the bar carried into the dining area, which made it harder to talk without leaning in.\n\nWhen mains arrived they were lukewarm, as if they had sat under a lamp too long. The server apologized and offered to reheat, but at this price point I expected tighter pacing and hotter plates on the first try. Starters and drinks were stronger than the entrees on this visit.\n\nI am not writing the place off entirely because the menu shows ambition, but management should look at timing on busy nights. If you go, ask for a table away from the bar and confirm your reservation buffer if you have tickets afterward.",
+    replyStatus: "edit",
+    hasReplyDots: true,
+  },
+  {
+    id: 7,
+    site: "google",
+    rating: 2,
+    reviewer: "Jordan Lee",
+    date: "Apr 4, 2024",
+    employees: 1,
+    location: "Texas",
+    photos: GALLERY_FULL.slice(1, 5),
+    text: "Our order was wrong twice in one meal, which is hard to excuse when the restaurant was not at full capacity. It took three separate asks to get water refills, and empty plates sat on the edge of the table for a long time. I understand everyone can have an off night, but the basics slipped repeatedly.\n\nWhen the correct dishes finally arrived, taste was average and temperature was acceptable. The manager offered a small discount after we flagged the issues, which helped a little, but we still left frustrated because the experience felt careless. Communication between the kitchen and the floor seemed disjointed from where we sat.\n\nI hope this was an outlier service night. Until I hear that staffing or training improved, I would hesitate to recommend this location for time sensitive plans or guests you want to impress without risk.",
+    replyStatus: "post",
+  },
+  {
+    id: 8,
+    site: "facebook",
+    rating: 4,
+    reviewer: "Elena Vasquez",
+    date: "May 12, 2024",
+    employees: 2,
+    location: "Florida",
+    photos: GALLERY_FULL,
+    photoCount: 11,
+    text: "The brunch lineup here is strong, especially the shakshuka with enough spice to wake you up without overpowering the tomatoes. Fresh juices taste like real fruit, not syrup, and the coffee program is better than most brunch spots in the neighborhood. Sweet and savory options are balanced, so mixed groups do not have to compromise.\n\nPatio seating fills fast on weekends, so arrive early or expect a short wait. Once seated, service stayed attentive even as the room filled. One star off because parking was tight and the nearby garage rates add up if you linger.\n\nIf you go, order one savory plate and one pastry to share. The pastry case rotates and the staff happily described what was baked that morning. I would return for a sunny Saturday with friends.",
+    replyStatus: "edit",
+  },
+  {
+    id: 9,
+    site: "tripadvisor",
+    rating: 5,
+    reviewer: "Tom Whitaker",
+    date: "Jun 1, 2024",
+    featured: true,
+    employees: 2,
+    location: "Georgia",
+    photos: GALLERY_FULL.slice(0, 6),
+    text: "I stayed nearby on business and ate here three nights in a row because the quality stayed consistent. Portions are generous without feeling sloppy, and the bartender remembered my usual by the second visit, which is a nice touch when you are tired from travel. The dining room stays professional enough for client meals but still relaxed.\n\nHighlight was the chef’s tasting menu: creative without being weird for the sake of it, and each course had a clear story. Bread service and intermezzos showed attention to detail. Wine by the glass list had enough depth that I did not feel stuck ordering the same bottle every night.\n\nBreakfast service was slightly slower on weekday mornings, yet food remained hot and accurate. If you are in town for work, this is a dependable anchor restaurant that does not waste your time or your expense account.",
+    replyStatus: "post",
+  },
+  {
+    id: 10,
+    site: "google",
+    rating: 5,
+    reviewer: "Samira Okonkwo",
+    date: "Jun 22, 2024",
+    employees: 3,
+    location: "New York",
+    photos: GALLERY_FULL,
+    photoCount: 8,
+    text: "This is the best fried chicken sandwich I have had in the city in a long time. The breading stays crispy, the meat stays juicy, and the slaw actually has crunch instead of turning soggy in thirty seconds. Pickles and sauce are applied with restraint so you still taste the chicken.\n\nCounter service was fast even during lunch rush, and the line moved because the team repeats the same steps cleanly. Seating is limited, so plan for takeaway if you visit at peak times. Prices feel fair for the quality and portion size relative to nearby competitors.\n\nIf you want a lighter option, the side salad is fresh and not an afterthought. I have recommended this spot to coworkers and everyone who tried it agreed the sandwich is worth a return trip.",
+    replyStatus: "post",
+    hasReplyDots: true,
+  },
+  {
+    id: 11,
+    site: "yelp",
+    rating: 1,
+    reviewer: "Chris P.",
+    date: "Jul 8, 2024",
+    employees: 1,
+    location: "California",
+    photos: [imgRectangle2436, imgRectangle2437, imgRectangle2429, imgRectangle2430],
+    text: "We found a hair in the appetizer, which immediately killed our appetite for the rest of the round. The manager apologized, but we were still charged for the dish, which felt dismissive given the circumstances. I am not usually someone who leaves one star reviews, but the response did not match the seriousness of the issue.\n\nOther tables around us seemed to be having a normal night, so this may have been an isolated kitchen slip. Still, how a restaurant recovers matters. A comped appetizer or a sincere follow up would have gone a long way.\n\nI hope the team retrains on quality checks and guest recovery. Until then I cannot recommend this location based on our visit.",
+    replyStatus: "edit",
+    hasReplyDots: true,
+  },
+  {
+    id: 12,
+    site: "facebook",
+    rating: 3,
+    reviewer: "Riley Chen",
+    date: "Aug 3, 2024",
+    employees: 2,
+    location: "Texas",
+    photos: GALLERY_FULL.slice(3, 7),
+    text: "The ambience is lovely: warm lighting, comfortable chairs, and music at a volume that still allows conversation. Cocktails are creative and balanced, with clear flavors rather than a sugar bomb. We enjoyed the bar team’s recommendations and the garnishes looked fresh.\n\nMains took a long time to arrive, and one steak was overcooked relative to how we ordered it. The server noticed without us having to argue, and they comped a dessert, which helped salvage the evening. Side dishes were seasoned well and arrived hot.\n\nI would come back for drinks and appetizers with realistic expectations about pacing on a Friday. If you book for a special occasion, mention timing constraints up front.",
+    replyStatus: "post",
+  },
+  {
+    id: 13,
+    site: "tripadvisor",
+    rating: 4,
+    reviewer: "Amélie Durand",
+    date: "Sep 14, 2024",
+    employees: 2,
+    location: "Florida",
+    photos: GALLERY_FULL,
+    photoCount: 12,
+    text: "This is a great spot for families. The kids’ menu had real options, not just nuggets and fries, and our children actually ate their meals without negotiation. High chairs were clean and staff brought crayons without us asking, which made the first ten minutes calmer for everyone.\n\nService was patient with questions and did not rush us out the door even after dessert. The dining room accommodated strollers better than many places we have tried on vacation. Restrooms could use an update: functional, but aging fixtures and a loose towel dispenser.\n\nIf you visit during peak dinner hours, expect a short wait, but the host kept us updated. We would return on a future trip because the overall experience felt genuinely family friendly rather than tolerant.",
+    replyStatus: "post",
+  },
+  {
+    id: 14,
+    site: "google",
+    rating: 4,
+    reviewer: "Devon Mills",
+    date: "Oct 2, 2024",
+    employees: 2,
+    location: "California",
+    photos: GALLERY_FULL.slice(0, 5),
+    text: "Solid weekday lunch spot with predictable quality. The soup and half sandwich deal is a bargain given the portion size, and the soup tasted like it was made in house rather than poured from a bag. Ingredients in the sandwich were fresh and the bread held up without falling apart.\n\nWi Fi was reliable enough if you need to answer email between bites, and outlets were available along the wall. Noise stayed at a workable level for a quick working lunch. Lines move quickly because the menu is focused.\n\nIf you want something indulgent, the cookie at the register is worth adding. I have been back three times this month and have not had a miss yet.",
+    replyStatus: "edit",
+  },
+  {
+    id: 15,
+    site: "yelp",
+    rating: 5,
+    reviewer: "Hannah Brooks",
+    date: "Nov 19, 2024",
+    employees: 3,
+    location: "New York",
+    photoCount: 7,
+    photos: GALLERY_FULL,
+    text: "Our anniversary dinner exceeded expectations in almost every way. The sommelier pairing was thoughtful without being pushy, and each pour matched the food rather than overpowering it. Pacing between courses was perfect: long enough to enjoy, short enough to stay engaged.\n\nThe kitchen accommodated a shellfish allergy with calm confidence and swapped components without making us feel like a burden. Bread, butter, and small touches felt intentional. At the end of the meal we received a handwritten note, which was a lovely surprise and felt personal.\n\nWe left full but not uncomfortable, and the staff thanked us warmly on the way out. This is the kind of evening you remember months later. We will return for the next milestone.",
+    replyStatus: "post",
+  },
+  {
+    id: 16,
+    site: "facebook",
+    rating: 2,
+    reviewer: "Alex Rivera",
+    date: "Dec 7, 2024",
+    employees: 1,
+    location: "Georgia",
+    photos: [imgRectangle2435, imgRectangle2432],
+    text: "Our delivery order arrived cold and missing sides, which is frustrating when you are ordering for a group at home. In app support offered a partial credit only, and the back and forth took longer than remaking the meal would have. In person visits have been better in the past, so this felt like a different standard.\n\nWhen we have dined inside, food was hot and accurate, which makes the delivery gap more noticeable. Packaging may need a rethink for anything saucy, and checklists should confirm sides before drivers leave.\n\nI am leaving two stars instead of one because I know this brand can do better based on prior experiences. I hope operations tighten delivery QA soon.",
+    replyStatus: "post",
   },
 ];
 
@@ -128,21 +454,73 @@ function GoogleLogo() {
   );
 }
 
-/* ─── Star Rating (Yelp-style red stars) ─── */
-function StarRating({ rating, size = 20 }: { rating: number; size?: number }) {
+/* ─── Facebook mark (demo) ─── */
+function FacebookLogo() {
   return (
-    <div className="flex items-center gap-[2px]">
-      {[...Array(5)].map((_, i) => (
-        <Star
-          key={i}
-          style={{ width: size, height: size }}
-          className={
-            i < rating
-              ? "fill-[#FB433C] text-[#FB433C]"
-              : "fill-[#ccc] text-[#ccc] dark:fill-[#555] dark:text-[#555]"
-          }
+    <div className="bg-white flex items-center justify-center p-[5px] rounded-full size-[40px] relative border border-[#eaeaea] dark:border-[#333a47] dark:bg-[#262b35]">
+      <div className="size-[30px] rounded-full bg-[#1877F2] flex items-center justify-center">
+        <span className="text-white text-[18px] font-bold leading-none translate-y-px font-sans">
+          f
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Tripadvisor-style mark (demo — simplified owl) ─── */
+function TripAdvisorLogo() {
+  return (
+    <div className="bg-white flex items-center justify-center p-[5px] rounded-full size-[40px] relative border border-[#eaeaea] dark:border-[#333a47] dark:bg-[#262b35]">
+      <svg className="size-[30px] shrink-0" viewBox="0 0 32 32" fill="none" aria-hidden>
+        <circle cx="16" cy="16" r="15" fill="#00AF87" />
+        <circle cx="11.5" cy="14" r="3.25" fill="white" />
+        <circle cx="20.5" cy="14" r="3.25" fill="white" />
+        <circle cx="11.5" cy="14" r="1.35" fill="#1a1a1a" />
+        <circle cx="20.5" cy="14" r="1.35" fill="#1a1a1a" />
+        <path
+          d="M10 22c2.2 2.8 4.8 3.8 6 3.8s3.8-1 6-3.8"
+          stroke="#FFCC00"
+          strokeWidth="2.2"
+          strokeLinecap="round"
         />
-      ))}
+      </svg>
+    </div>
+  );
+}
+
+function reviewSiteLogo(site: Review["site"]) {
+  switch (site) {
+    case "yelp":
+      return <YelpLogo />;
+    case "google":
+      return <GoogleLogo />;
+    case "facebook":
+      return <FacebookLogo />;
+    case "tripadvisor":
+      return <TripAdvisorLogo />;
+  }
+}
+
+/* ─── Star rating — gold fill + gold outline on empty (review reference) ─── */
+function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
+  return (
+    <div className="flex items-center gap-[2px] shrink-0" aria-hidden>
+      {[...Array(5)].map((_, i) => {
+        const filled = i < rating;
+        return (
+          <Star
+            key={i}
+            style={{ width: size, height: size }}
+            strokeWidth={filled ? 0 : L1_STRIP_ICON_STROKE_PX}
+            absoluteStrokeWidth={!filled}
+            className={
+              filled
+                ? "fill-[#D4A017] stroke-[#D4A017]"
+                : "fill-none stroke-[#D4A017]"
+            }
+          />
+        );
+      })}
     </div>
   );
 }
@@ -167,7 +545,7 @@ function MynaAIReply({ hasThreeDots }: { hasThreeDots?: boolean }) {
           </div>
         </div>
         {/* Reply text */}
-        <p className="text-[15px] text-[#212121] dark:text-[#d0d0d0] leading-[20px]">
+        <p className="text-[13px] text-[#212121] dark:text-[#d0d0d0] leading-[18px]">
           We appreciate your feedback! Thank you for taking the time to share your experience with us.
         </p>
       </div>
@@ -183,49 +561,36 @@ function MynaAIReply({ hasThreeDots }: { hasThreeDots?: boolean }) {
   );
 }
 
-/* ─── Chat Icon ─── */
-function ChatIcon() {
-  return (
-    <svg className="w-[14px] h-[14px]" viewBox="0 0 19 19" fill="none">
-      <g clipPath="url(#chatClip)">
-        <path d={svgPaths.p84b0100} fill="#555555" className="dark:fill-[#8b92a5]" />
-      </g>
-      <defs>
-        <clipPath id="chatClip">
-          <rect fill="white" height="19" width="19" />
-        </clipPath>
-      </defs>
-    </svg>
-  );
-}
+/** Review card toolbar — explicit 1.2px stroke (Lucide `absoluteStrokeWidth`). */
+const REVIEW_ACTION_STROKE_PX = 1.2;
 
-/* ─── More Dots (vertical) ─── */
-function MoreDots() {
-  return (
-    <svg className="w-[12px] h-[3px] rotate-90" viewBox="0 0 12 3" fill="none">
-      <path clipRule="evenodd" d={svgPaths.p2d3a0500} fill="#555555" fillRule="evenodd" className="dark:fill-[#8b92a5]" />
-    </svg>
-  );
-}
+const reviewActionLucideProps = {
+  width: L1_STRIP_ICON_SIZE,
+  height: L1_STRIP_ICON_SIZE,
+  strokeWidth: REVIEW_ACTION_STROKE_PX,
+  absoluteStrokeWidth: true as const,
+  className: "shrink-0",
+  "aria-hidden": true as const,
+};
 
-/* ─── Action Row (Post reply / Edit reply + chat + more) ─── */
+/* ─── Action row — plain toolbar; glyphs match L1 IconStrip stroke + colors ─── */
 function ActionRow({ replyStatus }: { replyStatus: "post" | "edit" }) {
+  const primaryLabel = replyStatus === "post" ? "Post reply" : "Edit reply";
   return (
-    <div className="flex flex-col gap-6 items-end w-full">
-      <div className="flex items-center gap-3">
-        {/* Reply CTA */}
-        <Button className="bg-[#6834b7] text-white dark:bg-[#7c3aed] hover:bg-[#5a2da0] dark:hover:bg-[#6d28d9]">
-          {replyStatus === "post" ? "Post reply" : "Edit reply"}
-        </Button>
-        {/* Chat button */}
-        <Button variant="outline" size="icon">
-          <ChatIcon />
-        </Button>
-        {/* More button */}
-        <Button variant="outline" size="icon">
-          <MoreDots />
-        </Button>
-      </div>
+    <div className="flex w-full flex-wrap items-center gap-1">
+      <ManusToolbarIconHit title={primaryLabel} aria-label={primaryLabel}>
+        {replyStatus === "post" ? (
+          <Send {...reviewActionLucideProps} />
+        ) : (
+          <Pencil {...reviewActionLucideProps} />
+        )}
+      </ManusToolbarIconHit>
+      <ManusToolbarIconHit title="Open chat" aria-label="Open chat">
+        <MessageCircle {...reviewActionLucideProps} />
+      </ManusToolbarIconHit>
+      <ManusToolbarIconHit title="More actions" aria-label="More actions">
+        <MoreVertical {...reviewActionLucideProps} />
+      </ManusToolbarIconHit>
     </div>
   );
 }
@@ -308,39 +673,39 @@ function PhotoCarousel({ photos }: { photos: string[] }) {
           onNext={() => setLightboxIndex((i) => Math.min(photos.length - 1, (i ?? 0) + 1))}
         />
       )}
-    <div className="relative w-full">
-      <div className="flex gap-[6px] overflow-hidden">
+    <div className="relative w-full min-w-0">
+      {/* Soft edge fades into page surface (replaces harsh overlay on the last thumb) */}
+      {canScrollLeft ? (
+        <div
+          className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-14 rounded-l-lg bg-gradient-to-r from-background from-35% to-transparent dark:from-[#1e2229]"
+          aria-hidden
+        />
+      ) : null}
+      {canScrollRight ? (
+        <div
+          className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-16 rounded-r-lg bg-gradient-to-l from-background from-35% to-transparent dark:from-[#1e2229]"
+          aria-hidden
+        />
+      ) : null}
+
+      <div className="flex gap-2 overflow-hidden rounded-lg">
         {visiblePhotos.map((photo, idx) => {
           const absoluteIdx = scrollOffset + idx;
-          const isLast = idx === visiblePhotos.length - 1 && canScrollRight;
           return (
             <div
               key={absoluteIdx}
               onClick={() => setLightboxIndex(absoluteIdx)}
-              className="w-[180px] h-[120px] rounded-[6px] overflow-hidden shrink-0 relative cursor-pointer group/photo"
+              className="relative h-[120px] w-[180px] shrink-0 cursor-pointer overflow-hidden rounded-lg"
             >
               <img
                 src={photo}
                 alt={`Review photo ${absoluteIdx + 1}`}
-                className="w-full h-full object-cover transition-transform duration-200 group-hover/photo:scale-105"
+                className="h-full w-full object-cover"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).src = `https://picsum.photos/seed/review${absoluteIdx}/400/300`;
                 }}
               />
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-black/0 group-hover/photo:bg-black/20 transition-colors duration-200 flex items-center justify-center">
-                <span className="text-white opacity-0 group-hover/photo:opacity-100 text-xs transition-opacity">View</span>
-              </div>
-              <div className="absolute inset-0 border border-[#f4f6f7] dark:border-[#333a47] rounded-[4px]" />
-              {/* Fade gradient on last visible photo */}
-              {isLast && (
-                <div
-                  className="absolute inset-0 rounded-[4px]"
-                  style={{
-                    backgroundImage: "linear-gradient(-90deg, rgba(33, 33, 33, 0.9) 0%, rgba(0, 0, 0, 0) 100.83%)",
-                  }}
-                />
-              )}
+              <div className="pointer-events-none absolute inset-0 rounded-lg border border-border shadow-sm" />
             </div>
           );
         })}
@@ -351,18 +716,20 @@ function PhotoCarousel({ photos }: { photos: string[] }) {
         <>
           {canScrollLeft && (
             <button
+              type="button"
               onClick={scrollLeft}
-              className="absolute left-2 top-1/2 -translate-y-1/2 size-[40px] rounded-full bg-white/60 dark:bg-black/40 border border-[#212121] dark:border-[#888] flex items-center justify-center hover:bg-white/80 dark:hover:bg-black/60 transition-all"
+              className="absolute left-2 top-1/2 z-[2] flex size-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-muted dark:bg-[#1e2229]/90 dark:hover:bg-muted"
             >
-              <ChevronLeft className="w-5 h-5 text-[#0A0A0A] dark:text-white" />
+              <ChevronLeft className="size-5" aria-hidden />
             </button>
           )}
           {canScrollRight && (
             <button
+              type="button"
               onClick={scrollRight}
-              className="absolute right-2 top-1/2 -translate-y-1/2 size-[40px] rounded-full bg-white/60 dark:bg-black/40 border border-[#212121] dark:border-[#888] flex items-center justify-center hover:bg-white/80 dark:hover:bg-black/60 transition-all"
+              className="absolute right-2 top-1/2 z-[2] flex size-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-muted dark:bg-[#1e2229]/90 dark:hover:bg-muted"
             >
-              <ChevronRight className="w-5 h-5 text-[#212121] dark:text-white" />
+              <ChevronRight className="size-5" aria-hidden />
             </button>
           )}
         </>
@@ -376,26 +743,29 @@ function PhotoCarousel({ photos }: { photos: string[] }) {
 function ReviewCard({ review }: { review: Review }) {
   return (
     <div className="flex flex-col gap-5 w-full">
-      {/* Header: logo + details + employee/location */}
-      <div className="flex items-start justify-between w-full">
-        <div className="flex items-center gap-3">
-          {review.site === "yelp" ? <YelpLogo /> : <GoogleLogo />}
-          <div className="flex flex-col gap-[2px]">
-            <StarRating rating={review.rating} />
-            <div className="flex items-center gap-2 text-[12px]">
-              <span className="text-[#212121] dark:text-[#e4e4e4]">{review.reviewer}</span>
-              <div className="size-[3px] rounded-full bg-[#555] dark:bg-[#8b92a5]" />
-              <span className="text-[#555] dark:text-[#8b92a5]">{review.date}</span>
-              {review.photoCount && (
+      {/* Header: left — logo + name + stars/date/photos/featured; right — employees + location (same meta colours as date) */}
+      <div className="flex w-full items-start justify-between gap-4">
+        <div className="flex min-w-0 items-start gap-3">
+          {reviewSiteLogo(review.site)}
+          <div className="flex min-w-0 flex-col gap-1">
+            <span className="text-[13px] font-semibold leading-tight text-[#212121] dark:text-[#e4e4e4]">
+              {review.reviewer}
+            </span>
+            <div className="flex flex-wrap items-center gap-2 text-[12px]">
+              <StarRating rating={review.rating} size={14} />
+              <span className="text-[#555] dark:text-[#8b92a5]" title={review.date}>
+                {formatReviewDateRelative(review.date)}
+              </span>
+              {review.photoCount != null && review.photoCount > 0 && (
                 <>
-                  <div className="size-[3px] rounded-full bg-[#555] dark:bg-[#8b92a5]" />
-                  <span className="text-[#555] dark:text-[#8b92a5]">{review.photoCount} Photos</span>
+                  <div className="size-[3px] shrink-0 rounded-full bg-[#555] dark:bg-[#8b92a5]" />
+                  <span className="text-[#555] dark:text-[#8b92a5]">{review.photoCount} photos</span>
                 </>
               )}
               {review.featured && (
                 <>
-                  <div className="size-[3px] rounded-full bg-[#555] dark:bg-[#8b92a5]" />
-                  <div className="bg-[#eaeaea] dark:bg-[#333a47] px-2 py-0.5 rounded-[4px]">
+                  <div className="size-[3px] shrink-0 rounded-full bg-[#555] dark:bg-[#8b92a5]" />
+                  <div className="rounded-[4px] bg-[#eaeaea] px-2 py-0.5 dark:bg-[#333a47]">
                     <span className="text-[12px] text-[#212121] dark:text-[#e4e4e4]">Featured</span>
                   </div>
                 </>
@@ -403,25 +773,17 @@ function ReviewCard({ review }: { review: Review }) {
             </div>
           </div>
         </div>
-        {/* Employee & location meta */}
-        <div className="flex items-center gap-3 text-[13px] text-[#999] dark:text-[#8b92a5]">
-          <div className="flex items-center gap-1">
-            <svg className="w-4 h-4" viewBox="0 0 11.2937 12" fill="none">
-              <path clipRule="evenodd" d={svgPaths.pa635500} fill="currentColor" fillRule="evenodd" />
-            </svg>
-            <span>{review.employees} employees</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <svg className="w-4 h-4" viewBox="0 0 9.7974 11.8269" fill="none">
-              <path d={svgPaths.p12721780} fill="currentColor" />
-            </svg>
-            <span>{review.location}</span>
-          </div>
+        <div className="flex shrink-0 items-center gap-2 text-[12px] text-[#555] dark:text-[#8b92a5]">
+          <span className="whitespace-nowrap">
+            {review.employees} {review.employees === 1 ? "employee" : "employees"}
+          </span>
+          <div className="size-[3px] shrink-0 rounded-full bg-[#555] dark:bg-[#8b92a5]" />
+          <span className="whitespace-nowrap">{review.location}</span>
         </div>
       </div>
 
-      {/* Review text */}
-      <p className="text-[14px] text-[#212121] dark:text-[#d0d0d0] leading-[20px]">{review.text}</p>
+      {/* Review text (word-safe clamp + view more / less) */}
+      <ReviewBody key={review.id} text={review.text} />
 
       {/* Photo carousel */}
       {review.photos.length > 0 && <PhotoCarousel photos={review.photos} />}
@@ -480,20 +842,24 @@ export function ReviewsView() {
           <div className="flex flex-col gap-1">
             <h1 className="text-[17px] text-[#212121] dark:text-[#e4e4e4]">All reviews</h1>
             <div className="flex items-center gap-1 text-[12px] text-[#555] dark:text-[#8b92a5]">
-              <span>832 total reviews</span>
+              <span>{mockReviews.length} reviews</span>
               <div className="size-[3px] rounded-full bg-[#555] dark:bg-[#8b92a5] mx-0.5" />
               <span>4.1</span>
               <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-[10px] h-[10px] ${
-                      i < 4
-                        ? "fill-[#f57c00] text-[#f57c00]"
-                        : "fill-[#ccc] text-[#ccc] dark:fill-[#555] dark:text-[#555]"
-                    }`}
-                  />
-                ))}
+                {[...Array(5)].map((_, i) => {
+                  const filled = i < 4;
+                  return (
+                    <Star
+                      key={i}
+                      aria-hidden
+                      className={`w-[10px] h-[10px] ${
+                        filled ? "fill-[#D4A017] stroke-[#D4A017]" : "fill-none stroke-[#D4A017]"
+                      }`}
+                      strokeWidth={filled ? 0 : L1_STRIP_ICON_STROKE_PX}
+                      absoluteStrokeWidth={!filled}
+                    />
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -542,7 +908,7 @@ export function ReviewsView() {
 
         {/* Reviews feed */}
         <div className="flex-1 overflow-y-auto px-5 pb-6">
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-10">
             {filteredReviews.map((review) => (
               <ReviewCard key={review.id} review={review} />
             ))}

@@ -1,6 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/app/components/ui/button";
+import {
+  FLOATING_PANEL_LIST_PADDING_CLASSNAME,
+  FLOATING_PANEL_SURFACE_CLASSNAME,
+} from "@/app/components/ui/floatingPanelSurface";
 import { useReportActions, buildReportContext } from "./useReportActions";
 import { ShareReportModal } from "./ShareReportModal";
 import { ScheduleReportModal } from "./ScheduleReportModal";
@@ -81,22 +86,29 @@ export function ReportActionsButton({
 
         {/* Dropdown menu */}
         {dropdownOpen && (
-          <div className="absolute right-0 top-full mt-1 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] z-20 min-w-[180px] py-1">
-            {availableActions.map((action, i) => {
+          <div
+            className={cn(
+              "absolute right-0 top-full z-20 mt-1 flex min-w-[180px] flex-col gap-1",
+              FLOATING_PANEL_SURFACE_CLASSNAME,
+              FLOATING_PANEL_LIST_PADDING_CLASSNAME,
+            )}
+          >
+            {availableActions.map((action) => {
               const disabled = action.isEnabled ? !action.isEnabled(context) : false;
               return (
                 <button
                   key={action.id}
                   onClick={() => !disabled && handleActionClick(action.id)}
                   disabled={disabled}
-                  className={`w-full flex items-center gap-2.5 px-4 py-2 text-left text-[13px] transition-colors ${
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150",
                     disabled
-                      ? "text-[#ccc] dark:text-[#444] cursor-not-allowed"
-                      : "text-[#1e1e1e] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
-                  } ${i === 0 ? "rounded-t-[7px]" : ""} ${i === availableActions.length - 1 ? "rounded-b-[7px]" : ""}`}
+                      ? "cursor-not-allowed text-muted-foreground opacity-60"
+                      : "text-foreground hover:bg-muted",
+                  )}
                   style={{ fontWeight: 400 }}
                 >
-                  <span className="w-3.5 h-3.5 flex items-center justify-center text-[#888] dark:text-[#6b7280]">
+                  <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center text-muted-foreground">
                     {action.icon}
                   </span>
                   {action.label}

@@ -6,6 +6,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/app/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  FLOATING_PANEL_LIST_PADDING_CLASSNAME,
+  FLOATING_PANEL_SURFACE_CLASSNAME,
+} from "@/app/components/ui/floatingPanelSurface";
 
 /* ─── Types ─── */
 type ScheduleStatus = "active" | "paused" | "draft" | "failed" | "expired";
@@ -385,21 +390,28 @@ function RowActionMenu({ schedule, onAction }: {
         <MoreHorizontal className="w-[14px] h-[14px]" />
       </Button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 bg-white dark:bg-[#22262f] border border-[#eceef2] dark:border-[#333a47] rounded-lg shadow-[0_6px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.3)] z-40 py-1 min-w-[160px]">
+        <div
+          className={cn(
+            "absolute right-0 top-full z-40 mt-1 flex min-w-[160px] flex-col gap-1",
+            FLOATING_PANEL_SURFACE_CLASSNAME,
+            FLOATING_PANEL_LIST_PADDING_CLASSNAME,
+          )}
+        >
           {actions.map((a, i) =>
             a.divider ? (
-              <div key={i} className="h-px bg-[#f0f0f0] dark:bg-[#333a47] my-1" />
+              <div key={i} className="my-1 h-px bg-border" />
             ) : (
               <button
                 key={a.label}
                 onClick={(e) => { e.stopPropagation(); onAction(a.action, schedule.id); setOpen(false); }}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 text-[12px] font-['Inter',sans-serif] transition-colors ${
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] font-['Inter',sans-serif] transition-colors duration-150",
                   a.destructive
-                    ? "text-[#c62828] hover:bg-[#ffebee] dark:hover:bg-[#352020]"
-                    : "text-[#333] dark:text-[#e4e4e4] hover:bg-[#f8f9fb] dark:hover:bg-[#2e3340]"
-                }`}
+                    ? "text-destructive hover:bg-destructive/10"
+                    : "text-foreground hover:bg-muted",
+                )}
               >
-                <a.icon className="w-3.5 h-3.5" />
+                <a.icon className="h-3.5 w-3.5 shrink-0" />
                 {a.label}
               </button>
             )

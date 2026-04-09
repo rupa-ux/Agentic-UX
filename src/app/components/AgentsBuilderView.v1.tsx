@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/app/components/ui/button";
+import { InlineSelectField } from "@/app/components/ui/inline-select-field";
 
 /* ═══════════════════════════════════════════
    Types
@@ -81,42 +82,6 @@ const initialConditions: ConditionBlock[] = [
     ],
   },
 ];
-
-/* ═══════════════════════════════════════════
-   Reusable dropdown-style select (read-only)
-   ═══════════════════════════════════════════ */
-function SelectField({ value, options, onChange }: { value: string; options: string[]; onChange: (v: string) => void }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative w-full">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-[#262b35] border border-[#ccc] dark:border-[#333a47] rounded-[8px] text-[12px] text-[#212121] dark:text-[#e4e4e4] hover:border-[#999] dark:hover:border-[#4d5568] transition-colors"
-        style={{ fontWeight: 400 }}
-      >
-        <span>{value}</span>
-        <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280]" />
-      </button>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] shadow-lg py-1 max-h-[180px] overflow-y-auto">
-            {options.map(opt => (
-              <button
-                key={opt}
-                onClick={() => { onChange(opt); setOpen(false); }}
-                className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors ${opt === value ? "text-[#2552ED]" : "text-[#212121] dark:text-[#e4e4e4]"}`}
-                style={{ fontWeight: 400 }}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
 
 /* ═══════════════════════════════════════════
    Left Panel – Toolbox
@@ -535,17 +500,17 @@ function PropertiesPanel({
                         </div>
                       )}
                       <div className="space-y-2">
-                        <SelectField
+                        <InlineSelectField
                           value={group.field}
                           options={fieldOptions}
                           onChange={v => updateConditionGroup(bi, gi, "field", v)}
                         />
-                        <SelectField
+                        <InlineSelectField
                           value={group.operator}
                           options={operatorOptions}
                           onChange={v => updateConditionGroup(bi, gi, "operator", v)}
                         />
-                        <SelectField
+                        <InlineSelectField
                           value={group.value}
                           options={valueOptions[group.field] || ["Custom..."]}
                           onChange={v => updateConditionGroup(bi, gi, "value", v)}

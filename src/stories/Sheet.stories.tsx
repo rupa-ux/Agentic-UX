@@ -1,215 +1,92 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
   SheetTrigger,
+  type SheetFloatingSize,
 } from "@/app/components/ui/sheet";
 import { Button } from "@/app/components/ui/button";
-import { Input } from "@/app/components/ui/input";
-import { Label } from "@/app/components/ui/label";
+import {
+  FLOATING_SHEET_FRAME_CONTENT_CLASS,
+  FloatingSheetFrame,
+} from "@/app/components/layout/FloatingSheetFrame";
 
 const meta: Meta = {
   title: "UI/Sheet",
   tags: ["autodocs"],
+  parameters: {
+    layout: "padded",
+    docs: {
+      description: {
+        component:
+          "Floating **side panels** only: **Radix `Sheet`** with `side=\"right\"`, `inset=\"floating\"`, and `floatingSize` (**sm** 340px, **md** 480px, **lg** 640px). Inset from top, right, and bottom with rounded corners. Dismiss with the **top-right** close control on **`SheetContent`** (single close affordance; avoid duplicating it in the footer). Prefer **`FloatingSheetFrame`** (`@/app/components/layout/FloatingSheetFrame`) for edging header, scrollable body only, and sticky footer actions; set **`SheetContent`** `className` to include **`FLOATING_SHEET_FRAME_CONTENT_CLASS`** (`overflow-hidden`) so the frame body owns vertical scroll. For a full product example on **medium** (profile + password), see **App/Settings/Account settings**.",
+      },
+    },
+  },
 };
 
 export default meta;
 type Story = StoryObj;
 
-export const FloatingRight: Story = {
-  render: () => (
+function FloatingPlaceholder({
+  floatingSize,
+  title,
+}: {
+  floatingSize: SheetFloatingSize;
+  title: string;
+}) {
+  const px = floatingSize === "sm" ? 340 : floatingSize === "md" ? 480 : 640;
+  return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline">Open floating drawer</Button>
+        <Button variant="outline">Open {title.toLowerCase()} panel</Button>
       </SheetTrigger>
-      <SheetContent side="right" inset="floating" className="gap-0 p-0">
-        <SheetHeader className="border-b border-border px-6 py-4 text-left">
-          <SheetTitle className="text-base">Narrow floating panel</SheetTitle>
-          <SheetDescription>
-            Use <code className="text-xs">inset=&quot;floating&quot;</code> on{" "}
-            <code className="text-xs">SheetContent</code> for a 340px card inset
-            from the top, right, and bottom (rounded on all sides). Pair with{" "}
-            <code className="text-xs">SheetFooter</code> for bottom-right actions.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="px-6 py-4">
+      <SheetContent
+        side="right"
+        inset="floating"
+        floatingSize={floatingSize}
+        className={FLOATING_SHEET_FRAME_CONTENT_CLASS}
+      >
+        <FloatingSheetFrame
+          title={title}
+          description={
+            <>
+              Generic floating shell — <strong>{floatingSize}</strong> ({px}px max width, capped on
+              narrow viewports).
+            </>
+          }
+          primaryAction={{
+            label: "Continue",
+            onClick: () => {
+              // Storybook demo only
+            },
+          }}
+        >
           <p className="text-sm text-muted-foreground">
-            Body scrolls inside the panel when content is long.
+            Only this region changes per feature. Pass <code className="text-xs">floatingSize</code>{" "}
+            on <code className="text-xs">SheetContent</code>.
           </p>
-        </div>
-        <SheetFooter className="border-t border-border px-6 py-4">
-          <SheetClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </SheetClose>
-          <Button>Save</Button>
-        </SheetFooter>
+          <div className="mt-8 flex flex-col gap-4 text-sm text-muted-foreground">
+            {Array.from({ length: 12 }, (_, i) => (
+              <p key={i}>
+                Scrollable body line {i + 1} — header and footer stay fixed while this area scrolls.
+              </p>
+            ))}
+          </div>
+        </FloatingSheetFrame>
       </SheetContent>
     </Sheet>
-  ),
+  );
+}
+
+export const Small: Story = {
+  render: () => <FloatingPlaceholder floatingSize="sm" title="Small panel" />,
 };
 
-export const Right: Story = {
-  render: () => (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline">Edit Business Profile</Button>
-      </SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>Edit Profile</SheetTitle>
-          <SheetDescription>
-            Update your business information. Changes will appear on your public
-            Birdeye profile within 24 hours.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="grid gap-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="biz-name">Business Name</Label>
-            <Input id="biz-name" defaultValue="Acme Coffee Roasters" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="biz-phone">Phone</Label>
-            <Input id="biz-phone" defaultValue="+1 (512) 555-0100" type="tel" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="biz-address">Address</Label>
-            <Input
-              id="biz-address"
-              defaultValue="123 Main St, Austin, TX 78701"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="biz-website">Website</Label>
-            <Input
-              id="biz-website"
-              defaultValue="https://acmecoffee.com"
-              type="url"
-            />
-          </div>
-        </div>
-        <SheetFooter>
-          <SheetClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </SheetClose>
-          <Button>Save Changes</Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
-  ),
+export const Medium: Story = {
+  render: () => <FloatingPlaceholder floatingSize="md" title="Medium panel" />,
 };
 
-export const Left: Story = {
-  render: () => (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline">Open Navigation</Button>
-      </SheetTrigger>
-      <SheetContent side="left">
-        <SheetHeader>
-          <SheetTitle>Navigation</SheetTitle>
-        </SheetHeader>
-        <nav className="mt-4 flex flex-col gap-1">
-          {[
-            "Dashboard",
-            "Reviews",
-            "Inbox",
-            "Contacts",
-            "Campaigns",
-            "Reports",
-            "Settings",
-          ].map((item) => (
-            <SheetClose key={item} asChild>
-              <a
-                href="#"
-                className="rounded-md px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
-              >
-                {item}
-              </a>
-            </SheetClose>
-          ))}
-        </nav>
-      </SheetContent>
-    </Sheet>
-  ),
-};
-
-export const Top: Story = {
-  render: () => (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline">View Notifications</Button>
-      </SheetTrigger>
-      <SheetContent side="top">
-        <SheetHeader>
-          <SheetTitle>Recent Notifications</SheetTitle>
-          <SheetDescription>
-            You have 3 unread notifications.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="mt-4 space-y-2">
-          {[
-            {
-              msg: "New 5-star review from Google",
-              time: "2 minutes ago",
-              type: "review",
-            },
-            {
-              msg: "Review request campaign delivered to 48 contacts",
-              time: "1 hour ago",
-              type: "campaign",
-            },
-            {
-              msg: "Monthly performance report is ready",
-              time: "Yesterday",
-              type: "report",
-            },
-          ].map((n) => (
-            <div
-              key={n.msg}
-              className="flex items-start gap-4 rounded-md border border-border bg-muted px-4 py-2"
-            >
-              <div className="flex-1">
-                <p className="text-sm text-foreground">{n.msg}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{n.time}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </SheetContent>
-    </Sheet>
-  ),
-};
-
-export const Bottom: Story = {
-  render: () => (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline">Bulk Actions</Button>
-      </SheetTrigger>
-      <SheetContent side="bottom">
-        <SheetHeader>
-          <SheetTitle>Bulk Review Actions</SheetTitle>
-          <SheetDescription>
-            Apply an action to all 14 selected reviews.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="flex flex-wrap gap-2 mt-4">
-          <Button variant="outline">Mark as Responded</Button>
-          <Button variant="outline">Archive</Button>
-          <Button variant="outline">Export Selected</Button>
-          <Button variant="destructive">Delete Selected</Button>
-        </div>
-        <SheetFooter className="mt-4">
-          <SheetClose asChild>
-            <Button variant="ghost">Cancel</Button>
-          </SheetClose>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
-  ),
+export const Large: Story = {
+  render: () => <FloatingPlaceholder floatingSize="lg" title="Large panel" />,
 };

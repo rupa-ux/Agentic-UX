@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from "react";
-import { X, Clock, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Clock } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
+import { InlineSelectField } from "@/app/components/ui/inline-select-field";
 import { reportScheduleService, trackReportAction, buildEvent } from "./services";
 import type { ReportContext } from "./types";
 
@@ -8,66 +9,6 @@ interface ScheduleReportModalProps {
   open: boolean;
   onClose: () => void;
   context: ReportContext;
-}
-
-/* ─── Reusable select ─── */
-function SelectField({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  options: readonly string[] | string[];
-  onChange: (v: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  return (
-    <div>
-      <label className="block text-[12px] text-[#888] dark:text-[#6b7280] mb-1.5 tracking-[-0.24px]" style={{ fontWeight: 400 }}>
-        {label}
-      </label>
-      <div className="relative" ref={ref}>
-        <button
-          onClick={() => setOpen(!open)}
-          className="flex items-center justify-between w-full px-3 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
-          style={{ fontWeight: 400 }}
-        >
-          {value}
-          <ChevronDown className="w-3 h-3 text-[#999] dark:text-[#6b7280]" />
-        </button>
-        {open && (
-          <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-[#1e2229] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] py-1 z-50 max-h-[200px] overflow-y-auto">
-            {options.map((o) => (
-              <button
-                key={o}
-                onClick={() => { onChange(o); setOpen(false); }}
-                className={`w-full text-left px-3 py-1.5 text-[13px] transition-colors ${
-                  o === value
-                    ? "text-[#2552ED] dark:text-[#6b9bff] bg-[#f0f4ff] dark:bg-[#1e2d5e]"
-                    : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
-                }`}
-                style={{ fontWeight: 400 }}
-              >
-                {o}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
 }
 
 export function ScheduleReportModal({ open, onClose, context }: ScheduleReportModalProps) {
@@ -141,13 +82,13 @@ export function ScheduleReportModal({ open, onClose, context }: ScheduleReportMo
 
           {/* Frequency / Day / Time row */}
           <div className="grid grid-cols-3 gap-3">
-            <SelectField label="Frequency" value={frequency} options={frequencies} onChange={setFrequency} />
-            <SelectField label="Day" value={day} options={days} onChange={setDay} />
-            <SelectField label="Time" value={time} options={times} onChange={setTime} />
+            <InlineSelectField size="md" label="Frequency" value={frequency} options={frequencies} onChange={setFrequency} />
+            <InlineSelectField size="md" label="Day" value={day} options={days} onChange={setDay} />
+            <InlineSelectField size="md" label="Time" value={time} options={times} onChange={setTime} />
           </div>
 
           {/* Timezone */}
-          <SelectField label="Timezone" value={timezone} options={timezones} onChange={setTimezone} />
+          <InlineSelectField size="md" label="Timezone" value={timezone} options={timezones} onChange={setTimezone} />
 
           {/* Format */}
           <div>

@@ -15,6 +15,14 @@ const meta: Meta<typeof Select> = {
   title: "UI/Select",
   component: Select,
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "**SelectContent** uses the shared floating panel surface (`FLOATING_PANEL_SURFACE_CLASSNAME`) and `p-2` viewport padding so the list matches **Popover** / **DropdownMenu** elevation and corner radius.",
+      },
+    },
+  },
 };
 
 export default meta;

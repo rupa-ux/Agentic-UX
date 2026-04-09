@@ -279,7 +279,7 @@ export function MynaChatPanel({
                     align="end"
                     side="bottom"
                     sideOffset={8}
-                    className="z-[60] w-72 max-w-[min(18rem,calc(100vw-2rem))] border-0 bg-white p-0 shadow-sm outline-none dark:bg-[#1a1d24]"
+                    className="z-[60] w-72 max-w-[min(18rem,calc(100vw-2rem))] p-0 outline-none"
                   >
                     <div className="px-4 pt-3 pb-2">
                       <p

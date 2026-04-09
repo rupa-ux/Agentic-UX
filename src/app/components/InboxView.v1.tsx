@@ -19,6 +19,7 @@ import {
   MessageSquarePlus,
   Mail,
 } from "lucide-react";
+import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 
 /* ─── Types ─── */
 interface Conversation {
@@ -462,7 +463,7 @@ function Composer({ textareaRef }: { textareaRef: RefObject<HTMLTextAreaElement 
                 : "bg-[#2552ED]/70 hover:bg-[#2552ED]/75 dark:bg-[#2552ED]/50 dark:hover:bg-[#2552ED]/55"
             }`}
           >
-            <ArrowUp className="mx-auto h-4 w-4" strokeWidth={2} />
+            <ArrowUp className="mx-auto h-4 w-4" strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
           </Button>
         </div>
       </div>
