@@ -6,6 +6,7 @@ import { MynaNewChatOverlay } from "@/app/components/MynaNewChatOverlay";
 import { L2NavLayout } from "@/app/components/L2NavLayout";
 import { l2KeyFromConversation } from "@/app/myna/mynaL2NavKeys";
 import { MYNA_SEED_CONVERSATIONS } from "@/app/myna/mynaMockConversations";
+import { APP_SHELL_GUTTER_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
 
 const meta = {
   title: "Design System / BirdAI",
@@ -74,7 +75,9 @@ export const ConversationsL2Nav: StoryObj = {
     const conv = MYNA_SEED_CONVERSATIONS.find((c) => c.id === id) ?? MYNA_SEED_CONVERSATIONS[0];
     const activeItem = l2KeyFromConversation(conv);
     return (
-      <div className="flex h-[520px] rounded-lg border border-[#e5e9f0] bg-[#e0e5eb] dark:border-[#333a47] dark:bg-[#13161b]">
+      <div
+        className={`flex h-[520px] rounded-lg border border-[#e5e9f0] dark:border-[#333a47] ${APP_SHELL_GUTTER_SURFACE_CLASS}`}
+      >
         <MynaConversationsL2NavPanel
           conversations={MYNA_SEED_CONVERSATIONS}
           activeItem={activeItem}
@@ -92,7 +95,7 @@ export const NewChatOverlay: StoryObj = {
   render: function Render() {
     const [open, setOpen] = useState(true);
     return (
-      <div className="min-h-[480px] bg-[#e0e5eb] dark:bg-[#13161b]">
+      <div className={`min-h-[480px] ${APP_SHELL_GUTTER_SURFACE_CLASS}`}>
         <p className="p-4 text-[13px] text-[#555] dark:text-[#8b92a5]">
           Overlay uses <code className="text-[12px]">fixed</code> positioning (z-index 100). Close with the button or Escape.
         </p>

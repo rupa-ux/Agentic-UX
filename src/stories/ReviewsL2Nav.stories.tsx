@@ -10,6 +10,9 @@
 
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
+import { Plus } from "lucide-react";
+import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
+import { APP_SHELL_GUTTER_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
 import {
   L2NavLayout,
   type L2NavLayoutProps,
@@ -64,7 +67,7 @@ const reviewsConfig: L2NavLayoutProps = {
 /* ── Wrapper ────────────────────────────────────────── */
 function Frame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
+    <div className={`flex h-screen ${APP_SHELL_GUTTER_SURFACE_CLASS}`}>
       {children}
     </div>
   );
@@ -215,10 +218,7 @@ export const AllExpanded: Story = {
     // Pre-open every section by setting defaultActive per section
     return (
       <Frame>
-        <div className="flex h-screen bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
-          {/* Use a custom wrapper that forces all expanded */}
-          <AllExpandedPanel active={active} onActive={setActive} />
-        </div>
+        <AllExpandedPanel active={active} onActive={setActive} />
       </Frame>
     );
   },
@@ -229,7 +229,7 @@ function AllExpandedPanel({ active, onActive }: { active: string; onActive: (k: 
   const { ChevronUp, ChevronDown, ExternalLink } = require("lucide-react");
 
   const PANEL =
-    "w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#e5e9f0] dark:border-[#2e3340] rounded-tl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300";
+    "w-[220px] bg-app-shell-l2-surface border-r border-app-shell-border rounded-tl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300";
   const ROW = "flex items-center justify-between w-full px-[8px] py-[6px] text-[13px] rounded-[4px] transition-colors tracking-[-0.26px]";
   const HOVER = "hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]";
 
@@ -239,7 +239,12 @@ function AllExpandedPanel({ active, onActive }: { active: string; onActive: (k: 
         <button className={`${ROW} ${HOVER} text-[#212121] dark:text-[#e4e4e4] mb-[6px]`} style={{ fontSize: 14 }}>
           <span className="text-[14px]">Send a review request</span>
           <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
-            <span className={L2_HEADER_PLUS_GLYPH_BLUE}>+</span>
+            <Plus
+              className={L2_HEADER_PLUS_GLYPH_BLUE}
+              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              absoluteStrokeWidth
+              aria-hidden
+            />
           </div>
         </button>
         {reviewsConfig.sections.map(section => (

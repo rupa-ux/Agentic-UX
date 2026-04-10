@@ -7,12 +7,13 @@ import { XIcon } from "lucide-react";
 import { cn } from "./utils";
 
 /** Width preset for `SheetContent` with `inset="floating"` (right/left only). */
-export type SheetFloatingSize = "sm" | "md" | "lg";
+export type SheetFloatingSize = "sm" | "md" | "lg" | "xl";
 
 const floatingSheetWidthClasses: Record<SheetFloatingSize, string> = {
   sm: "w-[340px] max-w-[min(340px,calc(100vw-2rem))]",
   md: "w-[480px] max-w-[min(480px,calc(100vw-2rem))]",
   lg: "w-[640px] max-w-[min(640px,calc(100vw-2rem))]",
+  xl: "w-[min(85vw,calc(100vw-2rem))] max-w-[min(85vw,calc(100vw-2rem))]",
 };
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {

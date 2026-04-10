@@ -25,7 +25,11 @@ import { AgentOnboardingView } from "./components/AgentOnboardingView";
 import { ScheduleBuilderView } from "./components/ScheduleBuilderView";
 import { BirdAIReportsView } from "./components/BirdAIReportsView";
 import { type DraftReport } from "./components/draftStore";
-import { APP_MAIN_CONTENT_SHELL_CLASS } from "./components/layout/appShellClasses";
+import {
+  APP_MAIN_CONTENT_SHELL_CLASS,
+  APP_SHELL_BELOW_TOPBAR_CARD_CLASS,
+  APP_SHELL_GUTTER_SURFACE_CLASS,
+} from "./components/layout/appShellClasses";
 import { ResizableRightChatPanel } from "./components/layout/ResizableRightChatPanel";
 import { MynaChatPanel } from "./components/MynaChatPanel";
 import BusinessOverviewDashboard from "./components/BusinessOverviewDashboard";
@@ -292,7 +296,10 @@ export default function App() {
         />
 
         {/* Below TopBar: L2 nav + main content side by side */}
-        <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] pr-[10px] pb-[10px] pl-0 transition-colors duration-300">
+        <div
+          className={`flex-1 flex min-h-0 overflow-hidden pr-[10px] pb-[10px] pl-0 ${APP_SHELL_GUTTER_SURFACE_CLASS}`}
+        >
+          <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
 
           {/* Myna fullscreen: conversation L2 replaces product L2 */}
           {mynaWorkspaceExpanded && (
@@ -467,6 +474,7 @@ export default function App() {
             >
               {mynaChatPanelEl}
             </ResizableRightChatPanel>
+          </div>
           </div>
         </div>
       </div>

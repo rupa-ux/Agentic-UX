@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
 import {
-  ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Sparkles,
+  ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Sparkles, Plus,
 } from "lucide-react";
 import {
   ChatDots, MapPin, Star, Gift, CurrencyDollar,
@@ -10,6 +10,7 @@ import {
 import svgPaths from "../../imports/svg-y1gexucine";
 import type { AppView } from "../App";
 import { Button } from "@/app/components/ui/button";
+import { APP_SHELL_RAIL_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
 import { FLOATING_PANEL_SURFACE_CLASSNAME } from "@/app/components/ui/floatingPanelSurface";
 import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "./l1StripIconTokens";
 import { MonitorNotificationsTrigger } from "./MonitorNotificationsTrigger";
@@ -142,7 +143,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
   }, []);
 
   return (
-    <div className="w-[66px] bg-[#e0e5eb] dark:bg-[#181b22] flex flex-col items-center shrink-0 transition-colors duration-300" data-no-print>
+    <div className={`w-[66px] flex flex-col items-center shrink-0 ${APP_SHELL_RAIL_SURFACE_CLASS}`} data-no-print>
       {/* Birdeye logo */}
       <div className="h-[48px] w-[55px] flex items-center justify-center shrink-0">
         <svg width="17.55" height="16.875" viewBox="0 0 19.5 18.75" fill="none">
@@ -175,7 +176,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
               className={`
                 group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0
                 transition-all duration-200 ease-out outline-none
-                focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-[#e0e5eb] dark:focus-visible:ring-offset-[#181b22]
+                focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail
                 ${isActive
                   ? "bg-[#d4dae3] dark:bg-[#282e3a] shadow-none"
                   : "bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95"
@@ -204,7 +205,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
         <button
           type="button"
           onClick={() => onViewChange("agents-onboarding")}
-          className={`group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-[#e0e5eb] dark:focus-visible:ring-offset-[#181b22] ${
+          className={`group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail ${
             currentView === "agents-onboarding"
               ? "bg-[#d4dae3] dark:bg-[#282e3a] shadow-none"
               : "bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95"
@@ -227,7 +228,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
         {/* Settings gear — same surface / hover / focus as L1 nav icons */}
         <button
           type="button"
-          className="group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-[#e0e5eb] dark:focus-visible:ring-offset-[#181b22]"
+          className="group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail"
         >
           <Settings
             width={L1_STRIP_ICON_SIZE}
@@ -597,7 +598,12 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
         >
           <span className="text-[14px]">Create dashboard</span>
           <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
-            <span className={L2_HEADER_PLUS_GLYPH_BLUE}>+</span>
+            <Plus
+              className={L2_HEADER_PLUS_GLYPH_BLUE}
+              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              absoluteStrokeWidth
+              aria-hidden
+            />
           </div>
         </button>
 
@@ -613,7 +619,12 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
         >
           <span className="text-[14px]">Create report</span>
           <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
-            <span className={L2_HEADER_PLUS_GLYPH_BLUE}>+</span>
+            <Plus
+              className={L2_HEADER_PLUS_GLYPH_BLUE}
+              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              absoluteStrokeWidth
+              aria-hidden
+            />
           </div>
         </button>
 
@@ -942,7 +953,12 @@ export function InboxL2NavPanel() {
         <button className={`${FOOTER_ROW_CLS} mb-[6px]`} style={{ fontSize: 14 }}>
           <span className="text-[14px]">New message</span>
           <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
-            <span className={L2_HEADER_PLUS_GLYPH_BLUE}>+</span>
+            <Plus
+              className={L2_HEADER_PLUS_GLYPH_BLUE}
+              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              absoluteStrokeWidth
+              aria-hidden
+            />
           </div>
         </button>
 
@@ -986,7 +1002,12 @@ export function InboxL2NavPanel() {
         <button className={`${FOOTER_ROW_CLS} mb-[6px]`} style={{ fontSize: 14 }}>
           <span className="text-[14px]">Internal team chat</span>
           <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
-            <span className={L2_HEADER_PLUS_GLYPH_BLUE}>+</span>
+            <Plus
+              className={L2_HEADER_PLUS_GLYPH_BLUE}
+              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              absoluteStrokeWidth
+              aria-hidden
+            />
           </div>
         </button>
 

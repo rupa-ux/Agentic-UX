@@ -35,7 +35,7 @@ export function MonitorNotificationsTrigger() {
           className={cn(
             "group relative shrink-0 rounded-[10px] transition-all duration-200 ease-out",
             "bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95",
-            "focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-[#e0e5eb] dark:focus-visible:ring-offset-[#181b22]",
+            "focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail",
             /* Open popover = same surface as L1 active item */
             "data-[state=open]:bg-[#d4dae3] dark:data-[state=open]:bg-[#282e3a] data-[state=open]:shadow-none",
           )}

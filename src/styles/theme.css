@@ -105,6 +105,16 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  /** L2+main card frame (`APP_SHELL_BELOW_TOPBAR_CARD_CLASS`) — between `--sidebar-border` and `--border` vs grey gutter. */
+  --app-shell-border: oklch(0.88 0.012 264.53);
+  /** Area behind the L2+main card (`pr-[10px] pb-[10px]` row in `App.tsx`). */
+  --app-shell-gutter: #e0e5eb;
+  /** L1 rail + TopBar band (light matches gutter; dark slightly lifted from gutter). */
+  --app-shell-rail: #e0e5eb;
+  /** L2 navigation column surface (`L2NavLayout` / `L2_PANEL_SURFACE`). */
+  --app-shell-l2-surface: #f0f1f5;
+  /** Main column below TopBar (`APP_MAIN_CONTENT_SHELL_CLASS`). */
+  --app-shell-main: var(--background);
 
   /* Override Tailwind font-weight utilities to only use regular (400) and light (300) */
   --font-weight-thin: 300;
@@ -153,6 +163,12 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+  /** Softer than `--border` so the shell reads on the gutter without heavy chrome. */
+  --app-shell-border: oklch(0.42 0.012 264.53);
+  --app-shell-gutter: #13161b;
+  --app-shell-rail: #181b22;
+  --app-shell-l2-surface: #1e2229;
+  --app-shell-main: #1e2229;
 }
 
 @theme inline {
@@ -194,6 +210,11 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-app-shell-border: var(--app-shell-border);
+  --color-app-shell-gutter: var(--app-shell-gutter);
+  --color-app-shell-rail: var(--app-shell-rail);
+  --color-app-shell-l2-surface: var(--app-shell-l2-surface);
+  --color-app-shell-main: var(--app-shell-main);
 }
 
 @layer base {

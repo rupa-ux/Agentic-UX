@@ -21,6 +21,7 @@ import { ReviewsL2NavPanel as ReviewsL2NavPanelV2 } from "@/app/components/Sideb
 import { AgentsL2NavPanel as AgentsL2NavPanelV1 } from "@/app/components/AgentsL2NavPanel.v1";
 import { AgentsL2NavPanel as AgentsL2NavPanelV2 } from "@/app/components/AgentsL2NavPanel.v2";
 import type { AppView } from "@/app/App";
+import { APP_SHELL_GUTTER_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
 import { MonitorNotificationsProvider } from "@/app/context/MonitorNotificationsContext";
 
 // ─── All selectable views ─────────────────────────────
@@ -78,7 +79,7 @@ function ActiveL2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v
 
 function SidebarFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
+    <div className={`flex h-screen ${APP_SHELL_GUTTER_SURFACE_CLASS}`}>
       {children}
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react";
 import {
-  ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Clock, ExternalLink, Keyboard,
+  ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Clock, ExternalLink, Keyboard, Plus,
 } from "lucide-react";
 import {
   Sparkle, ListChecks, Robot, Brain, SquaresFour, ChartBar,
@@ -492,12 +492,26 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: { curren
       <div className="flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
         <button type="button" className={`${FOOTER_ROW_CLS} mb-2`} style={{ fontSize: 14 }} onClick={() => onViewChange("dashboard")}>
           <span className="text-[14px]">Create dashboard</span>
-          <div className={L2_HEADER_PLUS_WRAPPER_BLUE}><span className={L2_HEADER_PLUS_GLYPH_BLUE}>+</span></div>
+          <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
+            <Plus
+              className={L2_HEADER_PLUS_GLYPH_BLUE}
+              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              absoluteStrokeWidth
+              aria-hidden
+            />
+          </div>
         </button>
         {dashboardSections.map(s => renderSection(s, dashboardExpanded, toggleDashboard))}
         <button type="button" className={`${FOOTER_ROW_CLS} mt-2 mb-2`} style={{ fontSize: 14 }} onClick={() => onViewChange("dashboard")}>
           <span className="text-[14px]">Create report</span>
-          <div className={L2_HEADER_PLUS_WRAPPER_BLUE}><span className={L2_HEADER_PLUS_GLYPH_BLUE}>+</span></div>
+          <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
+            <Plus
+              className={L2_HEADER_PLUS_GLYPH_BLUE}
+              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              absoluteStrokeWidth
+              aria-hidden
+            />
+          </div>
         </button>
         <div className="mt-2 flex flex-col gap-1">{reportCatalogSections.map(s => renderSection(s, reportExpanded, toggleReport))}</div>
       </div>

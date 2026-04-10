@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { APP_SHELL_BELOW_TOPBAR_CARD_CLASS } from "@/app/components/layout/appShellClasses";
 
 const meta: Meta = {
   title: "Design System/Tokens",
@@ -59,6 +60,39 @@ const sidebarColors = [
   { name: "Sidebar border",       token: "--sidebar-border",       cls: "bg-sidebar-border" },
 ];
 
+const appShellColors = [
+  {
+    name: "App shell gutter",
+    token: "--app-shell-gutter",
+    cls: "bg-app-shell-gutter",
+    note: "Area around the L2+main card (`pr-[10px] pb-[10px]` row)",
+  },
+  {
+    name: "App shell rail",
+    token: "--app-shell-rail",
+    cls: "bg-app-shell-rail",
+    note: "L1 strip + TopBar (light matches gutter)",
+  },
+  {
+    name: "App shell L2 surface",
+    token: "--app-shell-l2-surface",
+    cls: "bg-app-shell-l2-surface border border-border",
+    note: "Secondary navigation column",
+  },
+  {
+    name: "App shell main",
+    token: "--app-shell-main",
+    cls: "bg-app-shell-main border border-border",
+    note: "Primary content column (light = background)",
+  },
+  {
+    name: "App shell outline",
+    token: "--app-shell-border",
+    cls: "bg-app-shell-border",
+    note: "1px card frame — L2+main below TopBar",
+  },
+];
+
 export const Colors: Story = {
   name: "Colours",
   render: () => (
@@ -103,6 +137,22 @@ export const Colors: Story = {
               <div className="flex flex-col gap-0.5">
                 <p className="text-sm text-foreground">{name}</p>
                 <p className="font-mono text-xs text-muted-foreground">{token}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <SectionLabel>App chrome</SectionLabel>
+        <div className="grid grid-cols-5 gap-4">
+          {appShellColors.map(({ name, token, cls, note }) => (
+            <div key={token} className="flex flex-col gap-2">
+              <div className={`h-14 w-full rounded-lg ${cls}`} />
+              <div className="flex flex-col gap-0.5">
+                <p className="text-sm text-foreground">{name}</p>
+                <p className="font-mono text-xs text-muted-foreground">{token}</p>
+                {note ? <p className="text-[11px] text-muted-foreground">{note}</p> : null}
               </div>
             </div>
           ))}
@@ -270,32 +320,47 @@ export const BorderRadius: Story = {
         </p>
         <ul className="text-sm text-foreground max-w-2xl list-disc pl-4 space-y-2 mb-6">
           <li>
-            L2 navigation column: use the exported <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">PANEL</code>{" "}
-            from <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">L2NavLayout.tsx</code> (includes{" "}
-            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">rounded-tl-lg</code>, 8px top-left).
+            Below TopBar, wrap L2 + main (and optional Myna row) in{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">APP_SHELL_BELOW_TOPBAR_CARD_CLASS</code>{" "}
+            from <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">appShellClasses.ts</code>{" "}
+            (1px <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">rounded-lg</code> frame,{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">border-app-shell-border</code> /{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">--app-shell-border</code> — **App shell outline** in Colours; gutter uses{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">bg-app-shell-gutter</code> /{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">APP_SHELL_GUTTER_SURFACE_CLASS</code> with{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">pr-[10px] pb-[10px]</code> on the parent row in{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">App.tsx</code>).
+          </li>
+          <li>
+            L2 navigation column: <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">PANEL</code> from{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">L2NavLayout.tsx</code> (8px left corners,{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">border-r border-app-shell-border</code> vs main).
           </li>
           <li>
             Main content column: <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">APP_MAIN_CONTENT_SHELL_CLASS</code>{" "}
-            in <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">appShellClasses.ts</code>{" "}
-            (<code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">rounded-tr-lg</code>, white surface).
+            (<code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">rounded-tr-lg</code>,{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">rounded-br-lg</code>,{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">bg-app-shell-main</code> — no extra perimeter border).
           </li>
           <li>
             Top bar: <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">rounded-tr-lg</code> in{" "}
             <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">TopBar.tsx</code>.
           </li>
         </ul>
-        <div className="flex max-w-md border border-border rounded-lg overflow-hidden bg-[#e0e5eb] h-24">
-          <div
-            className="w-24 shrink-0 bg-[#f0f1f5] border-r border-[#e5e9f0] rounded-tl-lg flex items-end justify-center pb-2 text-[10px] text-muted-foreground"
-            title="L2 — rounded-tl-lg"
-          >
-            L2
-          </div>
-          <div
-            className="flex-1 min-w-0 bg-white rounded-tr-lg flex items-end justify-center pb-2 text-[10px] text-muted-foreground"
-            title="Main — rounded-tr-lg"
-          >
-            Main
+        <div className="flex h-24 w-full max-w-md flex-col rounded-lg bg-app-shell-gutter p-2">
+          <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
+            <div
+              className="flex w-24 shrink-0 items-end justify-center rounded-tl-lg border-r border-app-shell-border bg-app-shell-l2-surface pb-2 text-[10px] text-muted-foreground"
+              title="L2 — PANEL seam"
+            >
+              L2
+            </div>
+            <div
+              className="flex flex-1 min-w-0 items-end justify-center rounded-tr-lg rounded-br-lg bg-app-shell-main pb-2 text-[10px] text-muted-foreground"
+              title="Main — APP_MAIN_CONTENT_SHELL_CLASS"
+            >
+              Main
+            </div>
           </div>
         </div>
       </div>

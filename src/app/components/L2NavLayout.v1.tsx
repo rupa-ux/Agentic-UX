@@ -2,10 +2,10 @@
  * L2NavLayout — shared layout primitive for ALL L2 navigation panels.
  *
  * APP SHELL — L2 COLUMN (required for new products):
- *   The exported `PANEL` class string includes `rounded-tl-lg` (8px top-left) so the L2
- *   column matches the rest of the app below the top bar. Custom L2 sidebars (220px) must
- *   use `PANEL` or replicate the same radius and surface tokens — see Storybook:
- *   Design System → Tokens → Border Radius → App shell.
+ *   The exported `PANEL` class string includes `rounded-tl-lg` (8px top-left) and `border-r` (1px seam vs
+ *   main). The outer chrome frame is `APP_SHELL_BELOW_TOPBAR_CARD_CLASS` (`border-app-shell-border` / `--app-shell-border`).
+ *   Custom L2 sidebars (220px) must use `PANEL` or replicate the same tokens — see Storybook:
+ *   Design System → Tokens → App shell.
  *
  * DEFAULT EXPANSION RULE (applies to every panel automatically):
  *   • If a section named "Actions" exists → expand only that section.
@@ -29,16 +29,17 @@
  */
 
 import { useState } from "react";
-import { ChevronUp, ChevronDown, ExternalLink } from "lucide-react";
+import { ChevronUp, ChevronDown, ExternalLink, Plus } from "lucide-react";
+import { L1_STRIP_ICON_STROKE_PX } from "./l1StripIconTokens";
 
 /* ─────────────────────────────────────────────────────
    Design tokens — edit here to update every L2 panel
    ───────────────────────────────────────────────────── */
 /** L2 column background only (matches `PANEL`) — use behind main-content lists that mirror L2 selection. */
-export const L2_PANEL_SURFACE = "bg-[#f0f1f5] dark:bg-[#1e2229]";
+export const L2_PANEL_SURFACE = "bg-app-shell-l2-surface";
 
 export const PANEL =
-  `w-[220px] ${L2_PANEL_SURFACE} border-r border-[#e5e9f0] dark:border-[#2e3340] rounded-tl-lg rounded-bl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300`;
+  `w-[220px] ${L2_PANEL_SURFACE} border-r border-app-shell-border rounded-tl-lg rounded-bl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300`;
 
 // Shared row geometry — same for headers, children, footer
 export const ROW =
@@ -59,17 +60,18 @@ export const FOOTER_ROW_CLS    = `${ROW} ${HOVER} text-[#212121] dark:text-[#e4e
 /** Muted band on main content (e.g. Monitor hero) — aligns with L2 gray family, borderless. */
 export const L2_CONTENT_MUTED_BAND = "bg-[#f2f3f6] dark:bg-[#252b34]";
 
-/** L2 header row “+” — primary tint + primary glyph; soft lift (shared across L2 + custom sidebars). */
+/** L2 header row “+” — primary tint + Lucide `Plus` (shared across L2 + custom sidebars). */
 export const L2_HEADER_PLUS_WRAPPER_BLUE =
-  "w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-primary/15 dark:bg-primary/20 shadow-[0_1px_2px_rgba(15,23,42,0.06)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.35)]";
+  "w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-primary/15 dark:bg-primary/20";
+/** Class names for `<Plus />` inside `L2_HEADER_PLUS_WRAPPER_*`. */
 export const L2_HEADER_PLUS_GLYPH_BLUE =
-  "text-primary text-base font-medium leading-none select-none";
+  "size-[15px] shrink-0 text-primary pointer-events-none";
 
 /** Same shape for `headerActionColor="green"` (pale green surface + darker plus). */
 export const L2_HEADER_PLUS_WRAPPER_GREEN =
   "w-8 h-8 bg-[#4caf50]/20 dark:bg-[#4caf50]/25 rounded-full flex items-center justify-center shrink-0";
 export const L2_HEADER_PLUS_GLYPH_GREEN =
-  "text-[#1b5e20] dark:text-[#a5d6a7] text-base leading-none select-none";
+  "size-[15px] shrink-0 text-[#1b5e20] dark:text-[#a5d6a7] pointer-events-none";
 
 /* ─────────────────────────────────────────────────────
    Types
@@ -202,7 +204,12 @@ export function L2NavLayout({
           >
             <span className="text-[14px]">{headerAction.label}</span>
             <div className={plusWrapper}>
-              <span className={plusGlyph}>+</span>
+              <Plus
+                className={plusGlyph}
+                strokeWidth={L1_STRIP_ICON_STROKE_PX}
+                absoluteStrokeWidth
+                aria-hidden
+              />
             </div>
           </button>
         )}

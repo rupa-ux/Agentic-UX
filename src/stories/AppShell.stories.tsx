@@ -18,7 +18,11 @@ import {
 } from "@/app/components/Sidebar";
 import { TopBar } from "@/app/components/TopBar";
 import { MonitorNotificationsProvider } from "@/app/context/MonitorNotificationsContext";
-import { APP_MAIN_CONTENT_SHELL_CLASS } from "@/app/components/layout/appShellClasses";
+import {
+  APP_MAIN_CONTENT_SHELL_CLASS,
+  APP_SHELL_BELOW_TOPBAR_CARD_CLASS,
+  APP_SHELL_GUTTER_SURFACE_CLASS,
+} from "@/app/components/layout/appShellClasses";
 import type { AppView } from "@/app/App";
 
 /* ─── View metadata for the view switcher ─── */
@@ -65,7 +69,7 @@ function L2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v: AppV
 function ContentPlaceholder({ view }: { view: AppView }) {
   if (view === "business-overview") {
     return (
-      <div className="flex-1 min-h-0 min-w-0 flex flex-col items-center justify-center gap-2 overflow-hidden bg-white dark:bg-[#13161b] px-8 transition-colors duration-300">
+      <div className="flex-1 min-h-0 min-w-0 flex flex-col items-center justify-center gap-2 overflow-hidden bg-app-shell-main px-8 transition-colors duration-300">
         <p className="text-sm font-medium text-foreground">Overview</p>
         <p className="text-[13px] text-muted-foreground text-center max-w-sm">
           Empty state — content is shown on the real Overview page in the app.
@@ -75,7 +79,7 @@ function ContentPlaceholder({ view }: { view: AppView }) {
   }
   const label = VIEWS.find(v => v.value === view)?.label ?? view;
   return (
-    <div className="flex-1 flex flex-col items-center justify-center gap-6 min-w-0 min-h-0 overflow-hidden overflow-y-auto p-8 bg-white dark:bg-[#13161b] transition-colors duration-300">
+    <div className="flex-1 flex flex-col items-center justify-center gap-6 min-w-0 min-h-0 overflow-hidden overflow-y-auto p-8 bg-app-shell-main transition-colors duration-300">
       {/* Skeleton card grid */}
       <div className="w-full max-w-4xl flex flex-col gap-6">
         {/* Header placeholder */}
@@ -95,7 +99,7 @@ function ContentPlaceholder({ view }: { view: AppView }) {
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white dark:bg-[#1e2229] p-4 flex flex-col gap-4"
+              className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white dark:bg-app-shell-main p-4 flex flex-col gap-4"
             >
               <div className="h-3 w-20 rounded bg-black/8 dark:bg-white/8 animate-pulse" />
               <div className="h-8 w-16 rounded bg-black/10 dark:bg-white/10 animate-pulse" />
@@ -105,7 +109,7 @@ function ContentPlaceholder({ view }: { view: AppView }) {
         </div>
 
         {/* Main chart placeholder */}
-        <div className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white dark:bg-[#1e2229] p-6 flex flex-col gap-4">
+        <div className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white dark:bg-app-shell-main p-6 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="h-4 w-32 rounded bg-black/8 dark:bg-white/8 animate-pulse" />
             <div className="h-7 w-28 rounded-lg bg-black/5 dark:bg-white/5 animate-pulse" />
@@ -118,7 +122,7 @@ function ContentPlaceholder({ view }: { view: AppView }) {
         </div>
 
         {/* Table placeholder */}
-        <div className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white dark:bg-[#1e2229] overflow-hidden">
+        <div className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white dark:bg-app-shell-main overflow-hidden">
           {/* Table header */}
           <div className="flex gap-4 px-6 py-4 border-b border-black/[0.06] dark:border-white/[0.06]">
             {[160, 96, 80, 64].map((w, i) => (
@@ -198,7 +202,7 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          "Canonical app chrome: L1 icon strip, TopBar (`rounded-tr-lg`), L2 column via `PANEL` from `L2NavLayout` (8px left corners: `rounded-tl-lg rounded-bl-lg`), main column via `APP_MAIN_CONTENT_SHELL_CLASS` (8px right corners: `rounded-tr-lg rounded-br-lg`), with a 10px inset below the top bar. When you add a new module, reuse those tokens so corners stay consistent. See Design System → Tokens → Border Radius → App shell.",
+          "Canonical app chrome: L1 icon strip, TopBar (`rounded-tr-lg`), then a gutter row (`bg-app-shell-gutter`, `pr-[10px] pb-[10px]`) wrapping `APP_SHELL_BELOW_TOPBAR_CARD_CLASS` (1px `border-app-shell-border`). Inside: L2 `PANEL` (`bg-app-shell-l2-surface`, `border-r border-app-shell-border`), main `APP_MAIN_CONTENT_SHELL_CLASS` (`bg-app-shell-main`). L1 + TopBar use `bg-app-shell-rail`. See Design System → Tokens → Colours → App chrome.",
       },
     },
   },
@@ -214,7 +218,7 @@ export const Default: Story = {
 
     return (
       <MonitorNotificationsProvider onNavigateToMonitor={() => setView("agents-monitor")}>
-        <div className="relative h-screen w-screen flex overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
+        <div className={`relative h-screen w-screen flex overflow-hidden ${APP_SHELL_GUTTER_SURFACE_CLASS}`}>
           {/* L1 Icon Strip */}
           <IconStrip currentView={view} onViewChange={setView} />
 
@@ -224,10 +228,14 @@ export const Default: Story = {
             <TopBar currentView={view} onViewChange={setView} />
 
             {/* L2 nav + main content */}
-            <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] pr-[10px] pb-[10px] pl-0 transition-colors duration-300">
-              <L2Panel view={view} onViewChange={setView} />
-              <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
-                <ContentPlaceholder view={view} />
+            <div
+              className={`flex-1 flex min-h-0 overflow-hidden pr-[10px] pb-[10px] pl-0 ${APP_SHELL_GUTTER_SURFACE_CLASS}`}
+            >
+              <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
+                <L2Panel view={view} onViewChange={setView} />
+                <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
+                  <ContentPlaceholder view={view} />
+                </div>
               </div>
             </div>
           </div>
@@ -247,14 +255,18 @@ export const StartingWithAgents: Story = {
 
     return (
       <MonitorNotificationsProvider onNavigateToMonitor={() => setView("agents-monitor")}>
-        <div className="relative h-screen w-screen flex overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
+        <div className={`relative h-screen w-screen flex overflow-hidden ${APP_SHELL_GUTTER_SURFACE_CLASS}`}>
           <IconStrip currentView={view} onViewChange={setView} />
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
             <TopBar currentView={view} onViewChange={setView} />
-            <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] pr-[10px] pb-[10px] pl-0 transition-colors duration-300">
-              <L2Panel view={view} onViewChange={setView} />
-              <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
-                <ContentPlaceholder view={view} />
+            <div
+              className={`flex-1 flex min-h-0 overflow-hidden pr-[10px] pb-[10px] pl-0 ${APP_SHELL_GUTTER_SURFACE_CLASS}`}
+            >
+              <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
+                <L2Panel view={view} onViewChange={setView} />
+                <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
+                  <ContentPlaceholder view={view} />
+                </div>
               </div>
             </div>
           </div>
@@ -272,14 +284,18 @@ export const StartingWithReviews: Story = {
 
     return (
       <MonitorNotificationsProvider onNavigateToMonitor={() => setView("agents-monitor")}>
-        <div className="relative h-screen w-screen flex overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
+        <div className={`relative h-screen w-screen flex overflow-hidden ${APP_SHELL_GUTTER_SURFACE_CLASS}`}>
           <IconStrip currentView={view} onViewChange={setView} />
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
             <TopBar currentView={view} onViewChange={setView} />
-            <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] pr-[10px] pb-[10px] pl-0 transition-colors duration-300">
-              <L2Panel view={view} onViewChange={setView} />
-              <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
-                <ContentPlaceholder view={view} />
+            <div
+              className={`flex-1 flex min-h-0 overflow-hidden pr-[10px] pb-[10px] pl-0 ${APP_SHELL_GUTTER_SURFACE_CLASS}`}
+            >
+              <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
+                <L2Panel view={view} onViewChange={setView} />
+                <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
+                  <ContentPlaceholder view={view} />
+                </div>
               </div>
             </div>
           </div>
@@ -297,13 +313,17 @@ export const NoL2Panel: Story = {
 
     return (
       <MonitorNotificationsProvider onNavigateToMonitor={() => setView("agents-monitor")}>
-        <div className="relative h-screen w-screen flex overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
+        <div className={`relative h-screen w-screen flex overflow-hidden ${APP_SHELL_GUTTER_SURFACE_CLASS}`}>
           <IconStrip currentView={view} onViewChange={setView} />
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
             <TopBar currentView={view} onViewChange={setView} />
-            <div className="flex-1 flex min-h-0 overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] pr-[10px] pb-[10px] pl-0 transition-colors duration-300">
-              <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
-                <ContentPlaceholder view={view} />
+            <div
+              className={`flex-1 flex min-h-0 overflow-hidden pr-[10px] pb-[10px] pl-0 ${APP_SHELL_GUTTER_SURFACE_CLASS}`}
+            >
+              <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
+                <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
+                  <ContentPlaceholder view={view} />
+                </div>
               </div>
             </div>
           </div>
