@@ -1,6 +1,6 @@
 ---
 name: aero-ds
-description: "Aero DS: design intelligence for this repo only—ShareConsolidated (Bird AI) SaaS shell (dashboards, agents, settings, workflows, in-app surfaces). Stack: React, Vite, Tailwind, shadcn-style primitives. Verify in Storybook (Design System/Tokens) and theme.css. Not for generic websites, portfolios, or marketing landing systems unless explicitly requested."
+description: "Aero DS: design intelligence for this repo only—ShareConsolidated (Bird AI) SaaS shell (dashboards, agents, settings, workflows, in-app surfaces). Stack: React, Vite, Tailwind, shadcn-style primitives. Verify in Storybook (Design System/Tokens) and theme.css. For floating right drawers from Figma or screenshots, follow Storybook UI/Sheet + FloatingSheetFrame (see skill section). Not for generic websites, portfolios, or marketing landing systems unless explicitly requested."
 ---
 # Aero DS - Design Intelligence
 
@@ -25,6 +25,46 @@ Storybook is the **primary visual verification surface** for UI work in this rep
 - **Stories:** When adding or changing user-visible UI under `src/app/`, add or update a story under [`src/stories/`](../../../src/stories/) where practical so states are reviewable in isolation.
 - **Preview globals:** Follow [`.storybook/preview.tsx`](../../../.storybook/preview.tsx) — light/dark theme toolbar, `DESIGN_VERSION` tokens CSS + [`src/styles/index.css`](../../../src/styles/index.css), story `layout` parameters; backgrounds addon stays disabled in favour of CSS variables.
 - **Parity:** Components should look and behave in Storybook the same way they do in the running app (shared CSS entry).
+
+## Floating drawers / side panels (Figma, screenshots, specs)
+
+Use this when the user attaches a **screenshot**, **Figma frame**, or spec for a **right-rail overlay**: quick view, add/edit flows, settings side panel, or any panel that slides over **dimmed** main content in the SaaS shell.
+
+### Design vs implementation
+
+- **From the reference (Figma / screenshot / PDF):** information hierarchy, copy, field order, density, and visual emphasis (within `theme.css` and spacing grid rules).
+- **From the codebase (non-negotiable unless a flow doc records an exception):** use **Radix `Sheet`** with **floating inset** and [`FloatingSheetFrame`](../../../src/app/components/layout/FloatingSheetFrame.tsx)—not a one-off full-bleed edge sheet, not a parallel “drawer” primitive under `UI/Drawer` for this pattern. Layout inside the frame may follow the design; **shell geometry and CTAs** follow Storybook.
+
+### Implementation checklist
+
+1. **`Sheet` / `SheetContent`:** `side="right"`, `inset="floating"`, `floatingSize` one of `sm` | `md` | `lg` | `xl`. Default **`md`** (480px cap) for typical forms and quick views unless the spec names another preset. Reference: [`src/stories/Sheet.stories.tsx`](../../../src/stories/Sheet.stories.tsx) — story **UI/Sheet → Medium**.
+2. **`SheetContent` `className`:** include **`FLOATING_SHEET_FRAME_CONTENT_CLASS`** from [`FloatingSheetFrame`](../../../src/app/components/layout/FloatingSheetFrame.tsx) so the frame body owns vertical scroll (`overflow-hidden`, `p-0` on the sheet content).
+3. **`FloatingSheetFrame`:** pass `title` (and optional `description`), put scrollable content in **`children`**, put **primary** and **secondary** actions in **`primaryAction` / `secondaryAction`** (sticky footer, scroll-linked header/footer shadows). Match the **Medium** placeholder: fixed chrome, scrolling body only.
+4. **Rich footer:** When the flow needs a composer (textarea, attachments, send + secondary actions), use **`footer`** on `FloatingSheetFrame` to replace the default primary/secondary row—keep the same floating sheet shell (`FLOATING_SHEET_FRAME_CONTENT_CLASS` on `SheetContent`).
+5. **Dismiss:** rely on the **top-right close** baked into [`sheet.v1`](../../../src/app/components/ui/sheet.v1.tsx) `SheetContent`. Do not add a second “X” in header or footer unless product explicitly requires it.
+6. **Verify:** open **UI/Sheet → Medium** in Storybook (default dev port **6006** from `npm run storybook`; screenshots may show another port) and compare to **App/Settings/Account settings** ([`AccountSettingsSheet.tsx`](../../../src/app/components/settings/AccountSettingsSheet.tsx)) for a full product floating sheet.
+
+Cursor guardrail (short pointer): [`.cursor/rules/storybook-new-component.mdc`](../../../.cursor/rules/storybook-new-component.mdc) — “Floating side panels”.
+
+### Copy-paste prompts
+
+**User prompt** (paste when starting work with a design attachment):
+
+```text
+Implement this using our product pattern for floating right drawers: Storybook UI/Sheet → Medium (floating inset, md width by default) plus FloatingSheetFrame with fixed header, scrollable body, and primary/secondary CTAs in the footer. Match the screenshot/Figma for layout and copy; use theme.css semantic tokens and existing ui/ primitives. Verify against Storybook and Account settings sheet after.
+```
+
+**Agent / task prompt** (stricter checklist):
+
+```text
+Floating right panel task — follow repo pattern only:
+- Use Sheet + SheetContent from @/app/components/ui/sheet with side="right", inset="floating", floatingSize="md" unless spec says sm/lg/xl.
+- Set SheetContent className to FLOATING_SHEET_FRAME_CONTENT_CLASS from @/app/components/layout/FloatingSheetFrame.
+- Wrap inner UI in FloatingSheetFrame: title (+ optional description), children = scrollable body, primaryAction + secondaryAction for footer CTAs (default + outline Button variants).
+- Do not duplicate the sheet close control; SheetContent already provides top-right dismiss.
+- Re-read src/stories/Sheet.stories.tsx (Medium) and src/app/components/settings/AccountSettingsSheet.tsx before finishing.
+- Extend an existing story under src/stories/ where practical; do not invent a new Storybook taxonomy without approval.
+```
 
 ## When to Apply
 

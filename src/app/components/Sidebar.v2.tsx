@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
 import {
-  ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Sparkles, Plus,
+  ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Sparkles, Plus, Info,
 } from "lucide-react";
 import {
   ChatDots, MapPin, Star, Gift, CurrencyDollar,
@@ -10,6 +10,8 @@ import {
 import svgPaths from "../../imports/svg-y1gexucine";
 import type { AppView } from "../App";
 import { Button } from "@/app/components/ui/button";
+import { Card, CardContent } from "@/app/components/ui/card";
+import { Progress } from "@/app/components/ui/progress";
 import { APP_SHELL_RAIL_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
 import { FLOATING_PANEL_SURFACE_CLASSNAME } from "@/app/components/ui/floatingPanelSurface";
 import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "./l1StripIconTokens";
@@ -716,7 +718,6 @@ export function ReviewsL2NavPanel() {
 const socialConfig = {
   headerAction: { label: "Create post" },
   sections: [
-    { label: "Actions", children: ["Reply manually", "Monitor agent replies"] },
     { label: "Publish", children: ["View calendar", "View drafts", "Approve posts", "Fix failed posts", "Fix rejected posts"] },
     { label: "Engage", children: ["View all engagements", "Assigned to me", "Approve replies", "Fix rejected replies", "View spam"] },
     { label: "Reports", children: ["All channels", "Post performance", "Response trends", "Best time to post"] },
@@ -749,16 +750,54 @@ export function SearchAIL2NavPanel() {
 /* ═══════════════════════════════════════════
    Contacts L2 Nav Panel – uses L2NavLayout
    ═══════════════════════════════════════════ */
-const contactsConfig = {
-  headerAction: { label: "Add a contact" },
-  standaloneItems: ["All contacts", "Lists & segments"],
-  sections: [
-    { label: "Settings", children: ["Custom fields", "Tags"] },
-  ],
+const contactsNavSections = [
+  { label: "Settings", children: ["Custom fields", "Tags"] },
+];
+
+function ContactsL2UsageFooter() {
+  return (
+    <Card className="gap-2 border-border bg-card py-0 shadow-none">
+      <CardContent className="flex flex-col gap-2 px-4 py-4">
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-muted-foreground text-xs leading-snug">7/50 Reachable contacts added</p>
+          <button
+            type="button"
+            className="text-muted-foreground hover:text-foreground shrink-0 rounded-sm p-1"
+            title="Illustrative usage for the prototype"
+            aria-label="Usage information"
+          >
+            <Info className="size-4" aria-hidden />
+          </button>
+        </div>
+        <Progress value={14} />
+        <button type="button" className="text-primary text-left text-xs font-medium hover:underline">
+          View usage
+        </button>
+      </CardContent>
+    </Card>
+  );
+}
+
+export type ContactsL2NavPanelProps = {
+  activeItem: string;
+  onActiveItemChange: (key: string) => void;
+  onAddContact: () => void;
 };
 
-export function ContactsL2NavPanel() {
-  return <L2NavLayout {...contactsConfig} data-no-print />;
+export function ContactsL2NavPanel({ activeItem, onActiveItemChange, onAddContact }: ContactsL2NavPanelProps) {
+  return (
+    <L2NavLayout
+      headerAction={{ label: "Add a contact", onClick: onAddContact }}
+      standaloneItems={["All contacts", "Lists & segments"]}
+      sections={contactsNavSections}
+      activeItem={activeItem}
+      onActiveItemChange={onActiveItemChange}
+      defaultActive="standalone/All contacts"
+      defaultExpandedSections={[]}
+      footerSlot={<ContactsL2UsageFooter />}
+      data-no-print
+    />
+  );
 }
 
 /* ═══════════════════════════════════════════
@@ -869,6 +908,22 @@ const competitorsConfig = {
 
 export function CompetitorsL2NavPanel() {
   return <L2NavLayout {...competitorsConfig} data-no-print />;
+}
+
+/* ═══════════════════════════════════════════
+   Appointments L2 Nav Panel – uses L2NavLayout
+   ═══════════════════════════════════════════ */
+const appointmentsConfig = {
+  panelTitle: "Appointments",
+  defaultExpandedSections: ["Actions", "Settings"],
+  sections: [
+    { label: "Actions", children: ["View calendar", "View schedule"] },
+    { label: "Settings", children: ["Widget", "Notifications & alerts"] },
+  ],
+};
+
+export function AppointmentsL2NavPanel() {
+  return <L2NavLayout {...appointmentsConfig} data-no-print />;
 }
 
 /* ═══════════════════════════════════════════

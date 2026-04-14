@@ -24,6 +24,18 @@ import {
   APP_SHELL_GUTTER_SURFACE_CLASS,
 } from "@/app/components/layout/appShellClasses";
 import type { AppView } from "@/app/App";
+import { CONTACTS_L2_KEY_ALL } from "@/app/components/ContactsView";
+
+function ContactsL2ForAppShell() {
+  const [activeItem, setActiveItem] = useState(CONTACTS_L2_KEY_ALL);
+  return (
+    <ContactsL2NavPanel
+      activeItem={activeItem}
+      onActiveItemChange={setActiveItem}
+      onAddContact={() => {}}
+    />
+  );
+}
 
 /* ─── View metadata for the view switcher ─── */
 const VIEWS: { value: AppView; label: string; group: string }[] = [
@@ -50,7 +62,7 @@ function L2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v: AppV
   if (view === "reviews")     return <ReviewsL2NavPanel />;
   if (view === "social")      return <SocialL2NavPanel />;
   if (view === "searchai")    return <SearchAIL2NavPanel />;
-  if (view === "contacts")    return <ContactsL2NavPanel />;
+  if (view === "contacts")    return <ContactsL2ForAppShell />;
   if (view === "listings")    return <ListingsL2NavPanel />;
   if (view === "surveys")     return <SurveysL2NavPanel />;
   if (view === "ticketing")   return <TicketingL2NavPanel />;

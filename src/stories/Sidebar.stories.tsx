@@ -21,6 +21,18 @@ import { ReviewsL2NavPanel as ReviewsL2NavPanelV2 } from "@/app/components/Sideb
 import { AgentsL2NavPanel as AgentsL2NavPanelV1 } from "@/app/components/AgentsL2NavPanel.v1";
 import { AgentsL2NavPanel as AgentsL2NavPanelV2 } from "@/app/components/AgentsL2NavPanel.v2";
 import type { AppView } from "@/app/App";
+import { CONTACTS_L2_KEY_ALL } from "@/app/components/ContactsView";
+
+function ContactsL2NavPanelStateful() {
+  const [activeItem, setActiveItem] = useState(CONTACTS_L2_KEY_ALL);
+  return (
+    <ContactsL2NavPanel
+      activeItem={activeItem}
+      onActiveItemChange={setActiveItem}
+      onAddContact={() => {}}
+    />
+  );
+}
 import { APP_SHELL_GUTTER_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
 import { MonitorNotificationsProvider } from "@/app/context/MonitorNotificationsContext";
 
@@ -62,7 +74,7 @@ function ActiveL2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v
   if (view === "reviews")     return <ReviewsL2NavPanel />;
   if (view === "social")      return <SocialL2NavPanel />;
   if (view === "searchai")    return <SearchAIL2NavPanel />;
-  if (view === "contacts")    return <ContactsL2NavPanel />;
+  if (view === "contacts")    return <ContactsL2NavPanelStateful />;
   if (view === "listings")    return <ListingsL2NavPanel />;
   if (view === "surveys")     return <SurveysL2NavPanel />;
   if (view === "ticketing")   return <TicketingL2NavPanel />;
@@ -197,7 +209,7 @@ export const L2ReviewsDesignV2: Story = {
 export const L2Social: Story      = { name: panelStories[2].name,  render: () => <SidebarFrame><SocialL2NavPanel /></SidebarFrame> };
 export const L2SearchAI: Story    = { name: panelStories[3].name,  render: () => <SidebarFrame><SearchAIL2NavPanel /></SidebarFrame> };
 export const L2Listings: Story    = { name: panelStories[4].name,  render: () => <SidebarFrame><ListingsL2NavPanel /></SidebarFrame> };
-export const L2Contacts: Story    = { name: panelStories[5].name,  render: () => <SidebarFrame><ContactsL2NavPanel /></SidebarFrame> };
+export const L2Contacts: Story    = { name: panelStories[5].name,  render: () => <SidebarFrame><ContactsL2NavPanel activeItem={CONTACTS_L2_KEY_ALL} onActiveItemChange={() => {}} onAddContact={() => {}} /></SidebarFrame> };
 export const L2Inbox: Story       = { name: panelStories[6].name,  render: () => <SidebarFrame><InboxL2NavPanel /></SidebarFrame> };
 export const L2Surveys: Story     = { name: panelStories[7].name,  render: () => <SidebarFrame><SurveysL2NavPanel /></SidebarFrame> };
 export const L2Ticketing: Story   = { name: panelStories[8].name,  render: () => <SidebarFrame><TicketingL2NavPanel /></SidebarFrame> };

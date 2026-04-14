@@ -8,9 +8,12 @@ import {
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { Input } from "@/app/components/ui/input";
+import { Sheet, SheetContent } from "@/app/components/ui/sheet";
+import { cn } from "@/app/components/ui/utils";
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
-} from "@/app/components/ui/sheet";
+  FLOATING_SHEET_FRAME_CONTENT_CLASS,
+  FloatingSheetFrame,
+} from "@/app/components/layout/FloatingSheetFrame";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -253,121 +256,139 @@ function TicketDetailSheet({
   const sourceCfg   = SOURCE_CONFIG[ticket.source];
   const SourceIcon  = sourceCfg.icon;
 
+  const replyComposer = (
+    <div className="w-full">
+      <textarea
+        value={reply}
+        onChange={(e) => setReply(e.target.value)}
+        placeholder="Write a reply…"
+        rows={3}
+        className="w-full resize-none rounded-lg border border-input bg-background px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+      />
+      <div className="mt-2 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Paperclip size={14} strokeWidth={1.6} absoluteStrokeWidth />
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          {ticket.status !== "resolved" && (
+            <Button variant="outline" size="sm" className="h-7 cursor-pointer gap-2 text-xs">
+              <CheckCircle2 size={12} strokeWidth={1.6} absoluteStrokeWidth />
+              Resolve
+            </Button>
+          )}
+          <Button size="sm" className="h-7 cursor-pointer gap-2 text-xs" disabled={!reply.trim()}>
+            <Send size={12} strokeWidth={1.6} absoluteStrokeWidth />
+            Send reply
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full max-w-2xl flex flex-col overflow-hidden p-0">
-        {/* Header */}
-        <div className="px-6 pt-6 pb-4 border-b border-border shrink-0">
-          <SheetHeader className="mb-0">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] text-muted-foreground font-mono mb-1">{ticket.id}</p>
-                <SheetTitle className="text-base leading-snug">{ticket.subject}</SheetTitle>
-              </div>
-            </div>
-            <SheetDescription className="sr-only">Ticket from {ticket.contactName}</SheetDescription>
-          </SheetHeader>
-
-          {/* Meta row */}
-          <div className="flex flex-wrap items-center gap-2 mt-3">
-            <Badge variant="outline" className={`text-xs gap-1 ${statusCfg.className}`}>
-              <statusCfg.icon size={10} strokeWidth={1.6} absoluteStrokeWidth />
-              {statusCfg.label}
-            </Badge>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <span className={`w-2 h-2 rounded-full ${priorityCfg.dot}`} />
-              {priorityCfg.label}
-            </div>
-            <div className={`flex items-center gap-1 text-xs ${sourceCfg.color}`}>
-              <SourceIcon size={11} strokeWidth={1.6} absoluteStrokeWidth />
-              <span className="text-muted-foreground">{sourceCfg.label}</span>
-            </div>
-            {ticket.assignee && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
-                <User size={11} strokeWidth={1.6} absoluteStrokeWidth />
-                {ticket.assignee}
-              </div>
-            )}
-          </div>
-
-          {/* Tags */}
-          {ticket.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {ticket.tags.map((t) => (
-                <span key={t} className="inline-flex items-center gap-1 text-[10px] bg-muted text-muted-foreground rounded px-1.5 py-0.5">
-                  <Tag size={8} strokeWidth={1.6} absoluteStrokeWidth />
-                  {t}
+      <SheetContent
+        side="right"
+        inset="floating"
+        floatingSize="lg"
+        className={cn(FLOATING_SHEET_FRAME_CONTENT_CLASS, "flex flex-col")}
+      >
+        <FloatingSheetFrame
+          title={
+            <>
+              <span className="block font-mono text-[11px] font-normal tracking-normal text-muted-foreground">
+                {ticket.id}
+              </span>
+              <span className="mt-1 block text-base font-normal leading-snug tracking-normal text-foreground">
+                {ticket.subject}
+              </span>
+              <span className="mt-3 flex flex-wrap items-center gap-2">
+                <Badge variant="outline" className={`gap-1 text-xs ${statusCfg.className}`}>
+                  <statusCfg.icon size={10} strokeWidth={1.6} absoluteStrokeWidth />
+                  {statusCfg.label}
+                </Badge>
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <span className={`h-2 w-2 rounded-full ${priorityCfg.dot}`} />
+                  {priorityCfg.label}
                 </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Contact bar */}
-        <div className="px-6 py-3 border-b border-border bg-muted/20 shrink-0">
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">{ticket.contactName}</span>
-            <span>{ticket.contactEmail}</span>
-            <span>{ticket.contactPhone}</span>
-            <span className="ml-auto">{ticket.createdAt}</span>
-          </div>
-        </div>
-
-        {/* Message thread */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4 min-h-0">
-          {ticket.messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex flex-col gap-1 ${msg.isAgent ? "items-end" : "items-start"}`}
-            >
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className={`font-medium ${msg.isAgent ? "text-primary" : "text-foreground"}`}>
-                  {msg.author}
+                <span className={`inline-flex items-center gap-1 text-xs ${sourceCfg.color}`}>
+                  <SourceIcon size={11} strokeWidth={1.6} absoluteStrokeWidth />
+                  <span className="text-muted-foreground">{sourceCfg.label}</span>
                 </span>
-                <span>{msg.timestamp}</span>
-              </div>
+                {ticket.assignee ? (
+                  <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <User size={11} strokeWidth={1.6} absoluteStrokeWidth />
+                    {ticket.assignee}
+                  </span>
+                ) : null}
+              </span>
+              {ticket.tags.length > 0 ? (
+                <span className="mt-2 flex flex-wrap gap-2">
+                  {ticket.tags.map((t) => (
+                    <span
+                      key={t}
+                      className="inline-flex items-center gap-1 rounded bg-muted px-2 py-0.5 text-[10px] text-muted-foreground"
+                    >
+                      <Tag size={8} strokeWidth={1.6} absoluteStrokeWidth />
+                      {t}
+                    </span>
+                  ))}
+                </span>
+              ) : null}
+              <span className="sr-only">
+                {`Contact ${ticket.contactName}, ${ticket.contactEmail}.`}
+              </span>
+            </>
+          }
+          classNames={{
+            root: "min-h-0 flex-1",
+            header: "border-b border-border",
+            body: "px-6 pt-0 pb-4",
+            footer:
+              "flex w-full flex-col items-stretch justify-start gap-0 border-t border-border sm:flex-col",
+          }}
+          footer={replyComposer}
+        >
+          <div className="sticky top-0 z-[1] -mx-6 mb-4 border-b border-border bg-muted/20 px-6 py-3">
+            <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">{ticket.contactName}</span>
+              <span>{ticket.contactEmail}</span>
+              <span>{ticket.contactPhone}</span>
+              <span className="ml-auto">{ticket.createdAt}</span>
+            </div>
+          </div>
+          <div className="flex flex-col gap-4">
+            {ticket.messages.map((msg) => (
               <div
-                className={`max-w-[80%] rounded-xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line ${
-                  msg.isAgent
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-foreground"
-                }`}
+                key={msg.id}
+                className={`flex flex-col gap-1 ${msg.isAgent ? "items-end" : "items-start"}`}
               >
-                {msg.body}
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span
+                    className={`font-medium ${msg.isAgent ? "text-primary" : "text-foreground"}`}
+                  >
+                    {msg.author}
+                  </span>
+                  <span>{msg.timestamp}</span>
+                </div>
+                <div
+                  className={`max-w-[80%] rounded-xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line ${
+                    msg.isAgent
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-foreground"
+                  }`}
+                >
+                  {msg.body}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Reply composer */}
-        <div className="px-6 py-4 border-t border-border shrink-0">
-          <textarea
-            value={reply}
-            onChange={(e) => setReply(e.target.value)}
-            placeholder="Write a reply…"
-            rows={3}
-            className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-          />
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-2">
-              <button className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                <Paperclip size={14} strokeWidth={1.6} absoluteStrokeWidth />
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              {ticket.status !== "resolved" && (
-                <Button variant="outline" size="sm" className="h-7 text-xs cursor-pointer gap-1.5">
-                  <CheckCircle2 size={12} strokeWidth={1.6} absoluteStrokeWidth />
-                  Resolve
-                </Button>
-              )}
-              <Button size="sm" className="h-7 text-xs cursor-pointer gap-1.5" disabled={!reply.trim()}>
-                <Send size={12} strokeWidth={1.6} absoluteStrokeWidth />
-                Send reply
-              </Button>
-            </div>
+            ))}
           </div>
-        </div>
+        </FloatingSheetFrame>
       </SheetContent>
     </Sheet>
   );

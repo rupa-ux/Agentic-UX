@@ -2,7 +2,7 @@ import {
   IconStrip, L2NavPanel, ReviewsL2NavPanel, SocialL2NavPanel, SearchAIL2NavPanel,
   ContactsL2NavPanel, AgentsL2NavPanel, ListingsL2NavPanel, TicketingL2NavPanel,
   CampaignsL2NavPanel, SurveysL2NavPanel, InsightsL2NavPanel, CompetitorsL2NavPanel,
-  InboxL2NavPanel, MynaConversationsL2NavPanel,
+  AppointmentsL2NavPanel, InboxL2NavPanel, MynaConversationsL2NavPanel,
 } from "./components/Sidebar";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Toaster } from "sonner";
@@ -15,7 +15,12 @@ import { ComponentShowcase } from "./components/ComponentShowcase";
 import { ReviewsView } from "./components/ReviewsView";
 import { SocialView } from "./components/SocialView";
 import { SearchAIView } from "./components/SearchAIView";
-import { ContactsView } from "./components/ContactsView";
+import {
+  ContactsView,
+  CONTACTS_L2_KEY_ALL,
+  type ContactsAppBridge,
+  type ContactsSheetMode,
+} from "./components/ContactsView";
 import { ScheduledDeliveriesView } from "./components/ScheduledDeliveriesView";
 import { AgentsMonitorView } from "./components/AgentsMonitorView";
 import { AnalyzePerformanceView } from "./components/AnalyzePerformanceView";
@@ -125,6 +130,52 @@ export default function App() {
   const [editingDraft, setEditingDraft] = useState<DraftReport | null>(null);
   const [selectedAgentSlug, setSelectedAgentSlug] = useState<string>("");
   const [selectedAnalyzeItem, setSelectedAnalyzeItem] = useState<string>("overview");
+
+  const [contactsL2Active, setContactsL2Active] = useState(CONTACTS_L2_KEY_ALL);
+  const [contactsSheetMode, setContactsSheetMode] = useState<ContactsSheetMode>("none");
+  const [contactsDetailId, setContactsDetailId] = useState<number | null>(null);
+  const [contactsQuickViewId, setContactsQuickViewId] = useState<number | null>(null);
+
+  const handleContactsL2Change = useCallback((key: string) => {
+    setContactsL2Active(key);
+    setContactsDetailId(null);
+    setContactsSheetMode("none");
+    setContactsQuickViewId(null);
+  }, []);
+
+  const handleContactsAddContact = useCallback(() => {
+    setContactsSheetMode("addContact");
+    setContactsQuickViewId(null);
+  }, []);
+
+  const contactsApp = useMemo<ContactsAppBridge>(
+    () => ({
+      l2ActiveItem: contactsL2Active,
+      onL2ActiveItemChange: handleContactsL2Change,
+      sheetMode: contactsSheetMode,
+      onSheetModeChange: setContactsSheetMode,
+      detailContactId: contactsDetailId,
+      onDetailContactIdChange: setContactsDetailId,
+      quickViewContactId: contactsQuickViewId,
+      onQuickViewContactIdChange: setContactsQuickViewId,
+    }),
+    [
+      contactsL2Active,
+      handleContactsL2Change,
+      contactsSheetMode,
+      contactsDetailId,
+      contactsQuickViewId,
+    ],
+  );
+
+  useEffect(() => {
+    if (currentView !== "contacts") {
+      setContactsL2Active(CONTACTS_L2_KEY_ALL);
+      setContactsSheetMode("none");
+      setContactsDetailId(null);
+      setContactsQuickViewId(null);
+    }
+  }, [currentView]);
 
   const handleViewChange = useCallback((view: AppView, slug?: string) => {
     if (view !== currentView) {
@@ -348,7 +399,11 @@ export default function App() {
           )}
           {/* Contacts L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "contacts" && (
-            <ContactsL2NavPanel />
+            <ContactsL2NavPanel
+              activeItem={contactsL2Active}
+              onActiveItemChange={handleContactsL2Change}
+              onAddContact={handleContactsAddContact}
+            />
           )}
           {/* Listings L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "listings" && (
@@ -373,6 +428,10 @@ export default function App() {
           {/* Competitors L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "competitors" && (
             <CompetitorsL2NavPanel />
+          )}
+          {/* Appointments L2 nav panel */}
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "appointments" && (
+            <AppointmentsL2NavPanel />
           )}
           {/* Inbox L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "inbox" && (
@@ -407,7 +466,7 @@ export default function App() {
             ) : currentView === "searchai" ? (
               <SearchAIView />
             ) : currentView === "contacts" ? (
-              <ContactsView />
+              <ContactsView app={contactsApp} />
             ) : currentView === "scheduled-deliveries" ? (
               <ScheduledDeliveriesView onCreateSchedule={() => handleViewChange("schedule-builder")} />
             ) : currentView === "agents-monitor" ? (

@@ -28,7 +28,7 @@
  *   />
  */
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ChevronUp, ChevronDown, ExternalLink, Plus } from "lucide-react";
 import { L1_STRIP_ICON_STROKE_PX } from "./l1StripIconTokens";
 
@@ -104,6 +104,8 @@ export interface L2FooterLink {
 export const L2_FLAT_NAV_KEY_PREFIX = "flatNav";
 
 export interface L2NavLayoutProps {
+  /** Optional bold module title at the top of the scroll area (e.g. "Appointments"). */
+  panelTitle?: string;
   /** Top row with a + button (e.g. "Send a review request") */
   headerAction?: L2HeaderAction;
   /** Color of the + button in the headerAction. Defaults to "blue". */
@@ -129,6 +131,8 @@ export interface L2NavLayoutProps {
   onActiveItemChange?: (key: string) => void;
   /** Section labels to expand on initial mount (overrides default expansion rule) */
   defaultExpandedSections?: string[];
+  /** Pinned below the scrollable nav (e.g. usage meter). */
+  footerSlot?: ReactNode;
   "data-no-print"?: boolean;
 }
 
@@ -143,6 +147,7 @@ function resolveDefaultExpanded(sections: L2Section[]): string {
    Component
    ───────────────────────────────────────────────────── */
 export function L2NavLayout({
+  panelTitle,
   headerAction,
   headerActionColor = "blue",
   standaloneItems,
@@ -153,6 +158,7 @@ export function L2NavLayout({
   activeItem: controlledActive,
   onActiveItemChange,
   defaultExpandedSections,
+  footerSlot,
   "data-no-print": noprint,
 }: L2NavLayoutProps) {
 
@@ -192,7 +198,13 @@ export function L2NavLayout({
 
   return (
     <div className={PANEL} data-no-print={noprint}>
-      <div className="flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
+      <div className="min-h-0 flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
+
+        {panelTitle ? (
+          <div className="mb-2 text-left text-[14px] font-semibold tracking-[-0.26px] text-[#212121] dark:text-[#e4e4e4]">
+            {panelTitle}
+          </div>
+        ) : null}
 
         {/* Header action */}
         {headerAction && (
@@ -295,6 +307,12 @@ export function L2NavLayout({
         )}
 
       </div>
+
+      {footerSlot ? (
+        <div className="shrink-0 border-t border-app-shell-border px-[8px] pt-2 pb-4">
+          {footerSlot}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -22,6 +22,7 @@ Do **not** introduce a second primitive or story name for the same pattern witho
 - **Use `Sheet`** with `inset="floating"` and `floatingSize` (`sm` | `md` | `lg`).
 - Prefer **`FloatingSheetFrame`** plus **`FLOATING_SHEET_FRAME_CONTENT_CLASS`** on **`SheetContent`** for new floating sheets (edging header, body-only scroll, sticky footer CTAs).
 - **Do not** add Storybook stories for the vaul **Drawer** under `UI/Drawer` for this pattern; floating demos live under **UI/Sheet**.
+- Full checklist, Figma/screenshot rules, and copy-paste prompts: **Aero DS skill** [`.claude/skills/aero-ds/SKILL.md`](.claude/skills/aero-ds/SKILL.md) → section **Floating drawers / side panels (Figma, screenshots, specs)**.
 - Pointers: **aero-ds-saas-storybook** Cursor rule, Storybook **Design System → Before you add a component**.
 
 ## Story titles
