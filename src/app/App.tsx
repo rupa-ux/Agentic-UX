@@ -24,6 +24,14 @@ import { AgentDetailView } from "./components/AgentDetailView";
 import { AgentOnboardingView } from "./components/AgentOnboardingView";
 import { ScheduleBuilderView } from "./components/ScheduleBuilderView";
 import { BirdAIReportsView } from "./components/BirdAIReportsView";
+import { ReferralsView } from "./components/ReferralsView";
+import { PaymentsView } from "./components/PaymentsView";
+import { AppointmentsView } from "./components/AppointmentsView";
+import { SurveysView } from "./components/SurveysView";
+import { TicketingView } from "./components/TicketingView";
+import { ListingsView } from "./components/ListingsView";
+import { CampaignsView } from "./components/CampaignsView";
+import { CompetitorsView } from "./components/CompetitorsView";
 import { type DraftReport } from "./components/draftStore";
 import {
   APP_MAIN_CONTENT_SHELL_CLASS,
@@ -267,7 +275,10 @@ export default function App() {
     v === "ticketing" ||
     v === "campaigns" ||
     v === "insights" ||
-    v === "competitors";
+    v === "competitors" ||
+    v === "referrals" ||
+    v === "payments" ||
+    v === "appointments";
 
   return (
     <MonitorNotificationsProvider
@@ -367,8 +378,8 @@ export default function App() {
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "inbox" && (
             <InboxL2NavPanel />
           )}
-          {/* Agents L2 nav panel */}
-          {!aiPanelOpen && !mynaWorkspaceExpanded && (currentView === "agents-monitor" || currentView === "agents-analyze-performance" || currentView === "agents-builder" || currentView === "agents-onboarding" || currentView === "agent-detail" || currentView === "birdai-reports") && (
+          {/* Agents L2 nav panel — suppressed for agents-builder (creation layout takes full width) */}
+          {!aiPanelOpen && !mynaWorkspaceExpanded && (currentView === "agents-monitor" || currentView === "agents-analyze-performance" || currentView === "agents-onboarding" || currentView === "agent-detail" || currentView === "birdai-reports") && (
             <AgentsL2NavPanel currentView={currentView} onViewChange={handleViewChange} selectedAgentSlug={selectedAgentSlug} selectedAnalyzeItem={selectedAnalyzeItem} />
           )}
 
@@ -430,29 +441,13 @@ export default function App() {
             ) : currentView === "birdai-reports" ? (
               <BirdAIReportsView />
             ) : currentView === "listings" ? (
-              <Dashboard
-                aiPanelOpen={aiPanelOpen}
-                onAiPanelChange={handleAiPanelChange}
-                editingDraft={editingDraft}
-              />
+              <ListingsView />
             ) : currentView === "surveys" ? (
-              <Dashboard
-                aiPanelOpen={aiPanelOpen}
-                onAiPanelChange={handleAiPanelChange}
-                editingDraft={editingDraft}
-              />
+              <SurveysView />
             ) : currentView === "ticketing" ? (
-              <Dashboard
-                aiPanelOpen={aiPanelOpen}
-                onAiPanelChange={handleAiPanelChange}
-                editingDraft={editingDraft}
-              />
+              <TicketingView />
             ) : currentView === "campaigns" ? (
-              <Dashboard
-                aiPanelOpen={aiPanelOpen}
-                onAiPanelChange={handleAiPanelChange}
-                editingDraft={editingDraft}
-              />
+              <CampaignsView />
             ) : currentView === "insights" ? (
               <Dashboard
                 aiPanelOpen={aiPanelOpen}
@@ -460,29 +455,13 @@ export default function App() {
                 editingDraft={editingDraft}
               />
             ) : currentView === "competitors" ? (
-              <Dashboard
-                aiPanelOpen={aiPanelOpen}
-                onAiPanelChange={handleAiPanelChange}
-                editingDraft={editingDraft}
-              />
+              <CompetitorsView />
             ) : currentView === "referrals" ? (
-              <Dashboard
-                aiPanelOpen={aiPanelOpen}
-                onAiPanelChange={handleAiPanelChange}
-                editingDraft={editingDraft}
-              />
+              <ReferralsView />
             ) : currentView === "payments" ? (
-              <Dashboard
-                aiPanelOpen={aiPanelOpen}
-                onAiPanelChange={handleAiPanelChange}
-                editingDraft={editingDraft}
-              />
+              <PaymentsView />
             ) : currentView === "appointments" ? (
-              <Dashboard
-                aiPanelOpen={aiPanelOpen}
-                onAiPanelChange={handleAiPanelChange}
-                editingDraft={editingDraft}
-              />
+              <AppointmentsView />
             ) : (
               <Dashboard
                 aiPanelOpen={aiPanelOpen}
