@@ -97,7 +97,7 @@ function ToolboxPanel({ mode, onModeChange }: { mode: BuilderMode; onModeChange:
   );
 
   return (
-    <div className="w-[260px] border-r border-[#e5e9f0] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] flex flex-col shrink-0 overflow-hidden">
+    <div className="w-[280px] border-r border-[#e5e9f0] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] flex flex-col shrink-0 overflow-hidden">
       {/* Mode toggle */}
       <div className="px-4 pt-4 pb-3 shrink-0">
         <div className="inline-flex bg-[#f0f1f5] dark:bg-[#262b35] rounded-full p-[2px]">
