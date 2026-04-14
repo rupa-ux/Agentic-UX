@@ -75,7 +75,10 @@ export type AppView =
   | "ticketing"
   | "campaigns"
   | "insights"
-  | "competitors";
+  | "competitors"
+  | "referrals"
+  | "payments"
+  | "appointments";
 
 /** Brief shell shimmer after login so the first paint mirrors real app loading. */
 const POST_LOGIN_BOOT_MS = 1200;
@@ -169,6 +172,10 @@ export default function App() {
   useEffect(() => {
     if (!mynaChatOpen) setMynaChatExpanded(false);
   }, [mynaChatOpen]);
+
+  useEffect(() => {
+    document.title = `${getAppViewTitle(currentView)} – Birdeye`;
+  }, [currentView]);
 
   const mynaWorkspaceExpanded = mynaChatOpen && mynaChatExpanded && !aiPanelOpen;
 
@@ -453,6 +460,24 @@ export default function App() {
                 editingDraft={editingDraft}
               />
             ) : currentView === "competitors" ? (
+              <Dashboard
+                aiPanelOpen={aiPanelOpen}
+                onAiPanelChange={handleAiPanelChange}
+                editingDraft={editingDraft}
+              />
+            ) : currentView === "referrals" ? (
+              <Dashboard
+                aiPanelOpen={aiPanelOpen}
+                onAiPanelChange={handleAiPanelChange}
+                editingDraft={editingDraft}
+              />
+            ) : currentView === "payments" ? (
+              <Dashboard
+                aiPanelOpen={aiPanelOpen}
+                onAiPanelChange={handleAiPanelChange}
+                editingDraft={editingDraft}
+              />
+            ) : currentView === "appointments" ? (
               <Dashboard
                 aiPanelOpen={aiPanelOpen}
                 onAiPanelChange={handleAiPanelChange}

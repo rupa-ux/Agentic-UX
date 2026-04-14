@@ -29,6 +29,12 @@ export function getAppViewTitle(view: AppView): string {
       return "Insights";
     case "competitors":
       return "Competitors";
+    case "referrals":
+      return "Referrals";
+    case "payments":
+      return "Payments";
+    case "appointments":
+      return "Appointments";
     case "dashboard":
       return "Reports";
     case "shared-by-me":

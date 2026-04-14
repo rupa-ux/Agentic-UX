@@ -113,6 +113,9 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
     else if (currentView === "campaigns") setActiveIcon("Campaigns");
     else if (currentView === "insights") setActiveIcon("Insights");
     else if (currentView === "competitors") setActiveIcon("Competitors");
+    else if (currentView === "referrals") setActiveIcon("Referrals");
+    else if (currentView === "payments") setActiveIcon("Payments");
+    else if (currentView === "appointments") setActiveIcon("Appointments");
     else if (currentView === "dashboard" || currentView === "shared-by-me") setActiveIcon("Reports");
     else if (currentView === "agents-monitor" || currentView === "agents-analyze-performance" || currentView === "agents-builder" || currentView === "agent-detail" || currentView === "agents-onboarding" || currentView === "birdai-reports") setActiveIcon("Agents");
     // scheduled-deliveries / schedule-builder: no icon mapping
@@ -172,6 +175,9 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                 else if (label === "Ticketing") onViewChange("ticketing");
                 else if (label === "Campaigns") onViewChange("campaigns");
                 else if (label === "Competitors") onViewChange("competitors");
+                else if (label === "Referrals") onViewChange("referrals");
+                else if (label === "Payments") onViewChange("payments");
+                else if (label === "Appointments") onViewChange("appointments");
               }}
               className={`
                 group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0
@@ -217,6 +223,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
             width={L1_STRIP_ICON_SIZE}
             height={L1_STRIP_ICON_SIZE}
             strokeWidth={L1_STRIP_ICON_STROKE_PX}
+            absoluteStrokeWidth
             className={`transition-all duration-200 ${
               currentView === "agents-onboarding"
                 ? "text-[#1E44CC] dark:text-[#2952E3]"
@@ -234,6 +241,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
             width={L1_STRIP_ICON_SIZE}
             height={L1_STRIP_ICON_SIZE}
             strokeWidth={L1_STRIP_ICON_STROKE_PX}
+            absoluteStrokeWidth
             className="text-[#505050] dark:text-[#9ba2b0] transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] group-hover:scale-110"
           />
         </button>

@@ -716,7 +716,7 @@ export const IconStroke: Story = {
   render: () => (
     <div className="flex flex-col gap-10 max-w-2xl">
       <div>
-        <SectionLabel>Product outline icons — 1.2px</SectionLabel>
+        <SectionLabel>Product outline icons — 1.4px</SectionLabel>
         <p className="text-sm text-muted-foreground max-w-xl mb-4">
           Hand-written UI icons (Lucide, Phosphor on the L1 rail) use{" "}
           <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">L1_STRIP_ICON_STROKE_PX</code>{" "}
@@ -727,12 +727,12 @@ export const IconStroke: Story = {
         <ul className="text-sm text-foreground max-w-xl list-disc pl-4 space-y-2 mb-6">
           <li>
             Pass <code className="font-mono text-xs bg-muted px-1 rounded">strokeWidth=&#123;L1_STRIP_ICON_STROKE_PX&#125;</code>{" "}
-            (or literal <code className="font-mono text-xs bg-muted px-1 rounded">1.2</code>).
+            (or literal <code className="font-mono text-xs bg-muted px-1 rounded">1.4</code>).
           </li>
           <li>
             When width/height are not the default 24px, add{" "}
             <code className="font-mono text-xs bg-muted px-1 rounded">absoluteStrokeWidth</code>{" "}
-            so the stroke stays 1.2px on screen (see JSDoc in the tokens file).
+            so the stroke stays 1.4px on screen (see JSDoc in the tokens file).
           </li>
           <li>
             <code className="font-mono text-xs bg-muted px-1 rounded">strokeWidth=&#123;0&#125;</code>{" "}
