@@ -344,10 +344,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                       )}
                       {/* Switch appearance – navigates to sub-panel */}
                       <button
-                        onClick={() => {
-                          setPreference("light");
-                          setShowAppearance(true);
-                        }}
+                        onClick={() => setShowAppearance(true)}
                         className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
                       >
                         <Moon

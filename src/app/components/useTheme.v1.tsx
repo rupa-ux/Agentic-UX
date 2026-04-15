@@ -29,13 +29,23 @@ function applyResolved(resolved: ResolvedTheme) {
 }
 
 function getStoredPreference(): ThemePreference {
-  const v = localStorage.getItem(STORAGE_KEY);
-  if (v === "light" || v === "dark" || v === "auto") return v;
-  return "light";
+  try {
+    const v = localStorage.getItem(STORAGE_KEY);
+    if (v === "light" || v === "dark" || v === "auto") return v;
+    // Persist explicit default so first load matches after deploy (empty/legacy keys → light).
+    localStorage.setItem(STORAGE_KEY, "light");
+    return "light";
+  } catch {
+    return "light";
+  }
 }
 
 function applyPreference(pref: ThemePreference) {
-  localStorage.setItem(STORAGE_KEY, pref);
+  try {
+    localStorage.setItem(STORAGE_KEY, pref);
+  } catch {
+    /* still apply to DOM when storage unavailable */
+  }
   applyResolved(resolveTheme(pref));
   listeners.forEach((cb) => cb());
 }
