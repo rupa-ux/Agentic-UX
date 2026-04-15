@@ -797,6 +797,47 @@ function ReviewCard({ review }: { review: Review }) {
   );
 }
 
+/* ─── Review card skeleton (shimmer placeholder while loading next page) ─── */
+function ReviewCardSkeleton() {
+  const shimmer = "bg-[#e8eaed] dark:bg-[#2e3340] rounded animate-pulse";
+  return (
+    <div className="flex flex-col gap-3 py-1">
+      {/* Reviewer header */}
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-3">
+          <div className={`w-9 h-9 rounded-full shrink-0 ${shimmer}`} />
+          <div className="flex flex-col gap-1.5">
+            <div className={`h-3 w-28 ${shimmer}`} />
+            <div className="flex items-center gap-2">
+              <div className={`h-2.5 w-20 ${shimmer}`} />
+              <div className={`h-2.5 w-16 ${shimmer}`} />
+            </div>
+          </div>
+        </div>
+        <div className={`h-2.5 w-24 ${shimmer}`} />
+      </div>
+      {/* Text lines */}
+      <div className="flex flex-col gap-2 mt-1">
+        <div className={`h-3 w-full ${shimmer}`} />
+        <div className={`h-3 w-full ${shimmer}`} />
+        <div className={`h-3 w-[92%] ${shimmer}`} />
+        <div className={`h-3 w-[85%] ${shimmer}`} />
+        <div className={`h-3 w-[70%] ${shimmer}`} />
+      </div>
+      {/* Photo strip */}
+      <div className="flex gap-2 mt-1">
+        {[160, 140, 150, 130].map((w, i) => (
+          <div key={i} className={`h-[88px] rounded-xl shrink-0 ${shimmer}`} style={{ width: w }} />
+        ))}
+      </div>
+      {/* AI reply bar */}
+      <div className={`h-14 w-full rounded-xl mt-1 ${shimmer}`} />
+    </div>
+  );
+}
+
+const PAGE_SIZE = 3;
+
 /* ─── Main ReviewsView ─── */
 export function ReviewsView() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -806,6 +847,12 @@ export function ReviewsView() {
   );
   const searchInputRef = useRef<HTMLInputElement>(null);
   const aiReplyButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Infinite scroll state
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [freshIds, setFreshIds] = useState<Set<number>>(new Set());
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onShortcut = (e: Event) => {
@@ -832,6 +879,36 @@ export function ReviewsView() {
         review.text.toLowerCase().includes(searchQuery.toLowerCase())
       : true
   );
+
+  // Reset pagination when search changes
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+    setFreshIds(new Set());
+  }, [searchQuery]);
+
+  // Intersection observer — fires when sentinel scrolls into view
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || isLoadingMore || visibleCount >= filteredReviews.length) return;
+        setIsLoadingMore(true);
+        setTimeout(() => {
+          const nextBatch = filteredReviews.slice(visibleCount, visibleCount + PAGE_SIZE);
+          const nextIds = new Set(nextBatch.map((r) => r.id));
+          setFreshIds(nextIds);
+          setVisibleCount((c) => Math.min(c + PAGE_SIZE, filteredReviews.length));
+          setIsLoadingMore(false);
+          // Remove fade-in class after animation completes
+          setTimeout(() => setFreshIds(new Set()), 700);
+        }, 900);
+      },
+      { rootMargin: "120px", threshold: 0 },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [isLoadingMore, visibleCount, filteredReviews.length, filteredReviews]);
 
   return (
     <div className="flex-1 flex min-h-0 overflow-hidden bg-white dark:bg-[#1e2229] transition-colors duration-300">
@@ -908,10 +985,45 @@ export function ReviewsView() {
 
         {/* Reviews feed */}
         <div className="flex-1 overflow-y-auto px-5 pb-6">
+          <style>{`
+            @keyframes reviewFadeUp {
+              from { opacity: 0; transform: translateY(12px); }
+              to   { opacity: 1; transform: translateY(0); }
+            }
+            .review-fade-in {
+              animation: reviewFadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+            }
+          `}</style>
           <div className="flex flex-col gap-10">
-            {filteredReviews.map((review) => (
-              <ReviewCard key={review.id} review={review} />
+            {filteredReviews.slice(0, visibleCount).map((review) => (
+              <div
+                key={review.id}
+                className={freshIds.has(review.id) ? "review-fade-in" : undefined}
+              >
+                <ReviewCard review={review} />
+              </div>
             ))}
+
+            {/* Shimmer skeletons while loading next page */}
+            {isLoadingMore && (
+              <>
+                {[0, 1, 2].map((i) => (
+                  <ReviewCardSkeleton key={`skel-${i}`} />
+                ))}
+              </>
+            )}
+
+            {/* Sentinel — sits below the last card, triggers next load */}
+            {visibleCount < filteredReviews.length && !isLoadingMore && (
+              <div ref={sentinelRef} className="h-1" aria-hidden />
+            )}
+
+            {/* End-of-feed label */}
+            {visibleCount >= filteredReviews.length && filteredReviews.length > 0 && (
+              <p className="text-center text-[12px] text-[#aaa] dark:text-[#555] pb-2">
+                All {filteredReviews.length} reviews loaded
+              </p>
+            )}
           </div>
         </div>
       </div>
