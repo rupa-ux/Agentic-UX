@@ -87,7 +87,10 @@ export function LoginMarketingPanel({ className }: { className?: string }) {
           {/* Headline + cycling platform */}
           <div className="flex flex-col items-center gap-1">
             <p className="text-[2.6rem] font-black leading-[1.07] tracking-tight text-[#1a1a1a] dark:text-[#f0efff]">
-              Be the top answer on
+              Be the #1 Answer
+            </p>
+            <p className="text-[2.6rem] font-black leading-[1.07] tracking-tight text-[#1a1a1a] dark:text-[#f0efff]">
+              for every location on
             </p>
 
             {/* Fixed-height cycling row: logo + name */}
@@ -100,38 +103,12 @@ export function LoginMarketingPanel({ className }: { className?: string }) {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
                   className="flex items-center gap-2.5"
+                  style={{ color: platform.hex }}
                 >
-                  {/* Brand logo from simple-icons path */}
-                  <svg
-                    width={38} height={38}
-                    viewBox="0 0 24 24"
-                    aria-hidden
-                    className="shrink-0 dark:hidden"
-                    style={{ fill: platform.hex }}
-                  >
+                  <svg width={38} height={38} viewBox="0 0 24 24" aria-hidden className="shrink-0" fill={platform.hex}>
                     <path d={platform.path} />
                   </svg>
-                  <svg
-                    width={38} height={38}
-                    viewBox="0 0 24 24"
-                    aria-hidden
-                    className="hidden shrink-0 dark:block"
-                    style={{ fill: platform.darkHex }}
-                  >
-                    <path d={platform.path} />
-                  </svg>
-
-                  {/* Brand name */}
-                  <span
-                    className="text-[2.6rem] font-black leading-[1.07] tracking-tight dark:hidden"
-                    style={{ color: platform.hex }}
-                  >
-                    {platform.label}
-                  </span>
-                  <span
-                    className="hidden text-[2.6rem] font-black leading-[1.07] tracking-tight dark:block"
-                    style={{ color: platform.darkHex }}
-                  >
+                  <span className="text-[2.6rem] font-black leading-[1.07] tracking-tight">
                     {platform.label}
                   </span>
                 </motion.div>
@@ -140,8 +117,8 @@ export function LoginMarketingPanel({ className }: { className?: string }) {
           </div>
 
           {/* Subtitle */}
-          <p className="max-w-[300px] text-[15px] leading-relaxed text-[#555] dark:text-[#9ba2b0]">
-            Maximize your GEO and stay visible on zero-click search.
+          <p className="max-w-[320px] text-[15px] leading-relaxed text-[#555] dark:text-[#9ba2b0]">
+            AI agents that track visibility and act on what&apos;s missing—across every location.
           </p>
 
           {/* CTA */}
