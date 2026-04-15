@@ -113,10 +113,11 @@ export function LoginMarketingPanel({ className }: { className?: string }) {
             AI agents that track visibility and act on what&apos;s missing—across every location.
           </p>
 
-          {/* CTA — gradient matches birdeye.com/search-ai/ */}
+          {/* CTA — opens birdeye.com/search-ai/ with UTM */}
           <Button
             type="button"
             className="h-[66px] min-w-[302.5px] rounded-xl bg-gradient-to-r from-[#5b73f5] to-[#7c4fe0] px-[2.2rem] text-[1.2375rem] font-semibold text-white hover:from-[#4c65e8] hover:to-[#6e42d3] border-0"
+            onClick={() => window.open("https://birdeye.com/search-ai/?utm_term=sign_in_page_try_search_ai", "_blank", "noopener,noreferrer")}
           >
             Try Search AI
           </Button>
