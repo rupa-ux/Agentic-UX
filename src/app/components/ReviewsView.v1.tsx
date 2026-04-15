@@ -12,6 +12,7 @@ import {
   Send,
   Pencil,
   MessageCircle,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { ManusToolbarIconHit } from "@/app/components/ManusToolbarIconHit";
@@ -45,6 +46,11 @@ import {
 import {
   createInitialReviewsFilters,
 } from "@/app/data/reviewsFilters";
+import {
+  monitorActivities,
+  type MonitorActivity,
+} from "@/app/data/agentsMonitorMock";
+import { L2_CONTENT_MUTED_BAND } from "@/app/components/L2NavLayout";
 
 // Types
 interface Review {
@@ -935,8 +941,97 @@ function ReviewCardSkeleton() {
 
 const PAGE_SIZE = 3;
 
+function isReviewScopedMonitorActivity(a: MonitorActivity): boolean {
+  if (a.reviewLink != null) return true;
+  if (/review/i.test(a.agentName)) return true;
+  if (/review/i.test(a.action)) return true;
+  return false;
+}
+
+const REVIEWS_PAGE_MONITOR_ACTIVITIES = monitorActivities
+  .filter(isReviewScopedMonitorActivity)
+  .slice(0, 6);
+
+function monitorActivityStatusDotClass(status: MonitorActivity["status"]): string {
+  switch (status) {
+    case "success":
+      return "bg-[#4caf50]";
+    case "warning":
+      return "bg-[#f59e0b]";
+    case "error":
+      return "bg-[#ef5350]";
+    default:
+      return "bg-[#8b92a5]";
+  }
+}
+
+/** Reviews-only slice of BirdAI Monitor — review-scoped agent activity, not the full Monitor view. */
+function ReviewsBirdAIMonitorPanel({ onOpenFullMonitor }: { onOpenFullMonitor?: () => void }) {
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="shrink-0 border-b border-border px-4 py-4">
+        <div className="flex items-center gap-2">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
+            <Sparkles className="size-4 text-primary" aria-hidden />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-left text-[14px] font-semibold tracking-[-0.26px] text-foreground">
+              Monitor
+            </h2>
+            <p className="text-left text-[12px] text-muted-foreground">Bird AI agent</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
+        <ul className="flex flex-col gap-2">
+          {REVIEWS_PAGE_MONITOR_ACTIVITIES.map((a) => (
+            <li
+              key={a.id}
+              className="rounded-lg border border-border bg-background/80 px-4 py-2 dark:bg-[#1e2229]/80"
+            >
+              <div className="flex items-start gap-2">
+                <span
+                  className={`mt-1 size-2 shrink-0 rounded-full ${monitorActivityStatusDotClass(a.status)}`}
+                  aria-hidden
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] text-muted-foreground tabular-nums">{a.time}</p>
+                  <p className="text-[12px] font-medium leading-snug text-foreground">{a.agentName}</p>
+                  <p className="text-[12px] leading-snug text-muted-foreground">{a.action}</p>
+                  {a.detail ? (
+                    <p className="mt-1 text-[11px] leading-snug text-muted-foreground">{a.detail}</p>
+                  ) : null}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {onOpenFullMonitor ? (
+        <div className="shrink-0 border-t border-border px-4 py-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-9 w-full rounded-lg text-[13px] font-normal"
+            onClick={onOpenFullMonitor}
+          >
+            Open BirdAI monitor
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export interface ReviewsViewProps {
+  /** Opens full BirdAI Monitor (`agents-monitor`). */
+  onOpenBirdAIMonitor?: () => void;
+}
+
 /* ─── Main ReviewsView ─── */
-export function ReviewsView() {
+export function ReviewsView({ onOpenBirdAIMonitor }: ReviewsViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const [filters, setFilters] = useState<FilterItem[]>(() =>
@@ -1008,9 +1103,10 @@ export function ReviewsView() {
   }, [isLoadingMore, visibleCount, filteredReviews.length, filteredReviews]);
 
   return (
-    <div className="flex-1 flex min-h-0 overflow-hidden bg-white dark:bg-[#1e2229] transition-colors duration-300">
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-0">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white transition-colors duration-300 dark:bg-[#1e2229] lg:flex-row">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col lg:flex-row">
+        {/* Reviews list + toolbar (Monitor rail sits beside this on lg) */}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 shrink-0">
           <div className="flex flex-col gap-1">
@@ -1123,6 +1219,14 @@ export function ReviewsView() {
             )}
           </div>
         </div>
+        </div>
+
+        <aside
+          className={`flex min-h-0 w-full shrink-0 flex-col border-t border-border lg:w-80 lg:shrink-0 lg:border-l lg:border-t-0 ${L2_CONTENT_MUTED_BAND}`}
+          aria-label="Bird AI agent activity for reviews"
+        >
+          <ReviewsBirdAIMonitorPanel onOpenFullMonitor={onOpenBirdAIMonitor} />
+        </aside>
       </div>
 
       <FilterPane

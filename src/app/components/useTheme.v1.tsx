@@ -31,7 +31,7 @@ function applyResolved(resolved: ResolvedTheme) {
 function getStoredPreference(): ThemePreference {
   const v = localStorage.getItem(STORAGE_KEY);
   if (v === "light" || v === "dark" || v === "auto") return v;
-  return "auto";
+  return "light";
 }
 
 function applyPreference(pref: ThemePreference) {
