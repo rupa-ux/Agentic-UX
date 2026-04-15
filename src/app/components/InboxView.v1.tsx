@@ -18,6 +18,8 @@ import {
   Reply,
   MessageSquarePlus,
   Mail,
+  User,
+  Users,
 } from "lucide-react";
 import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 import { HOVER } from "./L2NavLayout";
@@ -520,39 +522,29 @@ function ConversationItem({
       {/* Row 2–3: align with name start (rail w-2 + gap-2 = pl-4) */}
       <p className="truncate pl-4 text-base text-muted-foreground">{conv.preview}</p>
 
-      <div className="-mt-1 flex items-center gap-1 pl-4 text-sm text-muted-foreground">
-          <span>{conv.location}</span>
-          <span aria-hidden>•</span>
-          {conv.teamIcon === "us" && (
-            <span className="inline-flex items-center gap-1">
-              <svg
-                width="12"
-                height="9"
-                viewBox="0 0 12 9"
-                fill="none"
-                className="opacity-80"
-              >
-                <rect width="12" height="9" rx="1" fill="#B22234" />
-                <rect y="1.29" width="12" height="0.69" fill="white" />
-                <rect y="2.57" width="12" height="0.69" fill="white" />
-                <rect y="3.86" width="12" height="0.69" fill="white" />
-                <rect y="5.14" width="12" height="0.69" fill="white" />
-                <rect y="6.43" width="12" height="0.69" fill="white" />
-                <rect y="7.71" width="12" height="0.69" fill="white" />
-                <rect width="5" height="4.5" fill="#3C3B6E" />
-              </svg>
-              <span>{conv.team}</span>
-            </span>
+      <div className="-mt-1 flex min-w-0 items-center gap-1 pl-4 text-sm text-muted-foreground">
+        <span className="shrink-0">{conv.location}</span>
+        <span aria-hidden>•</span>
+        <span className="inline-flex min-w-0 items-center gap-1">
+          {conv.teamIcon === "us" ? (
+            <Users
+              className="size-3 shrink-0 text-muted-foreground"
+              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              absoluteStrokeWidth
+              aria-hidden
+            />
+          ) : (
+            <User
+              className="size-3 shrink-0 text-muted-foreground"
+              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              absoluteStrokeWidth
+              aria-hidden
+            />
           )}
-          {conv.teamIcon === "kelsy" && (
-            <span className="inline-flex items-center gap-1">
-              <span
-                className="inline-block size-2.5 rounded-full bg-muted"
-                aria-hidden
-              />
-              <span>{conv.team}</span>
-            </span>
-          )}
+          <span className="truncate" title={conv.team}>
+            {conv.team}
+          </span>
+        </span>
       </div>
     </button>
   );
