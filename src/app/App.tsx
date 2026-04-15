@@ -47,7 +47,11 @@ import {
 import { ResizableRightChatPanel } from "./components/layout/ResizableRightChatPanel";
 import { MynaChatPanel } from "./components/MynaChatPanel";
 import BusinessOverviewDashboard from "./components/BusinessOverviewDashboard";
-import { getAppViewTitle } from "./appViewTitle";
+import {
+  getAppViewTitle,
+  LOGIN_TAB_TITLES,
+  LOGIN_TAB_TITLE_COUNT,
+} from "./appViewTitle";
 import { l2KeyFromConversation } from "./myna/mynaL2NavKeys";
 import { useMynaConversations } from "./myna/useMynaConversations";
 import { ShortcutsModal } from "./shortcuts/ShortcutsModal";
@@ -57,6 +61,14 @@ import { AppBootShimmer } from "./components/layout/AppBootShimmer";
 import { SEARCH_AI_L2_DEFAULT_ACTIVE } from "./components/searchai/searchAIL2Keys";
 
 const AUTH_STORAGE_KEY = "birdai_demo_authenticated";
+const LOGIN_TAB_TITLE_INDEX_KEY = "auth:login_tab_title_index";
+
+function parseStoredLoginTabIndex(raw: string | null): number {
+  if (raw === null) return 0;
+  const n = Number.parseInt(raw, 10);
+  if (Number.isNaN(n)) return 0;
+  return ((n % LOGIN_TAB_TITLE_COUNT) + LOGIN_TAB_TITLE_COUNT) % LOGIN_TAB_TITLE_COUNT;
+}
 
 function readDemoAuthenticated(): boolean {
   if (typeof window === "undefined") return false;
@@ -124,6 +136,11 @@ export default function App() {
   const signOut = useCallback(() => {
     try {
       sessionStorage.setItem(AUTH_STORAGE_KEY, "false");
+      const cur = parseStoredLoginTabIndex(sessionStorage.getItem(LOGIN_TAB_TITLE_INDEX_KEY));
+      sessionStorage.setItem(
+        LOGIN_TAB_TITLE_INDEX_KEY,
+        String((cur + 1) % LOGIN_TAB_TITLE_COUNT),
+      );
       // Clear nav state so next session starts fresh
       Object.keys(sessionStorage)
         .filter((k) => k.startsWith("nav:"))
@@ -253,8 +270,13 @@ export default function App() {
   }, [mynaChatOpen]);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      const idx = parseStoredLoginTabIndex(sessionStorage.getItem(LOGIN_TAB_TITLE_INDEX_KEY));
+      document.title = LOGIN_TAB_TITLES[idx];
+      return;
+    }
     document.title = `${getAppViewTitle(currentView)} – Birdeye`;
-  }, [currentView]);
+  }, [isAuthenticated, currentView]);
 
   const mynaWorkspaceExpanded = mynaChatOpen && mynaChatExpanded && !aiPanelOpen;
 

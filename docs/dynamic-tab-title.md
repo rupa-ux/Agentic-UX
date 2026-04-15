@@ -12,17 +12,25 @@
 
 ## Source of truth
 
-`src/app/appViewTitle.ts` — `getAppViewTitle(view: AppView)` is the single mapping from route to human label. Update it there; the tab title picks it up automatically.
+`src/app/appViewTitle.ts` — `getAppViewTitle(view: AppView)` maps each route to a section label for **authenticated** tabs. For **unauthenticated** (sign-in shell), the same file exports `LOGIN_TAB_TITLES` (25 rotating phrases). The active index is stored in `sessionStorage` under `auth:login_tab_title_index` and advances on each sign-out.
+
+`index.html` sets the initial `<title>` to `Welcome – Birdeye` so the first paint matches index `0` before React runs.
 
 ## Implementation
 
-One `useEffect` in `App.tsx`, watching `currentView`:
+One `useEffect` in `App.tsx`, watching `isAuthenticated` and `currentView`:
 
 ```ts
 useEffect(() => {
+  if (!isAuthenticated) {
+    document.title = LOGIN_TAB_TITLES[loginTabIndexFromSessionStorage];
+    return;
+  }
   document.title = `${getAppViewTitle(currentView)} – Birdeye`;
-}, [currentView]);
+}, [isAuthenticated, currentView]);
 ```
+
+(See `App.tsx` for index parsing, `auth:login_tab_title_index`, and sign-out increment.)
 
 ## Title reference
 
