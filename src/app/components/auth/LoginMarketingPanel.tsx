@@ -122,8 +122,11 @@ export function LoginMarketingPanel({ className }: { className?: string }) {
             AI agents that track visibility and act on what&apos;s missing—across every location.
           </p>
 
-          {/* CTA — same style as the Continue button on the left */}
-          <Button type="button" className="h-12 w-[200px]">
+          {/* CTA — gradient matches birdeye.com/search-ai/ */}
+          <Button
+            type="button"
+            className="h-12 w-[220px] rounded-xl bg-gradient-to-r from-[#5b73f5] to-[#7c4fe0] font-semibold text-white hover:from-[#4c65e8] hover:to-[#6e42d3] border-0"
+          >
             Try Search AI
           </Button>
         </div>
