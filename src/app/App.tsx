@@ -59,11 +59,12 @@ import { SEARCH_AI_L2_DEFAULT_ACTIVE } from "./components/searchai/searchAIL2Key
 const AUTH_STORAGE_KEY = "birdai_demo_authenticated";
 
 function readDemoAuthenticated(): boolean {
-  if (typeof window === "undefined") return true;
+  if (typeof window === "undefined") return false;
   try {
-    return sessionStorage.getItem(AUTH_STORAGE_KEY) !== "false";
+    // Opt-in: missing key (fresh tab / new deployment) = not authenticated
+    return sessionStorage.getItem(AUTH_STORAGE_KEY) === "true";
   } catch {
-    return true;
+    return false;
   }
 }
 
@@ -104,7 +105,7 @@ export default function App() {
 
   const signIn = useCallback(() => {
     try {
-      sessionStorage.removeItem(AUTH_STORAGE_KEY);
+      sessionStorage.setItem(AUTH_STORAGE_KEY, "true");
     } catch {
       /* ignore */
     }
