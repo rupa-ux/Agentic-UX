@@ -106,6 +106,8 @@ export default function App() {
   const signIn = useCallback(() => {
     try {
       sessionStorage.setItem(AUTH_STORAGE_KEY, "true");
+      // Always land on Reviews after login
+      sessionStorage.setItem("nav:l1", JSON.stringify("reviews"));
     } catch {
       /* ignore */
     }
@@ -133,7 +135,7 @@ export default function App() {
   }, []);
 
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
-  const [currentView, setCurrentView] = usePersistedState<AppView>("nav:l1", "agents-monitor");
+  const [currentView, setCurrentView] = usePersistedState<AppView>("nav:l1", "reviews");
   const [editingDraft, setEditingDraft] = useState<DraftReport | null>(null);
   const [selectedAgentSlug, setSelectedAgentSlug] = usePersistedState<string>("nav:l2:agents", "");
   const [selectedAnalyzeItem, setSelectedAnalyzeItem] = usePersistedState<string>("nav:l2:agents:analyze", "overview");
