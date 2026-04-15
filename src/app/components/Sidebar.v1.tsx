@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
 import {
-  ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Clock, ExternalLink, Keyboard, Sparkles, Plus, Info,
+  ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Clock, ExternalLink, Keyboard, Plus, Info,
 } from "lucide-react";
 import {
   FigmaIconBirdAI, FigmaIconOverview, FigmaIconInbox, FigmaIconListings,
@@ -205,32 +205,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
         })}
       </div>
 
-      {/* ─── Bottom tower: Agent setup + Settings + Notifications + Profile (matches main rail order + notifications) ─── */}
+      {/* ─── Bottom tower: Settings + Notifications + Profile (matches main rail order + notifications) ─── */}
       <div className="flex flex-col items-center gap-2 pb-3 pt-2 shrink-0">
-        {/* Agent setup — from main L1 tower */}
-        <button
-          type="button"
-          onClick={() => onViewChange("agents-onboarding")}
-          className={`group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail ${
-            currentView === "agents-onboarding"
-              ? "bg-[#d4dae3] dark:bg-[#282e3a] shadow-none"
-              : "bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95"
-          }`}
-          title="Agent setup"
-          aria-label="Agent setup"
-        >
-          <Sparkles
-            width={L1_STRIP_ICON_SIZE}
-            height={L1_STRIP_ICON_SIZE}
-            strokeWidth={L1_STRIP_ICON_STROKE_PX}
-            className={`transition-all duration-200 ${
-              currentView === "agents-onboarding"
-                ? "text-[#1E44CC] dark:text-[#2952E3]"
-                : "text-[#505050] dark:text-[#9ba2b0] group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-hover:scale-110"
-            }`}
-          />
-        </button>
-
         {/* Settings gear — same surface / hover / focus as L1 nav icons */}
         <button
           type="button"

@@ -484,67 +484,68 @@ function ConversationItem({
     <button
       type="button"
       onClick={onClick}
-      className={`font-sans font-medium flex w-full flex-col gap-2 rounded-[4px] px-[8px] py-4 text-left transition-colors duration-150 ${
+      className={`font-sans font-medium w-full rounded-none border-0 text-left transition-colors duration-150 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-inset ${
         isSelected
           ? "bg-[#f0f4ff] dark:bg-[#252a3a]"
           : `bg-transparent ${HOVER}`
       }`}
     >
-      {/* Row 1: unread pip (same band as name line, vertically centered) + name + date */}
-      <div className="flex gap-2 items-center">
-        <div
-          className="flex h-5 w-2 shrink-0 items-center justify-center"
-          aria-hidden={!conv.unread}
-        >
-          {conv.unread ? (
-            <span
-              className="size-1.5 shrink-0 rounded-full bg-primary"
-              title="Unread"
-              aria-label="Unread"
-            />
-          ) : null}
+      {/* Full-bleed row surface; px-4 matches list header — equal inset left/right of text block */}
+      <div className="flex flex-col gap-1 px-4 py-4">
+        <div className="flex min-h-8 items-center gap-2">
+          <div
+            className="flex min-h-8 w-2 shrink-0 items-center justify-center"
+            aria-hidden={!conv.unread}
+          >
+            {conv.unread ? (
+              <span
+                className="size-1.5 shrink-0 rounded-full bg-primary"
+                title="Unread"
+                aria-label="Unread"
+              />
+            ) : null}
+          </div>
+          <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+            <span className="min-w-0 truncate text-base text-foreground">
+              {conv.name}
+            </span>
+            <span className="flex shrink-0 items-center gap-2 tabular-nums">
+              {conv.hasReply && (
+                <Reply className="size-3 shrink-0 text-muted-foreground -scale-x-100" />
+              )}
+              <span className="whitespace-nowrap text-right text-sm text-muted-foreground">
+                {conv.hasReply ? conv.replyTime : conv.date}
+              </span>
+            </span>
+          </div>
         </div>
-        <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-          <span className="min-w-0 truncate text-base text-foreground">
-            {conv.name}
-          </span>
-          <span className="flex shrink-0 items-center gap-2">
-            {conv.hasReply && (
-              <Reply className="size-3 text-muted-foreground -scale-x-100" />
+
+        <p className="truncate pl-4 text-base text-muted-foreground">{conv.preview}</p>
+
+        <div className="-mt-1 flex min-w-0 items-center gap-1 pl-4 text-sm text-muted-foreground">
+          <span className="shrink-0">{conv.location}</span>
+          <span aria-hidden>•</span>
+          <span className="inline-flex min-w-0 items-center gap-1">
+            {conv.teamIcon === "us" ? (
+              <Users
+                className="size-3 shrink-0 text-muted-foreground"
+                strokeWidth={L1_STRIP_ICON_STROKE_PX}
+                absoluteStrokeWidth
+                aria-hidden
+              />
+            ) : (
+              <User
+                className="size-3 shrink-0 text-muted-foreground"
+                strokeWidth={L1_STRIP_ICON_STROKE_PX}
+                absoluteStrokeWidth
+                aria-hidden
+              />
             )}
-            <span className="whitespace-nowrap text-sm text-muted-foreground">
-              {conv.hasReply ? conv.replyTime : conv.date}
+            <span className="truncate" title={conv.team}>
+              {conv.team}
             </span>
           </span>
         </div>
-      </div>
-
-      {/* Row 2–3: align with name start (rail w-2 + gap-2 = pl-4) */}
-      <p className="truncate pl-4 text-base text-muted-foreground">{conv.preview}</p>
-
-      <div className="-mt-1 flex min-w-0 items-center gap-1 pl-4 text-sm text-muted-foreground">
-        <span className="shrink-0">{conv.location}</span>
-        <span aria-hidden>•</span>
-        <span className="inline-flex min-w-0 items-center gap-1">
-          {conv.teamIcon === "us" ? (
-            <Users
-              className="size-3 shrink-0 text-muted-foreground"
-              strokeWidth={L1_STRIP_ICON_STROKE_PX}
-              absoluteStrokeWidth
-              aria-hidden
-            />
-          ) : (
-            <User
-              className="size-3 shrink-0 text-muted-foreground"
-              strokeWidth={L1_STRIP_ICON_STROKE_PX}
-              absoluteStrokeWidth
-              aria-hidden
-            />
-          )}
-          <span className="truncate" title={conv.team}>
-            {conv.team}
-          </span>
-        </span>
       </div>
     </button>
   );
@@ -911,68 +912,76 @@ export function InboxView() {
   return (
     <div className="flex-1 flex min-h-0 overflow-hidden bg-[#f8f9fa] dark:bg-[#13161b] transition-colors duration-300 ">
       {/* ═══ CENTER-LEFT: Conversation list ═══ */}
-      <div className="w-[360px] flex flex-col bg-white dark:bg-[#1e2229] border-r border-[#eaeaea] dark:border-[#333a47] shrink-0 transition-colors duration-300">
-        {/* List header */}
-        <div className="px-[8px] pt-4 pb-3 shrink-0">
-          <div className="flex items-center justify-between mb-3">
-            {/* Status dropdown */}
-            <div className="relative min-w-0 flex-1">
-              <button
-                onClick={() => setStatusOpen(!statusOpen)}
-                className="flex flex-col items-start"
-              >
-                <div className="flex items-center gap-1">
-                  <span
-                    className="text-[12px] text-[#212121] dark:text-[#e4e4e4] uppercase tracking-[0.5px]"
-                    style={{ fontWeight: 400 }}
+      <div className="flex w-[360px] shrink-0 flex-col border-l border-r border-[#eaeaea] bg-white transition-colors duration-300 dark:border-[#333a47] dark:bg-[#1e2229]">
+        {/* List header — same left rail + horizontal rhythm as conversation rows; icons align with title row */}
+        <div className="shrink-0 px-4 pt-4 pb-2">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <div className="w-2 shrink-0" aria-hidden />
+                <div className="relative min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => setStatusOpen(!statusOpen)}
+                    className="flex min-h-8 items-center gap-1 rounded-md text-left hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
+                    aria-expanded={statusOpen}
                   >
-                    Open
-                  </span>
-                  <ChevronDown className="w-3 h-3 text-[#555] dark:text-[#8b92a5]" />
-                </div>
-                <span
-                  className="text-[12px] text-[#999] dark:text-[#6b7280] whitespace-nowrap"
-                  style={{ fontWeight: 400 }}
-                >
-                  {`19.2K total messages • ${conversations.filter((c) => c.unread).length} unread`}
-                </span>
-              </button>
-
-              {statusOpen && (
-                <div className="absolute left-0 top-full mt-1 bg-white dark:bg-[#262b35] rounded-lg shadow-lg border border-[#e5e9f0] dark:border-[#333a47] py-1 z-50 min-w-[140px]">
-                  {["Open", "Closed", "Snoozed", "All"].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setStatusOpen(false)}
-                      className="w-full text-left px-3 py-1.5 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
+                    <span
+                      className="text-[12px] text-[#212121] dark:text-[#e4e4e4] uppercase tracking-[0.5px]"
                       style={{ fontWeight: 400 }}
                     >
-                      {s}
-                    </button>
-                  ))}
+                      Open
+                    </span>
+                    <ChevronDown className="size-3 shrink-0 text-[#555] dark:text-[#8b92a5]" />
+                  </button>
+
+                  {statusOpen && (
+                    <div className="absolute left-0 top-full z-50 mt-1 min-w-[140px] rounded-lg border border-[#e5e9f0] bg-white py-1 shadow-lg dark:border-[#333a47] dark:bg-[#262b35]">
+                      {["Open", "Closed", "Snoozed", "All"].map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setStatusOpen(false)}
+                          className="w-full px-4 py-2 text-left text-[13px] text-[#212121] hover:bg-[#f5f5f5] dark:text-[#e4e4e4] dark:hover:bg-[#2e3340]"
+                          style={{ fontWeight: 400 }}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+
+              <div className="flex shrink-0 items-center gap-1">
+                {[
+                  { Icon: Search, label: "Search" },
+                  { Icon: SlidersHorizontal, label: "Filter" },
+                  { Icon: ArrowUpDown, label: "Sort" },
+                  { Icon: MoreVertical, label: "More" },
+                ].map(({ Icon, label }) => (
+                  <Button
+                    key={label}
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 shrink-0 rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
+                    title={label}
+                  >
+                    <Icon className="size-[14px] text-[#555] dark:text-[#8b92a5]" />
+                  </Button>
+                ))}
+              </div>
             </div>
 
-            {/* Action icons */}
-            <div className="flex items-center gap-0.5 shrink-0">
-              {[
-                { Icon: Search, label: "Search" },
-                { Icon: SlidersHorizontal, label: "Filter" },
-                { Icon: ArrowUpDown, label: "Sort" },
-                { Icon: MoreVertical, label: "More" },
-              ].map(({ Icon, label }) => (
-                <Button
-                  key={label}
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
-                  title={label}
-                >
-                  <Icon className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" />
-                </Button>
-              ))}
+            <div className="flex gap-2">
+              <div className="w-2 shrink-0" aria-hidden />
+              <p
+                className="min-w-0 text-[12px] text-[#999] dark:text-[#6b7280]"
+                style={{ fontWeight: 400 }}
+              >
+                {`19.2K total messages • ${conversations.filter((c) => c.unread).length} unread`}
+              </p>
             </div>
           </div>
         </div>
@@ -982,12 +991,12 @@ export function InboxView() {
           {listScrollShimmer ? (
             <div
               aria-hidden
-              className="inbox-proto-shimmer-overlay pointer-events-none absolute inset-x-[8px] top-0 z-20 h-16 rounded-b-lg opacity-95"
+              className="inbox-proto-shimmer-overlay pointer-events-none absolute inset-x-0 top-0 z-20 h-16 opacity-95"
             />
           ) : null}
           <div
             onScroll={onConversationListScroll}
-            className="h-full overflow-y-auto px-[8px] pb-4"
+            className="h-full overflow-y-auto pb-4 [scrollbar-gutter:stable]"
           >
             {conversations.map((conv) => (
               <ConversationItem

@@ -40,6 +40,10 @@ export const L2_PANEL_SURFACE = "bg-app-shell-l2-surface";
 export const PANEL =
   `w-[220px] ${L2_PANEL_SURFACE} border-r border-app-shell-border rounded-tl-lg rounded-bl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300`;
 
+/** Inbox L2 only — no `border-r`; `InboxView` draws matching left/right list borders (`#eaeaea` / dark `#333a47`) as one seam. */
+export const PANEL_INBOX_L2 =
+  `w-[220px] ${L2_PANEL_SURFACE} rounded-tl-lg rounded-bl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300`;
+
 // Shared row geometry — same for headers, children, footer
 export const ROW =
   "flex items-center justify-between w-full px-[8px] py-[6px] text-[13px] rounded-[4px] transition-colors tracking-[-0.26px]";
