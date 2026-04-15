@@ -896,41 +896,39 @@ function ReviewCard({ review }: { review: Review }) {
   );
 }
 
-/* ─── Review card skeleton (shimmer placeholder while loading next page) ─── */
+/* ─── Review card skeleton ─── */
 function ReviewCardSkeleton() {
-  const shimmer = "bg-[#e8eaed] dark:bg-[#2e3340] rounded animate-pulse";
+  const s = "bg-[#eff0f2] dark:bg-[#282d37] rounded animate-pulse opacity-70";
   return (
-    <div className="flex flex-col gap-3 py-1">
-      {/* Reviewer header */}
-      <div className="flex items-start justify-between">
+    <div className="flex flex-col gap-4 py-1">
+      {/* Header: avatar + name/sub-line | right label */}
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-full shrink-0 ${shimmer}`} />
-          <div className="flex flex-col gap-1.5">
-            <div className={`h-3 w-28 ${shimmer}`} />
-            <div className="flex items-center gap-2">
-              <div className={`h-2.5 w-20 ${shimmer}`} />
-              <div className={`h-2.5 w-16 ${shimmer}`} />
+          <div className={`w-9 h-9 rounded-full shrink-0 ${s}`} />
+          <div className="flex flex-col gap-2">
+            <div className={`h-2.5 w-36 ${s}`} />
+            <div className="flex items-center gap-1.5">
+              <div className={`h-2 w-20 ${s}`} />
+              <div className={`h-2 w-16 ${s}`} />
             </div>
           </div>
         </div>
-        <div className={`h-2.5 w-24 ${shimmer}`} />
+        <div className={`h-2 w-28 ${s}`} />
       </div>
-      {/* Text lines */}
-      <div className="flex flex-col gap-2 mt-1">
-        <div className={`h-3 w-full ${shimmer}`} />
-        <div className={`h-3 w-full ${shimmer}`} />
-        <div className={`h-3 w-[92%] ${shimmer}`} />
-        <div className={`h-3 w-[85%] ${shimmer}`} />
-        <div className={`h-3 w-[70%] ${shimmer}`} />
-      </div>
-      {/* Photo strip */}
-      <div className="flex gap-2 mt-1">
-        {[160, 140, 150, 130].map((w, i) => (
-          <div key={i} className={`h-[88px] rounded-xl shrink-0 ${shimmer}`} style={{ width: w }} />
+      {/* Body text — 5 lines tapering naturally */}
+      <div className="flex flex-col gap-[9px]">
+        {["w-full","w-full","w-[88%]","w-[76%]","w-[58%]"].map((w, i) => (
+          <div key={i} className={`h-[11px] ${w} ${s}`} />
         ))}
       </div>
-      {/* AI reply bar */}
-      <div className={`h-14 w-full rounded-xl mt-1 ${shimmer}`} />
+      {/* Photo strip — 4 equal tiles */}
+      <div className="grid grid-cols-4 gap-2">
+        {[0,1,2,3].map((i) => (
+          <div key={i} className={`h-[100px] rounded-xl ${s}`} />
+        ))}
+      </div>
+      {/* Reply bar */}
+      <div className={`h-12 w-full rounded-xl ${s}`} />
     </div>
   );
 }

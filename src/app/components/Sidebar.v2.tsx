@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
+import { usePersistedState } from "@/app/hooks/usePersistedState";
 import {
   ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Plus, Info,
 } from "lucide-react";
@@ -687,7 +688,7 @@ const reviewsConfig = {
 };
 
 export function ReviewsL2NavPanel() {
-  return <L2NavLayout {...reviewsConfig} data-no-print />;
+  return <L2NavLayout {...reviewsConfig} storageKey="nav:l2:reviews" data-no-print />;
 }
 
 /* ═══════════════════════════════════════════
@@ -707,7 +708,7 @@ const socialConfig = {
 };
 
 export function SocialL2NavPanel() {
-  return <L2NavLayout {...socialConfig} data-no-print />;
+  return <L2NavLayout {...socialConfig} storageKey="nav:l2:social" data-no-print />;
 }
 
 /* ═══════════════════════════════════════════
@@ -806,7 +807,7 @@ const listingsConfig = {
 };
 
 export function ListingsL2NavPanel() {
-  return <L2NavLayout {...listingsConfig} data-no-print />;
+  return <L2NavLayout {...listingsConfig} storageKey="nav:l2:listings" data-no-print />;
 }
 
 /* ═══════════════════════════════════════════
@@ -822,7 +823,7 @@ const ticketingConfig = {
 };
 
 export function TicketingL2NavPanel() {
-  return <L2NavLayout {...ticketingConfig} data-no-print />;
+  return <L2NavLayout {...ticketingConfig} storageKey="nav:l2:ticketing" data-no-print />;
 }
 
 /* ═══════════════════════════════════════════
@@ -838,7 +839,7 @@ const campaignsConfig = {
 };
 
 export function CampaignsL2NavPanel() {
-  return <L2NavLayout {...campaignsConfig} data-no-print />;
+  return <L2NavLayout {...campaignsConfig} storageKey="nav:l2:campaigns" data-no-print />;
 }
 
 /* ═══════════════════════════════════════════
@@ -856,7 +857,7 @@ const surveysConfig = {
 };
 
 export function SurveysL2NavPanel() {
-  return <L2NavLayout {...surveysConfig} data-no-print />;
+  return <L2NavLayout {...surveysConfig} storageKey="nav:l2:surveys" data-no-print />;
 }
 
 /* ═══════════════════════════════════════════
@@ -871,7 +872,7 @@ const insightsConfig = {
 };
 
 export function InsightsL2NavPanel() {
-  return <L2NavLayout {...insightsConfig} data-no-print />;
+  return <L2NavLayout {...insightsConfig} storageKey="nav:l2:insights" data-no-print />;
 }
 
 /* ═══════════════════════════════════════════
@@ -897,7 +898,7 @@ const competitorsConfig = {
 };
 
 export function CompetitorsL2NavPanel() {
-  return <L2NavLayout {...competitorsConfig} data-no-print />;
+  return <L2NavLayout {...competitorsConfig} storageKey="nav:l2:competitors" data-no-print />;
 }
 
 /* ═══════════════════════════════════════════
@@ -913,7 +914,7 @@ const appointmentsConfig = {
 };
 
 export function AppointmentsL2NavPanel() {
-  return <L2NavLayout {...appointmentsConfig} data-no-print />;
+  return <L2NavLayout {...appointmentsConfig} storageKey="nav:l2:appointments" data-no-print />;
 }
 
 /* ═══════════════════════════════════════════
@@ -964,7 +965,7 @@ const teamSections = [
 ];
 
 export function InboxL2NavPanel() {
-  const [activeItem, setActiveItem] = useState("standalone/All messages");
+  const [activeItem, setActiveItem] = usePersistedState("nav:l2:inbox", "standalone/All messages");
 
   const activate = (key: string) => setActiveItem(key);
 

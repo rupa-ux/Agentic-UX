@@ -5,6 +5,7 @@ import {
   AppointmentsL2NavPanel, InboxL2NavPanel, MynaConversationsL2NavPanel,
 } from "./components/Sidebar";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { usePersistedState } from "./hooks/usePersistedState";
 import { Toaster } from "sonner";
 import { MonitorNotificationsProvider } from "./context/MonitorNotificationsContext";
 import { TopBar } from "./components/TopBar";
@@ -120,6 +121,10 @@ export default function App() {
   const signOut = useCallback(() => {
     try {
       sessionStorage.setItem(AUTH_STORAGE_KEY, "false");
+      // Clear nav state so next session starts fresh
+      Object.keys(sessionStorage)
+        .filter((k) => k.startsWith("nav:"))
+        .forEach((k) => sessionStorage.removeItem(k));
     } catch {
       /* ignore */
     }
@@ -127,12 +132,12 @@ export default function App() {
   }, []);
 
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<AppView>("agents-monitor");
+  const [currentView, setCurrentView] = usePersistedState<AppView>("nav:l1", "agents-monitor");
   const [editingDraft, setEditingDraft] = useState<DraftReport | null>(null);
-  const [selectedAgentSlug, setSelectedAgentSlug] = useState<string>("");
-  const [selectedAnalyzeItem, setSelectedAnalyzeItem] = useState<string>("overview");
+  const [selectedAgentSlug, setSelectedAgentSlug] = usePersistedState<string>("nav:l2:agents", "");
+  const [selectedAnalyzeItem, setSelectedAnalyzeItem] = usePersistedState<string>("nav:l2:agents:analyze", "overview");
 
-  const [contactsL2Active, setContactsL2Active] = useState(CONTACTS_L2_KEY_ALL);
+  const [contactsL2Active, setContactsL2Active] = usePersistedState("nav:l2:contacts", CONTACTS_L2_KEY_ALL);
   const [contactsSheetMode, setContactsSheetMode] = useState<ContactsSheetMode>("none");
   const [contactsDetailId, setContactsDetailId] = useState<number | null>(null);
   const [contactsQuickViewId, setContactsQuickViewId] = useState<number | null>(null);
@@ -178,7 +183,7 @@ export default function App() {
     }
   }, [currentView]);
 
-  const [searchAIL2Active, setSearchAIL2Active] = useState(SEARCH_AI_L2_DEFAULT_ACTIVE);
+  const [searchAIL2Active, setSearchAIL2Active] = usePersistedState("nav:l2:searchai", SEARCH_AI_L2_DEFAULT_ACTIVE);
   const handleSearchAIL2Change = useCallback((key: string) => {
     setSearchAIL2Active(key);
   }, []);

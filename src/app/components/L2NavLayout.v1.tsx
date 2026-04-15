@@ -29,6 +29,7 @@
  */
 
 import { useState, type ReactNode } from "react";
+import { usePersistedState } from "@/app/hooks/usePersistedState";
 import { ChevronUp, ChevronDown, ExternalLink, Plus } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────
@@ -139,6 +140,8 @@ export interface L2NavLayoutProps {
   defaultExpandedSections?: string[];
   /** Pinned below the scrollable nav (e.g. usage meter). */
   footerSlot?: ReactNode;
+  /** sessionStorage key — when provided, active item persists across refresh */
+  storageKey?: string;
   "data-no-print"?: boolean;
 }
 
@@ -165,6 +168,7 @@ export function L2NavLayout({
   onActiveItemChange,
   defaultExpandedSections,
   footerSlot,
+  storageKey,
   "data-no-print": noprint,
 }: L2NavLayoutProps) {
 
@@ -186,7 +190,8 @@ export function L2NavLayout({
   const resolvedDefault =
     defaultActive ?? (firstKey != null ? `${defaultExpandedLabel}/${firstKey}` : "");
 
-  const [internalActive, setInternalActive] = useState(resolvedDefault);
+  // storageKey=undefined → behaves like useState (no storage); string → persists
+  const [internalActive, setInternalActive] = usePersistedState(storageKey, resolvedDefault);
   const active = controlledActive ?? internalActive;
 
   const toggle = (label: string) =>
