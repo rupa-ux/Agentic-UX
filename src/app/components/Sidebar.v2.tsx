@@ -1,12 +1,24 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
 import {
-  ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Sparkles, Plus, Info,
+  ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Plus, Info,
 } from "lucide-react";
 import {
-  FigmaIconBirdAI, FigmaIconOverview, FigmaIconInbox, FigmaIconListings,
-  FigmaIconReviews, FigmaIconReferrals, FigmaIconPayments, FigmaIconAppointments,
-  FigmaIconSocial, FigmaIconSurveys, FigmaIconTicketing, FigmaIconContacts,
-  FigmaIconCampaigns, FigmaIconCompetitors, FigmaIconInsights, FigmaIconReports,
+  FigmaIconBirdAI,       FigmaIconBirdAIActive,
+  FigmaIconOverview,     FigmaIconOverviewActive,
+  FigmaIconInbox,        FigmaIconInboxActive,
+  FigmaIconListings,     FigmaIconListingsActive,
+  FigmaIconReviews,      FigmaIconReviewsActive,
+  FigmaIconReferrals,    FigmaIconReferralsActive,
+  FigmaIconPayments,     FigmaIconPaymentsActive,
+  FigmaIconAppointments, FigmaIconAppointmentsActive,
+  FigmaIconSocial,       FigmaIconSocialActive,
+  FigmaIconSurveys,      FigmaIconSurveysActive,
+  FigmaIconTicketing,    FigmaIconTicketingActive,
+  FigmaIconContacts,     FigmaIconContactsActive,
+  FigmaIconCampaigns,    FigmaIconCampaignsActive,
+  FigmaIconCompetitors,  FigmaIconCompetitorsActive,
+  FigmaIconInsights,     FigmaIconInsightsActive,
+  FigmaIconReports,      FigmaIconReportsActive,
 } from "./l1Icons";
 import svgPaths from "../../imports/svg-y1gexucine";
 import type { AppView } from "../App";
@@ -48,22 +60,22 @@ export function openReportingModuleInNewTab() {
 const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1617853701628-bfcf8b81d13d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBtYW4lMjBoZWFkc2hvdCUyMHNtaWxlJTIwc3R1ZGlvJTIwbGlnaHRpbmd8ZW58MXx8fHwxNzczMjE4MDIzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 
 /* ─── Icon-strip items — Figma "Visual Uplift 2.0" icons ─── */
-const iconStripItems: { label: string; Icon: React.ElementType }[] = [
-  { label: "Agents",       Icon: FigmaIconBirdAI      },
-  { label: "Inbox",        Icon: FigmaIconInbox       },
-  { label: "Listings",     Icon: FigmaIconListings    },
-  { label: "Reviews",      Icon: FigmaIconReviews     },
-  { label: "Referrals",    Icon: FigmaIconReferrals   },
-  { label: "Payments",     Icon: FigmaIconPayments    },
-  { label: "Appointments", Icon: FigmaIconAppointments},
-  { label: "Social",       Icon: FigmaIconSocial      },
-  { label: "Surveys",      Icon: FigmaIconSurveys     },
-  { label: "Ticketing",    Icon: FigmaIconTicketing   },
-  { label: "Contacts",     Icon: FigmaIconContacts    },
-  { label: "Campaigns",    Icon: FigmaIconCampaigns   },
-  { label: "Competitors",  Icon: FigmaIconCompetitors },
-  { label: "Insights",     Icon: FigmaIconInsights    },
-  { label: "Reports",      Icon: FigmaIconReports     },
+const iconStripItems: { label: string; Icon: React.ElementType; ActiveIcon: React.ElementType }[] = [
+  { label: "Agents",       Icon: FigmaIconBirdAI,       ActiveIcon: FigmaIconBirdAIActive       },
+  { label: "Inbox",        Icon: FigmaIconInbox,        ActiveIcon: FigmaIconInboxActive        },
+  { label: "Listings",     Icon: FigmaIconListings,     ActiveIcon: FigmaIconListingsActive     },
+  { label: "Reviews",      Icon: FigmaIconReviews,      ActiveIcon: FigmaIconReviewsActive      },
+  { label: "Referrals",    Icon: FigmaIconReferrals,    ActiveIcon: FigmaIconReferralsActive    },
+  { label: "Payments",     Icon: FigmaIconPayments,     ActiveIcon: FigmaIconPaymentsActive     },
+  { label: "Appointments", Icon: FigmaIconAppointments, ActiveIcon: FigmaIconAppointmentsActive },
+  { label: "Social",       Icon: FigmaIconSocial,       ActiveIcon: FigmaIconSocialActive       },
+  { label: "Surveys",      Icon: FigmaIconSurveys,      ActiveIcon: FigmaIconSurveysActive      },
+  { label: "Ticketing",    Icon: FigmaIconTicketing,    ActiveIcon: FigmaIconTicketingActive    },
+  { label: "Contacts",     Icon: FigmaIconContacts,     ActiveIcon: FigmaIconContactsActive     },
+  { label: "Campaigns",    Icon: FigmaIconCampaigns,    ActiveIcon: FigmaIconCampaignsActive    },
+  { label: "Competitors",  Icon: FigmaIconCompetitors,  ActiveIcon: FigmaIconCompetitorsActive  },
+  { label: "Insights",     Icon: FigmaIconInsights,     ActiveIcon: FigmaIconInsightsActive     },
+  { label: "Reports",      Icon: FigmaIconReports,      ActiveIcon: FigmaIconReportsActive      },
 ];
 
 /* ═══════════════════════════════════════════
@@ -164,8 +176,9 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
 
       {/* Icon buttons */}
       <div className="flex flex-col items-center px-[12px] pb-[8px] pt-0 gap-[2px] flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {iconStripItems.map(({ label, Icon }) => {
+        {iconStripItems.map(({ label, Icon, ActiveIcon }) => {
           const isActive = label === activeIcon;
+          const DisplayIcon = isActive ? ActiveIcon : Icon;
           return (
             <button
               key={label}
@@ -197,7 +210,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                 }
               `}
             >
-              <Icon
+              <DisplayIcon
                 size={iconSize}
                 className={`transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] ${
                   isActive
@@ -210,33 +223,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
         })}
       </div>
 
-      {/* ─── Bottom tower: Agent setup + Settings + Notifications + Profile (matches main rail order + v2 notifications) ─── */}
+      {/* ─── Bottom tower: Settings + Notifications + Profile (matches main rail order + v2 notifications) ─── */}
       <div className="flex flex-col items-center gap-2 pb-3 pt-2 shrink-0">
-        {/* Agent setup — from main L1 tower */}
-        <button
-          type="button"
-          onClick={() => onViewChange("agents-onboarding")}
-          className={`group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail ${
-            currentView === "agents-onboarding"
-              ? "bg-[#d4dae3] dark:bg-[#282e3a] shadow-none"
-              : "bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95"
-          }`}
-          title="Agent setup"
-          aria-label="Agent setup"
-        >
-          <Sparkles
-            width={L1_STRIP_ICON_SIZE}
-            height={L1_STRIP_ICON_SIZE}
-            strokeWidth={L1_STRIP_ICON_STROKE_PX}
-            absoluteStrokeWidth
-            className={`transition-all duration-200 ${
-              currentView === "agents-onboarding"
-                ? "text-[#1E44CC] dark:text-[#2952E3]"
-                : "text-[#505050] dark:text-[#9ba2b0] group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-hover:scale-110"
-            }`}
-          />
-        </button>
-
         {/* Settings gear — same surface / hover / focus as L1 nav icons */}
         <button
           type="button"
