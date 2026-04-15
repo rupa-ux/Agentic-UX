@@ -629,7 +629,7 @@ function ProgressiveImg({
       {/* Shimmer bg — fades out once the blurred image is visible */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-[#e8eaed] dark:bg-[#2e3340] animate-pulse transition-opacity duration-300 ease-out"
+        className="absolute inset-0 bg-[#eff0f2] dark:bg-[#282d37] animate-pulse opacity-70 transition-opacity duration-300 ease-out"
         style={{ opacity: phase === "idle" ? 1 : 0 }}
       />
       <img
@@ -638,11 +638,11 @@ function ProgressiveImg({
         className={`relative w-full h-full object-cover ${imgClassName ?? ""}`}
         style={{
           opacity:    phase === "idle" ? 0 : 1,
-          filter:     phase === "sharp" ? "blur(0px)"  : "blur(18px)",
-          transform:  phase === "sharp" ? "scale(1)"   : "scale(1.08)",
+          filter:     phase === "sharp" ? "blur(0px)"  : "blur(8px)",
+          transform:  phase === "sharp" ? "scale(1)"   : "scale(1.03)",
           // Transition only fires on blurring→sharp (not idle→blurring)
           transition: phase === "sharp"
-            ? "filter 600ms ease-out, transform 600ms ease-out"
+            ? "filter 400ms ease-out, transform 400ms ease-out"
             : "none",
         }}
         onLoad={handleLoad}
