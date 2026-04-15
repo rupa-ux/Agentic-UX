@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/app/components/ui/utils";
+import { Button } from "@/app/components/ui/button";
 
 // ─── AI platform SVG paths ─────────────────────────────────────────────────
 // Source: simple-icons (npm package, CC0 licensed). Run `npm update simple-icons`
@@ -121,13 +122,10 @@ export function LoginMarketingPanel({ className }: { className?: string }) {
             AI agents that track visibility and act on what&apos;s missing—across every location.
           </p>
 
-          {/* CTA */}
-          <button
-            type="button"
-            className="rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 transition-all duration-200 hover:from-violet-500 hover:to-blue-500 hover:shadow-violet-500/35 hover:scale-[1.03] active:scale-[0.98]"
-          >
+          {/* CTA — same style as the Continue button on the left */}
+          <Button type="button" className="h-12 w-[200px]">
             Try Search AI
-          </button>
+          </Button>
         </div>
       </div>
     </div>
