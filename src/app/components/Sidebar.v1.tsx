@@ -3,10 +3,11 @@ import {
   ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Clock, ExternalLink, Keyboard, Sparkles, Plus, Info,
 } from "lucide-react";
 import {
-  House, ChatDots, MapPin, Star, Gift, CurrencyDollar,
-  CalendarDots, Graph, ClipboardText, Ticket, Users,
-  MegaphoneSimple, Globe, Lightbulb, ChartBar, Sparkle,
-} from "@phosphor-icons/react";
+  FigmaIconBirdAI, FigmaIconOverview, FigmaIconInbox, FigmaIconListings,
+  FigmaIconReviews, FigmaIconReferrals, FigmaIconPayments, FigmaIconAppointments,
+  FigmaIconSocial, FigmaIconSurveys, FigmaIconTicketing, FigmaIconContacts,
+  FigmaIconCampaigns, FigmaIconCompetitors, FigmaIconInsights, FigmaIconReports,
+} from "./l1Icons";
 import svgPaths from "../../imports/svg-y1gexucine";
 import type { AppView } from "../App";
 import { APP_SHELL_RAIL_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
@@ -20,6 +21,7 @@ import { useTheme, type ThemePreference } from "./useTheme";
 import {
   L2NavLayout,
   PANEL,
+  PANEL_INBOX_L2,
   ROW,
   HOVER,
   CHILD_ACTIVE,
@@ -44,24 +46,24 @@ export function openReportingModuleInNewTab() {
 
 const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1617853701628-bfcf8b81d13d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBtYW4lMjBoZWFkc2hvdCUyMHNtaWxlJTIwc3R1ZGlvJTIwbGlnaHRpbmd8ZW58MXx8fHwxNzczMjE4MDIzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 
-/* ─── Icon-strip items — Phosphor Icons ─── */
+/* ─── Icon-strip items — Figma "Visual Uplift 2.0" icons ─── */
 const iconStripItems: { label: string; Icon: React.ElementType }[] = [
-  { label: "Agents",       Icon: Sparkle        },
-  { label: "Home",         Icon: House          },
-  { label: "Inbox",        Icon: ChatDots       },
-  { label: "Listings",     Icon: MapPin         },
-  { label: "Reviews",      Icon: Star           },
-  { label: "Referrals",    Icon: Gift           },
-  { label: "Payments",     Icon: CurrencyDollar },
-  { label: "Appointments", Icon: CalendarDots   },
-  { label: "Social",       Icon: Graph          },
-  { label: "Surveys",      Icon: ClipboardText  },
-  { label: "Ticketing",    Icon: Ticket         },
-  { label: "Contacts",     Icon: Users          },
-  { label: "Campaigns",    Icon: MegaphoneSimple},
-  { label: "Competitors",  Icon: Globe          },
-  { label: "Insights",     Icon: Lightbulb      },
-  { label: "Reports",      Icon: ChartBar       },
+  { label: "Agents",       Icon: FigmaIconBirdAI      },
+  { label: "Home",         Icon: FigmaIconOverview    },
+  { label: "Inbox",        Icon: FigmaIconInbox       },
+  { label: "Listings",     Icon: FigmaIconListings    },
+  { label: "Reviews",      Icon: FigmaIconReviews     },
+  { label: "Referrals",    Icon: FigmaIconReferrals   },
+  { label: "Payments",     Icon: FigmaIconPayments    },
+  { label: "Appointments", Icon: FigmaIconAppointments},
+  { label: "Social",       Icon: FigmaIconSocial      },
+  { label: "Surveys",      Icon: FigmaIconSurveys     },
+  { label: "Ticketing",    Icon: FigmaIconTicketing   },
+  { label: "Contacts",     Icon: FigmaIconContacts    },
+  { label: "Campaigns",    Icon: FigmaIconCampaigns   },
+  { label: "Competitors",  Icon: FigmaIconCompetitors },
+  { label: "Insights",     Icon: FigmaIconInsights    },
+  { label: "Reports",      Icon: FigmaIconReports     },
 ];
 
 /* ═══════════════════════════════════════════
@@ -192,9 +194,6 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
             >
               <Icon
                 size={iconSize}
-                weight={isActive ? "fill" : "regular"}
-                stroke="currentColor"
-                strokeWidth={L1_STRIP_ICON_STROKE_PX}
                 className={`transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] ${
                   isActive
                     ? "text-[#1E44CC] dark:text-[#2952E3]"
@@ -1011,7 +1010,7 @@ export function InboxL2NavPanel() {
     });
 
   return (
-    <div className={PANEL} data-no-print>
+    <div className={PANEL_INBOX_L2} data-no-print>
       <div className="flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
 
         {/* Header: New message */}
