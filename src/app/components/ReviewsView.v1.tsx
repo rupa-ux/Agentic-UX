@@ -595,48 +595,59 @@ function ActionRow({ replyStatus }: { replyStatus: "post" | "edit" }) {
   );
 }
 
-/* ─── Pinterest-style progressive image ─── */
+/* ─── Blur-up progressive image (Pinterest / Instagram style) ─── *
+ *
+ *  Phase flow:
+ *    "idle"     → img hidden (opacity-0), shimmer pulsing behind it
+ *    "blurring" → img appears instantly at full blur (no transition), shimmer fades
+ *    "sharp"    → filter + transform transition fires: blur collapses, scale returns to 1
+ *
+ *  Double-RAF between blurring→sharp ensures the browser paints one blurred
+ *  frame before the CSS transition starts, giving the characteristic blur-up feel.
+ */
 function ProgressiveImg({
   src, alt, className, imgClassName, onError,
 }: {
   src: string;
   alt: string;
-  /** className on the outer wrapper div */
   className?: string;
-  /** className on the <img> itself */
   imgClassName?: string;
   onError?: React.ReactEventHandler<HTMLImageElement>;
 }) {
-  const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
+  const [phase, setPhase] = useState<"idle" | "blurring" | "sharp">("idle");
 
-  // Reset when src changes (carousel scrolling)
-  const prevSrc = useRef(src);
-  if (prevSrc.current !== src) {
-    prevSrc.current = src;
-    // Schedule state reset on next render without violating hooks rules
-  }
-  useEffect(() => {
-    setStatus("loading");
-  }, [src]);
+  useEffect(() => { setPhase("idle"); }, [src]);
+
+  const handleLoad = () => {
+    setPhase("blurring");
+    // Paint one blurred frame, then start the unblur transition
+    requestAnimationFrame(() => requestAnimationFrame(() => setPhase("sharp")));
+  };
 
   return (
     <div className={`relative overflow-hidden ${className ?? ""}`}>
-      {/* Shimmer placeholder — sits behind the image, pulses until loaded */}
+      {/* Shimmer bg — fades out once the blurred image is visible */}
       <div
         aria-hidden
-        className={`absolute inset-0 bg-[#e8eaed] dark:bg-[#2e3340] transition-opacity duration-300 ease-out ${
-          status === "loaded" ? "opacity-0" : "opacity-100 animate-pulse"
-        }`}
+        className="absolute inset-0 bg-[#e8eaed] dark:bg-[#2e3340] animate-pulse transition-opacity duration-300 ease-out"
+        style={{ opacity: phase === "idle" ? 1 : 0 }}
       />
       <img
         src={src}
         alt={alt}
-        className={`relative w-full h-full object-cover transition-opacity duration-500 ease-out ${
-          status === "loaded" ? "opacity-100" : "opacity-0"
-        } ${imgClassName ?? ""}`}
-        onLoad={() => setStatus("loaded")}
+        className={`relative w-full h-full object-cover ${imgClassName ?? ""}`}
+        style={{
+          opacity:    phase === "idle" ? 0 : 1,
+          filter:     phase === "sharp" ? "blur(0px)"  : "blur(18px)",
+          transform:  phase === "sharp" ? "scale(1)"   : "scale(1.08)",
+          // Transition only fires on blurring→sharp (not idle→blurring)
+          transition: phase === "sharp"
+            ? "filter 600ms ease-out, transform 600ms ease-out"
+            : "none",
+        }}
+        onLoad={handleLoad}
         onError={(e) => {
-          setStatus("loaded"); // remove shimmer even on error
+          setPhase("sharp");
           onError?.(e);
         }}
       />
@@ -703,19 +714,49 @@ function Lightbox({ photos, index, onClose, onPrev, onNext }: {
   );
 }
 
-/* ─── Photo Carousel ─── */
+const CAROUSEL_GAP = 8;         // px  (gap-2)
+const THUMB_MIN_W  = 120;        // px  never narrower than this
+const THUMB_ASPECT = 4 / 3;      // width / height — keeps tiles proportional
+
+/* ─── Photo Carousel (responsive fluid) ─── */
 function PhotoCarousel({ photos }: { photos: string[] }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerW, setContainerW] = useState(0);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const visibleCount = 4;
 
-  const canScrollLeft = scrollOffset > 0;
-  const canScrollRight = scrollOffset + visibleCount < photos.length;
+  // Measure container on mount and resize
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setContainerW(el.clientWidth));
+    ro.observe(el);
+    setContainerW(el.clientWidth);
+    return () => ro.disconnect();
+  }, []);
 
-  const scrollLeft = () => setScrollOffset((prev) => Math.max(0, prev - 1));
-  const scrollRight = () => setScrollOffset((prev) => Math.min(photos.length - visibleCount, prev + 1));
+  // Derive how many thumbs fit given current container width
+  const visibleCount = containerW > 0
+    ? Math.max(2, Math.floor((containerW + CAROUSEL_GAP) / (THUMB_MIN_W + CAROUSEL_GAP)))
+    : 4;
 
-  const visiblePhotos = photos.slice(scrollOffset, scrollOffset + visibleCount + 1);
+  // Clamp offset when visibleCount changes (e.g. window resize)
+  const maxOffset = Math.max(0, photos.length - visibleCount);
+  const clampedOffset = Math.min(scrollOffset, maxOffset);
+
+  const canScrollLeft  = clampedOffset > 0;
+  const canScrollRight = clampedOffset < maxOffset;
+
+  const scrollLeft  = () => setScrollOffset((p) => Math.max(0, p - 1));
+  const scrollRight = () => setScrollOffset((p) => Math.min(maxOffset, p + 1));
+
+  const visiblePhotos = photos.slice(clampedOffset, clampedOffset + visibleCount);
+
+  // Each thumb fills an equal share of the container
+  const thumbW = containerW > 0
+    ? Math.floor((containerW - (visibleCount - 1) * CAROUSEL_GAP) / visibleCount)
+    : THUMB_MIN_W;
+  const thumbH = Math.round(thumbW / THUMB_ASPECT);
 
   return (
     <>
@@ -728,68 +769,71 @@ function PhotoCarousel({ photos }: { photos: string[] }) {
           onNext={() => setLightboxIndex((i) => Math.min(photos.length - 1, (i ?? 0) + 1))}
         />
       )}
-    <div className="relative w-full min-w-0">
-      {/* Soft edge fades into page surface (replaces harsh overlay on the last thumb) */}
-      {canScrollLeft ? (
-        <div
-          className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-14 rounded-l-lg bg-gradient-to-r from-background from-35% to-transparent dark:from-[#1e2229]"
-          aria-hidden
-        />
-      ) : null}
-      {canScrollRight ? (
-        <div
-          className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-16 rounded-r-lg bg-gradient-to-l from-background from-35% to-transparent dark:from-[#1e2229]"
-          aria-hidden
-        />
-      ) : null}
+      <div ref={containerRef} className="relative w-full min-w-0">
+        {/* Left edge fade */}
+        {canScrollLeft && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-12 bg-gradient-to-r from-background/80 dark:from-[#1e2229]/80 to-transparent rounded-l-lg"
+          />
+        )}
+        {/* Right edge fade */}
+        {canScrollRight && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-12 bg-gradient-to-l from-background/80 dark:from-[#1e2229]/80 to-transparent rounded-r-lg"
+          />
+        )}
 
-      <div className="flex gap-2 overflow-hidden rounded-lg">
-        {visiblePhotos.map((photo, idx) => {
-          const absoluteIdx = scrollOffset + idx;
-          return (
-            <div
-              key={absoluteIdx}
-              onClick={() => setLightboxIndex(absoluteIdx)}
-              className="relative h-[120px] w-[180px] shrink-0 cursor-pointer rounded-lg"
-            >
-              <ProgressiveImg
-                src={photo}
-                alt={`Review photo ${absoluteIdx + 1}`}
-                className="h-full w-full rounded-lg"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = `https://picsum.photos/seed/review${absoluteIdx}/400/300`;
-                }}
-              />
-              <div className="pointer-events-none absolute inset-0 rounded-lg border border-border shadow-sm" />
-            </div>
-          );
-        })}
+        {/* Thumb strip */}
+        <div className="flex overflow-hidden" style={{ gap: CAROUSEL_GAP }}>
+          {visiblePhotos.map((photo, idx) => {
+            const absoluteIdx = clampedOffset + idx;
+            return (
+              <div
+                key={absoluteIdx}
+                onClick={() => setLightboxIndex(absoluteIdx)}
+                className="relative shrink-0 cursor-pointer rounded-xl overflow-hidden"
+                style={{ width: thumbW, height: thumbH }}
+              >
+                <ProgressiveImg
+                  src={photo}
+                  alt={`Review photo ${absoluteIdx + 1}`}
+                  className="w-full h-full"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src =
+                      `https://picsum.photos/seed/review${absoluteIdx}/400/300`;
+                  }}
+                />
+                {/* Subtle inset border */}
+                <div className="pointer-events-none absolute inset-0 rounded-xl border border-white/10 dark:border-white/5" />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Prev / Next arrows */}
+        {canScrollLeft && (
+          <button
+            type="button"
+            onClick={scrollLeft}
+            aria-label="Previous photos"
+            className="absolute left-2 top-1/2 z-[2] flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/90 border border-border text-foreground shadow-md backdrop-blur-sm transition-all hover:scale-105 hover:bg-muted dark:bg-[#1e2229]/90 dark:hover:bg-muted"
+          >
+            <ChevronLeft className="size-4" aria-hidden />
+          </button>
+        )}
+        {canScrollRight && (
+          <button
+            type="button"
+            onClick={scrollRight}
+            aria-label="Next photos"
+            className="absolute right-2 top-1/2 z-[2] flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/90 border border-border text-foreground shadow-md backdrop-blur-sm transition-all hover:scale-105 hover:bg-muted dark:bg-[#1e2229]/90 dark:hover:bg-muted"
+          >
+            <ChevronRight className="size-4" aria-hidden />
+          </button>
+        )}
       </div>
-
-      {/* Navigation arrows */}
-      {photos.length > visibleCount && (
-        <>
-          {canScrollLeft && (
-            <button
-              type="button"
-              onClick={scrollLeft}
-              className="absolute left-2 top-1/2 z-[2] flex size-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-muted dark:bg-[#1e2229]/90 dark:hover:bg-muted"
-            >
-              <ChevronLeft className="size-5" aria-hidden />
-            </button>
-          )}
-          {canScrollRight && (
-            <button
-              type="button"
-              onClick={scrollRight}
-              className="absolute right-2 top-1/2 z-[2] flex size-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-muted dark:bg-[#1e2229]/90 dark:hover:bg-muted"
-            >
-              <ChevronRight className="size-5" aria-hidden />
-            </button>
-          )}
-        </>
-      )}
-    </div>
     </>
   );
 }
