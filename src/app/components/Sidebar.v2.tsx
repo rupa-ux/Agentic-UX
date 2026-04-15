@@ -351,7 +351,10 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                       )}
                       <button
                         type="button"
-                        onClick={() => setShowAppearance(true)}
+                        onClick={() => {
+                          setPreference("light");
+                          setShowAppearance(true);
+                        }}
                         className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
                       >
                         Switch appearance
