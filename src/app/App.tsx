@@ -483,7 +483,7 @@ export default function App() {
             ) : currentView === "storybook" ? (
               <ComponentShowcase />
             ) : currentView === "reviews" ? (
-              <ReviewsView onOpenBirdAIMonitor={() => handleViewChange("agents-monitor")} />
+              <ReviewsView />
             ) : currentView === "social" ? (
               <SocialView />
             ) : currentView === "searchai" ? (
