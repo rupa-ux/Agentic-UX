@@ -595,6 +595,55 @@ function ActionRow({ replyStatus }: { replyStatus: "post" | "edit" }) {
   );
 }
 
+/* ─── Pinterest-style progressive image ─── */
+function ProgressiveImg({
+  src, alt, className, imgClassName, onError,
+}: {
+  src: string;
+  alt: string;
+  /** className on the outer wrapper div */
+  className?: string;
+  /** className on the <img> itself */
+  imgClassName?: string;
+  onError?: React.ReactEventHandler<HTMLImageElement>;
+}) {
+  const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
+
+  // Reset when src changes (carousel scrolling)
+  const prevSrc = useRef(src);
+  if (prevSrc.current !== src) {
+    prevSrc.current = src;
+    // Schedule state reset on next render without violating hooks rules
+  }
+  useEffect(() => {
+    setStatus("loading");
+  }, [src]);
+
+  return (
+    <div className={`relative overflow-hidden ${className ?? ""}`}>
+      {/* Shimmer placeholder — sits behind the image, pulses until loaded */}
+      <div
+        aria-hidden
+        className={`absolute inset-0 bg-[#e8eaed] dark:bg-[#2e3340] transition-opacity duration-300 ease-out ${
+          status === "loaded" ? "opacity-0" : "opacity-100 animate-pulse"
+        }`}
+      />
+      <img
+        src={src}
+        alt={alt}
+        className={`relative w-full h-full object-cover transition-opacity duration-500 ease-out ${
+          status === "loaded" ? "opacity-100" : "opacity-0"
+        } ${imgClassName ?? ""}`}
+        onLoad={() => setStatus("loaded")}
+        onError={(e) => {
+          setStatus("loaded"); // remove shimmer even on error
+          onError?.(e);
+        }}
+      />
+    </div>
+  );
+}
+
 /* ─── Lightbox ─── */
 function Lightbox({ photos, index, onClose, onPrev, onNext }: {
   photos: string[];
@@ -629,12 +678,18 @@ function Lightbox({ photos, index, onClose, onPrev, onNext }: {
         </button>
       )}
       {/* Image */}
-      <img
-        src={photos[index]}
-        alt={`Photo ${index + 1}`}
-        className="max-h-[85vh] max-w-[90vw] object-contain rounded-[8px] shadow-2xl"
+      <div
+        className="max-h-[85vh] max-w-[90vw] rounded-[8px] shadow-2xl overflow-hidden"
+        style={{ aspectRatio: "4/3" }}
         onClick={(e) => e.stopPropagation()}
-      />
+      >
+        <ProgressiveImg
+          src={photos[index]}
+          alt={`Photo ${index + 1}`}
+          className="h-full w-full"
+          imgClassName="object-contain"
+        />
+      </div>
       {/* Next */}
       {index < photos.length - 1 && (
         <button
@@ -695,12 +750,12 @@ function PhotoCarousel({ photos }: { photos: string[] }) {
             <div
               key={absoluteIdx}
               onClick={() => setLightboxIndex(absoluteIdx)}
-              className="relative h-[120px] w-[180px] shrink-0 cursor-pointer overflow-hidden rounded-lg"
+              className="relative h-[120px] w-[180px] shrink-0 cursor-pointer rounded-lg"
             >
-              <img
+              <ProgressiveImg
                 src={photo}
                 alt={`Review photo ${absoluteIdx + 1}`}
-                className="h-full w-full object-cover"
+                className="h-full w-full rounded-lg"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).src = `https://picsum.photos/seed/review${absoluteIdx}/400/300`;
                 }}
