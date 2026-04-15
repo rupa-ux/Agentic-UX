@@ -5,7 +5,7 @@ export const INBOX_SHORTCUT_EVENT = "birdeye-shortcut:inbox";
 
 export type ReviewsShortcutAction = "focus-search" | "toggle-filters" | "focus-ai-reply";
 
-export type InboxShortcutAction = "focus-compose" | "focus-search";
+export type InboxShortcutAction = "focus-compose";
 
 export function dispatchReviewsShortcut(action: ReviewsShortcutAction) {
   window.dispatchEvent(new CustomEvent(REVIEWS_SHORTCUT_EVENT, { detail: { action } }));

@@ -161,14 +161,9 @@ export function useShortcuts({
       }
 
       if (scope === "inbox") {
-        if (k === "c") {
+        if (k === "c" || k === "r") {
           e.preventDefault();
           dispatchInboxShortcut("focus-compose");
-          return;
-        }
-        if (k === "r") {
-          e.preventDefault();
-          dispatchInboxShortcut("focus-search");
           return;
         }
       }

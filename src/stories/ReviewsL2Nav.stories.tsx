@@ -11,13 +11,13 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 import { APP_SHELL_GUTTER_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
 import {
   L2NavLayout,
   type L2NavLayoutProps,
   L2_HEADER_PLUS_WRAPPER_BLUE,
   L2_HEADER_PLUS_GLYPH_BLUE,
+  L2_HEADER_PLUS_STROKE_PX,
   L2_ROW_SELECTED_BG,
 } from "@/app/components/L2NavLayout";
 
@@ -241,7 +241,7 @@ function AllExpandedPanel({ active, onActive }: { active: string; onActive: (k: 
           <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
             <Plus
               className={L2_HEADER_PLUS_GLYPH_BLUE}
-              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              strokeWidth={L2_HEADER_PLUS_STROKE_PX}
               absoluteStrokeWidth
               aria-hidden
             />

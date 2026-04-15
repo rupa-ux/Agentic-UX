@@ -30,7 +30,6 @@
 
 import { useState, type ReactNode } from "react";
 import { ChevronUp, ChevronDown, ExternalLink, Plus } from "lucide-react";
-import { L1_STRIP_ICON_STROKE_PX } from "./l1StripIconTokens";
 
 /* ─────────────────────────────────────────────────────
    Design tokens — edit here to update every L2 panel
@@ -60,18 +59,21 @@ export const FOOTER_ROW_CLS    = `${ROW} ${HOVER} text-[#212121] dark:text-[#e4e
 /** Muted band on main content (e.g. Monitor hero) — aligns with L2 gray family, borderless. */
 export const L2_CONTENT_MUTED_BAND = "bg-[#f2f3f6] dark:bg-[#252b34]";
 
-/** L2 header row “+” — primary tint + Lucide `Plus` (shared across L2 + custom sidebars). */
+/** L2 header row “+” — primary tint + Lucide `Plus` (shared across L2 + custom sidebars). ~10% under `2rem` circle. */
 export const L2_HEADER_PLUS_WRAPPER_BLUE =
-  "w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-primary/15 dark:bg-primary/20";
+  "size-[1.8rem] rounded-full flex items-center justify-center shrink-0 bg-primary/15 dark:bg-primary/20";
 /** Class names for `<Plus />` inside `L2_HEADER_PLUS_WRAPPER_*`. */
 export const L2_HEADER_PLUS_GLYPH_BLUE =
-  "size-[15px] shrink-0 text-primary pointer-events-none";
+  "size-[13.5px] shrink-0 text-primary pointer-events-none";
 
 /** Same shape for `headerActionColor="green"` (pale green surface + darker plus). */
 export const L2_HEADER_PLUS_WRAPPER_GREEN =
-  "w-8 h-8 bg-[#4caf50]/20 dark:bg-[#4caf50]/25 rounded-full flex items-center justify-center shrink-0";
+  "size-[1.8rem] bg-[#4caf50]/20 dark:bg-[#4caf50]/25 rounded-full flex items-center justify-center shrink-0";
 export const L2_HEADER_PLUS_GLYPH_GREEN =
-  "size-[15px] shrink-0 text-[#1b5e20] dark:text-[#a5d6a7] pointer-events-none";
+  "size-[13.5px] shrink-0 text-[#1b5e20] dark:text-[#a5d6a7] pointer-events-none";
+
+/** Lucide `Plus` stroke in L2 header circles — slightly heavier than `L1_STRIP_ICON_STROKE_PX` for legibility. */
+export const L2_HEADER_PLUS_STROKE_PX = 2.25;
 
 /* ─────────────────────────────────────────────────────
    Types
@@ -218,7 +220,7 @@ export function L2NavLayout({
             <div className={plusWrapper}>
               <Plus
                 className={plusGlyph}
-                strokeWidth={L1_STRIP_ICON_STROKE_PX}
+                strokeWidth={L2_HEADER_PLUS_STROKE_PX}
                 absoluteStrokeWidth
                 aria-hidden
               />

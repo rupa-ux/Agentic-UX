@@ -53,6 +53,7 @@ import { ShortcutsModal } from "./shortcuts/ShortcutsModal";
 import { useShortcuts } from "./shortcuts/useShortcuts";
 import { BirdAILoginPage } from "./components/auth/BirdAILoginPage";
 import { AppBootShimmer } from "./components/layout/AppBootShimmer";
+import { SEARCH_AI_L2_DEFAULT_ACTIVE } from "./components/searchai/searchAIL2Keys";
 
 const AUTH_STORAGE_KEY = "birdai_demo_authenticated";
 
@@ -174,6 +175,17 @@ export default function App() {
       setContactsSheetMode("none");
       setContactsDetailId(null);
       setContactsQuickViewId(null);
+    }
+  }, [currentView]);
+
+  const [searchAIL2Active, setSearchAIL2Active] = useState(SEARCH_AI_L2_DEFAULT_ACTIVE);
+  const handleSearchAIL2Change = useCallback((key: string) => {
+    setSearchAIL2Active(key);
+  }, []);
+
+  useEffect(() => {
+    if (currentView !== "searchai") {
+      setSearchAIL2Active(SEARCH_AI_L2_DEFAULT_ACTIVE);
     }
   }, [currentView]);
 
@@ -395,7 +407,10 @@ export default function App() {
           )}
           {/* Search AI L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "searchai" && (
-            <SearchAIL2NavPanel />
+            <SearchAIL2NavPanel
+              activeItem={searchAIL2Active}
+              onActiveItemChange={handleSearchAIL2Change}
+            />
           )}
           {/* Contacts L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "contacts" && (
@@ -464,7 +479,7 @@ export default function App() {
             ) : currentView === "social" ? (
               <SocialView />
             ) : currentView === "searchai" ? (
-              <SearchAIView />
+              <SearchAIView l2ActiveItem={searchAIL2Active} />
             ) : currentView === "contacts" ? (
               <ContactsView app={contactsApp} />
             ) : currentView === "scheduled-deliveries" ? (

@@ -29,6 +29,7 @@ import {
   SECTION_HEADER,
   L2_HEADER_PLUS_WRAPPER_BLUE,
   L2_HEADER_PLUS_GLYPH_BLUE,
+  L2_HEADER_PLUS_STROKE_PX,
 } from "./L2NavLayout";
 
 /** How long to show the Reports-row shimmer before opening the tab (~sub-second “micro” handoff). */
@@ -148,7 +149,10 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
   }, []);
 
   return (
-    <div className={`w-[66px] flex flex-col items-center shrink-0 ${APP_SHELL_RAIL_SURFACE_CLASS}`} data-no-print>
+    <div
+      className={`w-[66px] flex flex-col items-center shrink-0 text-base ${APP_SHELL_RAIL_SURFACE_CLASS}`}
+      data-no-print
+    >
       {/* Birdeye logo */}
       <div className="h-[48px] w-[55px] flex items-center justify-center shrink-0">
         <svg width="17.55" height="16.875" viewBox="0 0 19.5 18.75" fill="none">
@@ -610,7 +614,7 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
           <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
             <Plus
               className={L2_HEADER_PLUS_GLYPH_BLUE}
-              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              strokeWidth={L2_HEADER_PLUS_STROKE_PX}
               absoluteStrokeWidth
               aria-hidden
             />
@@ -631,7 +635,7 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
           <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
             <Plus
               className={L2_HEADER_PLUS_GLYPH_BLUE}
-              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              strokeWidth={L2_HEADER_PLUS_STROKE_PX}
               absoluteStrokeWidth
               aria-hidden
             />
@@ -743,8 +747,20 @@ const searchAIConfig = {
   ],
 };
 
-export function SearchAIL2NavPanel() {
-  return <L2NavLayout {...searchAIConfig} data-no-print />;
+export type SearchAIL2NavPanelProps = {
+  activeItem: string;
+  onActiveItemChange: (key: string) => void;
+};
+
+export function SearchAIL2NavPanel({ activeItem, onActiveItemChange }: SearchAIL2NavPanelProps) {
+  return (
+    <L2NavLayout
+      {...searchAIConfig}
+      activeItem={activeItem}
+      onActiveItemChange={onActiveItemChange}
+      data-no-print
+    />
+  );
 }
 
 /* ═══════════════════════════════════════════
@@ -1018,7 +1034,7 @@ export function InboxL2NavPanel() {
           <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
             <Plus
               className={L2_HEADER_PLUS_GLYPH_BLUE}
-              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              strokeWidth={L2_HEADER_PLUS_STROKE_PX}
               absoluteStrokeWidth
               aria-hidden
             />
@@ -1058,16 +1074,13 @@ export function InboxL2NavPanel() {
           </div>
         ))}
 
-        {/* Divider */}
-        <div className="h-px bg-[#dfe1e6] dark:bg-[#2e3340] mx-1 my-3" />
-
         {/* Internal team chat header */}
         <button className={`${FOOTER_ROW_CLS} mb-[6px]`} style={{ fontSize: 14 }}>
           <span className="text-[14px]">Internal team chat</span>
           <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
             <Plus
               className={L2_HEADER_PLUS_GLYPH_BLUE}
-              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              strokeWidth={L2_HEADER_PLUS_STROKE_PX}
               absoluteStrokeWidth
               aria-hidden
             />

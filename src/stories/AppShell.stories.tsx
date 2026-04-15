@@ -25,6 +25,12 @@ import {
 } from "@/app/components/layout/appShellClasses";
 import type { AppView } from "@/app/App";
 import { CONTACTS_L2_KEY_ALL } from "@/app/components/ContactsView";
+import { SEARCH_AI_L2_DEFAULT_ACTIVE } from "@/app/components/searchai/searchAIL2Keys";
+
+function SearchAIL2ForAppShell() {
+  const [activeItem, setActiveItem] = useState(SEARCH_AI_L2_DEFAULT_ACTIVE);
+  return <SearchAIL2NavPanel activeItem={activeItem} onActiveItemChange={setActiveItem} />;
+}
 
 function ContactsL2ForAppShell() {
   const [activeItem, setActiveItem] = useState(CONTACTS_L2_KEY_ALL);
@@ -61,7 +67,7 @@ function L2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v: AppV
   if (view === "business-overview") return null;
   if (view === "reviews")     return <ReviewsL2NavPanel />;
   if (view === "social")      return <SocialL2NavPanel />;
-  if (view === "searchai")    return <SearchAIL2NavPanel />;
+  if (view === "searchai")    return <SearchAIL2ForAppShell />;
   if (view === "contacts")    return <ContactsL2ForAppShell />;
   if (view === "listings")    return <ListingsL2NavPanel />;
   if (view === "surveys")     return <SurveysL2NavPanel />;

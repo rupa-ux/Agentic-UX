@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type RefObject } from "react";
+import { useState, useRef, useEffect, useCallback, type RefObject } from "react";
 import { Button } from "@/app/components/ui/button";
 import {
   INBOX_SHORTCUT_EVENT,
@@ -20,6 +20,7 @@ import {
   Mail,
 } from "lucide-react";
 import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
+import { HOVER } from "./L2NavLayout";
 
 /* ─── Types ─── */
 interface Conversation {
@@ -125,8 +126,8 @@ const conversations: Conversation[] = [
   {
     id: "7",
     name: "Floyd Miles",
-    preview: "please don't hesitate to reach out to us",
-    lastMessage: "please don't hesitate to reach out to us",
+    preview: "Please don't hesitate to reach out to us",
+    lastMessage: "Please don't hesitate to reach out to us",
     date: "Dec 11, 2022",
     location: "San Francisco",
     team: "USA - Sales",
@@ -143,6 +144,182 @@ const conversations: Conversation[] = [
     team: "USA - Sales",
     teamIcon: "us",
     unread: false,
+  },
+  {
+    id: "9",
+    name: "Kristin Watson",
+    preview: "Thanks — we will follow up tomorrow morning.",
+    lastMessage: "Thanks — we will follow up tomorrow morning.",
+    date: "Jan 4, 2026",
+    location: "Denver",
+    team: "USA - Sales",
+    teamIcon: "us",
+    unread: true,
+  },
+  {
+    id: "10",
+    name: "Jacob Jones",
+    preview: "Can someone reschedule my appointment?",
+    lastMessage: "Can someone reschedule my appointment?",
+    date: "Jan 3, 2026",
+    location: "Chicago",
+    team: "Kelsy Hiltz",
+    teamIcon: "kelsy",
+    unread: false,
+  },
+  {
+    id: "11",
+    name: "Eleanor Pena",
+    preview: "Sent the invoice — let me know if it looks correct.",
+    lastMessage: "Sent the invoice — let me know if it looks correct.",
+    date: "Jan 2, 2026",
+    location: "Seattle",
+    team: "USA - Sales",
+    teamIcon: "us",
+    unread: false,
+  },
+  {
+    id: "12",
+    name: "Ralph Edwards",
+    preview: "Is there a discount for annual billing?",
+    lastMessage: "Is there a discount for annual billing?",
+    date: "Jan 2, 2026",
+    location: "Phoenix",
+    team: "USA - Sales",
+    teamIcon: "us",
+    unread: true,
+  },
+  {
+    id: "13",
+    name: "Jenny Wilson",
+    preview: "Appreciate the quick turnaround on this ticket.",
+    lastMessage: "Appreciate the quick turnaround on this ticket.",
+    date: "Jan 1, 2026",
+    location: "Miami",
+    team: "Savannah",
+    teamIcon: "kelsy",
+    unread: false,
+  },
+  {
+    id: "14",
+    name: "Courtney Henry",
+    preview: "Please confirm the address on file.",
+    lastMessage: "Please confirm the address on file.",
+    date: "Dec 30, 2025",
+    location: "Portland",
+    team: "USA - Sales",
+    teamIcon: "us",
+    unread: false,
+  },
+  {
+    id: "15",
+    name: "Devon Lane",
+    preview: "Voice mail: callback requested after 3pm PT.",
+    lastMessage: "Voice mail: callback requested after 3pm PT.",
+    date: "Dec 29, 2025",
+    location: "Los Angeles",
+    team: "Kelsy Hiltz",
+    teamIcon: "kelsy",
+    unread: false,
+  },
+  {
+    id: "16",
+    name: "Arlene McCoy",
+    preview: "Link to the survey is broken on mobile Safari.",
+    lastMessage: "Link to the survey is broken on mobile Safari.",
+    date: "Dec 28, 2025",
+    location: "Austin",
+    team: "USA - Sales",
+    teamIcon: "us",
+    unread: true,
+  },
+  {
+    id: "17",
+    name: "Darrell Steward",
+    preview: "Robin: sharing notes from the call.",
+    lastMessage: "Robin: sharing notes from the call.",
+    date: "Dec 27, 2025",
+    location: "San Diego",
+    team: "USA - Sales",
+    teamIcon: "us",
+    unread: false,
+  },
+  {
+    id: "18",
+    name: "Cody Fisher",
+    preview: "We are ready to sign — what are next steps?",
+    lastMessage: "We are ready to sign — what are next steps?",
+    date: "Dec 26, 2025",
+    location: "Boston",
+    team: "Savannah",
+    teamIcon: "kelsy",
+    unread: false,
+  },
+  {
+    id: "19",
+    name: "Jane Cooper",
+    preview: "Quick question about SMS opt-in wording.",
+    lastMessage: "Quick question about SMS opt-in wording.",
+    date: "Dec 25, 2025",
+    location: "Dallas",
+    team: "USA - Sales",
+    teamIcon: "us",
+    unread: false,
+  },
+  {
+    id: "20",
+    name: "Leslie Alexander",
+    preview: "Can you merge these two locations in the dashboard?",
+    lastMessage: "Can you merge these two locations in the dashboard?",
+    date: "Dec 24, 2025",
+    location: "Atlanta",
+    team: "Kelsy Hiltz",
+    teamIcon: "kelsy",
+    unread: true,
+  },
+  {
+    id: "21",
+    name: "Guy Hawkins",
+    preview: "Thanks, issue resolved on our side.",
+    lastMessage: "Thanks, issue resolved on our side.",
+    date: "Dec 23, 2025",
+    location: "Nashville",
+    team: "USA - Sales",
+    teamIcon: "us",
+    unread: false,
+  },
+  {
+    id: "22",
+    name: "Annette Porter",
+    preview: "Forwarding this thread to billing.",
+    lastMessage: "Forwarding this thread to billing.",
+    date: "Dec 22, 2025",
+    location: "Salt Lake City",
+    team: "Savannah",
+    teamIcon: "kelsy",
+    unread: false,
+  },
+  {
+    id: "23",
+    name: "Robert Fox",
+    preview: "Do you integrate with Salesforce?",
+    lastMessage: "Do you integrate with Salesforce?",
+    date: "Dec 21, 2025",
+    location: "Minneapolis",
+    team: "USA - Sales",
+    teamIcon: "us",
+    unread: false,
+  },
+  {
+    id: "24",
+    name: "Dianne Russell",
+    preview: "Please escalate — customer is waiting on site.",
+    lastMessage: "Please escalate — customer is waiting on site.",
+    date: "Dec 20, 2025",
+    location: "Houston",
+    team: "USA - Sales",
+    teamIcon: "us",
+    unread: true,
   },
 ];
 
@@ -209,6 +386,56 @@ const conversationDetails: Record<string, ConversationDetail> = {
       },
     ],
   },
+  "9": {
+    contactName: "Kristin Watson",
+    assignedTo: "Robin",
+    assignedAvatar:
+      "https://images.unsplash.com/photo-1672685667592-0392f458f46f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBtYW4lMjBoZWFkc2hvdCUyMHBvcnRyYWl0fGVufDF8fHx8MTc3MzIwNDIwNnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+    dateSeparator: "Sat • Jan 4",
+    messages: [
+      {
+        id: "m1",
+        sender: "customer",
+        text: "We need a written confirmation for the renewal before end of week.",
+        time: "08:10 AM",
+      },
+      {
+        id: "m2",
+        sender: "agent",
+        text: "Thanks — we will follow up tomorrow morning with the contract draft.",
+        time: "08:22 AM",
+        sentVia: "Sent via Birdeye",
+      },
+    ],
+  },
+  "10": {
+    contactName: "Jacob Jones",
+    assignedTo: "Kelsy Hiltz",
+    assignedAvatar:
+      "https://images.unsplash.com/photo-1655249493799-9cee4fe983bb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB3b21hbiUyMGhlYWRzaG90JTIwcG9ydHJhaXR8ZW58MXx8fHwxNzczMjE3MDIwfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+    dateSeparator: "Fri • Jan 3",
+    messages: [
+      {
+        id: "m1",
+        sender: "customer",
+        text: "Can someone reschedule my appointment to Thursday afternoon?",
+        time: "03:40 PM",
+      },
+      {
+        id: "m2",
+        sender: "agent",
+        text: "Absolutely — I sent three open slots. Pick one and we will lock it in.",
+        time: "03:52 PM",
+        sentVia: "Sent via Birdeye",
+      },
+      {
+        id: "m3",
+        sender: "customer",
+        text: "Thursday 2pm works. Thank you!",
+        time: "04:01 PM",
+      },
+    ],
+  },
 };
 
 // Generate default detail for conversations without specific detail
@@ -251,60 +478,51 @@ function ConversationItem({
   isSelected: boolean;
   onClick: () => void;
 }) {
-  const isHighlighted = conv.id === "3" && isSelected;
-
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`w-full text-left px-4 py-3.5 transition-colors duration-150 relative group ${
-        isHighlighted
-          ? "bg-[#d9ebfd] dark:bg-[#1e2d5e]"
-          : isSelected
+      className={`font-sans font-medium flex w-full flex-col gap-2 rounded-[4px] px-[8px] py-4 text-left transition-colors duration-150 ${
+        isSelected
           ? "bg-[#f0f4ff] dark:bg-[#252a3a]"
-          : "bg-white dark:bg-[#1e2229] hover:bg-[#f8f9fc] dark:hover:bg-[#262b35]"
+          : `bg-transparent ${HOVER}`
       }`}
     >
-      {/* Unread dot */}
-      {conv.unread && (
-        <span className="absolute left-1.5 top-[22px] w-[6px] h-[6px] rounded-full bg-[#1876D1]" />
-      )}
-
-      <div className="flex flex-col gap-1.5">
-        {/* Row 1: Name + date/reply */}
-        <div className="flex items-center justify-between">
-          <span
-            className={`text-[14px] text-[#212121] dark:text-[#e4e4e4] truncate ${
-              conv.unread ? "" : ""
-            }`}
-            style={{ fontWeight: 400 }}
-          >
+      {/* Row 1: unread pip (same band as name line, vertically centered) + name + date */}
+      <div className="flex gap-2 items-center">
+        <div
+          className="flex h-5 w-2 shrink-0 items-center justify-center"
+          aria-hidden={!conv.unread}
+        >
+          {conv.unread ? (
+            <span
+              className="size-1.5 shrink-0 rounded-full bg-primary"
+              title="Unread"
+              aria-label="Unread"
+            />
+          ) : null}
+        </div>
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+          <span className="min-w-0 truncate text-base text-foreground">
             {conv.name}
           </span>
-          <span className="flex items-center gap-1.5 shrink-0 ml-2">
+          <span className="flex shrink-0 items-center gap-2">
             {conv.hasReply && (
-              <Reply className="w-3 h-3 text-[#909090] dark:text-[#6b7280] -scale-x-100" />
+              <Reply className="size-3 text-muted-foreground -scale-x-100" />
             )}
-            <span
-              className="text-[12px] text-[#212121]/50 dark:text-[#e4e4e4]/50 whitespace-nowrap"
-              style={{ fontWeight: 400 }}
-            >
+            <span className="whitespace-nowrap text-sm text-muted-foreground">
               {conv.hasReply ? conv.replyTime : conv.date}
             </span>
           </span>
         </div>
+      </div>
 
-        {/* Row 2: Preview text */}
-        <p
-          className="text-[13px] text-[#212121] dark:text-[#c0c6d4] truncate"
-          style={{ fontWeight: 400 }}
-        >
-          {conv.preview}
-        </p>
+      {/* Row 2–3: align with name start (rail w-2 + gap-2 = pl-4) */}
+      <p className="truncate pl-4 text-base text-muted-foreground">{conv.preview}</p>
 
-        {/* Row 3: Location + team */}
-        <div className="flex items-center gap-1 text-[12px] text-[#8a898e] dark:text-[#6b7280]">
-          <span style={{ fontWeight: 400 }}>{conv.location}</span>
-          <span>•</span>
+      <div className="-mt-1 flex items-center gap-1 pl-4 text-sm text-muted-foreground">
+          <span>{conv.location}</span>
+          <span aria-hidden>•</span>
           {conv.teamIcon === "us" && (
             <span className="inline-flex items-center gap-1">
               <svg
@@ -323,19 +541,18 @@ function ConversationItem({
                 <rect y="7.71" width="12" height="0.69" fill="white" />
                 <rect width="5" height="4.5" fill="#3C3B6E" />
               </svg>
-              <span style={{ fontWeight: 400 }}>{conv.team}</span>
+              <span>{conv.team}</span>
             </span>
           )}
           {conv.teamIcon === "kelsy" && (
             <span className="inline-flex items-center gap-1">
               <span
-                className="w-2.5 h-2.5 rounded-full bg-[#e0e5eb] dark:bg-[#3d4555] inline-block"
+                className="inline-block size-2.5 rounded-full bg-muted"
                 aria-hidden
               />
-              <span style={{ fontWeight: 400 }}>{conv.team}</span>
+              <span>{conv.team}</span>
             </span>
           )}
-        </div>
       </div>
     </button>
   );
@@ -352,10 +569,10 @@ function ChatBubble({ msg }: { msg: ChatMessage }) {
       className={`flex flex-col ${isAgent ? "items-end" : "items-start"} mb-2`}
     >
       <div
-        className={`max-w-[420px] px-4 py-3 rounded-2xl text-[14px] leading-[21px] ${
+        className={`max-w-[420px] px-4 py-3 rounded-2xl text-[14px] leading-relaxed ${
           isAgent
             ? "bg-[#e3f0ff] dark:bg-[#1e3a5f] text-[#212121] dark:text-[#e4e4e4] rounded-br-md"
-            : "bg-white dark:bg-[#262b35] text-[#212121] dark:text-[#e4e4e4] shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.2)] rounded-bl-md"
+            : "bg-white dark:bg-[#262b35] text-[#212121] dark:text-[#e4e4e4] rounded-bl-md"
         }`}
         style={{ fontWeight: 400 }}
       >
@@ -381,6 +598,29 @@ function ChatBubble({ msg }: { msg: ChatMessage }) {
   );
 }
 
+function InboxDetailMessagesSkeleton() {
+  return (
+    <div className="px-6 py-5">
+      <div className="mb-6 flex justify-center">
+        <div className="inbox-proto-shimmer-block h-4 w-32 rounded-full" />
+      </div>
+      <div className="flex flex-col gap-6">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div key={i} className={i % 2 === 0 ? "flex justify-start" : "flex justify-end"}>
+            <div
+              className={`inbox-proto-shimmer-block rounded-2xl ${
+                i % 2 === 0
+                  ? "h-14 w-[min(100%,260px)] rounded-bl-md"
+                  : "h-24 w-[min(100%,300px)] rounded-br-md"
+              }`}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ═════════════════════════════════════
    Composer Bar
    ═════════════════════════════════════ */
@@ -398,8 +638,8 @@ function Composer({ textareaRef }: { textareaRef: RefObject<HTMLTextAreaElement 
   const canSend = Boolean(message.trim());
 
   return (
-    <div className="border-t border-[#eaeaea] dark:border-[#333a47] bg-white dark:bg-[#1e2229] px-4 py-4 transition-colors duration-300">
-      <div className="bg-[#f8f9fa] dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-xl px-4 py-2 transition-colors duration-300 focus-within:border-[#2552ED] dark:focus-within:border-[#2552ED]">
+    <div className="bg-transparent px-4 py-4 transition-colors duration-300">
+      <div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4 text-card-foreground transition-colors focus-within:ring-1 focus-within:ring-ring/40">
         <textarea
           ref={textareaRef}
           value={message}
@@ -410,7 +650,7 @@ function Composer({ textareaRef }: { textareaRef: RefObject<HTMLTextAreaElement 
           style={{ fontWeight: 400 }}
         />
 
-        <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#e5e9f0] dark:border-[#333a47]">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
             <Button
               type="button"
@@ -457,7 +697,7 @@ function Composer({ textareaRef }: { textareaRef: RefObject<HTMLTextAreaElement 
           <Button
             type="button"
             aria-label="Send"
-            className={`h-10 w-10 shrink-0 rounded-lg p-0 text-white ${
+            className={`h-10 w-10 shrink-0 rounded-[10px] p-0 text-white ${
               canSend
                 ? "bg-[#2552ED] hover:bg-[#1E44CC]"
                 : "bg-[#2552ED]/70 hover:bg-[#2552ED]/75 dark:bg-[#2552ED]/50 dark:hover:bg-[#2552ED]/55"
@@ -616,12 +856,31 @@ function InboxNav() {
    ═════════════════════════════════════ */
 export function InboxView() {
   const [selectedId, setSelectedId] = useState("3");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailLoadNonce, setDetailLoadNonce] = useState(0);
   const [statusOpen, setStatusOpen] = useState(false);
+  const [chatHeaderElevated, setChatHeaderElevated] = useState(false);
+  const [listScrollShimmer, setListScrollShimmer] = useState(false);
   const detail = getDetail(selectedId);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const conversationSearchRef = useRef<HTMLInputElement>(null);
+  const chatMessagesRef = useRef<HTMLDivElement>(null);
+  const listShimmerClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const composeTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const selectConversation = useCallback((id: string) => {
+    setDetailLoading(true);
+    setSelectedId(id);
+    setDetailLoadNonce((n) => n + 1);
+  }, []);
+
+  const onConversationListScroll = useCallback(() => {
+    setListScrollShimmer(true);
+    if (listShimmerClearRef.current) window.clearTimeout(listShimmerClearRef.current);
+    listShimmerClearRef.current = window.setTimeout(() => {
+      setListScrollShimmer(false);
+      listShimmerClearRef.current = null;
+    }, 400);
+  }, []);
 
   useEffect(() => {
     const onShortcut = (e: Event) => {
@@ -630,33 +889,39 @@ export function InboxView() {
       if (detail.action === "focus-compose") {
         composeTextareaRef.current?.focus();
       }
-      if (detail.action === "focus-search") {
-        conversationSearchRef.current?.focus();
-        conversationSearchRef.current?.select();
-      }
     };
     window.addEventListener(INBOX_SHORTCUT_EVENT, onShortcut);
     return () => window.removeEventListener(INBOX_SHORTCUT_EVENT, onShortcut);
   }, []);
 
   useEffect(() => {
+    if (detailLoading) return;
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [selectedId]);
+  }, [selectedId, detailLoading]);
 
-  const filteredConversations = searchQuery
-    ? conversations.filter(
-        (c) =>
-          c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          c.preview.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : conversations;
+  useEffect(() => {
+    if (!detailLoading) return;
+    const t = window.setTimeout(() => setDetailLoading(false), 900);
+    return () => window.clearTimeout(t);
+  }, [selectedId, detailLoadNonce, detailLoading]);
+
+  useEffect(() => {
+    const el = chatMessagesRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      setChatHeaderElevated(el.scrollTop > 2);
+    };
+    onScroll();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [selectedId, detailLoading]);
 
   return (
     <div className="flex-1 flex min-h-0 overflow-hidden bg-[#f8f9fa] dark:bg-[#13161b] transition-colors duration-300 ">
       {/* ═══ CENTER-LEFT: Conversation list ═══ */}
       <div className="w-[360px] flex flex-col bg-white dark:bg-[#1e2229] border-r border-[#eaeaea] dark:border-[#333a47] shrink-0 transition-colors duration-300">
         {/* List header */}
-        <div className="px-4 pt-4 pb-3 shrink-0">
+        <div className="px-[8px] pt-4 pb-3 shrink-0">
           <div className="flex items-center justify-between mb-3">
             {/* Status dropdown */}
             <div className="relative min-w-0 flex-1">
@@ -677,7 +942,7 @@ export function InboxView() {
                   className="text-[12px] text-[#999] dark:text-[#6b7280] whitespace-nowrap"
                   style={{ fontWeight: 400 }}
                 >
-                  19.2K total messages • 2.4K unread
+                  {`19.2K total messages • ${conversations.filter((c) => c.unread).length} unread`}
                 </span>
               </button>
 
@@ -718,39 +983,41 @@ export function InboxView() {
               ))}
             </div>
           </div>
-
-          {/* Search bar */}
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-2 top-1/2 size-[14px] -translate-y-1/2 text-[#555] dark:text-[#8b92a5]" aria-hidden />
-            <input
-              ref={conversationSearchRef}
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search conversations"
-              className="h-9 w-full rounded-lg border border-[#e5e9f0] bg-[#f8f9fa] py-0 pr-2 pl-8 text-[14px] text-[#212121] outline-none transition-colors placeholder:text-[#999] focus:border-[#2552ED] focus:ring-1 focus:ring-[#2552ED] dark:border-[#333a47] dark:bg-[#262b35] dark:text-[#e4e4e4] dark:placeholder:text-[#6b7280]"
-              aria-label="Search conversations"
-            />
-          </div>
         </div>
 
-        {/* Conversation list */}
-        <div className="flex-1 overflow-y-auto divide-y divide-[#f0f0f0] dark:divide-[#2e3340]">
-          {filteredConversations.map((conv) => (
-            <ConversationItem
-              key={conv.id}
-              conv={conv}
-              isSelected={conv.id === selectedId}
-              onClick={() => setSelectedId(conv.id)}
+        {/* Conversation list — horizontal gutter + row radius match L2NavLayout scroll area */}
+        <div className="relative min-h-0 flex-1">
+          {listScrollShimmer ? (
+            <div
+              aria-hidden
+              className="inbox-proto-shimmer-overlay pointer-events-none absolute inset-x-[8px] top-0 z-20 h-16 rounded-b-lg opacity-95"
             />
-          ))}
+          ) : null}
+          <div
+            onScroll={onConversationListScroll}
+            className="h-full overflow-y-auto px-[8px] pb-4"
+          >
+            {conversations.map((conv) => (
+              <ConversationItem
+                key={conv.id}
+                conv={conv}
+                isSelected={conv.id === selectedId}
+                onClick={() => selectConversation(conv.id)}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
       {/* ═══ RIGHT: Conversation detail ═══ */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[#f5f6f8] dark:bg-[#13161b] transition-colors duration-300">
-        {/* Chat header */}
-        <div className="h-[60px] px-5 flex items-center justify-between border-b border-[#eaeaea] dark:border-[#333a47] bg-white dark:bg-[#1e2229] shrink-0 transition-colors duration-300">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-[#f5f6f8] transition-colors duration-300 dark:bg-[#13161b]">
+        <div
+          className={`relative z-10 flex h-[60px] shrink-0 items-center justify-between bg-[#f5f6f8] px-5 transition-[box-shadow,colors] duration-200 dark:bg-[#13161b] ${
+            chatHeaderElevated
+              ? "shadow-[0_2px_10px_-4px_rgba(15,23,42,0.1)] dark:shadow-[0_2px_12px_-4px_rgba(0,0,0,0.28)]"
+              : "shadow-none"
+          }`}
+        >
           <h2
             className="text-[16px] text-[#212121] dark:text-[#e4e4e4]"
             style={{ fontWeight: 400 }}
@@ -759,13 +1026,12 @@ export function InboxView() {
           </h2>
 
           <div className="flex items-center gap-3">
-            {/* Assigned agent */}
-            <button className="flex items-center gap-2 px-2 py-1 rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
-              <div className="w-6 h-6 rounded-full overflow-hidden ring-1 ring-[#e8eaed] dark:ring-[#3d4555]">
+            <button className="flex items-center gap-2 rounded-[8px] px-2 py-1 transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]">
+              <div className="size-6 overflow-hidden rounded-full ring-1 ring-[#e8eaed] dark:ring-[#3d4555]">
                 <img
                   src={detail.assignedAvatar}
                   alt={detail.assignedTo}
-                  className="w-full h-full object-cover"
+                  className="size-full object-cover"
                 />
               </div>
               <span
@@ -774,10 +1040,9 @@ export function InboxView() {
               >
                 {detail.assignedTo}
               </span>
-              <ChevronDown className="w-3.5 h-3.5 text-[#999] dark:text-[#6b7280]" />
+              <ChevronDown className="size-3.5 text-[#999] dark:text-[#6b7280]" />
             </button>
 
-            {/* More */}
             <Button
               type="button"
               variant="ghost"
@@ -785,28 +1050,32 @@ export function InboxView() {
               className="rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
               aria-label="More options"
             >
-              <MoreVertical className="w-[14px] h-[14px] text-[#212121] dark:text-[#c0c6d4]" />
+              <MoreVertical className="h-[14px] w-[14px] text-[#212121] dark:text-[#c0c6d4]" />
             </Button>
           </div>
         </div>
 
         {/* Chat messages */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
-          {/* Date separator */}
-          <div className="flex items-center justify-center mb-6">
-            <span
-              className="text-[12px] text-[#999] dark:text-[#6b7280] bg-[#f5f6f8] dark:bg-[#13161b] px-3 relative z-10"
-              style={{ fontWeight: 400 }}
-            >
-              {detail.dateSeparator}
-            </span>
-          </div>
+        <div ref={chatMessagesRef} className="min-h-0 flex-1 overflow-y-auto">
+          {detailLoading ? (
+            <InboxDetailMessagesSkeleton />
+          ) : (
+            <div className="px-6 py-5">
+              <div className="mb-6 flex items-center justify-center">
+                <span
+                  className="relative z-10 bg-[#f5f6f8] px-3 text-[12px] text-[#999] dark:bg-[#13161b] dark:text-[#6b7280]"
+                  style={{ fontWeight: 400 }}
+                >
+                  {detail.dateSeparator}
+                </span>
+              </div>
 
-          {/* Messages */}
-          {detail.messages.map((msg) => (
-            <ChatBubble key={msg.id} msg={msg} />
-          ))}
-          <div ref={chatEndRef} />
+              {detail.messages.map((msg) => (
+                <ChatBubble key={msg.id} msg={msg} />
+              ))}
+              <div ref={chatEndRef} />
+            </div>
+          )}
         </div>
 
         {/* Composer */}

@@ -56,7 +56,7 @@ const preview: Preview = {
 
       if (isFullscreen) {
         return (
-          <div style={{ height: "100vh", overflow: "hidden" }}>
+          <div style={{ height: "100vh", overflow: "hidden", fontSize: "var(--font-size, 13px)" }}>
             <Story />
           </div>
         );
@@ -68,6 +68,7 @@ const preview: Preview = {
             minHeight: "100vh",
             padding: "1.5rem",
             background: isDark ? "#13161b" : "#f5f5f7",
+            fontSize: "var(--font-size, 13px)",
           }}
         >
           <Story />

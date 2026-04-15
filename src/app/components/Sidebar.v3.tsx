@@ -24,6 +24,7 @@ import {
   SECTION_HEADER,
   L2_HEADER_PLUS_WRAPPER_BLUE,
   L2_HEADER_PLUS_GLYPH_BLUE,
+  L2_HEADER_PLUS_STROKE_PX,
 } from "./L2NavLayout";
 
 export const REPORTS_EXTERNAL_SHIMMER_MS = 480;
@@ -495,7 +496,7 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: { curren
           <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
             <Plus
               className={L2_HEADER_PLUS_GLYPH_BLUE}
-              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              strokeWidth={L2_HEADER_PLUS_STROKE_PX}
               absoluteStrokeWidth
               aria-hidden
             />
@@ -507,7 +508,7 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: { curren
           <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
             <Plus
               className={L2_HEADER_PLUS_GLYPH_BLUE}
-              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              strokeWidth={L2_HEADER_PLUS_STROKE_PX}
               absoluteStrokeWidth
               aria-hidden
             />

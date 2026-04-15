@@ -1,5 +1,7 @@
 import { useState, Fragment, useMemo } from "react";
 import { ChevronDown, ChevronUp, Filter, MoreVertical, Search } from "lucide-react";
+import { SearchAIRecommendationsPanel } from "@/app/components/searchai/SearchAIRecommendationsPanel";
+import { SEARCH_AI_L2_KEY_RECOMMENDATIONS } from "@/app/components/searchai/searchAIL2Keys";
 import { Button } from "@/app/components/ui/button";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -416,9 +418,9 @@ function YouBadge({ small }: { small?: boolean }) {
 }
 
 /* ═══════════════════════════════════════════
-   Main Search AI View
+   Search AI — Visibility hub (L2: Track progress, Reports, Settings, …)
    ═══════════════════════════════════════════ */
-export function SearchAIView() {
+function SearchAIVisibilityDashboard() {
   const [toggleView, setToggleView] = useState("By brand");
   const [mapTab, setMapTab] = useState<PlatformTab>("ChatGPT");
   const [compTab, setCompTab] = useState<PlatformTab>("ChatGPT");
@@ -908,4 +910,16 @@ export function SearchAIView() {
       </div>
     </div>
   );
+}
+
+export type SearchAIViewProps = {
+  /** L2 compound key from `L2NavLayout` (e.g. `Actions/Recommendations`). */
+  l2ActiveItem: string;
+};
+
+export function SearchAIView({ l2ActiveItem }: SearchAIViewProps) {
+  if (l2ActiveItem === SEARCH_AI_L2_KEY_RECOMMENDATIONS) {
+    return <SearchAIRecommendationsPanel />;
+  }
+  return <SearchAIVisibilityDashboard />;
 }

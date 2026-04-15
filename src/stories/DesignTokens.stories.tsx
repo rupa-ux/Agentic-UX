@@ -684,13 +684,13 @@ export const ButtonSystem: Story = {
             </thead>
             <tbody>
               {[
-                { token: "--font-size", value: "13px", effect: "Sets root rem — all rem-based sizes scale from here" },
-                { token: "text-xs",    value: "0.75rem ≈ 10px", effect: "Captions, metadata, timestamps" },
-                { token: "text-sm",    value: "0.875rem ≈ 11px", effect: "Secondary text, table cells" },
-                { token: "text-base",  value: "1rem = 13px", effect: "Body copy, inputs, default UI text" },
-                { token: "text-lg",    value: "1.125rem ≈ 15px", effect: "Sub-headings (h3)" },
-                { token: "text-xl",    value: "1.25rem ≈ 16px", effect: "Section headings (h2)" },
-                { token: "text-2xl",   value: "1.5rem ≈ 20px", effect: "Page titles (h1)" },
+                { token: "--font-size", value: "13px", effect: "Sets `html` font size — `text-*` rem utilities scale from here (app + Storybook)" },
+                { token: "text-xs",    value: "0.75rem (≈ 10px)", effect: "Captions, metadata, timestamps" },
+                { token: "text-sm",    value: "0.875rem (≈ 11px)", effect: "Secondary text, table cells" },
+                { token: "text-base",  value: "1rem (= 13px)", effect: "Body copy, inputs, default UI text" },
+                { token: "text-lg",    value: "1.125rem (≈ 15px)", effect: "Sub-headings (h3)" },
+                { token: "text-xl",    value: "1.25rem (≈ 16px)", effect: "Section headings (h2)" },
+                { token: "text-2xl",   value: "1.5rem (≈ 20px)", effect: "Page titles (h1)" },
               ].map(({ token, value, effect }) => (
                 <tr key={token} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
                   <td className="px-4 py-2 font-mono text-xs text-primary">{token}</td>
