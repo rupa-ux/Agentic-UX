@@ -49,20 +49,23 @@ export const PANEL_INBOX_L2 =
 export const ROW =
   "flex items-center justify-between w-full px-[8px] py-[6px] text-[13px] rounded-[4px] transition-colors tracking-[-0.26px]";
 
-export const HOVER = "hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]";
+export const HOVER = "hover:bg-app-shell-l2-row-hover";
 
-export const SECTION_HEADER    = `${ROW} ${HOVER} text-[#212121] dark:text-[#e4e4e4]`;
-export const CHILD_INACTIVE    = `${ROW} ${HOVER} text-left text-[#555] dark:text-[#9ba2b0]`;
+export const SECTION_HEADER    = `${ROW} ${HOVER} text-foreground`;
+export const CHILD_INACTIVE    = `${ROW} ${HOVER} text-left text-muted-foreground`;
 /**
- * Neutral selected row — a touch darker than HOVER (#e4e6ea), lighter than the previous #d8dce4 wash.
+ * Neutral selected row — slightly darker than row hover (`--app-shell-l2-row-hover`).
  * Use anywhere L2 selection should match in-content lists (e.g. Monitor activity feed).
  */
-export const L2_ROW_SELECTED_BG = "bg-[#e2e4ea] dark:bg-[#454d5c]";
-export const CHILD_ACTIVE      = `${ROW} text-left text-[#212121] dark:text-[#e4e4e4] ${L2_ROW_SELECTED_BG}`;
-export const FOOTER_ROW_CLS    = `${ROW} ${HOVER} text-[#212121] dark:text-[#e4e4e4]`;
+export const L2_ROW_SELECTED_BG = "bg-app-shell-l2-row-active";
+export const CHILD_ACTIVE      = `${ROW} text-left text-foreground ${L2_ROW_SELECTED_BG}`;
+/** Primary-tint selection for flat nav rows (e.g. Journeys → Outcomes). */
+export const CHILD_FLAT_ACCENT_ACTIVE =
+  `${ROW} text-left text-primary bg-primary/10 rounded-lg ring-1 ring-primary/15 ${HOVER}`;
+export const FOOTER_ROW_CLS    = `${ROW} ${HOVER} text-foreground`;
 
-/** Muted band on main content (e.g. Monitor hero) — aligns with L2 gray family, borderless. */
-export const L2_CONTENT_MUTED_BAND = "bg-[#f2f3f6] dark:bg-[#252b34]";
+/** Muted band on main content (e.g. Monitor hero) — aligns with L2 grey family, borderless. */
+export const L2_CONTENT_MUTED_BAND = "bg-app-shell-l2-content-muted";
 
 /** L2 header row “+” — primary tint + Lucide `Plus` (shared across L2 + custom sidebars). ~10% under `2rem` circle. */
 export const L2_HEADER_PLUS_WRAPPER_BLUE =
@@ -124,6 +127,10 @@ export interface L2NavLayoutProps {
    * Renders after standalone items and before collapsible sections.
    */
   flatNavItems?: { label: string; key: string }[];
+  /** Subset of `flatNavItems` keys that use primary accent selection (`CHILD_FLAT_ACCENT_ACTIVE`). */
+  flatNavAccentKeys?: string[];
+  /** When true, `panelTitle` + `headerAction` stay sticky; list scrolls below. */
+  stickyNavHeader?: boolean;
   /** Collapsible sections */
   sections: L2Section[];
   /** Single bottom row, optionally with an external-link icon */
@@ -161,6 +168,8 @@ export function L2NavLayout({
   headerActionColor = "blue",
   standaloneItems,
   flatNavItems,
+  flatNavAccentKeys,
+  stickyNavHeader = false,
   sections,
   footerLink,
   defaultActive,
@@ -207,117 +216,137 @@ export function L2NavLayout({
   const plusGlyph =
     headerActionColor === "green" ? L2_HEADER_PLUS_GLYPH_GREEN : L2_HEADER_PLUS_GLYPH_BLUE;
 
+  const titleBlock =
+    panelTitle != null ? (
+      <div className="mb-2 text-left text-[14px] font-semibold tracking-[-0.26px] text-foreground">
+        {panelTitle}
+      </div>
+    ) : null;
+
+  const headerActionBlock =
+    headerAction != null ? (
+      <button
+        type="button"
+        onClick={headerAction.onClick}
+        className={`${FOOTER_ROW_CLS} mb-[6px]`}
+        style={{ fontSize: 14 }}
+      >
+        <span className="text-[14px]">{headerAction.label}</span>
+        <div className={plusWrapper}>
+          <Plus
+            className={plusGlyph}
+            strokeWidth={L2_HEADER_PLUS_STROKE_PX}
+            absoluteStrokeWidth
+            aria-hidden
+          />
+        </div>
+      </button>
+    ) : null;
+
+  const navScrollBody = (
+    <>
+      {/* Standalone items (flat, before sections) */}
+      {standaloneItems && standaloneItems.map(label => {
+        const key = `standalone/${label}`;
+        const isActive = active === key;
+        return (
+          <button
+            key={label}
+            onClick={() => activate(key)}
+            className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
+            style={{ fontWeight: isActive ? 400 : 300 }}
+          >
+            {label}
+          </button>
+        );
+      })}
+
+      {flatNavItems?.map(({ label: rowLabel, key: itemKey }) => {
+        const compoundKey = `${L2_FLAT_NAV_KEY_PREFIX}/${itemKey}`;
+        const isActive = active === compoundKey;
+        const useAccent = Boolean(isActive && flatNavAccentKeys?.includes(itemKey));
+        return (
+          <button
+            key={itemKey}
+            type="button"
+            onClick={() => activate(compoundKey)}
+            className={useAccent ? CHILD_FLAT_ACCENT_ACTIVE : isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
+            style={{ fontWeight: isActive ? 400 : 300 }}
+          >
+            {rowLabel}
+          </button>
+        );
+      })}
+
+      {/* Sections */}
+      {sections.map(section => (
+        <div key={section.label}>
+          <button
+            onClick={() => toggle(section.label)}
+            className={SECTION_HEADER}
+            style={{ fontWeight: 400 }}
+          >
+            <span>{section.label}</span>
+            {expanded[section.label]
+              ? <ChevronUp   className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+              : <ChevronDown className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+            }
+          </button>
+
+          {expanded[section.label] && section.children.map(child => {
+            const { label: childLabel, key: childKey } = l2ChildParts(child);
+            const compoundKey = `${section.label}/${childKey}`;
+            const isActive = active === compoundKey;
+            return (
+              <button
+                key={`${section.label}/${childKey}`}
+                onClick={() => activate(compoundKey)}
+                className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
+                style={{ fontWeight: isActive ? 400 : 300 }}
+              >
+                {childLabel}
+              </button>
+            );
+          })}
+        </div>
+      ))}
+
+      {/* Footer link */}
+      {footerLink && (
+        <button
+          className={`${FOOTER_ROW_CLS} mt-[2px]`}
+          style={{ fontWeight: 400, opacity: footerLink.disabled ? 0.5 : 1 }}
+          onClick={footerLink.onClick}
+          disabled={footerLink.disabled}
+        >
+          <span>{footerLink.label}</span>
+          {footerLink.external && !footerLink.disabled && (
+            <ExternalLink className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+          )}
+        </button>
+      )}
+    </>
+  );
+
   return (
     <div className={PANEL} data-no-print={noprint}>
-      <div className="min-h-0 flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
-
-        {panelTitle ? (
-          <div className="mb-2 text-left text-[14px] font-semibold tracking-[-0.26px] text-[#212121] dark:text-[#e4e4e4]">
-            {panelTitle}
-          </div>
-        ) : null}
-
-        {/* Header action */}
-        {headerAction && (
-          <button
-            type="button"
-            onClick={headerAction.onClick}
-            className={`${FOOTER_ROW_CLS} mb-[6px]`}
-            style={{ fontSize: 14 }}
+      {stickyNavHeader ? (
+        <>
+          <div
+            className={`sticky top-0 z-10 shrink-0 px-[8px] pt-3 pb-0 ${L2_PANEL_SURFACE}`}
           >
-            <span className="text-[14px]">{headerAction.label}</span>
-            <div className={plusWrapper}>
-              <Plus
-                className={plusGlyph}
-                strokeWidth={L2_HEADER_PLUS_STROKE_PX}
-                absoluteStrokeWidth
-                aria-hidden
-              />
-            </div>
-          </button>
-        )}
-
-        {/* Standalone items (flat, before sections) */}
-        {standaloneItems && standaloneItems.map(label => {
-          const key = `standalone/${label}`;
-          const isActive = active === key;
-          return (
-            <button
-              key={label}
-              onClick={() => activate(key)}
-              className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
-              style={{ fontWeight: isActive ? 400 : 300 }}
-            >
-              {label}
-            </button>
-          );
-        })}
-
-        {flatNavItems?.map(({ label: rowLabel, key: itemKey }) => {
-          const compoundKey = `${L2_FLAT_NAV_KEY_PREFIX}/${itemKey}`;
-          const isActive = active === compoundKey;
-          return (
-            <button
-              key={itemKey}
-              type="button"
-              onClick={() => activate(compoundKey)}
-              className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
-              style={{ fontWeight: isActive ? 400 : 300 }}
-            >
-              {rowLabel}
-            </button>
-          );
-        })}
-
-        {/* Sections */}
-        {sections.map(section => (
-          <div key={section.label}>
-            <button
-              onClick={() => toggle(section.label)}
-              className={SECTION_HEADER}
-              style={{ fontWeight: 400 }}
-            >
-              <span>{section.label}</span>
-              {expanded[section.label]
-                ? <ChevronUp   className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-                : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-              }
-            </button>
-
-            {expanded[section.label] && section.children.map(child => {
-              const { label: childLabel, key: childKey } = l2ChildParts(child);
-              const compoundKey = `${section.label}/${childKey}`;
-              const isActive = active === compoundKey;
-              return (
-                <button
-                  key={`${section.label}/${childKey}`}
-                  onClick={() => activate(compoundKey)}
-                  className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
-                  style={{ fontWeight: isActive ? 400 : 300 }}
-                >
-                  {childLabel}
-                </button>
-              );
-            })}
+            {titleBlock}
+            {headerActionBlock}
           </div>
-        ))}
-
-        {/* Footer link */}
-        {footerLink && (
-          <button
-            className={`${FOOTER_ROW_CLS} mt-[2px]`}
-            style={{ fontWeight: 400, opacity: footerLink.disabled ? 0.5 : 1 }}
-            onClick={footerLink.onClick}
-            disabled={footerLink.disabled}
-          >
-            <span>{footerLink.label}</span>
-            {footerLink.external && !footerLink.disabled && (
-              <ExternalLink className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-            )}
-          </button>
-        )}
-
-      </div>
+          <div className="min-h-0 flex-1 overflow-y-auto px-[8px] pt-0 pb-4">{navScrollBody}</div>
+        </>
+      ) : (
+        <div className="min-h-0 flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
+          {titleBlock}
+          {headerActionBlock}
+          {navScrollBody}
+        </div>
+      )}
 
       {footerSlot ? (
         <div className="shrink-0 border-t border-app-shell-border px-[8px] pt-2 pb-4">

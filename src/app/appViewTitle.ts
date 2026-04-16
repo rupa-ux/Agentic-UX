@@ -50,6 +50,8 @@ export function getAppViewTitle(view: AppView): string {
       return "BirdAI";
     case "agents-onboarding":
       return "BirdAI setup";
+    case "birdai-journeys":
+      return "BirdAI";
     default:
       return "Reports";
   }

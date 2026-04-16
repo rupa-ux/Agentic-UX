@@ -175,6 +175,12 @@
   --app-shell-l2-surface: #f0f1f5;
   /** Main column below TopBar (`APP_MAIN_CONTENT_SHELL_CLASS`). */
   --app-shell-main: var(--background);
+  /** L2 nav row hover wash (`L2NavLayout` `HOVER`). */
+  --app-shell-l2-row-hover: #e4e6ea;
+  /** L2 selected child / neutral active row (`CHILD_ACTIVE`, `L2_ROW_SELECTED_BG`). */
+  --app-shell-l2-row-active: #e2e4ea;
+  /** Main-column muted band aligned with L2 greys (`L2_CONTENT_MUTED_BAND`). */
+  --app-shell-l2-content-muted: #f2f3f6;
 
   /* Override Tailwind font-weight utilities to only use regular (400) and light (300) */
   --font-weight-thin: 300;
@@ -229,6 +235,9 @@
   --app-shell-rail: #181b22;
   --app-shell-l2-surface: #1e2229;
   --app-shell-main: #1e2229;
+  --app-shell-l2-row-hover: #2e3340;
+  --app-shell-l2-row-active: #454d5c;
+  --app-shell-l2-content-muted: #252b34;
 }
 
 @theme inline {
@@ -275,6 +284,9 @@
   --color-app-shell-rail: var(--app-shell-rail);
   --color-app-shell-l2-surface: var(--app-shell-l2-surface);
   --color-app-shell-main: var(--app-shell-main);
+  --color-app-shell-l2-row-hover: var(--app-shell-l2-row-hover);
+  --color-app-shell-l2-row-active: var(--app-shell-l2-row-active);
+  --color-app-shell-l2-content-muted: var(--app-shell-l2-content-muted);
 
   /**
    * Type scale — rem units so `text-*` utilities scale with `:root` / `html`

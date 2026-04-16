@@ -123,7 +123,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
     else if (currentView === "payments") setActiveIcon("Payments");
     else if (currentView === "appointments") setActiveIcon("Appointments");
     else if (currentView === "dashboard" || currentView === "shared-by-me") setActiveIcon("Reports");
-    else if (currentView === "agents-monitor" || currentView === "agents-analyze-performance" || currentView === "agents-builder" || currentView === "agent-detail" || currentView === "agents-onboarding" || currentView === "birdai-reports") setActiveIcon("Agents");
+    else if (currentView === "agents-monitor" || currentView === "agents-analyze-performance" || currentView === "agents-builder" || currentView === "agent-detail" || currentView === "agents-onboarding" || currentView === "birdai-reports" || currentView === "birdai-journeys") setActiveIcon("Agents");
     // scheduled-deliveries / schedule-builder: no icon mapping
   }, [currentView]);
 

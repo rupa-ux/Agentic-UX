@@ -45,7 +45,7 @@ import { MonitorNotificationsProvider } from "@/app/context/MonitorNotifications
 // ─── All selectable views ─────────────────────────────
 const VIEW_OPTIONS: AppView[] = [
   "business-overview",
-  "agents-monitor", "birdai-reports",
+  "agents-monitor", "birdai-journeys", "birdai-reports",
   "dashboard", "shared-by-me",
   "reviews", "social", "searchai",
   "listings", "contacts", "inbox",
@@ -57,6 +57,7 @@ const VIEW_OPTIONS: AppView[] = [
 const VIEW_LABELS: Record<string, string> = {
   "business-overview":     "Overview (no L2)",
   "agents-monitor":        "BirdAI — Monitor",
+  "birdai-journeys":       "BirdAI — Journeys placeholder",
   "birdai-reports":        "BirdAI — Reports (in-app)",
   "dashboard":             "Reports — Dashboard",
   "shared-by-me":          "Reports — Shared by me",
@@ -88,8 +89,15 @@ function ActiveL2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v
   if (view === "insights")    return <InsightsL2NavPanel />;
   if (view === "competitors") return <CompetitorsL2NavPanel />;
   if (view === "inbox")       return <InboxL2NavPanel />;
-  if (["agents-monitor", "agents-builder", "agents-onboarding", "agent-detail", "birdai-reports"].includes(view))
-    return <AgentsL2NavPanel currentView={view} onViewChange={onViewChange} selectedAgentSlug="" />;
+  if (["agents-monitor", "agents-builder", "agents-onboarding", "agent-detail", "birdai-reports", "birdai-journeys"].includes(view))
+    return (
+      <AgentsL2NavPanel
+        currentView={view}
+        onViewChange={onViewChange}
+        selectedAgentSlug=""
+        journeysL2ActiveKey="Agents/workflow"
+      />
+    );
   if (["scheduled-deliveries", "shared-by-me", "storybook"].includes(view))
     return null;
   return <L2NavPanel currentView={view} onViewChange={onViewChange} />;
@@ -222,7 +230,7 @@ export const L2Ticketing: Story   = { name: panelStories[8].name,  render: () =>
 export const L2Campaigns: Story   = { name: panelStories[9].name,  render: () => <SidebarFrame><CampaignsL2NavPanel /></SidebarFrame> };
 export const L2Insights: Story    = { name: panelStories[10].name, render: () => <SidebarFrame><InsightsL2NavPanel /></SidebarFrame> };
 export const L2Competitors: Story = { name: panelStories[11].name, render: () => <SidebarFrame><CompetitorsL2NavPanel /></SidebarFrame> };
-export const L2Agents: Story      = { name: panelStories[12].name, render: () => <SidebarFrame><AgentsL2NavPanel currentView="agents-monitor" onViewChange={() => {}} selectedAgentSlug="" /></SidebarFrame> };
+export const L2Agents: Story      = { name: panelStories[12].name, render: () => <SidebarFrame><AgentsL2NavPanel currentView="agents-monitor" onViewChange={() => {}} selectedAgentSlug="" journeysL2ActiveKey="Agents/workflow" /></SidebarFrame> };
 
 /** Explicit design-version snapshots for Agents L2 panel. */
 export const L2AgentsDesignV1: Story = {

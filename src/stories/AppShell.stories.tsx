@@ -46,6 +46,7 @@ function ContactsL2ForAppShell() {
 /* ─── View metadata for the view switcher ─── */
 const VIEWS: { value: AppView; label: string; group: string }[] = [
   { value: "agents-monitor",       label: "BirdAI — Monitor", group: "BirdAI" },
+  { value: "birdai-journeys",      label: "BirdAI — Journeys placeholder", group: "BirdAI" },
   { value: "birdai-reports",       label: "BirdAI — Reports (in-app)", group: "BirdAI" },
   { value: "dashboard",            label: "Reports — Dashboard",     group: "Reports" },
   { value: "shared-by-me",         label: "Reports — Shared by me",  group: "Reports" },
@@ -76,8 +77,15 @@ function L2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v: AppV
   if (view === "insights")    return <InsightsL2NavPanel />;
   if (view === "competitors") return <CompetitorsL2NavPanel />;
   if (view === "inbox")       return <InboxL2NavPanel />;
-  if (["agents-monitor","agents-builder","agents-onboarding","agent-detail","birdai-reports"].includes(view))
-    return <AgentsL2NavPanel currentView={view} onViewChange={onViewChange} selectedAgentSlug="" />;
+  if (["agents-monitor","agents-builder","agents-onboarding","agent-detail","birdai-reports","birdai-journeys"].includes(view))
+    return (
+      <AgentsL2NavPanel
+        currentView={view}
+        onViewChange={onViewChange}
+        selectedAgentSlug=""
+        journeysL2ActiveKey="Agents/workflow"
+      />
+    );
   if (["scheduled-deliveries","storybook","shared-by-me"].includes(view))
     return null;
   return <L2NavPanel currentView={view} onViewChange={onViewChange} />;

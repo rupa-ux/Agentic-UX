@@ -1,2 +1,2 @@
-/** Active AgentsL2NavPanel — switch between v1 / v2 source files when rolling design versions. */
-export * from "./AgentsL2NavPanel.v2";
+/** Active AgentsL2NavPanel — Journeys IA (v4). */
+export * from "./AgentsL2NavPanel.v4";

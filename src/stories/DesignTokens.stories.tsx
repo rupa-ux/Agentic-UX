@@ -91,6 +91,24 @@ const appShellColors = [
     cls: "bg-app-shell-border",
     note: "1px card frame — L2+main below TopBar",
   },
+  {
+    name: "App shell L2 row hover",
+    token: "--app-shell-l2-row-hover",
+    cls: "bg-app-shell-l2-row-hover border border-border",
+    note: "L2 list row hover (`L2NavLayout` `HOVER`)",
+  },
+  {
+    name: "App shell L2 row active",
+    token: "--app-shell-l2-row-active",
+    cls: "bg-app-shell-l2-row-active border border-border",
+    note: "L2 selected child background (`CHILD_ACTIVE`)",
+  },
+  {
+    name: "App shell L2 content muted",
+    token: "--app-shell-l2-content-muted",
+    cls: "bg-app-shell-l2-content-muted border border-border",
+    note: "Main-column muted band (`L2_CONTENT_MUTED_BAND`)",
+  },
 ];
 
 export const Colors: Story = {
