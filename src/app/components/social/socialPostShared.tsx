@@ -1,7 +1,7 @@
 import { useId } from "react";
 import { Sparkles } from "lucide-react";
 
-export type SocialPostPlatform = "facebook" | "instagram" | "twitter" | "google";
+export type SocialPostPlatform = "facebook" | "instagram" | "twitter" | "google" | "linkedin";
 
 export interface SocialCalendarPost {
   id: string;
@@ -68,6 +68,15 @@ function GoogleIcon({ size = 16 }: { size?: number }) {
   );
 }
 
+function LinkedInIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden>
+      <rect width="16" height="16" rx="3" fill="#0A66C2" />
+      <path d="M4.5 6.5h1.5v5H4.5v-5zm.75-2.5a.875.875 0 110 1.75.875.875 0 010-1.75zM7.5 6.5H9v.7c.3-.5.9-.8 1.5-.8 1.3 0 1.5.8 1.5 1.9V11.5H10.5V8.7c0-.6 0-1.2-.7-1.2-.7 0-.8.6-.8 1.1V11.5H7.5v-5z" fill="white" />
+    </svg>
+  );
+}
+
 export function SocialPostPlatformIcon({
   platform,
   size = 16,
@@ -84,6 +93,8 @@ export function SocialPostPlatformIcon({
       return <TwitterIcon size={size} />;
     case "google":
       return <GoogleIcon size={size} />;
+    case "linkedin":
+      return <LinkedInIcon size={size} />;
   }
 }
 
@@ -97,6 +108,8 @@ export function socialPostPlatformLabel(platform: SocialPostPlatform): string {
       return "X (Twitter)";
     case "google":
       return "Google";
+    case "linkedin":
+      return "LinkedIn";
   }
 }
 
