@@ -1313,7 +1313,7 @@ export function CreatePostView({ onBack, onPublish }: CreatePostViewProps) {
               </div>
 
               {/* ── Divider ── */}
-              <div style={{ borderTop: '1px solid #f0f0f0', margin: '16px 0' }} />
+              <div className="border-t border-[#f0f0f0] dark:border-[#2e3340]" style={{ margin: '16px 0' }} />
 
               {/* ── Set Expiry ── */}
               <div

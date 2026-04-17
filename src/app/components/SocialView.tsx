@@ -10,6 +10,9 @@ import { ExpiredPostsView } from "./ExpiredPostsView";
 import { ApprovalsSetupView } from "./ApprovalsSetupView";
 import { POST_DATA, type PostData } from "../data/postData";
 
+// Ordered list of post IDs visible in the calendar (deduped, in visual order)
+const CALENDAR_POST_IDS = ["post-3", "post-1", "post-2", "post-4", "post-5", "post-10", "post-9", "post-6", "post-7", "post-8", "post-11"];
+
 interface SocialViewProps {
   /** If omitted, the component manages its own active-item state */
   activeItem?: string;
@@ -127,7 +130,7 @@ export function SocialView({ activeItem: activeItemProp, onActiveItemChange: onC
   return (
     <div className="relative flex h-full min-h-0 flex-1 overflow-hidden bg-white dark:bg-[#1e2229]">
       {renderContent()}
-      <PostDetailsDrawer postId={selectedPostId} onClose={() => setSelectedPostId(null)} />
+      <PostDetailsDrawer postId={selectedPostId} postIds={CALENDAR_POST_IDS} onClose={() => setSelectedPostId(null)} />
       <ActivityDrawer postId={selectedActivityPostId} onClose={() => setSelectedActivityPostId(null)} />
     </div>
   );

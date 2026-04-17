@@ -4,6 +4,8 @@ import {
   Bot,
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   MoreVertical,
   Sparkles,
@@ -17,6 +19,13 @@ import { ActivityFeed } from "./ActivityFeed";
 interface PostDetailsDrawerContentProps {
   postId: string;
   onClose: () => void;
+  /** Prev/next navigation */
+  postIndex?: number;
+  postTotal?: number;
+  hasPrev?: boolean;
+  hasNext?: boolean;
+  onPrev?: () => void;
+  onNext?: () => void;
 }
 
 type Platform = "facebook" | "instagram" | "linkedin";
@@ -34,10 +43,10 @@ const statusConfig: Record<StatusType, { bg: string; color: string; label: strin
   expired:        { bg: "#eef1f5", color: "#6b7280",  label: "Expired" },
 };
 
-const platformMeta: Record<Platform, { label: string }> = {
-  facebook:  { label: "Facebook" },
-  instagram: { label: "Instagram" },
-  linkedin:  { label: "LinkedIn" },
+const platformMeta: Record<Platform, { label: string; color: string }> = {
+  facebook:  { label: "Facebook",  color: "#1877F2" },
+  instagram: { label: "Instagram", color: "#E1306C" },
+  linkedin:  { label: "LinkedIn",  color: "#0A66C2" },
 };
 
 const publishedInsights: Record<string, {
@@ -241,29 +250,31 @@ function PostSummary({ post, createdBy, approvalLocations }: PostSummaryProps) {
   const pending  = approvalLocations ? approvalLocations.length - approved - rejected : 0;
 
   return (
-    <div className="space-y-3.5">
-      {/* Created by */}
-      <div className="flex items-center gap-2.5">
-        <Avatar name={createdBy} size={28} />
-        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2">
-          <span className="text-[13px] font-medium text-[#1e2530] dark:text-[#e4e8f0]" style={RV}>
-            {createdBy}
-          </span>
-          <span className="text-[11px] text-[#9aa3b2] dark:text-[#6b7a94]" style={RV}>
-            {post.date}{post.time ? ` · ${post.time}` : ""}
-          </span>
-        </div>
+    <div className="flex flex-col gap-3">
+      {/* Creator + date — single inline row */}
+      <div className="flex items-center gap-2">
+        <Avatar name={createdBy} size={22} />
+        <span className="text-[12.5px] font-medium text-[#1e2530] dark:text-[#e4e8f0]" style={RV}>
+          {createdBy}
+        </span>
+        <span className="text-[#d0d5de] dark:text-[#3a404e] select-none">·</span>
+        <span className="text-[12px] text-[#9aa3b2] dark:text-[#6b7a94]" style={RV}>
+          {post.date}{post.time ? ` · ${post.time}` : ""}
+        </span>
       </div>
 
-      {/* Platform chips */}
+      {/* Platform chips — uniform height, brand-color dot as indicator */}
       <div className="flex flex-wrap gap-1.5">
         {post.platforms.map((p) => (
           <span
             key={p}
-            className="inline-flex items-center gap-1.5 overflow-hidden rounded-[6px] border border-[#e4e9f2] dark:border-[#2e3340] bg-[#f8f9fb] dark:bg-[#252a35] pl-[4px] pr-2 py-[3px] text-[11px] font-medium text-[#374151] dark:text-[#9ba2b0]"
+            className="inline-flex items-center gap-[5px] rounded-[5px] border border-[#e4e9f2] dark:border-[#2e3340] bg-[#f6f8fb] dark:bg-[#22262f] px-2 py-[4px] text-[11.5px] text-[#4b5568] dark:text-[#9ba2b0]"
             style={RV}
           >
-            {p === "facebook" ? <FacebookIcon /> : p === "instagram" ? <InstagramIcon /> : <LinkedInIcon />}
+            <span
+              className="h-[7px] w-[7px] shrink-0 rounded-[2px]"
+              style={{ backgroundColor: platformMeta[p].color }}
+            />
             {platformMeta[p].label}
           </span>
         ))}
@@ -271,21 +282,21 @@ function PostSummary({ post, createdBy, approvalLocations }: PostSummaryProps) {
 
       {/* Approval breakdown (awaiting / rejected only) */}
       {approvalLocations && (approved > 0 || pending > 0 || rejected > 0) && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {approved > 0 && (
-            <span className="inline-flex items-center gap-1.5 rounded-[6px] border border-[#c6e8c8] dark:border-[#1d4a20] bg-[#edf8ef] dark:bg-[#162618] px-2 py-1 text-[11px] font-medium text-[#2f7d32] dark:text-[#6fcf74]" style={RV}>
+            <span className="inline-flex items-center gap-[5px] rounded-[5px] border border-[#c6e8c8] dark:border-[#1d4a20] bg-[#edf8ef] dark:bg-[#162618] px-2 py-[4px] text-[11.5px] text-[#2f7d32] dark:text-[#6fcf74]" style={RV}>
               <CheckCircle2 size={11} />
               {approved} Approved
             </span>
           )}
           {pending > 0 && (
-            <span className="inline-flex items-center gap-1.5 rounded-[6px] border border-[#fde4a0] dark:border-[#4a3600] bg-[#fff8e6] dark:bg-[#2a2000] px-2 py-1 text-[11px] font-medium text-[#b67a00] dark:text-[#f0b429]" style={RV}>
+            <span className="inline-flex items-center gap-[5px] rounded-[5px] border border-[#fde4a0] dark:border-[#4a3600] bg-[#fff8e6] dark:bg-[#2a2000] px-2 py-[4px] text-[11.5px] text-[#b67a00] dark:text-[#f0b429]" style={RV}>
               <Clock3 size={11} />
               {pending} Pending
             </span>
           )}
           {rejected > 0 && (
-            <span className="inline-flex items-center gap-1.5 rounded-[6px] border border-[#fac9c3] dark:border-[#5c2a24] bg-[#fff1f0] dark:bg-[#2d1c1a] px-2 py-1 text-[11px] font-medium text-[#d14334] dark:text-[#f08080]" style={RV}>
+            <span className="inline-flex items-center gap-[5px] rounded-[5px] border border-[#fac9c3] dark:border-[#5c2a24] bg-[#fff1f0] dark:bg-[#2d1c1a] px-2 py-[4px] text-[11.5px] text-[#d14334] dark:text-[#f08080]" style={RV}>
               <XCircle size={11} />
               {rejected} Rejected
             </span>
@@ -326,35 +337,8 @@ function DrawerShimmer() {
 
       {/* Body */}
       <div className="grid min-h-0 flex-1 grid-cols-1 xl:grid-cols-2">
-        {/* Left — preview */}
-        <div className="flex flex-col gap-4 border-b border-[#eef1f6] dark:border-[#2e3340] bg-[#f6f8fb] dark:bg-[#181b22] px-[30px] py-6 xl:border-b-0 xl:border-r">
-          {/* Channel tabs */}
-          <S className="h-10 w-full rounded-[8px]" />
-          {/* Location */}
-          <S className="h-3.5 w-44" />
-          {/* Preview card */}
-          <div className="flex-1 rounded-[8px] border border-[#e2e8f0] dark:border-[#2e3340] bg-white dark:bg-[#252a35] p-[30px]">
-            <div className="space-y-5">
-              <div className="flex items-center gap-3">
-                <S className="h-11 w-11 shrink-0 rounded-full" />
-                <div className="flex-1 space-y-2">
-                  <S className="h-3.5 w-36" />
-                  <S className="h-3 w-24" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <S className="h-3 w-full" />
-                <S className="h-3 w-11/12" />
-                <S className="h-3 w-3/4" />
-                <S className="mt-2 h-3 w-24 rounded-full" />
-              </div>
-              <S className="h-52 w-full rounded-[6px]" />
-            </div>
-          </div>
-        </div>
-
-        {/* Right — info */}
-        <div className="flex flex-col bg-white dark:bg-[#1e2229]">
+        {/* Left — info */}
+        <div className="flex flex-col border-b border-[#eef1f6] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] xl:border-b-0 xl:border-r xl:border-r-[#eef1f6] dark:xl:border-r-[#2e3340]">
           {/* Tab bar */}
           <div className="flex shrink-0 items-center gap-6 border-b border-[#eef1f6] dark:border-[#2e3340] px-[30px] py-4">
             <S className="h-3.5 w-16" />
@@ -385,6 +369,33 @@ function DrawerShimmer() {
             </div>
           </div>
         </div>
+
+        {/* Right — preview */}
+        <div className="flex flex-col gap-4 bg-[#f6f8fb] dark:bg-[#181b22] px-[30px] py-6">
+          {/* Channel tabs */}
+          <S className="h-10 w-full rounded-[8px]" />
+          {/* Location */}
+          <S className="h-3.5 w-44" />
+          {/* Preview card */}
+          <div className="flex-1 rounded-[8px] border border-[#e2e8f0] dark:border-[#2e3340] bg-white dark:bg-[#252a35] p-[30px]">
+            <div className="space-y-5">
+              <div className="flex items-center gap-3">
+                <S className="h-11 w-11 shrink-0 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <S className="h-3.5 w-36" />
+                  <S className="h-3 w-24" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <S className="h-3 w-full" />
+                <S className="h-3 w-11/12" />
+                <S className="h-3 w-3/4" />
+                <S className="mt-2 h-3 w-24 rounded-full" />
+              </div>
+              <S className="h-52 w-full rounded-[6px]" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -392,7 +403,10 @@ function DrawerShimmer() {
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 
-export function PostDetailsDrawerContent({ postId, onClose }: PostDetailsDrawerContentProps) {
+export function PostDetailsDrawerContent({
+  postId, onClose,
+  postIndex, postTotal, hasPrev, hasNext, onPrev, onNext,
+}: PostDetailsDrawerContentProps) {
   const post = POST_DATA[postId];
   const approvalData = APPROVAL_DATA[postId];
 
@@ -787,6 +801,7 @@ export function PostDetailsDrawerContent({ postId, onClose }: PostDetailsDrawerC
       {/* ── Header ── */}
       <div className="shrink-0 border-b border-[#eef1f6] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] px-6 py-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
+          {/* Left: back + title + status */}
           <div className="flex min-w-0 items-center gap-3">
             <button
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] border border-[#e8ecf2] dark:border-[#2e3340] bg-white dark:bg-[#252a35] text-[#374151] dark:text-[#9ba2b0] transition-colors hover:bg-[#f8f9fb] dark:hover:bg-[#2e3340]"
@@ -807,7 +822,30 @@ export function PostDetailsDrawerContent({ postId, onClose }: PostDetailsDrawerC
             </div>
           </div>
 
+          {/* Right: prev/next navigator + CTAs + more */}
           <div className="flex items-center gap-2">
+            {/* Prev / counter / Next */}
+            {postTotal !== undefined && postTotal > 1 && (
+              <div className="flex items-center rounded-[7px] border border-[#e8ecf2] dark:border-[#2e3340] bg-white dark:bg-[#252a35] overflow-hidden">
+                <button
+                  disabled={!hasPrev}
+                  onClick={onPrev}
+                  className="flex h-9 w-8 items-center justify-center text-[#374151] dark:text-[#9ba2b0] transition-colors hover:bg-[#f4f6fa] dark:hover:bg-[#2e3340] disabled:opacity-30 disabled:cursor-default"
+                >
+                  <ChevronLeft size={15} />
+                </button>
+                <span className="border-x border-[#e8ecf2] dark:border-[#2e3340] px-2.5 text-[12px] tabular-nums text-[#667085] dark:text-[#6b7a94]" style={RV}>
+                  {postIndex} / {postTotal}
+                </span>
+                <button
+                  disabled={!hasNext}
+                  onClick={onNext}
+                  className="flex h-9 w-8 items-center justify-center text-[#374151] dark:text-[#9ba2b0] transition-colors hover:bg-[#f4f6fa] dark:hover:bg-[#2e3340] disabled:opacity-30 disabled:cursor-default"
+                >
+                  <ChevronRight size={15} />
+                </button>
+              </div>
+            )}
             {headerActions}
             <button className="flex h-9 w-9 items-center justify-center rounded-[7px] border border-[#e8ecf2] dark:border-[#2e3340] bg-white dark:bg-[#252a35] text-[#9aa3b2] dark:text-[#6b7a94] transition-colors hover:bg-[#f8f9fb] dark:hover:bg-[#2e3340]">
               <MoreVertical size={16} />
@@ -819,8 +857,61 @@ export function PostDetailsDrawerContent({ postId, onClose }: PostDetailsDrawerC
       {/* ── Two-column body ── */}
       <div className="grid min-h-0 flex-1 grid-cols-1 xl:grid-cols-2">
 
-        {/* ── Left: Preview ── */}
-        <div className="flex min-h-0 flex-col overflow-auto border-b border-[#eef1f6] dark:border-[#2e3340] bg-[#f6f8fb] dark:bg-[#181b22] xl:border-b-0 xl:border-r dark:xl:border-r-[#2e3340]">
+        {/* ── Left: Overview / Activity ── */}
+        <div className="flex min-h-0 flex-col bg-white dark:bg-[#1e2229] border-b border-[#eef1f6] dark:border-[#2e3340] xl:border-b-0 xl:border-r xl:border-r-[#eef1f6] dark:xl:border-r-[#2e3340]">
+
+          {/* Tab bar */}
+          <div className="flex shrink-0 items-center gap-1 border-b border-[#eef1f6] dark:border-[#2e3340] px-6">
+            {(["Overview", "Activity"] as const).map((tab) => {
+              const key = tab.toLowerCase() as ActiveTab;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => switchTab(key)}
+                  className={`-mb-px border-b-2 py-3.5 pr-4 text-[13px] transition-colors ${
+                    activeTab === key
+                      ? "border-[#1f78d1] dark:border-[#5b9cf6] font-medium text-[#1f78d1] dark:text-[#5b9cf6]"
+                      : "border-transparent text-[#9aa3b2] dark:text-[#6b7a94] hover:text-[#374151] dark:hover:text-[#9ba2b0]"
+                  }`}
+                  style={RV}
+                >
+                  {tab}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Tab content */}
+          <div className="min-h-0 flex-1 overflow-auto">
+            <div className={`transition-opacity duration-150 ${tabVisible ? "opacity-100" : "opacity-0"}`}>
+
+              {/* Overview tab */}
+              {activeTab === "overview" && (
+                <div className="px-[30px] py-6">
+                  <div className="divide-y divide-[#f0f3f8] dark:divide-[#2e3340]">
+                    {overviewSections.map((section, i) => (
+                      <div key={i} className={i === 0 ? "pb-5" : "py-5"}>
+                        {section}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Activity tab */}
+              {activeTab === "activity" && (
+                <div className="px-[30px] py-6">
+                  <ActivityFeed postId={postId} />
+                </div>
+              )}
+
+            </div>
+          </div>
+
+        </div>
+
+        {/* ── Right: Preview ── */}
+        <div className="flex min-h-0 flex-col overflow-auto bg-[#f6f8fb] dark:bg-[#181b22]">
           <div className="w-full px-[30px] py-6">
 
             {/* 1. Channel switcher — full row */}
@@ -951,59 +1042,6 @@ export function PostDetailsDrawerContent({ postId, onClose }: PostDetailsDrawerC
             </div>
 
           </div>
-        </div>
-
-        {/* ── Right: Context + Insights ── */}
-        <div className="flex min-h-0 flex-col bg-white dark:bg-[#1e2229]">
-
-          {/* Tab bar */}
-          <div className="flex shrink-0 items-center gap-1 border-b border-[#eef1f6] dark:border-[#2e3340] px-6">
-            {(["Overview", "Activity"] as const).map((tab) => {
-              const key = tab.toLowerCase() as ActiveTab;
-              return (
-                <button
-                  key={tab}
-                  onClick={() => switchTab(key)}
-                  className={`-mb-px border-b-2 py-3.5 pr-4 text-[13px] transition-colors ${
-                    activeTab === key
-                      ? "border-[#1f78d1] dark:border-[#5b9cf6] font-medium text-[#1f78d1] dark:text-[#5b9cf6]"
-                      : "border-transparent text-[#9aa3b2] dark:text-[#6b7a94] hover:text-[#374151] dark:hover:text-[#9ba2b0]"
-                  }`}
-                  style={RV}
-                >
-                  {tab}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Tab content */}
-          <div className="min-h-0 flex-1 overflow-auto">
-            <div className={`transition-opacity duration-150 ${tabVisible ? "opacity-100" : "opacity-0"}`}>
-
-              {/* Overview tab */}
-              {activeTab === "overview" && (
-                <div className="px-[30px] py-6">
-                  <div className="divide-y divide-[#f0f3f8] dark:divide-[#2e3340]">
-                    {overviewSections.map((section, i) => (
-                      <div key={i} className={i === 0 ? "pb-5" : "py-5"}>
-                        {section}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Activity tab */}
-              {activeTab === "activity" && (
-                <div className="px-[30px] py-6">
-                  <ActivityFeed postId={postId} />
-                </div>
-              )}
-
-            </div>
-          </div>
-
         </div>
       </div>
     </div>
