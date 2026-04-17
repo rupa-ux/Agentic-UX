@@ -17,13 +17,37 @@ import {
   InboxL2NavPanel,
 } from "@/app/components/Sidebar";
 import { TopBar } from "@/app/components/TopBar";
+import { MonitorNotificationsProvider } from "@/app/context/MonitorNotificationsContext";
+import {
+  APP_MAIN_CONTENT_SHELL_CLASS,
+  APP_SHELL_BELOW_TOPBAR_CARD_CLASS,
+  APP_SHELL_GUTTER_SURFACE_CLASS,
+} from "@/app/components/layout/appShellClasses";
 import type { AppView } from "@/app/App";
+import { CONTACTS_L2_KEY_ALL } from "@/app/components/ContactsView";
+import { SEARCH_AI_L2_DEFAULT_ACTIVE } from "@/app/components/searchai/searchAIL2Keys";
+
+function SearchAIL2ForAppShell() {
+  const [activeItem, setActiveItem] = useState(SEARCH_AI_L2_DEFAULT_ACTIVE);
+  return <SearchAIL2NavPanel activeItem={activeItem} onActiveItemChange={setActiveItem} />;
+}
+
+function ContactsL2ForAppShell() {
+  const [activeItem, setActiveItem] = useState(CONTACTS_L2_KEY_ALL);
+  return (
+    <ContactsL2NavPanel
+      activeItem={activeItem}
+      onActiveItemChange={setActiveItem}
+      onAddContact={() => {}}
+    />
+  );
+}
 
 /* ─── View metadata for the view switcher ─── */
 const VIEWS: { value: AppView; label: string; group: string }[] = [
-  { value: "agents",               label: "Myna AI — Agents",        group: "Myna AI" },
-  { value: "agents-monitor",       label: "Myna AI — Monitor",       group: "Myna AI" },
-  { value: "birdai-reports",       label: "Myna AI — Reports",       group: "Myna AI" },
+  { value: "agents-monitor",       label: "BirdAI — Monitor", group: "BirdAI" },
+  { value: "birdai-journeys",      label: "BirdAI — Journeys placeholder", group: "BirdAI" },
+  { value: "birdai-reports",       label: "BirdAI — Reports (in-app)", group: "BirdAI" },
   { value: "dashboard",            label: "Reports — Dashboard",     group: "Reports" },
   { value: "shared-by-me",         label: "Reports — Shared by me",  group: "Reports" },
   { value: "reviews",              label: "Reviews",                 group: "Modules" },
@@ -41,10 +65,11 @@ const VIEWS: { value: AppView; label: string; group: string }[] = [
 
 /* ─── Resolve which L2 panel to show for a given view ─── */
 function L2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v: AppView) => void }) {
+  if (view === "business-overview") return null;
   if (view === "reviews")     return <ReviewsL2NavPanel />;
   if (view === "social")      return <SocialL2NavPanel />;
-  if (view === "searchai")    return <SearchAIL2NavPanel />;
-  if (view === "contacts")    return <ContactsL2NavPanel />;
+  if (view === "searchai")    return <SearchAIL2ForAppShell />;
+  if (view === "contacts")    return <ContactsL2ForAppShell />;
   if (view === "listings")    return <ListingsL2NavPanel />;
   if (view === "surveys")     return <SurveysL2NavPanel />;
   if (view === "ticketing")   return <TicketingL2NavPanel />;
@@ -52,18 +77,35 @@ function L2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v: AppV
   if (view === "insights")    return <InsightsL2NavPanel />;
   if (view === "competitors") return <CompetitorsL2NavPanel />;
   if (view === "inbox")       return <InboxL2NavPanel />;
-  if (["agents","agents-monitor","agent-detail","birdai-reports"].includes(view))
-    return <AgentsL2NavPanel currentView={view} onViewChange={onViewChange} selectedAgentSlug="" />;
-  if (["scheduled-deliveries","storybook","shared-by-me","agents-builder","agents-onboarding","schedule-builder"].includes(view))
+  if (["agents-monitor","agents-builder","agents-onboarding","agent-detail","birdai-reports","birdai-journeys"].includes(view))
+    return (
+      <AgentsL2NavPanel
+        currentView={view}
+        onViewChange={onViewChange}
+        selectedAgentSlug=""
+        journeysL2ActiveKey="Agents/workflow"
+      />
+    );
+  if (["scheduled-deliveries","storybook","shared-by-me"].includes(view))
     return null;
   return <L2NavPanel currentView={view} onViewChange={onViewChange} />;
 }
 
 /* ─── Main content placeholder ─── */
 function ContentPlaceholder({ view }: { view: AppView }) {
+  if (view === "business-overview") {
+    return (
+      <div className="flex-1 min-h-0 min-w-0 flex flex-col items-center justify-center gap-2 overflow-hidden bg-app-shell-main px-8 transition-colors duration-300">
+        <p className="text-sm font-medium text-foreground">Overview</p>
+        <p className="text-[13px] text-muted-foreground text-center max-w-sm">
+          Empty state — content is shown on the real Overview page in the app.
+        </p>
+      </div>
+    );
+  }
   const label = VIEWS.find(v => v.value === view)?.label ?? view;
   return (
-    <div className="flex-1 flex flex-col items-center justify-center gap-6 min-w-0 overflow-hidden p-8">
+    <div className="flex-1 flex flex-col items-center justify-center gap-6 min-w-0 min-h-0 overflow-hidden overflow-y-auto p-8 bg-app-shell-main transition-colors duration-300">
       {/* Skeleton card grid */}
       <div className="w-full max-w-4xl flex flex-col gap-6">
         {/* Header placeholder */}
@@ -83,7 +125,7 @@ function ContentPlaceholder({ view }: { view: AppView }) {
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white dark:bg-[#1e2229] p-4 flex flex-col gap-3"
+              className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white dark:bg-app-shell-main p-4 flex flex-col gap-4"
             >
               <div className="h-3 w-20 rounded bg-black/8 dark:bg-white/8 animate-pulse" />
               <div className="h-8 w-16 rounded bg-black/10 dark:bg-white/10 animate-pulse" />
@@ -93,7 +135,7 @@ function ContentPlaceholder({ view }: { view: AppView }) {
         </div>
 
         {/* Main chart placeholder */}
-        <div className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white dark:bg-[#1e2229] p-6 flex flex-col gap-4">
+        <div className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white dark:bg-app-shell-main p-6 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="h-4 w-32 rounded bg-black/8 dark:bg-white/8 animate-pulse" />
             <div className="h-7 w-28 rounded-lg bg-black/5 dark:bg-white/5 animate-pulse" />
@@ -106,9 +148,9 @@ function ContentPlaceholder({ view }: { view: AppView }) {
         </div>
 
         {/* Table placeholder */}
-        <div className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white dark:bg-[#1e2229] overflow-hidden">
+        <div className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white dark:bg-app-shell-main overflow-hidden">
           {/* Table header */}
-          <div className="flex gap-4 px-5 py-3 border-b border-black/[0.06] dark:border-white/[0.06]">
+          <div className="flex gap-4 px-6 py-4 border-b border-black/[0.06] dark:border-white/[0.06]">
             {[160, 96, 80, 64].map((w, i) => (
               <div key={i} className="h-3 rounded bg-black/8 dark:bg-white/8 animate-pulse" style={{ width: w }} />
             ))}
@@ -117,7 +159,7 @@ function ContentPlaceholder({ view }: { view: AppView }) {
           {Array.from({ length: 5 }).map((_, row) => (
             <div
               key={row}
-              className="flex gap-4 px-5 py-3.5 border-b last:border-0 border-black/[0.04] dark:border-white/[0.04]"
+              className="flex gap-4 px-6 py-4 border-b last:border-0 border-black/[0.04] dark:border-white/[0.04]"
             >
               {[160, 96, 80, 64].map((w, i) => (
                 <div
@@ -147,8 +189,8 @@ function ViewSwitcher({
 }) {
   const groups = [...new Set(VIEWS.map(v => v.group))];
   return (
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-white dark:bg-[#22262f] border border-black/10 dark:border-white/10 rounded-full px-3 py-1.5 shadow-lg">
-      <span className="text-[11px] text-muted-foreground mr-1.5">Switch view:</span>
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-white dark:bg-[#22262f] border border-black/10 dark:border-white/10 rounded-full px-2 py-1 shadow-lg">
+      <span className="text-[11px] text-muted-foreground mr-2">Switch view:</span>
       {groups.map(group => {
         const groupViews = VIEWS.filter(v => v.group === group);
         const anyActive = groupViews.some(v => v.value === current);
@@ -158,7 +200,7 @@ function ViewSwitcher({
               <button
                 key={v.value}
                 onClick={() => onChange(v.value)}
-                className={`px-2.5 py-1 rounded-full text-[11px] transition-all ${
+                className={`px-2 py-1 rounded-full text-[11px] transition-all ${
                   current === v.value
                     ? "bg-[#2552ED] text-white"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -183,6 +225,12 @@ const meta: Meta = {
   title: "App/AppShell",
   parameters: {
     layout: "fullscreen",
+    docs: {
+      description: {
+        component:
+          "Canonical app chrome: L1 icon strip, TopBar (`rounded-tr-lg`), then a gutter row (`bg-app-shell-gutter`, `pr-[10px] pb-[10px]`) wrapping `APP_SHELL_BELOW_TOPBAR_CARD_CLASS` (1px `border-app-shell-border`). Inside: L2 `PANEL` (`bg-app-shell-l2-surface`, `border-r border-app-shell-border`), main `APP_MAIN_CONTENT_SHELL_CLASS` (`bg-app-shell-main`). L1 + TopBar use `bg-app-shell-rail`. See Design System → Tokens → Colours → App chrome.",
+      },
+    },
   },
 };
 
@@ -192,28 +240,36 @@ type Story = StoryObj;
 export const Default: Story = {
   name: "App Shell — interactive",
   render: () => {
-    const [view, setView] = useState<AppView>("agents");
+    const [view, setView] = useState<AppView>("agents-monitor");
 
     return (
-      <div className="relative h-screen w-screen flex overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
-        {/* L1 Icon Strip */}
-        <IconStrip currentView={view} onViewChange={setView} />
+      <MonitorNotificationsProvider onNavigateToMonitor={() => setView("agents-monitor")}>
+        <div className={`relative h-screen w-screen flex overflow-hidden ${APP_SHELL_GUTTER_SURFACE_CLASS}`}>
+          {/* L1 Icon Strip */}
+          <IconStrip currentView={view} onViewChange={setView} />
 
-        {/* Right of icon strip */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {/* TopBar */}
-          <TopBar currentView={view} onViewChange={setView} />
+          {/* Right of icon strip */}
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            {/* TopBar */}
+            <TopBar currentView={view} onViewChange={setView} />
 
-          {/* L2 nav + main content */}
-          <div className="flex-1 flex min-h-0 overflow-hidden">
-            <L2Panel view={view} onViewChange={setView} />
-            <ContentPlaceholder view={view} />
+            {/* L2 nav + main content */}
+            <div
+              className={`flex-1 flex min-h-0 overflow-hidden pr-[10px] pb-[10px] pl-0 ${APP_SHELL_GUTTER_SURFACE_CLASS}`}
+            >
+              <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
+                <L2Panel view={view} onViewChange={setView} />
+                <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
+                  <ContentPlaceholder view={view} />
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Floating view switcher for Storybook demo */}
-        <ViewSwitcher current={view} onChange={setView} />
-      </div>
+          {/* Floating view switcher for Storybook demo */}
+          <ViewSwitcher current={view} onChange={setView} />
+        </div>
+      </MonitorNotificationsProvider>
     );
   },
 };
@@ -221,20 +277,28 @@ export const Default: Story = {
 export const StartingWithAgents: Story = {
   name: "App Shell — start: BirdAI",
   render: () => {
-    const [view, setView] = useState<AppView>("agents");
+    const [view, setView] = useState<AppView>("agents-monitor");
 
     return (
-      <div className="relative h-screen w-screen flex overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
-        <IconStrip currentView={view} onViewChange={setView} />
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <TopBar currentView={view} onViewChange={setView} />
-          <div className="flex-1 flex min-h-0 overflow-hidden">
-            <L2Panel view={view} onViewChange={setView} />
-            <ContentPlaceholder view={view} />
+      <MonitorNotificationsProvider onNavigateToMonitor={() => setView("agents-monitor")}>
+        <div className={`relative h-screen w-screen flex overflow-hidden ${APP_SHELL_GUTTER_SURFACE_CLASS}`}>
+          <IconStrip currentView={view} onViewChange={setView} />
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <TopBar currentView={view} onViewChange={setView} />
+            <div
+              className={`flex-1 flex min-h-0 overflow-hidden pr-[10px] pb-[10px] pl-0 ${APP_SHELL_GUTTER_SURFACE_CLASS}`}
+            >
+              <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
+                <L2Panel view={view} onViewChange={setView} />
+                <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
+                  <ContentPlaceholder view={view} />
+                </div>
+              </div>
+            </div>
           </div>
+          <ViewSwitcher current={view} onChange={setView} />
         </div>
-        <ViewSwitcher current={view} onChange={setView} />
-      </div>
+      </MonitorNotificationsProvider>
     );
   },
 };
@@ -245,17 +309,25 @@ export const StartingWithReviews: Story = {
     const [view, setView] = useState<AppView>("reviews");
 
     return (
-      <div className="relative h-screen w-screen flex overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
-        <IconStrip currentView={view} onViewChange={setView} />
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <TopBar currentView={view} onViewChange={setView} />
-          <div className="flex-1 flex min-h-0 overflow-hidden">
-            <L2Panel view={view} onViewChange={setView} />
-            <ContentPlaceholder view={view} />
+      <MonitorNotificationsProvider onNavigateToMonitor={() => setView("agents-monitor")}>
+        <div className={`relative h-screen w-screen flex overflow-hidden ${APP_SHELL_GUTTER_SURFACE_CLASS}`}>
+          <IconStrip currentView={view} onViewChange={setView} />
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <TopBar currentView={view} onViewChange={setView} />
+            <div
+              className={`flex-1 flex min-h-0 overflow-hidden pr-[10px] pb-[10px] pl-0 ${APP_SHELL_GUTTER_SURFACE_CLASS}`}
+            >
+              <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
+                <L2Panel view={view} onViewChange={setView} />
+                <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
+                  <ContentPlaceholder view={view} />
+                </div>
+              </div>
+            </div>
           </div>
+          <ViewSwitcher current={view} onChange={setView} />
         </div>
-        <ViewSwitcher current={view} onChange={setView} />
-      </div>
+      </MonitorNotificationsProvider>
     );
   },
 };
@@ -266,16 +338,24 @@ export const NoL2Panel: Story = {
     const [view, setView] = useState<AppView>("inbox");
 
     return (
-      <div className="relative h-screen w-screen flex overflow-hidden bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
-        <IconStrip currentView={view} onViewChange={setView} />
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <TopBar currentView={view} onViewChange={setView} />
-          <div className="flex-1 flex min-h-0 overflow-hidden">
-            <ContentPlaceholder view={view} />
+      <MonitorNotificationsProvider onNavigateToMonitor={() => setView("agents-monitor")}>
+        <div className={`relative h-screen w-screen flex overflow-hidden ${APP_SHELL_GUTTER_SURFACE_CLASS}`}>
+          <IconStrip currentView={view} onViewChange={setView} />
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <TopBar currentView={view} onViewChange={setView} />
+            <div
+              className={`flex-1 flex min-h-0 overflow-hidden pr-[10px] pb-[10px] pl-0 ${APP_SHELL_GUTTER_SURFACE_CLASS}`}
+            >
+              <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
+                <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
+                  <ContentPlaceholder view={view} />
+                </div>
+              </div>
+            </div>
           </div>
+          <ViewSwitcher current={view} onChange={setView} />
         </div>
-        <ViewSwitcher current={view} onChange={setView} />
-      </div>
+      </MonitorNotificationsProvider>
     );
   },
 };

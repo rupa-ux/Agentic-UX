@@ -68,7 +68,7 @@ export const Outline: Story = {
 export const Sizes: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <span className="w-16 text-xs text-muted-foreground">sm</span>
         <ToggleGroup type="multiple" size="sm" aria-label="Small formatting">
           <ToggleGroupItem value="bold">
@@ -82,7 +82,7 @@ export const Sizes: Story = {
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <span className="w-16 text-xs text-muted-foreground">default</span>
         <ToggleGroup type="multiple" size="default" aria-label="Default formatting">
           <ToggleGroupItem value="bold">
@@ -96,7 +96,7 @@ export const Sizes: Story = {
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <span className="w-16 text-xs text-muted-foreground">lg</span>
         <ToggleGroup type="multiple" size="lg" aria-label="Large formatting">
           <ToggleGroupItem value="bold">

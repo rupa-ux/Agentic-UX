@@ -10,7 +10,20 @@
 
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
-import { L2NavLayout, type L2NavLayoutProps } from "@/app/components/L2NavLayout";
+import { ChevronUp, ExternalLink, Plus } from "lucide-react";
+import { APP_SHELL_GUTTER_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
+import {
+  L2NavLayout,
+  type L2NavLayoutProps,
+  PANEL,
+  SECTION_HEADER,
+  CHILD_ACTIVE,
+  CHILD_INACTIVE,
+  FOOTER_ROW_CLS,
+  L2_HEADER_PLUS_WRAPPER_BLUE,
+  L2_HEADER_PLUS_GLYPH_BLUE,
+  L2_HEADER_PLUS_STROKE_PX,
+} from "@/app/components/L2NavLayout";
 
 /* ── Reviews nav config (single source — mirrors Sidebar.tsx) ── */
 const reviewsConfig: L2NavLayoutProps = {
@@ -58,7 +71,7 @@ const reviewsConfig: L2NavLayoutProps = {
 /* ── Wrapper ────────────────────────────────────────── */
 function Frame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
+    <div className={`flex h-screen ${APP_SHELL_GUTTER_SURFACE_CLASS}`}>
       {children}
     </div>
   );
@@ -209,10 +222,7 @@ export const AllExpanded: Story = {
     // Pre-open every section by setting defaultActive per section
     return (
       <Frame>
-        <div className="flex h-screen bg-[#e0e5eb] dark:bg-[#13161b] transition-colors duration-300">
-          {/* Use a custom wrapper that forces all expanded */}
-          <AllExpandedPanel active={active} onActive={setActive} />
-        </div>
+        <AllExpandedPanel active={active} onActive={setActive} />
       </Frame>
     );
   },
@@ -220,26 +230,25 @@ export const AllExpanded: Story = {
 
 /* Helper: renders the Reviews panel with all sections forced open */
 function AllExpandedPanel({ active, onActive }: { active: string; onActive: (k: string) => void }) {
-  const { ChevronUp, ChevronDown, ExternalLink } = require("lucide-react");
-
-  const PANEL = "w-[220px] bg-[#f0f1f5] dark:bg-[#1e2229] border-r border-[#e5e9f0] dark:border-[#2e3340] flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300";
-  const ROW = "flex items-center justify-between w-full px-[8px] py-[6px] text-[13px] rounded-[4px] transition-colors tracking-[-0.26px]";
-  const HOVER = "hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340]";
-
   return (
     <div className={PANEL}>
       <div className="flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
-        <button className={`${ROW} ${HOVER} text-[#212121] dark:text-[#e4e4e4] mb-[6px]`} style={{ fontSize: 14 }}>
+        <button className={`${FOOTER_ROW_CLS} mb-[6px]`} style={{ fontSize: 14 }}>
           <span className="text-[14px]">Send a review request</span>
-          <div className="w-[18px] h-[18px] bg-[#1E44CC] rounded-full flex items-center justify-center shrink-0">
-            <span className="text-white text-[12px] leading-none select-none">+</span>
+          <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
+            <Plus
+              className={L2_HEADER_PLUS_GLYPH_BLUE}
+              strokeWidth={L2_HEADER_PLUS_STROKE_PX}
+              absoluteStrokeWidth
+              aria-hidden
+            />
           </div>
         </button>
         {reviewsConfig.sections.map(section => (
           <div key={section.label}>
-            <div className={`${ROW} ${HOVER} text-[#212121] dark:text-[#e4e4e4]`} style={{ fontWeight: 400 }}>
+            <div className={SECTION_HEADER} style={{ fontWeight: 400 }}>
               <span>{section.label}</span>
-              <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280]" />
+              <ChevronUp className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
             </div>
             {section.children.map(child => {
               const key = `${section.label}/${child}`;
@@ -248,7 +257,7 @@ function AllExpandedPanel({ active, onActive }: { active: string; onActive: (k: 
                 <button
                   key={child}
                   onClick={() => onActive(key)}
-                  className={`${ROW} text-left ${isActive ? "text-[#1E44CC] dark:text-[#7fa8ff] bg-[#dce5ff] dark:bg-[#1e2d5e]" : `${HOVER} text-[#555] dark:text-[#9ba2b0]`}`}
+                  className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
                   style={{ fontWeight: isActive ? 400 : 300 }}
                 >
                   {child}
@@ -257,9 +266,9 @@ function AllExpandedPanel({ active, onActive }: { active: string; onActive: (k: 
             })}
           </div>
         ))}
-        <button className={`${ROW} ${HOVER} text-[#212121] dark:text-[#e4e4e4] mt-[2px]`} style={{ fontWeight: 400 }}>
+        <button className={`${FOOTER_ROW_CLS} mt-[2px]`} style={{ fontWeight: 400 }}>
           <span>Reports</span>
-          <ExternalLink className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280]" />
+          <ExternalLink className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
         </button>
       </div>
     </div>

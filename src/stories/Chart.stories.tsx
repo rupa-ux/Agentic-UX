@@ -55,7 +55,7 @@ export const AreaChartStory: Story = {
   name: "Area Chart",
   render: () => (
     <div className="w-full max-w-2xl">
-      <h3 className="text-sm font-medium text-foreground mb-3">
+      <h3 className="text-sm font-medium text-foreground mb-4">
         Monthly Review Activity
       </h3>
       <ChartContainer config={areaConfig} className="h-64 w-full">
@@ -114,7 +114,7 @@ export const BarChartStory: Story = {
   name: "Bar Chart",
   render: () => (
     <div className="w-full max-w-2xl">
-      <h3 className="text-sm font-medium text-foreground mb-3">
+      <h3 className="text-sm font-medium text-foreground mb-4">
         Weekly Review Breakdown
       </h3>
       <ChartContainer config={barConfig} className="h-64 w-full">
@@ -156,7 +156,7 @@ export const LineChartStory: Story = {
   name: "Line Chart",
   render: () => (
     <div className="w-full max-w-2xl">
-      <h3 className="text-sm font-medium text-foreground mb-3">
+      <h3 className="text-sm font-medium text-foreground mb-4">
         Star Rating Trend (8-week)
       </h3>
       <ChartContainer config={lineConfig} className="h-64 w-full">

@@ -1628,7 +1628,7 @@ function CategoryBadge() {
   return (
     <div className="bg-[#e8effe] h-[19px] relative rounded-[4px] shrink-0 w-[107.125px]" data-name="CategoryBadge">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid relative size-full">
-        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#2552ed] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Customer Interaction</p>
+        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#2552ed] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Customer interaction</p>
       </div>
     </div>
   );
@@ -1720,7 +1720,7 @@ function CategoryBadge1() {
   return (
     <div className="bg-[#f3e8ff] h-[19px] relative rounded-[4px] shrink-0 w-[97.531px]" data-name="CategoryBadge">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid relative size-full">
-        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#9970d7] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Content Publishing</p>
+        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#9970d7] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Content publishing</p>
       </div>
     </div>
   );
@@ -1808,7 +1808,7 @@ function CategoryBadge2() {
   return (
     <div className="bg-[#e8effe] h-[19px] relative rounded-[4px] shrink-0 w-[107.125px]" data-name="CategoryBadge">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid relative size-full">
-        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#2552ed] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Customer Interaction</p>
+        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#2552ed] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Customer interaction</p>
       </div>
     </div>
   );
@@ -1992,7 +1992,7 @@ function CategoryBadge4() {
   return (
     <div className="bg-[#e0f2f1] h-[19px] relative rounded-[4px] shrink-0 w-[68.688px]" data-name="CategoryBadge">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid relative size-full">
-        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#00897b] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Data Update</p>
+        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#00897b] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Data update</p>
       </div>
     </div>
   );
@@ -2173,7 +2173,7 @@ function CategoryBadge6() {
   return (
     <div className="bg-[#e8effe] h-[19px] relative rounded-[4px] shrink-0 w-[107.125px]" data-name="CategoryBadge">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid relative size-full">
-        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#2552ed] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Customer Interaction</p>
+        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#2552ed] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Customer interaction</p>
       </div>
     </div>
   );
@@ -2357,7 +2357,7 @@ function CategoryBadge8() {
   return (
     <div className="bg-[#e8effe] h-[19px] relative rounded-[4px] shrink-0 w-[107.125px]" data-name="CategoryBadge">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid relative size-full">
-        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#2552ed] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Customer Interaction</p>
+        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#2552ed] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Customer interaction</p>
       </div>
     </div>
   );
@@ -2449,7 +2449,7 @@ function CategoryBadge9() {
   return (
     <div className="bg-[#e8effe] h-[19px] relative rounded-[4px] shrink-0 w-[107.125px]" data-name="CategoryBadge">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid relative size-full">
-        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#2552ed] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Customer Interaction</p>
+        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#2552ed] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Customer interaction</p>
       </div>
     </div>
   );
@@ -2537,7 +2537,7 @@ function CategoryBadge10() {
   return (
     <div className="bg-[#e0f2f1] h-[19px] relative rounded-[4px] shrink-0 w-[68.688px]" data-name="CategoryBadge">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid relative size-full">
-        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#00897b] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Data Update</p>
+        <p className="absolute font-['Inter:Regular',sans-serif] font-normal leading-[15px] left-[6px] not-italic text-[#00897b] text-[10px] top-[2.5px] tracking-[-0.2px] whitespace-nowrap">Data update</p>
       </div>
     </div>
   );

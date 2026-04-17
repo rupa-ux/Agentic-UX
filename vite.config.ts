@@ -4,15 +4,21 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import type { Plugin } from 'vite'
 
-// Stub out figma:asset/* imports for local dev (they only resolve inside Figma Make)
+// Stub out figma:asset/* imports outside Figma Make. Must be a virtual module (\0 prefix)
+// or Vite's asset pipeline tries to read `figma:asset/...` from disk and fails the build.
+const FIGMA_ASSET_PREFIX = '\0figma:asset:'
+
 function figmaAssetStubPlugin(): Plugin {
   return {
     name: 'figma-asset-stub',
     resolveId(id) {
-      if (id.startsWith('figma:asset/')) return id
+      if (id.startsWith('figma:asset/')) return FIGMA_ASSET_PREFIX + id.slice('figma:asset/'.length)
     },
     load(id) {
-      if (id.startsWith('figma:asset/')) return 'export default ""'
+      if (id.startsWith(FIGMA_ASSET_PREFIX)) {
+        // 1×1 transparent GIF — valid `src` for `<img>` when Figma exports are absent
+        return `export default "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"`
+      }
     },
   }
 }

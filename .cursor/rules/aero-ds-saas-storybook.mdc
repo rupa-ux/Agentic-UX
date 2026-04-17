@@ -1,0 +1,24 @@
+---
+description: SaaS-only UI scope + Storybook + theme.css alignment (mirrors aero-ds skill)
+alwaysApply: true
+---
+
+# Aero DS — SaaS product + Storybook
+
+This workspace is **one SaaS product** (ShareConsolidated / Bird AI shell): dashboards, agents, tasks, settings, workflows, in-app data views. **Do not** default to marketing landing pages, portfolio layouts, or generic “website” patterns unless the user explicitly asks for out-of-app marketing UI.
+
+## Sources of truth
+
+- **Colours and semantics:** [`src/tokens/theme.css`](src/tokens/theme.css) plus versioned [`src/themes/`](src/themes/) `tokens.css` (see `DESIGN_VERSION`) — use Tailwind semantic classes (`bg-primary`, `text-muted-foreground`, `border-border`, chart/sidebar tokens).
+- **Visual check:** Storybook **Design System/Tokens** ([`src/stories/DesignTokens.stories.tsx`](src/stories/DesignTokens.stories.tsx)). Run `npm run storybook` (port 6006) when validating token or layout changes.
+- **Preview:** [`.storybook/preview.tsx`](.storybook/preview.tsx) — theme toolbar, `DESIGN_VERSION` tokens + app styles; keep stories consistent with the Vite app.
+- **Spacing:** [spacing-grid.mdc](./spacing-grid.mdc) — especially for `src/stories/` and layout wrappers.
+
+## Out of scope by default
+
+- Hero-led marketing sites, campaign landings, blog/portfolio templates.
+- Suggesting ad hoc hex palettes instead of `theme.css` for in-repo components.
+
+## Optional deep reference
+
+The project skill [`.claude/skills/aero-ds/SKILL.md`](.claude/skills/aero-ds/SKILL.md) has Storybook-first workflows, guardrails, and designer-facing **How it works** / **Compatibility** sections (no CSV/BM25 tooling—tokens come from Storybook and theme files).

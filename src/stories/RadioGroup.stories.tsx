@@ -38,7 +38,7 @@ export const WithDescription: Story = {
         { value: "annual", label: "Annual", desc: "$90/year, save 17%" },
         { value: "enterprise", label: "Enterprise", desc: "Custom pricing" },
       ].map(({ value, label, desc }) => (
-        <div key={value} className="flex items-start gap-3">
+        <div key={value} className="flex items-start gap-4">
           <RadioGroupItem value={value} id={value} className="mt-0.5" />
           <div className="flex flex-col">
             <Label htmlFor={value}>{label}</Label>

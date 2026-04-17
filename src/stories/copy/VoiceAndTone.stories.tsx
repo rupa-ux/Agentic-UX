@@ -32,7 +32,7 @@ export const VoicePillars: Story = {
       </Section>
 
       <Section title="What our voice is NOT">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {[
             ["Robotic or cold",         "System initialized. Select option."],
             ["Overly formal",           "Kindly be informed that your request has been executed."],
@@ -42,7 +42,7 @@ export const VoicePillars: Story = {
           ].map(([label, bad], i) => (
             <div
               key={i}
-              className="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 flex flex-col gap-1"
+              className="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-4 flex flex-col gap-1"
             >
               <span className="text-xs text-destructive uppercase tracking-wide">✕ {label}</span>
               <span className="text-sm text-muted-foreground">"{bad}"</span>

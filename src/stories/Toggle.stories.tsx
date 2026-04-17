@@ -47,7 +47,7 @@ export const AllVariants: Story = {
 
 export const AllSizes: Story = {
   render: () => (
-    <div className="flex gap-3 items-center">
+    <div className="flex gap-4 items-center">
       <div className="flex flex-col items-center gap-1">
         <Toggle size="sm" aria-label="Small">
           <Bold className="size-3" />

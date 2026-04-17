@@ -14,6 +14,103 @@
   50% { opacity: 0.6; }
 }
 
+/** Brief L2 nav row shimmer (e.g. BirdAI → Reports handoff to reporting module) */
+@keyframes l2-nav-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.l2-nav-reports-shimmer-line,
+.l2-nav-reports-shimmer-icon {
+  background: linear-gradient(
+    90deg,
+    #d8dce4 0%,
+    #e8ebf2 40%,
+    #f6f7fa 50%,
+    #e8ebf2 60%,
+    #d8dce4 100%
+  );
+  background-size: 220% 100%;
+  animation: l2-nav-shimmer 0.32s linear infinite;
+}
+
+.dark .l2-nav-reports-shimmer-line,
+.dark .l2-nav-reports-shimmer-icon {
+  background: linear-gradient(
+    90deg,
+    #252a38 0%,
+    #323946 40%,
+    #3d4454 50%,
+    #323946 60%,
+    #252a38 100%
+  );
+  background-size: 220% 100%;
+}
+
+/** Inbox prototype — slow sweeping shimmer (list scroll + detail load) */
+@keyframes inbox-proto-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.inbox-proto-shimmer-overlay {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(37, 82, 237, 0.07) 42%,
+    rgba(37, 82, 237, 0.14) 50%,
+    rgba(37, 82, 237, 0.07) 58%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+  animation: inbox-proto-shimmer 2.8s linear infinite;
+}
+
+.dark .inbox-proto-shimmer-overlay {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(130, 160, 255, 0.06) 42%,
+    rgba(160, 185, 255, 0.12) 50%,
+    rgba(130, 160, 255, 0.06) 58%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+}
+
+.inbox-proto-shimmer-block {
+  background: linear-gradient(
+    90deg,
+    #e0e3e8 0%,
+    #eceef2 40%,
+    #f6f7f9 50%,
+    #eceef2 60%,
+    #e0e3e8 100%
+  );
+  background-size: 220% 100%;
+  animation: inbox-proto-shimmer 2.8s linear infinite;
+}
+
+.dark .inbox-proto-shimmer-block {
+  background: linear-gradient(
+    90deg,
+    #252a34 0%,
+    #323946 40%,
+    #3d4555 50%,
+    #323946 60%,
+    #252a34 100%
+  );
+  background-size: 220% 100%;
+}
+
 .scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -25,8 +122,9 @@
 :root {
   /* ─── Base scale ─── */
   --font-size: 13px;
-  --button-height: 38px;
+  --button-height-xs: 24px;
   --button-height-sm: 32px;
+  --button-height: 34px;
   --button-height-lg: 44px;
 
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
@@ -67,6 +165,22 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  /** L2+main card frame (`APP_SHELL_BELOW_TOPBAR_CARD_CLASS`) — between `--sidebar-border` and `--border` vs grey gutter. */
+  --app-shell-border: oklch(0.88 0.012 264.53);
+  /** Area behind the L2+main card (`pr-[10px] pb-[10px]` row in `App.tsx`). */
+  --app-shell-gutter: #e0e5eb;
+  /** L1 rail + TopBar band (light matches gutter; dark slightly lifted from gutter). */
+  --app-shell-rail: #e0e5eb;
+  /** L2 navigation column surface (`L2NavLayout` / `L2_PANEL_SURFACE`). */
+  --app-shell-l2-surface: #f0f1f5;
+  /** Main column below TopBar (`APP_MAIN_CONTENT_SHELL_CLASS`). */
+  --app-shell-main: var(--background);
+  /** L2 nav row hover wash (`L2NavLayout` `HOVER`). */
+  --app-shell-l2-row-hover: #e4e6ea;
+  /** L2 selected child / neutral active row (`CHILD_ACTIVE`, `L2_ROW_SELECTED_BG`). */
+  --app-shell-l2-row-active: #e2e4ea;
+  /** Main-column muted band aligned with L2 greys (`L2_CONTENT_MUTED_BAND`). */
+  --app-shell-l2-content-muted: #f2f3f6;
 
   /* Override Tailwind font-weight utilities to only use regular (400) and light (300) */
   --font-weight-thin: 300;
@@ -115,6 +229,15 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+  /** Softer than `--border` so the shell reads on the gutter without heavy chrome. */
+  --app-shell-border: oklch(0.42 0.012 264.53);
+  --app-shell-gutter: #13161b;
+  --app-shell-rail: #181b22;
+  --app-shell-l2-surface: #1e2229;
+  --app-shell-main: #1e2229;
+  --app-shell-l2-row-hover: #2e3340;
+  --app-shell-l2-row-active: #454d5c;
+  --app-shell-l2-content-muted: #252b34;
 }
 
 @theme inline {
@@ -156,6 +279,32 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-app-shell-border: var(--app-shell-border);
+  --color-app-shell-gutter: var(--app-shell-gutter);
+  --color-app-shell-rail: var(--app-shell-rail);
+  --color-app-shell-l2-surface: var(--app-shell-l2-surface);
+  --color-app-shell-main: var(--app-shell-main);
+  --color-app-shell-l2-row-hover: var(--app-shell-l2-row-hover);
+  --color-app-shell-l2-row-active: var(--app-shell-l2-row-active);
+  --color-app-shell-l2-content-muted: var(--app-shell-l2-content-muted);
+
+  /**
+   * Type scale — rem units so `text-*` utilities scale with `:root` / `html`
+   * `--font-size` (13px). Matches Tailwind defaults; declared here so Vite +
+   * Storybook share one contract (see Design System → Tokens → Base font size).
+   */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: calc(1 / 0.75);
+  --text-sm: 0.875rem;
+  --text-sm--line-height: calc(1.25 / 0.875);
+  --text-base: 1rem;
+  --text-base--line-height: calc(1.5 / 1);
+  --text-lg: 1.125rem;
+  --text-lg--line-height: calc(1.75 / 1.125);
+  --text-xl: 1.25rem;
+  --text-xl--line-height: calc(1.75 / 1.25);
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: calc(2 / 1.5);
 }
 
 @layer base {
@@ -167,6 +316,11 @@
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
     font-weight: 400;
+    font-size: var(--font-size);
+  }
+
+  #root {
+    font-size: inherit;
   }
 
   /**

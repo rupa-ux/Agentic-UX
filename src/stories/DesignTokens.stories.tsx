@@ -1,8 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { APP_SHELL_BELOW_TOPBAR_CARD_CLASS } from "@/app/components/layout/appShellClasses";
 
 const meta: Meta = {
   title: "Design System/Tokens",
-  parameters: { layout: "padded" },
+  parameters: {
+    layout: "padded",
+    docs: {
+      description: {
+        component:
+          "Before adding new UI primitives or Storybook stories, read **Design System → Before you add a component** (checklist + Sheet/floating panels).",
+      },
+    },
+  },
 };
 
 export default meta;
@@ -51,6 +60,57 @@ const sidebarColors = [
   { name: "Sidebar border",       token: "--sidebar-border",       cls: "bg-sidebar-border" },
 ];
 
+const appShellColors = [
+  {
+    name: "App shell gutter",
+    token: "--app-shell-gutter",
+    cls: "bg-app-shell-gutter",
+    note: "Area around the L2+main card (`pr-[10px] pb-[10px]` row)",
+  },
+  {
+    name: "App shell rail",
+    token: "--app-shell-rail",
+    cls: "bg-app-shell-rail",
+    note: "L1 strip + TopBar (light matches gutter)",
+  },
+  {
+    name: "App shell L2 surface",
+    token: "--app-shell-l2-surface",
+    cls: "bg-app-shell-l2-surface border border-border",
+    note: "Secondary navigation column",
+  },
+  {
+    name: "App shell main",
+    token: "--app-shell-main",
+    cls: "bg-app-shell-main border border-border",
+    note: "Primary content column (light = background)",
+  },
+  {
+    name: "App shell outline",
+    token: "--app-shell-border",
+    cls: "bg-app-shell-border",
+    note: "1px card frame — L2+main below TopBar",
+  },
+  {
+    name: "App shell L2 row hover",
+    token: "--app-shell-l2-row-hover",
+    cls: "bg-app-shell-l2-row-hover border border-border",
+    note: "L2 list row hover (`L2NavLayout` `HOVER`)",
+  },
+  {
+    name: "App shell L2 row active",
+    token: "--app-shell-l2-row-active",
+    cls: "bg-app-shell-l2-row-active border border-border",
+    note: "L2 selected child background (`CHILD_ACTIVE`)",
+  },
+  {
+    name: "App shell L2 content muted",
+    token: "--app-shell-l2-content-muted",
+    cls: "bg-app-shell-l2-content-muted border border-border",
+    note: "Main-column muted band (`L2_CONTENT_MUTED_BAND`)",
+  },
+];
+
 export const Colors: Story = {
   name: "Colours",
   render: () => (
@@ -58,7 +118,7 @@ export const Colors: Story = {
 
       <div>
         <SectionLabel>Base colours</SectionLabel>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-4">
           {baseColors.map(({ name, token, cls }) => (
             <div key={token} className="flex flex-col gap-2">
               <div className={`h-14 w-full rounded-lg ${cls}`} />
@@ -73,7 +133,7 @@ export const Colors: Story = {
 
       <div>
         <SectionLabel>Chart colours</SectionLabel>
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-5 gap-4">
           {chartColors.map(({ name, token, cls }) => (
             <div key={token} className="flex flex-col gap-2">
               <div className={`h-14 w-full rounded-lg ${cls}`} />
@@ -88,13 +148,29 @@ export const Colors: Story = {
 
       <div>
         <SectionLabel>Sidebar colours</SectionLabel>
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-5 gap-4">
           {sidebarColors.map(({ name, token, cls }) => (
             <div key={token} className="flex flex-col gap-2">
               <div className={`h-14 w-full rounded-lg ${cls}`} />
               <div className="flex flex-col gap-0.5">
                 <p className="text-sm text-foreground">{name}</p>
                 <p className="font-mono text-xs text-muted-foreground">{token}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <SectionLabel>App chrome</SectionLabel>
+        <div className="grid grid-cols-5 gap-4">
+          {appShellColors.map(({ name, token, cls, note }) => (
+            <div key={token} className="flex flex-col gap-2">
+              <div className={`h-14 w-full rounded-lg ${cls}`} />
+              <div className="flex flex-col gap-0.5">
+                <p className="text-sm text-foreground">{name}</p>
+                <p className="font-mono text-xs text-muted-foreground">{token}</p>
+                {note ? <p className="text-[11px] text-muted-foreground">{note}</p> : null}
               </div>
             </div>
           ))}
@@ -185,7 +261,7 @@ export const BorderRadius: Story = {
         <SectionLabel>Radius scale</SectionLabel>
         <div className="grid grid-cols-4 gap-4">
           {radiusTokens.map(({ name, token, tw, value, use }) => (
-            <div key={tw} className="flex flex-col gap-3">
+            <div key={tw} className="flex flex-col gap-4">
               <div
                 className={`h-20 w-full bg-primary/10 border-2 border-primary/30 ${tw} flex items-center justify-center`}
               >
@@ -214,17 +290,17 @@ export const BorderRadius: Story = {
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {["Token", "Tailwind class", "Value", "Used on"].map(h => (
-                  <th key={h} className="text-left px-4 py-2.5 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {radiusTokens.map(({ name, token, tw, value, use }) => (
                 <tr key={tw} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs text-primary">{token !== "--" ? token : "—"}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-foreground">{tw}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{value}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{use}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-primary">{token !== "--" ? token : "—"}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-foreground">{tw}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{value}</td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground">{use}</td>
                 </tr>
               ))}
             </tbody>
@@ -239,17 +315,70 @@ export const BorderRadius: Story = {
           <button className="px-4 py-2 bg-primary text-primary-foreground text-sm rounded-md">
             Button — rounded-md
           </button>
-          <span className="px-3 py-1 bg-secondary text-secondary-foreground text-xs rounded-full border border-border">
+          <span className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded-full border border-border">
             Badge — rounded-full
           </span>
-          <div className="px-4 py-3 bg-card border border-border rounded-lg text-sm text-foreground">
+          <div className="px-4 py-4 bg-card border border-border rounded-lg text-sm text-foreground">
             Card — rounded-lg
           </div>
-          <div className="px-5 py-4 bg-card border border-border rounded-xl text-sm text-foreground shadow-md">
+          <div className="px-6 py-4 bg-card border border-border rounded-xl text-sm text-foreground shadow-md">
             Dialog — rounded-xl
           </div>
           <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm">
             JD
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <SectionLabel>App shell — L2 and main</SectionLabel>
+        <p className="text-sm text-muted-foreground max-w-2xl mb-4">
+          New product areas must reuse the same chrome so L2 and main line up with the rest of the app.
+          Do not add a new 220px secondary nav without this top-left radius on the L2 column.
+        </p>
+        <ul className="text-sm text-foreground max-w-2xl list-disc pl-4 space-y-2 mb-6">
+          <li>
+            Below TopBar, wrap L2 + main (and optional Myna row) in{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">APP_SHELL_BELOW_TOPBAR_CARD_CLASS</code>{" "}
+            from <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">appShellClasses.ts</code>{" "}
+            (1px <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">rounded-lg</code> frame,{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">border-app-shell-border</code> /{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">--app-shell-border</code> — **App shell outline** in Colours; gutter uses{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">bg-app-shell-gutter</code> /{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">APP_SHELL_GUTTER_SURFACE_CLASS</code> with{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">pr-[10px] pb-[10px]</code> on the parent row in{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">App.tsx</code>).
+          </li>
+          <li>
+            L2 navigation column: <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">PANEL</code> from{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">L2NavLayout.tsx</code> (8px left corners,{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">border-r border-app-shell-border</code> vs main).
+          </li>
+          <li>
+            Main content column: <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">APP_MAIN_CONTENT_SHELL_CLASS</code>{" "}
+            (<code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">rounded-tr-lg</code>,{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">rounded-br-lg</code>,{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">bg-app-shell-main</code> — no extra perimeter border).
+          </li>
+          <li>
+            Top bar: <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">rounded-tr-lg</code> in{" "}
+            <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">TopBar.tsx</code>.
+          </li>
+        </ul>
+        <div className="flex h-24 w-full max-w-md flex-col rounded-lg bg-app-shell-gutter p-2">
+          <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
+            <div
+              className="flex w-24 shrink-0 items-end justify-center rounded-tl-lg border-r border-app-shell-border bg-app-shell-l2-surface pb-2 text-[10px] text-muted-foreground"
+              title="L2 — PANEL seam"
+            >
+              L2
+            </div>
+            <div
+              className="flex flex-1 min-w-0 items-end justify-center rounded-tr-lg rounded-br-lg bg-app-shell-main pb-2 text-[10px] text-muted-foreground"
+              title="Main — APP_MAIN_CONTENT_SHELL_CLASS"
+            >
+              Main
+            </div>
           </div>
         </div>
       </div>
@@ -314,7 +443,7 @@ export const Shadows: Story = {
         <SectionLabel>Shadow scale</SectionLabel>
         <div className="grid grid-cols-4 gap-6">
           {shadowTokens.map(({ name, tw, use }) => (
-            <div key={tw} className="flex flex-col gap-3">
+            <div key={tw} className="flex flex-col gap-4">
               <div
                 className={`h-20 w-full bg-card rounded-xl border border-border ${tw} flex items-center justify-center`}
               >
@@ -337,16 +466,16 @@ export const Shadows: Story = {
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {["Tailwind class", "Level", "Used on"].map(h => (
-                  <th key={h} className="text-left px-4 py-2.5 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {shadowTokens.map(({ name, tw, use }) => (
                 <tr key={tw} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs text-foreground">{tw}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{name}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{use}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-foreground">{tw}</td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground">{name}</td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground">{use}</td>
                 </tr>
               ))}
             </tbody>
@@ -359,11 +488,11 @@ export const Shadows: Story = {
         <SectionLabel>Elevation in real components</SectionLabel>
         <div className="flex flex-wrap gap-6 items-end">
           {[
-            { label: "Input",   tw: "shadow-sm",  radius: "rounded-md",  extra: "px-3 py-2 border border-border bg-input-background" },
-            { label: "Card",    tw: "shadow",      radius: "rounded-lg",  extra: "px-5 py-4 border border-border bg-card" },
-            { label: "Popover", tw: "shadow-md",   radius: "rounded-xl",  extra: "px-5 py-4 border border-border bg-card" },
-            { label: "Dialog",  tw: "shadow-xl",   radius: "rounded-xl",  extra: "px-6 py-5 border border-border bg-card" },
-            { label: "Drawer",  tw: "shadow-2xl",  radius: "rounded-xl",  extra: "px-6 py-5 border border-border bg-card" },
+            { label: "Input",   tw: "shadow-sm",  radius: "rounded-md",  extra: "px-4 py-2 border border-border bg-input-background" },
+            { label: "Card",    tw: "shadow",      radius: "rounded-lg",  extra: "px-6 py-4 border border-border bg-card" },
+            { label: "Popover", tw: "shadow-md",   radius: "rounded-xl",  extra: "px-6 py-4 border border-border bg-card" },
+            { label: "Dialog",  tw: "shadow-xl",   radius: "rounded-xl",  extra: "px-6 py-6 border border-border bg-card" },
+            { label: "Drawer",  tw: "shadow-2xl",  radius: "rounded-xl",  extra: "px-6 py-6 border border-border bg-card" },
           ].map(({ label, tw, radius, extra }) => (
             <div key={label} className="flex flex-col gap-2 items-center">
               <div className={`${extra} ${tw} ${radius} text-sm text-foreground min-w-[100px] text-center`}>
@@ -474,6 +603,8 @@ export const ElevationMap: Story = {
    Every interactive button in the product must use these heights.
    ══════════════════════════════════════════════════════ */
 import { Button } from "@/app/components/ui/button";
+import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
+import { Star } from "lucide-react";
 
 export const ButtonSystem: Story = {
   name: "Button System",
@@ -487,21 +618,31 @@ export const ButtonSystem: Story = {
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {["Token", "Value", "Size variant", "Live example"].map(h => (
-                  <th key={h} className="text-left px-4 py-2.5 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
+              <tr className="border-b border-border hover:bg-muted/30 transition-colors">
+                <td className="px-4 py-2 font-mono text-xs text-primary">--button-height-xs</td>
+                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">24px</td>
+                <td className="px-4 py-2 text-xs text-muted-foreground">iconXs</td>
+                <td className="px-4 py-2">
+                  <Button size="iconXs" variant="outline" aria-label="24px icon button">
+                    <span className="font-mono text-[10px] leading-none">24</span>
+                  </Button>
+                </td>
+              </tr>
               {[
                 { token: "--button-height-sm", value: "32px", size: "sm",      label: "Small" },
-                { token: "--button-height",    value: "38px", size: "default", label: "Default" },
+                { token: "--button-height",    value: "34px", size: "default", label: "Default" },
                 { token: "--button-height-lg", value: "44px", size: "lg",      label: "Large" },
               ].map(({ token, value, size, label }) => (
                 <tr key={token} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs text-primary">{token}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{value}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{label}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-2 font-mono text-xs text-primary">{token}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{value}</td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground">{label}</td>
+                  <td className="px-4 py-2">
                     <Button size={size as any} variant="outline">{label}</Button>
                   </td>
                 </tr>
@@ -512,8 +653,8 @@ export const ButtonSystem: Story = {
       </div>
 
       <div>
-        <SectionLabel>All variants at 38px default height</SectionLabel>
-        <div className="flex flex-wrap gap-3 items-center">
+        <SectionLabel>All variants at default height (34px)</SectionLabel>
+        <div className="flex flex-wrap gap-4 items-center">
           {(["default","secondary","outline","ghost","destructive","link"] as const).map(v => (
             <Button key={v} variant={v}>{v.charAt(0).toUpperCase() + v.slice(1)}</Button>
           ))}
@@ -522,14 +663,20 @@ export const ButtonSystem: Story = {
 
       <div>
         <SectionLabel>Size comparison</SectionLabel>
-        <div className="flex flex-wrap gap-3 items-end">
+        <div className="flex flex-wrap gap-4 items-end">
+          <div className="flex flex-col items-center gap-1">
+            <Button size="iconXs" variant="outline" aria-label="24px">
+              <span className="font-mono text-[10px] leading-none">24</span>
+            </Button>
+            <span className="font-mono text-[10px] text-muted-foreground">24px (iconXs)</span>
+          </div>
           <div className="flex flex-col items-center gap-1">
             <Button size="sm">Small — 32px</Button>
             <span className="font-mono text-[10px] text-muted-foreground">h: 32px</span>
           </div>
           <div className="flex flex-col items-center gap-1">
-            <Button size="default">Default — 38px</Button>
-            <span className="font-mono text-[10px] text-muted-foreground">h: 38px</span>
+            <Button size="default">Default — 34px</Button>
+            <span className="font-mono text-[10px] text-muted-foreground">h: 34px</span>
           </div>
           <div className="flex flex-col items-center gap-1">
             <Button size="lg">Large — 44px</Button>
@@ -537,7 +684,7 @@ export const ButtonSystem: Story = {
           </div>
           <div className="flex flex-col items-center gap-1">
             <Button size="icon">⊕</Button>
-            <span className="font-mono text-[10px] text-muted-foreground">h: 38px</span>
+            <span className="font-mono text-[10px] text-muted-foreground">34px (icon)</span>
           </div>
         </div>
       </div>
@@ -549,24 +696,24 @@ export const ButtonSystem: Story = {
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {["Token", "Value", "Effect"].map(h => (
-                  <th key={h} className="text-left px-4 py-2.5 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {[
-                { token: "--font-size", value: "13px", effect: "Sets root rem — all rem-based sizes scale from here" },
-                { token: "text-xs",    value: "0.75rem ≈ 10px", effect: "Captions, metadata, timestamps" },
-                { token: "text-sm",    value: "0.875rem ≈ 11px", effect: "Secondary text, table cells" },
-                { token: "text-base",  value: "1rem = 13px", effect: "Body copy, inputs, default UI text" },
-                { token: "text-lg",    value: "1.125rem ≈ 15px", effect: "Sub-headings (h3)" },
-                { token: "text-xl",    value: "1.25rem ≈ 16px", effect: "Section headings (h2)" },
-                { token: "text-2xl",   value: "1.5rem ≈ 20px", effect: "Page titles (h1)" },
+                { token: "--font-size", value: "13px", effect: "Sets `html` font size — `text-*` rem utilities scale from here (app + Storybook)" },
+                { token: "text-xs",    value: "0.75rem (≈ 10px)", effect: "Captions, metadata, timestamps" },
+                { token: "text-sm",    value: "0.875rem (≈ 11px)", effect: "Secondary text, table cells" },
+                { token: "text-base",  value: "1rem (= 13px)", effect: "Body copy, inputs, default UI text" },
+                { token: "text-lg",    value: "1.125rem (≈ 15px)", effect: "Sub-headings (h3)" },
+                { token: "text-xl",    value: "1.25rem (≈ 16px)", effect: "Section headings (h2)" },
+                { token: "text-2xl",   value: "1.5rem (≈ 20px)", effect: "Page titles (h1)" },
               ].map(({ token, value, effect }) => (
                 <tr key={token} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs text-primary">{token}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{value}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{effect}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-primary">{token}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{value}</td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground">{effect}</td>
                 </tr>
               ))}
             </tbody>
@@ -574,6 +721,66 @@ export const ButtonSystem: Story = {
         </div>
       </div>
 
+    </div>
+  ),
+};
+
+/* ══════════════════════════════════════════════════════
+   ICON STROKE (Lucide / product icons)
+   ══════════════════════════════════════════════════════ */
+
+export const IconStroke: Story = {
+  name: "Icon stroke",
+  render: () => (
+    <div className="flex flex-col gap-10 max-w-2xl">
+      <div>
+        <SectionLabel>Product outline icons — 1.4px</SectionLabel>
+        <p className="text-sm text-muted-foreground max-w-xl mb-4">
+          Hand-written UI icons (Lucide, Phosphor on the L1 rail) use{" "}
+          <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">L1_STRIP_ICON_STROKE_PX</code>{" "}
+          (<strong>{L1_STRIP_ICON_STROKE_PX}px</strong>) from{" "}
+          <code className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md">l1StripIconTokens.ts</code>.
+          Lucide defaults to a heavier stroke; do not rely on that for new product UI.
+        </p>
+        <ul className="text-sm text-foreground max-w-xl list-disc pl-4 space-y-2 mb-6">
+          <li>
+            Pass <code className="font-mono text-xs bg-muted px-1 rounded">strokeWidth=&#123;L1_STRIP_ICON_STROKE_PX&#125;</code>{" "}
+            (or literal <code className="font-mono text-xs bg-muted px-1 rounded">1.4</code>).
+          </li>
+          <li>
+            When width/height are not the default 24px, add{" "}
+            <code className="font-mono text-xs bg-muted px-1 rounded">absoluteStrokeWidth</code>{" "}
+            so the stroke stays 1.4px on screen (see JSDoc in the tokens file).
+          </li>
+          <li>
+            <code className="font-mono text-xs bg-muted px-1 rounded">strokeWidth=&#123;0&#125;</code>{" "}
+            is fine for filled-only glyphs (e.g. filled stars).
+          </li>
+          <li>
+            Not applicable: Recharts <code className="font-mono text-xs bg-muted px-1 rounded">strokeWidth</code> on lines/areas, and generated SVG under{" "}
+            <code className="font-mono text-xs bg-muted px-1 rounded">src/imports/</code>.
+          </li>
+        </ul>
+        <div className="flex flex-wrap items-end gap-6">
+          <div className="flex flex-col gap-2 items-center">
+            <Star
+              className="h-6 w-6 text-foreground fill-none stroke-current"
+              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              absoluteStrokeWidth
+              aria-hidden
+            />
+            <span className="font-mono text-[10px] text-muted-foreground">16px + absoluteStrokeWidth</span>
+          </div>
+          <div className="flex flex-col gap-2 items-center">
+            <Star
+              className="h-6 w-6 text-foreground fill-[#D4A017] stroke-[#D4A017]"
+              strokeWidth={0}
+              aria-hidden
+            />
+            <span className="font-mono text-[10px] text-muted-foreground">Filled — stroke 0</span>
+          </div>
+        </div>
+      </div>
     </div>
   ),
 };

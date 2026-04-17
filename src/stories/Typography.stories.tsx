@@ -13,7 +13,7 @@ type Story = StoryObj;
 /* ── shared divider ─────────────────────────────────── */
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3 mt-0">
+    <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-4 mt-0">
       {children}
     </p>
   );
@@ -115,7 +115,7 @@ export const TypeScale: Story = {
           {scale.map(({ token, size, sample }) => (
             <div
               key={token}
-              className="flex items-baseline gap-6 px-5 py-4 bg-card hover:bg-muted/40 transition-colors"
+              className="flex items-baseline gap-6 px-6 py-4 bg-card hover:bg-muted/40 transition-colors"
             >
               {/* Token + size */}
               <div className="w-28 shrink-0 flex flex-col gap-0.5">
@@ -165,7 +165,7 @@ export const FontWeights: Story = {
         ].map(({ weight, name, cls, token, desc, sample }) => (
           <div
             key={weight}
-            className="rounded-xl border border-border bg-card p-6 flex flex-col gap-3"
+            className="rounded-xl border border-border bg-card p-6 flex flex-col gap-4"
           >
             <div className="flex items-baseline justify-between">
               <span className={`text-3xl ${cls} text-foreground`}>{name}</span>
@@ -185,7 +185,7 @@ export const FontWeights: Story = {
 
       {/* Weight clamping table */}
       <div className="rounded-xl border border-border overflow-hidden">
-        <div className="px-4 py-3 bg-muted/50 border-b border-border">
+        <div className="px-4 py-4 bg-muted/50 border-b border-border">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">
             Weight clamping — all Tailwind utilities resolve to 300 or 400
           </p>
@@ -193,9 +193,9 @@ export const FontWeights: Story = {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
-              <th className="text-left px-4 py-2.5 text-xs text-muted-foreground">Tailwind class</th>
-              <th className="text-left px-4 py-2.5 text-xs text-muted-foreground">Resolves to</th>
-              <th className="text-left px-4 py-2.5 text-xs text-muted-foreground">Live preview</th>
+              <th className="text-left px-4 py-2 text-xs text-muted-foreground">Tailwind class</th>
+              <th className="text-left px-4 py-2 text-xs text-muted-foreground">Resolves to</th>
+              <th className="text-left px-4 py-2 text-xs text-muted-foreground">Live preview</th>
             </tr>
           </thead>
           <tbody>
@@ -211,9 +211,9 @@ export const FontWeights: Story = {
               ["font-black",     "400", "font-black"],
             ].map(([cls, resolves, applyClass]) => (
               <tr key={cls} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                <td className="px-4 py-2.5 font-mono text-xs text-foreground">{cls}</td>
-                <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground">{resolves}</td>
-                <td className={`px-4 py-2.5 text-sm text-foreground ${applyClass}`}>
+                <td className="px-4 py-2 font-mono text-xs text-foreground">{cls}</td>
+                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{resolves}</td>
+                <td className={`px-4 py-2 text-sm text-foreground ${applyClass}`}>
                   Birdeye
                 </td>
               </tr>
@@ -242,7 +242,7 @@ export const Headings: Story = {
         ].map(({ tag, size, weight, lh, label }) => {
           const Tag = tag as keyof JSX.IntrinsicElements;
           return (
-            <div key={tag} className="flex items-center gap-6 px-5 py-5 bg-card hover:bg-muted/40 transition-colors">
+            <div key={tag} className="flex items-center gap-6 px-6 py-6 bg-card hover:bg-muted/40 transition-colors">
               <div className="w-8 shrink-0">
                 <span className="font-mono text-xs text-muted-foreground">{tag}</span>
               </div>
@@ -272,7 +272,7 @@ export const BodyAndUIText: Story = {
     <div className="flex flex-col gap-8 max-w-2xl">
 
       {/* Body text */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <Label>Body text</Label>
         <div className="flex flex-col divide-y divide-border border border-border rounded-xl overflow-hidden">
           {[
@@ -283,7 +283,7 @@ export const BodyAndUIText: Story = {
             { cls: "text-xs text-foreground",             label: "text-xs",             note: "Labels, badges, metadata" },
             { cls: "text-xs text-muted-foreground",       label: "text-xs + muted",     note: "Timestamps, tooltips" },
           ].map(({ cls, label, note }) => (
-            <div key={label} className="flex items-center gap-6 px-5 py-3.5 bg-card hover:bg-muted/40 transition-colors">
+            <div key={label} className="flex items-center gap-6 px-6 py-4 bg-card hover:bg-muted/40 transition-colors">
               <div className="flex-1">
                 <span className={cls}>
                   Invite customers to leave reviews and build trust.
@@ -299,7 +299,7 @@ export const BodyAndUIText: Story = {
       </div>
 
       {/* UI element text */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <Label>UI element defaults</Label>
         <div className="flex flex-col divide-y divide-border border border-border rounded-xl overflow-hidden">
           {[
@@ -307,7 +307,7 @@ export const BodyAndUIText: Story = {
             { el: "label",  cls: "text-base font-medium", note: "Labels — text-base, weight 400" },
             { el: "input",  cls: "text-base font-normal", note: "Inputs — text-base, weight 300" },
           ].map(({ el, cls, note }) => (
-            <div key={el} className="flex items-center gap-6 px-5 py-3.5 bg-card hover:bg-muted/40 transition-colors">
+            <div key={el} className="flex items-center gap-6 px-6 py-4 bg-card hover:bg-muted/40 transition-colors">
               <span className="font-mono text-xs text-muted-foreground w-14 shrink-0">{`<${el}>`}</span>
               <span className={`flex-1 ${cls} text-foreground`}>
                 Save changes
@@ -319,7 +319,7 @@ export const BodyAndUIText: Story = {
       </div>
 
       {/* Paragraph */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <Label>Paragraph — line height 1.5</Label>
         <div className="rounded-xl border border-border bg-card p-6">
           <p className="text-base text-foreground leading-normal max-w-prose">
@@ -394,7 +394,7 @@ export const Specimen: Story = {
       {/* Real UI strings */}
       <div className="flex flex-col gap-4">
         <Label>Real product copy — in context</Label>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {[
             { text: "No reviews yet",                                    cls: "text-base text-foreground" },
             { text: "Invite customers to leave reviews and build trust.", cls: "text-sm text-muted-foreground" },

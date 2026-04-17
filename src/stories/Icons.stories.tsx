@@ -52,7 +52,7 @@ function IconTile({
   };
 
   const sourceBadge: Record<string, string> = {
-    phosphor: "bg-[#dce5ff] text-[#1E44CC]",
+    phosphor: "bg-[#e2e4ea] text-[#212121] dark:bg-[#454d5c] dark:text-[#e4e4e4]",
     lucide:   "bg-[#e9f5e9] text-[#2da44e]",
     custom:   "bg-muted text-muted-foreground",
   };
@@ -70,7 +70,7 @@ function IconTile({
       {/* Name */}
       <p className="text-[11px] text-foreground text-center leading-tight" style={{ fontWeight: 400 }}>{name}</p>
       {/* Source badge */}
-      <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${sourceBadge[source]}`} style={{ fontWeight: 300 }}>
+      <span className={`text-[9px] px-1 py-0.5 rounded-full ${sourceBadge[source]}`} style={{ fontWeight: 300 }}>
         {source}
       </span>
       {/* Used in */}
@@ -91,7 +91,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-sm text-foreground border-b border-border pb-2" style={{ fontWeight: 400 }}>{title}</h3>
-      <div className="grid grid-cols-6 gap-3 sm:grid-cols-8 md:grid-cols-10">{children}</div>
+      <div className="grid grid-cols-6 gap-4 sm:grid-cols-8 md:grid-cols-10">{children}</div>
     </div>
   );
 }
@@ -103,13 +103,13 @@ export const L1Navigation: Story = {
   name: "L1 Navigation Icons",
   render: () => (
     <div className="flex flex-col gap-8 max-w-4xl">
-      <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground" style={{ fontWeight: 300 }}>
+      <div className="rounded-lg border border-border bg-muted/40 px-4 py-2 text-sm text-muted-foreground" style={{ fontWeight: 300 }}>
         These are the 16 Phosphor icons used in the L1 icon strip (<code className="font-mono text-xs">Sidebar.tsx</code>).
         Click any icon to copy its import statement. To swap, replace the icon name in the <code className="font-mono text-xs">iconStripItems</code> array.
       </div>
       <Section title="L1 Icon Strip — Phosphor Regular / Fill on active">
         {[
-          { name: "Sparkle",          label: "Agents (Myna AI)" },
+          { name: "Sparkle",          label: "Agents (BirdAI)" },
           { name: "House",            label: "Home" },
           { name: "ChatDots",         label: "Inbox" },
           { name: "MapPin",           label: "Listings" },
@@ -153,7 +153,7 @@ export const ProductIcons: Story = {
   name: "Product Icons",
   render: () => (
     <div className="flex flex-col gap-8 max-w-4xl">
-      <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground" style={{ fontWeight: 300 }}>
+      <div className="rounded-lg border border-border bg-muted/40 px-4 py-2 text-sm text-muted-foreground" style={{ fontWeight: 300 }}>
         Icons used across product views. Click to copy import.
       </div>
 
@@ -230,7 +230,7 @@ export const FilterIconVariants: Story = {
   name: "Filter Icon Variants",
   render: () => (
     <div className="flex flex-col gap-8 max-w-3xl">
-      <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground" style={{ fontWeight: 300 }}>
+      <div className="rounded-lg border border-border bg-muted/40 px-4 py-2 text-sm text-muted-foreground" style={{ fontWeight: 300 }}>
         All available filter / sort icons. <strong style={{ fontWeight: 400 }}>FunnelSimple</strong> is currently used as the filter button.
         To swap, replace <code className="font-mono text-xs">FunnelSimple</code> in <code className="font-mono text-xs">ReviewsView.tsx</code> with any icon below.
       </div>

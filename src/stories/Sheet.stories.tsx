@@ -1,183 +1,254 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
   SheetTrigger,
+  type SheetFloatingSize,
 } from "@/app/components/ui/sheet";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
+import {
+  FLOATING_SHEET_FRAME_CONTENT_CLASS,
+  FloatingSheetFrame,
+} from "@/app/components/layout/FloatingSheetFrame";
 
 const meta: Meta = {
   title: "UI/Sheet",
   tags: ["autodocs"],
+  parameters: {
+    layout: "padded",
+    docs: {
+      description: {
+        component:
+          "Floating **side panels** only: **Radix `Sheet`** with `side=\"right\"`, `inset=\"floating\"`, and `floatingSize` (**sm** 340px, **md** 480px, **lg** 640px, **xl** ~85vw capped with `calc(100vw-2rem)`). Inset from top, right, and bottom with rounded corners. Dismiss with the **top-right** close control on **`SheetContent`** (single close affordance; avoid duplicating it in the footer). Prefer **`FloatingSheetFrame`** (`@/app/components/layout/FloatingSheetFrame`) for edging header, scrollable body only, and sticky footer actions; set **`SheetContent`** `className` to include **`FLOATING_SHEET_FRAME_CONTENT_CLASS`** (`overflow-hidden`) so the frame body owns vertical scroll. For a full product example on **medium** (profile + password), see **App/Settings/Account settings**. For **xl**, you can split the frame body into a fixed-width form column (~**lg** / 640px) plus a flexible preview column — see **Extra large with preview**.",
+      },
+    },
+  },
 };
 
 export default meta;
 type Story = StoryObj;
 
-export const Right: Story = {
-  render: () => (
+function floatingSizeWidthDescription(floatingSize: SheetFloatingSize): string {
+  switch (floatingSize) {
+    case "sm":
+      return "340px max width, capped on narrow viewports";
+    case "md":
+      return "480px max width, capped on narrow viewports";
+    case "lg":
+      return "640px max width, capped on narrow viewports";
+    case "xl":
+      return "~85vw width, capped at calc(100vw - 2rem) on narrow viewports";
+    default: {
+      const _exhaustive: never = floatingSize;
+      return _exhaustive;
+    }
+  }
+}
+
+function FloatingPlaceholder({
+  floatingSize,
+  title,
+}: {
+  floatingSize: SheetFloatingSize;
+  title: string;
+}) {
+  return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline">Edit Business Profile</Button>
+        <Button variant="outline">Open {title.toLowerCase()} panel</Button>
       </SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>Edit Profile</SheetTitle>
-          <SheetDescription>
-            Update your business information. Changes will appear on your public
-            Birdeye profile within 24 hours.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="grid gap-4 py-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="biz-name">Business Name</Label>
-            <Input id="biz-name" defaultValue="Acme Coffee Roasters" />
+      <SheetContent
+        side="right"
+        inset="floating"
+        floatingSize={floatingSize}
+        className={FLOATING_SHEET_FRAME_CONTENT_CLASS}
+      >
+        <FloatingSheetFrame
+          title={title}
+          description={
+            <>
+              Generic floating shell — <strong>{floatingSize}</strong> (
+              {floatingSizeWidthDescription(floatingSize)}).
+            </>
+          }
+          primaryAction={{
+            label: "Continue",
+            onClick: () => {
+              // Storybook demo only
+            },
+          }}
+        >
+          <p className="text-sm text-muted-foreground">
+            Only this region changes per feature. Pass <code className="text-xs">floatingSize</code>{" "}
+            on <code className="text-xs">SheetContent</code>.
+          </p>
+          <div className="mt-8 flex flex-col gap-4 text-sm text-muted-foreground">
+            {Array.from({ length: 12 }, (_, i) => (
+              <p key={i}>
+                Scrollable body line {i + 1} — header and footer stay fixed while this area scrolls.
+              </p>
+            ))}
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="biz-phone">Phone</Label>
-            <Input id="biz-phone" defaultValue="+1 (512) 555-0100" type="tel" />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="biz-address">Address</Label>
-            <Input
-              id="biz-address"
-              defaultValue="123 Main St, Austin, TX 78701"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="biz-website">Website</Label>
-            <Input
-              id="biz-website"
-              defaultValue="https://acmecoffee.com"
-              type="url"
-            />
-          </div>
-        </div>
-        <SheetFooter>
-          <SheetClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </SheetClose>
-          <Button>Save Changes</Button>
-        </SheetFooter>
+        </FloatingSheetFrame>
       </SheetContent>
     </Sheet>
-  ),
+  );
+}
+
+export const Small: Story = {
+  render: () => <FloatingPlaceholder floatingSize="sm" title="Small panel" />,
 };
 
-export const Left: Story = {
-  render: () => (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline">Open Navigation</Button>
-      </SheetTrigger>
-      <SheetContent side="left">
-        <SheetHeader>
-          <SheetTitle>Navigation</SheetTitle>
-        </SheetHeader>
-        <nav className="mt-4 flex flex-col gap-1">
-          {[
-            "Dashboard",
-            "Reviews",
-            "Inbox",
-            "Contacts",
-            "Campaigns",
-            "Reports",
-            "Settings",
-          ].map((item) => (
-            <SheetClose key={item} asChild>
-              <a
-                href="#"
-                className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
-              >
-                {item}
-              </a>
-            </SheetClose>
-          ))}
-        </nav>
-      </SheetContent>
-    </Sheet>
-  ),
+export const Medium: Story = {
+  render: () => <FloatingPlaceholder floatingSize="md" title="Medium panel" />,
 };
 
-export const Top: Story = {
-  render: () => (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline">View Notifications</Button>
-      </SheetTrigger>
-      <SheetContent side="top">
-        <SheetHeader>
-          <SheetTitle>Recent Notifications</SheetTitle>
-          <SheetDescription>
-            You have 3 unread notifications.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="mt-4 space-y-2">
-          {[
-            {
-              msg: "New 5-star review from Google",
-              time: "2 minutes ago",
-              type: "review",
-            },
-            {
-              msg: "Review request campaign delivered to 48 contacts",
-              time: "1 hour ago",
-              type: "campaign",
-            },
-            {
-              msg: "Monthly performance report is ready",
-              time: "Yesterday",
-              type: "report",
-            },
-          ].map((n) => (
-            <div
-              key={n.msg}
-              className="flex items-start gap-3 rounded-md border border-border bg-muted px-3 py-2"
-            >
-              <div className="flex-1">
-                <p className="text-sm text-foreground">{n.msg}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{n.time}</p>
+export const Large: Story = {
+  render: () => <FloatingPlaceholder floatingSize="lg" title="Large panel" />,
+};
+
+export const ExtraLarge: Story = {
+  name: "Extra large",
+  render: () => <FloatingPlaceholder floatingSize="xl" title="Extra large panel" />,
+};
+
+function PreviewMockPage({
+  variant,
+}: {
+  variant: "cover" | "summary" | "detail";
+}) {
+  return (
+    <div
+      className="w-full shrink-0 overflow-hidden rounded-md border bg-background shadow-sm"
+      style={{ aspectRatio: "1 / 1.4142" }}
+    >
+      <div className="flex h-full min-h-0 flex-col p-4">
+        {variant === "cover" ? (
+          <>
+            <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
+              <div className="h-8 w-8 rounded-md bg-primary/15" aria-hidden />
+              <p className="text-xs font-medium text-foreground">Profile performance report</p>
+              <p className="text-[10px] text-muted-foreground">Social media analytics overview</p>
+              <div className="mt-2 flex flex-col gap-1 text-[9px] text-muted-foreground">
+                <span>July 10, 2025</span>
+                <span>30 locations</span>
               </div>
             </div>
-          ))}
-        </div>
-      </SheetContent>
-    </Sheet>
-  ),
-};
+            <p className="text-center text-[9px] text-muted-foreground">Cover</p>
+          </>
+        ) : variant === "summary" ? (
+          <>
+            <div className="mb-3 h-2 w-12 rounded-sm bg-primary/40" aria-hidden />
+            <h3 className="mb-1 text-[10px] font-medium text-foreground">Executive summary</h3>
+            <p className="mb-3 text-[9px] leading-relaxed text-muted-foreground">
+              Overview of profile performance over the last 30 days with positive trends across
+              platforms.
+            </p>
+            <div className="flex flex-col gap-2">
+              <div className="h-2 w-full rounded-sm bg-muted" aria-hidden />
+              <div className="h-2 w-[80%] rounded-sm bg-muted" aria-hidden />
+              <div className="h-2 w-full rounded-sm bg-muted" aria-hidden />
+            </div>
+            <p className="mt-auto pt-4 text-center text-[9px] text-muted-foreground">Summary</p>
+          </>
+        ) : (
+          <>
+            <p className="mb-2 text-[10px] font-medium text-foreground">Performance detail</p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="h-16 rounded-sm bg-muted/80" aria-hidden />
+              <div className="h-16 rounded-sm bg-muted/80" aria-hidden />
+            </div>
+            <div className="mt-3 flex flex-col gap-2">
+              <div className="h-2 w-full rounded-sm bg-muted" aria-hidden />
+              <div className="h-2 w-full rounded-sm bg-muted" aria-hidden />
+            </div>
+            <p className="mt-auto pt-4 text-center text-[9px] text-muted-foreground">Detail</p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
-export const Bottom: Story = {
-  render: () => (
+function ExtraLargeWithPreviewDemo() {
+  return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline">Bulk Actions</Button>
+        <Button variant="outline">Open extra large panel with preview</Button>
       </SheetTrigger>
-      <SheetContent side="bottom">
-        <SheetHeader>
-          <SheetTitle>Bulk Review Actions</SheetTitle>
-          <SheetDescription>
-            Apply an action to all 14 selected reviews.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="flex flex-wrap gap-2 mt-4">
-          <Button variant="outline">Mark as Responded</Button>
-          <Button variant="outline">Archive</Button>
-          <Button variant="outline">Export Selected</Button>
-          <Button variant="destructive">Delete Selected</Button>
-        </div>
-        <SheetFooter className="mt-4">
-          <SheetClose asChild>
-            <Button variant="ghost">Cancel</Button>
-          </SheetClose>
-        </SheetFooter>
+      <SheetContent
+        side="right"
+        inset="floating"
+        floatingSize="xl"
+        className={FLOATING_SHEET_FRAME_CONTENT_CLASS}
+      >
+        <FloatingSheetFrame
+          title="Export report"
+          description="Configure the export on the left; preview updates on the right."
+          classNames={{
+            body: "flex min-h-0 flex-1 flex-col overflow-hidden p-0",
+          }}
+          primaryAction={{
+            label: "Export",
+            onClick: () => {
+              // Storybook demo only
+            },
+          }}
+          secondaryAction={{
+            label: "Cancel",
+            onClick: () => {
+              // Storybook demo only
+            },
+          }}
+        >
+          <div className="flex min-h-0 flex-1 flex-row">
+            <div className="w-full max-w-[640px] shrink-0 overflow-y-auto border-r border-border px-6 py-4">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="sheet-preview-report-title">Report title</Label>
+                  <Input
+                    id="sheet-preview-report-title"
+                    defaultValue="Profile performance report"
+                    placeholder="Report title"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="sheet-preview-subtitle">Subtitle</Label>
+                  <Input
+                    id="sheet-preview-subtitle"
+                    defaultValue="Social media analytics overview"
+                    placeholder="Subtitle"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Demo only — left column matches <strong>lg</strong> width (640px max); preview
+                  uses the remaining space inside <strong>xl</strong>.
+                </p>
+              </div>
+            </div>
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-muted/40">
+              <div className="flex h-[38px] shrink-0 items-center justify-between px-4">
+                <span className="text-[10px] font-medium text-muted-foreground">Preview</span>
+                <span className="text-[10px] text-muted-foreground">3 pages</span>
+              </div>
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-4">
+                <div className="flex flex-col gap-4">
+                  <PreviewMockPage variant="cover" />
+                  <PreviewMockPage variant="summary" />
+                  <PreviewMockPage variant="detail" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </FloatingSheetFrame>
       </SheetContent>
     </Sheet>
-  ),
+  );
+}
+
+export const ExtraLargeWithPreview: Story = {
+  name: "Extra large with preview",
+  render: () => <ExtraLargeWithPreviewDemo />,
 };

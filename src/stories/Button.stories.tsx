@@ -28,7 +28,7 @@ export const Default: Story = {
 
 export const AllVariants: Story = {
   render: () => (
-    <div className="flex flex-wrap gap-3 items-center">
+    <div className="flex flex-wrap gap-4 items-center">
       <Button variant="default">Default</Button>
       <Button variant="secondary">Secondary</Button>
       <Button variant="outline">Outline</Button>
@@ -41,7 +41,7 @@ export const AllVariants: Story = {
 
 export const AllSizes: Story = {
   render: () => (
-    <div className="flex flex-wrap gap-3 items-center">
+    <div className="flex flex-wrap gap-4 items-center">
       <Button size="sm">Small</Button>
       <Button size="default">Default</Button>
       <Button size="lg">Large</Button>
@@ -52,7 +52,7 @@ export const AllSizes: Story = {
 
 export const WithIcon: Story = {
   render: () => (
-    <div className="flex flex-wrap gap-3 items-center">
+    <div className="flex flex-wrap gap-4 items-center">
       <Button><Mail /> Send Email</Button>
       <Button variant="outline"><Plus /> Add Item</Button>
       <Button variant="destructive"><Trash /> Delete</Button>

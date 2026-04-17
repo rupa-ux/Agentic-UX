@@ -16,8 +16,8 @@ export const Default: Story = {
 
 export const CardSkeleton: Story = {
   render: () => (
-    <div className="flex flex-col gap-3 w-72 p-4 border rounded-xl">
-      <div className="flex items-center gap-3">
+    <div className="flex flex-col gap-4 w-72 p-4 border rounded-xl">
+      <div className="flex items-center gap-4">
         <Skeleton className="size-10 rounded-full" />
         <div className="flex flex-col gap-2 flex-1">
           <Skeleton className="h-3 w-32" />

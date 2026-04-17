@@ -25,7 +25,7 @@ export function Section({ title, children }: { title: string; children: React.Re
   return (
     <section className="flex flex-col gap-4">
       <h2 className="text-base text-foreground border-b border-border pb-2">{title}</h2>
-      <div className="flex flex-col gap-3">{children}</div>
+      <div className="flex flex-col gap-4">{children}</div>
     </section>
   );
 }
@@ -45,7 +45,7 @@ export function DoDont({ do: doText, dont }: { do: string | string[]; dont: stri
   const dos = Array.isArray(doText) ? doText : [doText];
   const donts = Array.isArray(dont) ? dont : [dont];
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-2 gap-4">
       <div className="rounded-lg border border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] bg-card p-4 flex flex-col gap-2">
         <span className="text-xs font-medium text-[#2da44e] dark:text-[#3fb950] uppercase tracking-wide">✔ Do</span>
         {dos.map((t, i) => (
@@ -69,7 +69,7 @@ export function Examples({ items }: { items: string[] }) {
       {items.map((item, i) => (
         <span
           key={i}
-          className="px-3 py-1 rounded-full text-sm bg-secondary text-secondary-foreground border border-border"
+          className="px-2 py-1 rounded-full text-sm bg-secondary text-secondary-foreground border border-border"
         >
           {item}
         </span>
@@ -83,7 +83,7 @@ export function Anatomy({ parts }: { parts: { label: string; text: string; optio
   return (
     <div className="rounded-lg border border-border bg-card p-4 flex flex-col gap-2">
       {parts.map((p, i) => (
-        <div key={i} className="flex items-start gap-3">
+        <div key={i} className="flex items-start gap-4">
           <span className="mt-0.5 w-2 h-2 rounded-full bg-primary shrink-0" />
           <div className="flex flex-col gap-0.5">
             <span className="text-xs text-muted-foreground">
@@ -105,7 +105,7 @@ export function DataTable({ headers, rows }: { headers: string[]; rows: string[]
         <thead>
           <tr className="border-b border-border bg-muted/50">
             {headers.map((h, i) => (
-              <th key={i} className="text-left px-4 py-2.5 text-xs text-muted-foreground uppercase tracking-wide">
+              <th key={i} className="text-left px-4 py-2 text-xs text-muted-foreground uppercase tracking-wide">
                 {h}
               </th>
             ))}
@@ -115,7 +115,7 @@ export function DataTable({ headers, rows }: { headers: string[]; rows: string[]
           {rows.map((row, i) => (
             <tr key={i} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
               {row.map((cell, j) => (
-                <td key={j} className="px-4 py-3 text-foreground">
+                <td key={j} className="px-4 py-2 text-foreground">
                   {cell}
                 </td>
               ))}
@@ -139,7 +139,7 @@ export function Callout({ type = "info", children }: {
   };
   const icons = { info: "ℹ", warning: "⚠", tip: "💡" };
   return (
-    <div className={`rounded-lg border px-4 py-3 flex gap-3 text-sm ${styles[type]}`}>
+    <div className={`rounded-lg border px-4 py-4 flex gap-4 text-sm ${styles[type]}`}>
       <span className="shrink-0">{icons[type]}</span>
       <span>{children}</span>
     </div>
@@ -150,10 +150,10 @@ export function Callout({ type = "info", children }: {
 export function StructureTemplate({ template, example }: { template: string; example: string }) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="rounded-lg bg-muted px-4 py-3 font-mono text-xs text-muted-foreground whitespace-pre-wrap">
+      <div className="rounded-lg bg-muted px-4 py-4 font-mono text-xs text-muted-foreground whitespace-pre-wrap">
         {template}
       </div>
-      <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground">
+      <div className="rounded-lg border border-border bg-card px-4 py-4 text-sm text-foreground">
         <span className="text-xs text-muted-foreground block mb-1">Example</span>
         {example}
       </div>

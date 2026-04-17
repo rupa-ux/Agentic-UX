@@ -34,7 +34,7 @@ const ListItem = ({
       <a
         href={href}
         className={cn(
-          "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground",
+          "block select-none space-y-1 rounded-md p-4 leading-none no-underline outline-none transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground",
           className
         )}
       >
@@ -56,7 +56,7 @@ export const Default: Story = {
         <NavigationMenuItem>
           <NavigationMenuTrigger>Overview</NavigationMenuTrigger>
           <NavigationMenuContent>
-            <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+            <ul className="grid gap-4 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
               <li className="row-span-3">
                 <NavigationMenuLink asChild>
                   <a
@@ -89,7 +89,7 @@ export const Default: Story = {
         <NavigationMenuItem>
           <NavigationMenuTrigger>Reports</NavigationMenuTrigger>
           <NavigationMenuContent>
-            <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
+            <ul className="grid w-[400px] gap-4 p-4 md:w-[500px] md:grid-cols-2">
               <ListItem title="Performance Report">
                 Monthly summary of review activity and sentiment trends.
               </ListItem>

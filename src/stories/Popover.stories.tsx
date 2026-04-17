@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { useState } from "react";
 import {
   Popover,
   PopoverContent,
@@ -7,15 +8,33 @@ import {
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
-import { CalendarDays, Settings2 } from "lucide-react";
+import { cn } from "@/app/components/ui/utils";
+import { FLOATING_PANEL_SURFACE_CLASSNAME } from "@/app/components/ui/floatingPanelSurface";
+import { CalendarDays, ChevronDown, Settings2 } from "lucide-react";
 
 const meta: Meta = {
   title: "UI/Popover",
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component: `**Popover** panels use the same floating shell as the L1 profile menu and other overlays: \`FLOATING_PANEL_SURFACE_CLASSNAME\` in [\`floatingPanelSurface.ts\`](src/app/components/ui/floatingPanelSurface.ts) — \`rounded-2xl\`, light border, and soft elevation shadow. **DropdownMenu**, **Select**, **ContextMenu**, and **Menubar** content use the same surface. Override padding with \`className\` (e.g. \`p-2\` for dense lists, default content uses \`p-4\`).`,
+      },
+    },
+  },
 };
 
 export default meta;
 type Story = StoryObj;
+
+const DATE_RANGE_OPTIONS = [
+  "Last 7 days",
+  "Last 14 days",
+  "Last 30 days",
+  "This week",
+  "This month",
+  "Custom range",
+];
 
 export const Default: Story = {
   render: () => (
@@ -24,8 +43,8 @@ export const Default: Story = {
         <Button variant="outline">Open Popover</Button>
       </PopoverTrigger>
       <PopoverContent className="w-72">
-        <div className="space-y-2">
-          <h4 className="font-medium text-sm text-foreground">
+        <div className="flex flex-col gap-4">
+          <h4 className="text-sm font-medium text-foreground">
             Review Request Status
           </h4>
           <p className="text-xs text-muted-foreground">
@@ -41,6 +60,68 @@ export const Default: Story = {
   ),
 };
 
+/** Text-only list: same shell + inset pill rows as profile / date-range pickers. */
+export const DateRangeMenu: Story = {
+  name: "Date range menu (surface + dense list)",
+  render: () => {
+    const [open, setOpen] = useState(false);
+    const [value, setValue] = useState("Last 30 days");
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className="w-56 justify-between border-primary text-primary hover:bg-primary/5"
+          >
+            <span>{value}</span>
+            <ChevronDown className="size-4 opacity-70" aria-hidden />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-56 p-2" align="start" sideOffset={8}>
+          <div className="flex flex-col gap-1">
+            {DATE_RANGE_OPTIONS.map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => {
+                  setValue(label);
+                  setOpen(false);
+                }}
+                className={cn(
+                  "w-full rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150",
+                  value === label
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground hover:bg-muted",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
+    );
+  },
+};
+
+/** Token reference — same classes as \`PopoverContent\` default shell. */
+export const SurfaceToken: Story = {
+  name: "Floating panel surface (token)",
+  render: () => (
+    <div
+      className={cn(
+        FLOATING_PANEL_SURFACE_CLASSNAME,
+        "w-72 p-4 text-sm text-popover-foreground",
+      )}
+    >
+      <p className="text-muted-foreground text-xs">
+        This box uses only <code className="text-xs">FLOATING_PANEL_SURFACE_CLASSNAME</code>{" "}
+        (no Radix popover). Compare shadow and radius to open popovers above.
+      </p>
+    </div>
+  ),
+};
+
 export const DatePickerStyle: Story = {
   render: () => (
     <Popover>
@@ -51,12 +132,12 @@ export const DatePickerStyle: Story = {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72">
-        <div className="space-y-3">
-          <h4 className="font-medium text-sm text-foreground">
+        <div className="flex flex-col gap-4">
+          <h4 className="text-sm font-medium text-foreground">
             Select Report Date Range
           </h4>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="start-date" className="text-xs">
                 Start Date
               </Label>
@@ -66,7 +147,7 @@ export const DatePickerStyle: Story = {
                 className="text-xs"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="end-date" className="text-xs">
                 End Date
               </Label>
@@ -100,13 +181,13 @@ export const Settings: Story = {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72" side="right">
-        <div className="space-y-4">
-          <h4 className="font-medium text-sm text-foreground">
+        <div className="flex flex-col gap-4">
+          <h4 className="text-sm font-medium text-foreground">
             Widget Dimensions
           </h4>
-          <div className="space-y-3">
-            <div className="grid grid-cols-3 items-center gap-3">
-              <Label htmlFor="width" className="text-xs text-right">
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-3 items-center gap-4">
+              <Label htmlFor="width" className="text-right text-xs">
                 Width
               </Label>
               <Input
@@ -115,8 +196,8 @@ export const Settings: Story = {
                 className="col-span-2 h-8 text-xs"
               />
             </div>
-            <div className="grid grid-cols-3 items-center gap-3">
-              <Label htmlFor="height" className="text-xs text-right">
+            <div className="grid grid-cols-3 items-center gap-4">
+              <Label htmlFor="height" className="text-right text-xs">
                 Height
               </Label>
               <Input
@@ -125,8 +206,8 @@ export const Settings: Story = {
                 className="col-span-2 h-8 text-xs"
               />
             </div>
-            <div className="grid grid-cols-3 items-center gap-3">
-              <Label htmlFor="max-reviews" className="text-xs text-right">
+            <div className="grid grid-cols-3 items-center gap-4">
+              <Label htmlFor="max-reviews" className="text-right text-xs">
                 Max Reviews
               </Label>
               <Input
