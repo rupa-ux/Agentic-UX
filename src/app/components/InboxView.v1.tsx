@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback, type RefObject } from "react";
 import { CallRecordingPlayer } from "@/app/components/CallRecordingPlayer";
+import { CALL_BY_ID } from "@/app/components/callRecordingData";
 import { Phone } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import {
@@ -40,6 +41,8 @@ interface Conversation {
   hasReply?: boolean;
   replyTime?: string;
   type?: "call-recording";
+  callDuration?: string;
+  callOutcome?: "resolved" | "escalated" | "follow-up";
 }
 
 interface ChatMessage {
@@ -66,11 +69,55 @@ const conversations: Conversation[] = [
     preview: "I received size 8 but I ordered size 9 — order #58421",
     lastMessage: "I received size 8 but I ordered size 9 — order #58421",
     date: "Today",
-    location: "Los Angeles",
+    location: "Los Angeles, CA",
     team: "Sarah M.",
     teamIcon: "kelsy",
     unread: true,
     type: "call-recording",
+    callDuration: "3:30",
+    callOutcome: "resolved",
+  },
+  {
+    id: "maria-torres",
+    name: "Maria Torres",
+    preview: "I was billed twice for my subscription this month",
+    lastMessage: "I was billed twice for my subscription this month",
+    date: "Yesterday",
+    location: "Miami, FL",
+    team: "David R.",
+    teamIcon: "kelsy",
+    unread: false,
+    type: "call-recording",
+    callDuration: "4:15",
+    callOutcome: "resolved",
+  },
+  {
+    id: "james-chen",
+    name: "James Chen",
+    preview: "I shipped back a jacket 3 weeks ago — still no refund",
+    lastMessage: "I shipped back a jacket 3 weeks ago — still no refund",
+    date: "2 days ago",
+    location: "Seattle, WA",
+    team: "David R.",
+    teamIcon: "us",
+    unread: true,
+    type: "call-recording",
+    callDuration: "2:48",
+    callOutcome: "escalated",
+  },
+  {
+    id: "sarah-williams",
+    name: "Sarah Williams",
+    preview: "My order hasn't arrived — it's been 10 days",
+    lastMessage: "My order hasn't arrived — it's been 10 days",
+    date: "3 days ago",
+    location: "Chicago, IL",
+    team: "Sarah M.",
+    teamIcon: "kelsy",
+    unread: false,
+    type: "call-recording",
+    callDuration: "5:12",
+    callOutcome: "follow-up",
   },
   {
     id: "1",
@@ -543,12 +590,18 @@ function ConversationItem({
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 pl-4">
-          {conv.type === "call-recording" && (
+        {conv.type === "call-recording" ? (
+          <div className="flex items-center gap-1.5 pl-4">
             <Phone className="size-3 shrink-0 text-primary" aria-label="Call recording" />
-          )}
-          <p className="truncate text-base text-muted-foreground">{conv.preview}</p>
-        </div>
+            <span className="text-[12px] tabular-nums text-[#666] dark:text-[#9ba2b0]">{conv.callDuration}</span>
+            <span className="text-[#ccc] dark:text-[#444]">·</span>
+            {conv.callOutcome === "resolved"   && <span className="rounded-full bg-emerald-50 border border-emerald-200 px-1.5 py-px text-[10px] font-medium text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-400">Resolved</span>}
+            {conv.callOutcome === "escalated"  && <span className="rounded-full bg-red-50 border border-red-200 px-1.5 py-px text-[10px] font-medium text-red-700 dark:bg-red-950/40 dark:border-red-800 dark:text-red-400">Escalated</span>}
+            {conv.callOutcome === "follow-up"  && <span className="rounded-full bg-amber-50 border border-amber-200 px-1.5 py-px text-[10px] font-medium text-amber-700 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-400">Follow-up</span>}
+          </div>
+        ) : (
+          <p className="truncate pl-4 text-base text-muted-foreground">{conv.preview}</p>
+        )}
 
         <div className="-mt-1 flex min-w-0 items-center gap-1 pl-4 text-sm text-muted-foreground">
           <span className="shrink-0">{conv.location}</span>
@@ -1086,8 +1139,8 @@ export function InboxView() {
 
         {/* Chat messages */}
         <div ref={chatMessagesRef} className="min-h-0 flex-1 overflow-y-auto">
-          {selectedId === "alex-k" ? (
-            <CallRecordingPlayer />
+          {CALL_BY_ID[selectedId] ? (
+            <CallRecordingPlayer record={CALL_BY_ID[selectedId]} />
           ) : detailLoading ? (
             <InboxDetailMessagesSkeleton />
           ) : (

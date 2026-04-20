@@ -1,1 +1,1 @@
-export * from "./CallRecordingPlayer.v1";
+export * from "./CallRecordingPlayer.v2";
