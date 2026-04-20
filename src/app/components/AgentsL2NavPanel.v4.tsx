@@ -17,6 +17,8 @@ export interface AgentsL2NavPanelProps {
 function resolveActiveKey(view: AppView, journeysKey: string): string {
   const k = journeysKey.trim();
   if (view === "birdai-reports") return `${L2_FLAT_NAV_KEY_PREFIX}/outcomes`;
+  if (view === "agent-activity") return "Agents/activity";
+  if (view === "agent-config")   return "Settings/configuration";
   if (view === "agents-monitor") {
     if (k.startsWith("Agents/")) return k;
     return "Agents/workflow";
@@ -46,12 +48,14 @@ export function AgentsL2NavPanel({
         return;
       }
       if (prefix === "Agents") {
-        if (rest === "workflow") onViewChange("agents-monitor", "l2:Agents/workflow");
+        if (rest === "workflow")  onViewChange("agents-monitor",  "l2:Agents/workflow");
         else if (rest === "campaign") onViewChange("birdai-journeys", "l2:Agents/campaign");
+        else if (rest === "activity") onViewChange("agent-activity", "l2:Agents/activity");
         return;
       }
       if (prefix === "Settings") {
-        onViewChange("birdai-journeys", `l2:Settings/${rest}`);
+        if (rest === "configuration") onViewChange("agent-config", "l2:Settings/configuration");
+        else onViewChange("birdai-journeys", `l2:Settings/${rest}`);
       }
     },
     [onViewChange],
@@ -69,17 +73,19 @@ export function AgentsL2NavPanel({
           children: [
             { label: "Workflow agents", key: "workflow" },
             { label: "Campaign agents", key: "campaign" },
+            { label: "Activity log",    key: "activity" },
           ],
         },
         {
           label: "Settings",
           children: [
-            { label: "Channels", key: "channels" },
-            { label: "Templates", key: "templates" },
-            { label: "Knowledge", key: "knowledge" },
-            { label: "Memory", key: "memory" },
-            { label: "Communication restriction", key: "comm-restriction" },
-            { label: "Manage tags", key: "manage-tags" },
+            { label: "Configuration",            key: "configuration" },
+            { label: "Channels",                 key: "channels" },
+            { label: "Templates",                key: "templates" },
+            { label: "Knowledge",                key: "knowledge" },
+            { label: "Memory",                   key: "memory" },
+            { label: "Communication restriction",key: "comm-restriction" },
+            { label: "Manage tags",              key: "manage-tags" },
           ],
         },
       ]}

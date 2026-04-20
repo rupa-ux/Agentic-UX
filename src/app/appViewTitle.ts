@@ -54,6 +54,10 @@ export function getAppViewTitle(view: AppView): string {
       return "BirdAI";
     case "conversation-stream":
       return "Conversation Stream";
+    case "agent-activity":
+      return "Activity Log";
+    case "agent-config":
+      return "Agent Configuration";
     default:
       return "Reports";
   }

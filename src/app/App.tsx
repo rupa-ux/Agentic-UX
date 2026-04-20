@@ -58,6 +58,8 @@ import { useMynaConversations } from "./myna/useMynaConversations";
 import { ShortcutsModal } from "./shortcuts/ShortcutsModal";
 import { useShortcuts } from "./shortcuts/useShortcuts";
 import { ConversationStream } from "./components/ConversationStream";
+import { AgentActivityView } from "./components/AgentActivityView";
+import { AgentConfigView } from "./components/AgentConfigView";
 import { BirdAILoginPage } from "./components/auth/BirdAILoginPage";
 import { AppBootShimmer } from "./components/layout/AppBootShimmer";
 import { SEARCH_AI_L2_DEFAULT_ACTIVE } from "./components/searchai/searchAIL2Keys";
@@ -110,7 +112,9 @@ export type AppView =
   | "referrals"
   | "payments"
   | "appointments"
-  | "conversation-stream";
+  | "conversation-stream"
+  | "agent-activity"
+  | "agent-config";
 
 /** Brief shell shimmer after login so the first paint mirrors real app loading. */
 const POST_LOGIN_BOOT_MS = 1200;
@@ -378,6 +382,8 @@ export default function App() {
     v === "agents-onboarding" ||
     v === "birdai-reports" ||
     v === "birdai-journeys" ||
+    v === "agent-activity" ||
+    v === "agent-config" ||
     v === "listings" ||
     v === "surveys" ||
     v === "ticketing" ||
@@ -591,6 +597,10 @@ export default function App() {
               <AppointmentsView />
             ) : currentView === "conversation-stream" ? (
               <ConversationStream />
+            ) : currentView === "agent-activity" ? (
+              <AgentActivityView onConfigure={() => handleViewChange("agent-config")} />
+            ) : currentView === "agent-config" ? (
+              <AgentConfigView />
             ) : (
               <Dashboard
                 aiPanelOpen={aiPanelOpen}
