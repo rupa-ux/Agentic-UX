@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect, useCallback, type RefObject } from "react";
+import { CallRecordingPlayer } from "@/app/components/CallRecordingPlayer";
+import { Phone } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import {
   INBOX_SHORTCUT_EVENT,
@@ -37,6 +39,7 @@ interface Conversation {
   unread: boolean;
   hasReply?: boolean;
   replyTime?: string;
+  type?: "call-recording";
 }
 
 interface ChatMessage {
@@ -57,6 +60,18 @@ interface ConversationDetail {
 
 /* ─── Mock data ─── */
 const conversations: Conversation[] = [
+  {
+    id: "alex-k",
+    name: "Alex K.",
+    preview: "I received size 8 but I ordered size 9 — order #58421",
+    lastMessage: "I received size 8 but I ordered size 9 — order #58421",
+    date: "Today",
+    location: "Los Angeles",
+    team: "Sarah M.",
+    teamIcon: "kelsy",
+    unread: true,
+    type: "call-recording",
+  },
   {
     id: "1",
     name: "Annette Black",
@@ -326,6 +341,14 @@ const conversations: Conversation[] = [
 ];
 
 const conversationDetails: Record<string, ConversationDetail> = {
+  "alex-k": {
+    contactName: "Alex K.",
+    assignedTo: "Sarah M.",
+    assignedAvatar:
+      "https://images.unsplash.com/photo-1655249493799-9cee4fe983bb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB3b21hbiUyMGhlYWRzaG90JTIwcG9ydHJhaXR8ZW58MXx8fHwxNzczMjE3MDIwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+    dateSeparator: "Today · Call Recording",
+    messages: [],
+  },
   "3": {
     contactName: "Cameron Williamson",
     assignedTo: "Savannah",
@@ -520,7 +543,12 @@ function ConversationItem({
           </div>
         </div>
 
-        <p className="truncate pl-4 text-base text-muted-foreground">{conv.preview}</p>
+        <div className="flex items-center gap-1.5 pl-4">
+          {conv.type === "call-recording" && (
+            <Phone className="size-3 shrink-0 text-primary" aria-label="Call recording" />
+          )}
+          <p className="truncate text-base text-muted-foreground">{conv.preview}</p>
+        </div>
 
         <div className="-mt-1 flex min-w-0 items-center gap-1 pl-4 text-sm text-muted-foreground">
           <span className="shrink-0">{conv.location}</span>
@@ -848,7 +876,7 @@ function InboxNav() {
    Main Inbox View
    ═════════════════════════════════════ */
 export function InboxView() {
-  const [selectedId, setSelectedId] = useState("3");
+  const [selectedId, setSelectedId] = useState("alex-k");
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailLoadNonce, setDetailLoadNonce] = useState(0);
   const [statusOpen, setStatusOpen] = useState(false);
@@ -1058,7 +1086,9 @@ export function InboxView() {
 
         {/* Chat messages */}
         <div ref={chatMessagesRef} className="min-h-0 flex-1 overflow-y-auto">
-          {detailLoading ? (
+          {selectedId === "alex-k" ? (
+            <CallRecordingPlayer />
+          ) : detailLoading ? (
             <InboxDetailMessagesSkeleton />
           ) : (
             <div className="px-6 py-5">

@@ -57,6 +57,7 @@ import { l2KeyFromConversation } from "./myna/mynaL2NavKeys";
 import { useMynaConversations } from "./myna/useMynaConversations";
 import { ShortcutsModal } from "./shortcuts/ShortcutsModal";
 import { useShortcuts } from "./shortcuts/useShortcuts";
+import { ConversationStream } from "./components/ConversationStream";
 import { BirdAILoginPage } from "./components/auth/BirdAILoginPage";
 import { AppBootShimmer } from "./components/layout/AppBootShimmer";
 import { SEARCH_AI_L2_DEFAULT_ACTIVE } from "./components/searchai/searchAIL2Keys";
@@ -108,7 +109,8 @@ export type AppView =
   | "competitors"
   | "referrals"
   | "payments"
-  | "appointments";
+  | "appointments"
+  | "conversation-stream";
 
 /** Brief shell shimmer after login so the first paint mirrors real app loading. */
 const POST_LOGIN_BOOT_MS = 1200;
@@ -587,6 +589,8 @@ export default function App() {
               <PaymentsView />
             ) : currentView === "appointments" ? (
               <AppointmentsView />
+            ) : currentView === "conversation-stream" ? (
+              <ConversationStream />
             ) : (
               <Dashboard
                 aiPanelOpen={aiPanelOpen}
