@@ -802,12 +802,25 @@ const listingsConfig = {
     { label: "Accuracy", children: ["Core sites", "Other sites"] },
     { label: "Publish status", children: ["All listings", "By location", "By site"] },
     { label: "Agents", children: ["Listing optimization agent"] },
-    { label: "Settings", children: ["Profiles", "Keywords", "Ranking report", "FAQs", "Products", "Google services"] },
+    { label: "Settings", children: ["Profiles", "Citations", "Keywords", "Grid radius", "Products", "Google services", "Google Q&A"] },
   ],
 };
 
-export function ListingsL2NavPanel() {
-  return <L2NavLayout {...listingsConfig} storageKey="nav:l2:listings" data-no-print />;
+export type ListingsL2NavPanelProps = {
+  activeItem?: string;
+  onActiveItemChange?: (key: string) => void;
+};
+
+export function ListingsL2NavPanel({ activeItem, onActiveItemChange }: ListingsL2NavPanelProps) {
+  return (
+    <L2NavLayout
+      {...listingsConfig}
+      storageKey="nav:l2:listings"
+      activeItem={activeItem}
+      onActiveItemChange={onActiveItemChange}
+      data-no-print
+    />
+  );
 }
 
 /* ═══════════════════════════════════════════

@@ -465,7 +465,10 @@ export default function App() {
           )}
           {/* Listings L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "listings" && (
-            <ListingsL2NavPanel />
+            <ListingsL2NavPanel
+              activeItem={journeysL2ActiveKey}
+              onActiveItemChange={(key) => handleViewChange("listings", `l2:${key}`)}
+            />
           )}
           {/* Surveys L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "surveys" && (
@@ -566,7 +569,7 @@ export default function App() {
             ) : currentView === "birdai-journeys" ? (
               <BirdAIJourneysPlaceholderView journeysL2Key={journeysL2ActiveKey} />
             ) : currentView === "listings" ? (
-              <ListingsView />
+              <ListingsView l2ActiveItem={journeysL2ActiveKey} />
             ) : currentView === "surveys" ? (
               <SurveysView />
             ) : currentView === "ticketing" ? (
