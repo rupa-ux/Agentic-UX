@@ -1,6 +1,6 @@
 ---
 name: aero-ds
-description: "Aero DS: design intelligence for this repo only—ShareConsolidated (Bird AI) SaaS shell (dashboards, agents, settings, workflows, in-app surfaces). Stack: React, Vite, Tailwind, shadcn-style primitives. Verify in Storybook (Design System/Tokens) and theme.css. For floating right drawers from Figma or screenshots, follow Storybook UI/Sheet + FloatingSheetFrame (see skill section). Not for generic websites, portfolios, or marketing landing systems unless explicitly requested."
+description: "Aero DS: design intelligence for this repo only—ShareConsolidated (Bird AI) SaaS shell (dashboards, agents, settings, workflows, in-app surfaces). Stack: React, Vite, Tailwind, shadcn-style primitives. Verify in Storybook (Design System/Tokens) and theme.css. For full page builds from Figma or screenshots, follow the Build a Full Page section (shell geometry, typography, spacing, tokens, copy-paste prompts). For floating right drawers, follow Storybook UI/Sheet + FloatingSheetFrame. Not for generic websites, portfolios, or marketing landing systems unless explicitly requested."
 ---
 # Aero DS - Design Intelligence
 
@@ -25,6 +25,174 @@ Storybook is the **primary visual verification surface** for UI work in this rep
 - **Stories:** When adding or changing user-visible UI under `src/app/`, add or update a story under [`src/stories/`](../../../src/stories/) where practical so states are reviewable in isolation.
 - **Preview globals:** Follow [`.storybook/preview.tsx`](../../../.storybook/preview.tsx) — light/dark theme toolbar, `DESIGN_VERSION` tokens CSS + [`src/styles/index.css`](../../../src/styles/index.css), story `layout` parameters; backgrounds addon stays disabled in favour of CSS variables.
 - **Parity:** Components should look and behave in Storybook the same way they do in the running app (shared CSS entry).
+
+## Build a Full Page (screenshot or Figma)
+
+Use this section whenever the user shares a **screenshot** or **Figma URL** and asks you to build or redesign a page. Skip the `search.py` workflow for in-repo work — Storybook tokens are the ground truth here. Use `search.py` only for greenfield work or exploration **outside this repository**.
+
+### Shell Architecture
+
+Every in-app surface uses the same chrome. Never invent new nav zones or override shell geometry.
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  L1 strip (66px)  │  TopBar (h-48px, full width minus L1)       │
+│  APP_SHELL_RAIL   │  APP_SHELL_RAIL · rounded-tr-lg             │
+├───────────────────┴──────────────────────────────────────────────┤  ← APP_SHELL_BELOW_TOPBAR_CARD_CLASS (rounded-lg frame)
+│  L2 panel (220px)  │  Main canvas                               │
+│  PANEL             │  APP_MAIN_CONTENT_SHELL_CLASS              │
+│  rounded-tl-lg     │  rounded-tr-lg rounded-br-lg               │
+│  rounded-bl-lg     │  bg-app-shell-main                         │
+└────────────────────┴───────────────────────────────────────────  ┘
+Gutter: APP_SHELL_GUTTER_SURFACE_CLASS — pr-[10px] pb-[10px] around the bottom row
+```
+
+| Zone | Import / constant | Key tokens |
+|---|---|---|
+| **L1 strip** | `w-[66px]` + `APP_SHELL_RAIL_SURFACE_CLASS` | `bg-app-shell-rail` |
+| **TopBar** | `h-[48px]` + `rounded-tr-lg` + `APP_SHELL_RAIL_SURFACE_CLASS` | `bg-app-shell-rail` |
+| **Frame (below TopBar)** | `APP_SHELL_BELOW_TOPBAR_CARD_CLASS` | `rounded-lg border-app-shell-border` |
+| **L2 panel** | `PANEL` from `@/app/components/L2NavLayout.v1` | `w-[220px] bg-app-shell-l2-surface rounded-tl-lg rounded-bl-lg border-r border-app-shell-border` |
+| **Main canvas** | `APP_MAIN_CONTENT_SHELL_CLASS` | `bg-app-shell-main rounded-tr-lg rounded-br-lg` |
+| **Gutter** | `APP_SHELL_GUTTER_SURFACE_CLASS` | `bg-app-shell-gutter` |
+
+All four constants live in [`src/app/components/layout/appShellClasses.ts`](../../../src/app/components/layout/appShellClasses.ts).
+
+**L2 row geometry** (from `L2NavLayout.v1.tsx` — apply to every new L2 panel):
+
+| State | Class |
+|---|---|
+| Row base | `px-[8px] py-[6px] text-[13px] rounded-[4px] tracking-[-0.26px]` |
+| Hover | `hover:bg-app-shell-l2-row-hover` (`HOVER`) |
+| Active child | `bg-app-shell-l2-row-active text-foreground` (`CHILD_ACTIVE`) |
+| Inactive child | `text-muted-foreground` (`CHILD_INACTIVE`) |
+| Selected (accent) | `text-primary bg-primary/10 ring-1 ring-primary/15 rounded-lg` (`CHILD_FLAT_ACCENT_ACTIVE`) |
+
+**New L2 panel shortcut** — use `<L2NavLayout sections={[...]} />` and pass config only. No custom styling needed; the component owns all geometry.
+
+---
+
+### Typography baseline
+
+| Property | Value | Tailwind |
+|---|---|---|
+| Font | Inter | `font-sans` / `--font-sans` |
+| **Loaded weights** | **300 and 400 only** | `font-light` (300) · `font-normal` (400) |
+| Base size | **13px** | `text-base` |
+| Body line-height | 1.5 | `leading-normal` |
+| Label / caption | 12px | `text-xs` |
+| Section heading | 18px | `text-lg` |
+| Page title | 24px | `text-2xl` |
+
+`font-medium`, `font-semibold`, and `font-bold` all resolve to weight 400 — they are not visually distinct. Use `font-light` for de-emphasised text only; everything else is `font-normal`.
+
+---
+
+### Spacing rhythm
+
+| Use | Step | Tailwind |
+|---|---|---|
+| Default between blocks / sections | 8px multiples | `gap-2` = 8px · `gap-4` = 16px · `gap-6` = 24px · `gap-8` = 32px |
+| Dense (label-to-control, icon gaps) | 4px | `gap-1` |
+| **Avoid for layout** | — | `gap-3` `gap-5` `p-3` `px-3` `px-5` (off-grid) |
+
+---
+
+### Color tokens (quick-ref)
+
+| CSS variable | Tailwind | Use |
+|---|---|---|
+| `--primary` | `bg-primary` / `text-primary` | CTAs, active indicators, links |
+| `--background` | `bg-background` | Page background |
+| `--card` | `bg-card` | Card / panel surfaces |
+| `--muted` | `bg-muted` | Subtle backgrounds |
+| `--foreground` | `text-foreground` | Primary text |
+| `--muted-foreground` | `text-muted-foreground` | Labels, secondary text, metadata |
+| `--border` | `border-border` | Standard UI borders |
+| `--destructive` | `bg-destructive` / `text-destructive` | Error / delete states |
+| `--chart-1…5` | `bg-chart-1` … | Data visualisation series |
+| `--app-shell-*` | (Shell Architecture table above) | Chrome zones only — not for content cards |
+
+**Hard rule:** never hardcode hex from a screenshot or Figma into component code. Map every colour to a `theme.css` semantic token.
+
+---
+
+### Border radius
+
+| Element type | Class | Value |
+|---|---|---|
+| Badges, chips | `rounded-sm` | 6px |
+| Buttons, inputs, selects | `rounded-md` | 8px |
+| Cards, popovers, dropdowns | `rounded-lg` | 10px |
+| Modals, dialogs, panels | `rounded-xl` | 14px |
+| Large feature cards | `rounded-2xl` | 16px |
+| Avatars, pills, toggles | `rounded-full` | — |
+
+L2 column corners: `rounded-tl-lg rounded-bl-lg` (left side only). Main canvas: `rounded-tr-lg rounded-br-lg` (right side only).
+
+---
+
+### Shadow scale
+
+| Class | Use |
+|---|---|
+| `shadow-sm` | Subtle lift — inputs, tags |
+| `shadow` | Default card elevation |
+| `shadow-md` | Dropdowns, popovers |
+| `shadow-lg` | Floating panels, tooltips |
+| `shadow-xl` | Dialogs, modals |
+| `shadow-2xl` | Large overlays, drawers |
+| `shadow-inner` | Pressed states, inset wells |
+
+---
+
+### Copy-paste prompts
+
+**Pre-build analysis prompt** (paste this first with any screenshot or Figma URL — generates the design-specific mapping before any code is written):
+
+```text
+Before writing any code, analyze this screenshot and output:
+1. Map every major visual zone to its Birdeye shell equivalent: L1 strip (66px) / TopBar (48px) / L2 panel (220px) / Main canvas / FloatingSheetFrame (right drawer) / not applicable
+2. Flag anything that would be wrong if copied literally from the screenshot — widths that differ from shell constants, inline panels that should be FloatingSheetFrame drawers, colors that need theme.css token mapping, nav structures wider or different from L2NavLayout
+3. Name any existing Birdeye stories or components to read before building (e.g. InboxView.stories.tsx, ReviewsL2Nav.stories.tsx, AppShell.stories.tsx)
+Output only this mapping. Do not write any code yet.
+```
+
+Then review the mapping output, then paste the build prompt below to proceed.
+
+---
+
+**User prompt** (paste when attaching a screenshot or Figma URL):
+
+```text
+Build this page using the repo's shell architecture:
+- L1 strip: w-[66px] APP_SHELL_RAIL_SURFACE_CLASS (do not redesign)
+- TopBar: h-[48px] rounded-tr-lg APP_SHELL_RAIL_SURFACE_CLASS (extend TopBar.v1.tsx)
+- Below-TopBar frame: APP_SHELL_BELOW_TOPBAR_CARD_CLASS
+- L2 panel: PANEL from L2NavLayout.v1 (w-[220px] bg-app-shell-l2-surface); use <L2NavLayout sections={[...]} /> for nav items
+- Main canvas: APP_MAIN_CONTENT_SHELL_CLASS
+Colors: theme.css semantic tokens only — no hardcoded hex. Typography: Inter, font-light or font-normal only, text-base = 13px. Spacing: 8px grid (gap-2/4/6/8), 4px dense (gap-1). Match the design for layout and content. Verify against src/stories/AppShell.stories.tsx in Storybook (npm run storybook, port 6006).
+```
+
+**Agent / task prompt** (strict checklist for automation):
+
+```text
+Full page build — repo shell pattern only:
+- Import APP_SHELL_BELOW_TOPBAR_CARD_CLASS, APP_SHELL_GUTTER_SURFACE_CLASS, APP_SHELL_RAIL_SURFACE_CLASS, APP_MAIN_CONTENT_SHELL_CLASS from @/app/components/layout/appShellClasses.
+- Import PANEL from @/app/components/L2NavLayout.v1 for the 220px L2 column.
+- L1 strip: w-[66px] APP_SHELL_RAIL_SURFACE_CLASS. Never modify L1 layout.
+- TopBar: h-[48px] rounded-tr-lg APP_SHELL_RAIL_SURFACE_CLASS. Extend src/app/components/TopBar.v1.tsx; do not create a parallel TopBar.
+- L2 panel: PANEL class (w-[220px] bg-app-shell-l2-surface rounded-tl-lg rounded-bl-lg border-r border-app-shell-border). Row states: px-[8px] py-[6px] text-[13px] rounded-[4px] tracking-[-0.26px] with HOVER / CHILD_ACTIVE / CHILD_INACTIVE constants.
+- Main canvas: APP_MAIN_CONTENT_SHELL_CLASS (rounded-tr-lg rounded-br-lg bg-app-shell-main).
+- Colors: theme.css semantic tokens only. No hex. Map every design color to the closest token.
+- Typography: Inter only. font-light (300) for de-emphasised text; font-normal (400) for everything else. text-base = 13px, text-xs = 12px, text-lg = 18px, text-2xl = 24px.
+- Spacing: 8px grid — gap-2 (8px), gap-4 (16px), gap-6 (24px), gap-8 (32px). Dense: gap-1 (4px). Never gap-3, gap-5, p-3, px-5.
+- Shadows: shadow for cards, shadow-md for dropdowns, shadow-xl for dialogs.
+- Radius: rounded-md buttons/inputs, rounded-lg cards, rounded-xl dialogs, rounded-sm badges.
+- After build: re-read src/stories/AppShell.stories.tsx; compare chrome in Storybook (port 6006) with the design reference.
+```
+
+---
 
 ## Floating drawers / side panels (Figma, screenshots, specs)
 
@@ -193,9 +361,11 @@ Extract key information from the user request:
 - **Industry / domain**: fintech, healthcare, internal tools, etc.
 - **Stack for this repo**: **React + Vite + Tailwind + shadcn-style components** — not `html-tailwind` as default here.
 
-### Step 2: Generate Design System (REQUIRED)
+### Step 2: Generate Design System
 
-**Always start with `--design-system`** to get comprehensive recommendations with reasoning:
+**For in-repo page builds (screenshot or Figma):** skip `search.py` — go directly to the **Build a Full Page** section above. Shell geometry, tokens, and typography are already defined in Storybook.
+
+**For greenfield work or exploration outside this repository**, use `--design-system` to get recommendations with reasoning:
 
 ```bash
 python3 .claude/skills/aero-ds/scripts/search.py "<product_type> <industry> <keywords>" --design-system [-p "Project Name"]

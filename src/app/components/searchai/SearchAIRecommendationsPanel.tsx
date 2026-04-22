@@ -9,10 +9,11 @@
  * - Tokens: semantic Tailwind only on this surface (`bg-card`, `border-border`, …).
  * - Badges / chips: sentence case per product UI rules.
  */
-import { Lightbulb, Sparkles, TrendingUp } from "lucide-react";
+import { Lightbulb, Sparkles, TrendingUp, Filter, MoreVertical, CheckCircle2, XCircle, ChevronDown } from "lucide-react";
 import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/app/components/ui/table";
 import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 
 export type SearchAIRecommendation = {
@@ -21,36 +22,49 @@ export type SearchAIRecommendation = {
   description: string;
   impact: "High" | "Medium" | "Low";
   category: string;
-  platforms: string;
+  locations: number;
 };
 
 const MOCK_RECOMMENDATIONS: SearchAIRecommendation[] = [
   {
     id: "r1",
-    title: "Expand answers for “emergency dentist near me”",
-    description:
-      "Your brand appears in 42% of AI answers for this theme on ChatGPT. Adding structured FAQs on key locations could lift visibility within two weeks.",
+    title: "Pizza delivery",
+    description: "Adding pizza delivery to the service section enhances SEO, improving visibility for relevant local searches for pizza delivery. Potential Reach - 450K",
     impact: "High",
-    category: "Themes",
-    platforms: "ChatGPT, Google AI Overviews",
+    category: "Services",
+    locations: 1,
   },
   {
     id: "r2",
-    title: "Clarify services on the downtown location page",
-    description:
-      "Competitors are cited more often for overlapping services. Align copy with how models summarize “walk-in” vs “scheduled” care.",
-    impact: "Medium",
-    category: "Listings",
-    platforms: "Gemini, Perplexity",
+    title: "Close-up shot of freshly baked pizza",
+    description: "Upload an image showcasing close-up shot of freshly baked pizza to attract and engage customers effectively.",
+    impact: "Low",
+    category: "Photos",
+    locations: 1,
   },
   {
     id: "r3",
-    title: "Refresh review response tone for sentiment lift",
-    description:
-      "Sentiment on follow-up prompts trails the industry benchmark. Shorter, empathetic replies correlate with higher positive mentions in test data.",
+    title: "Delivery person handing pizza to customer",
+    description: "Upload an image showcasing delivery person handing pizza to customer to attract and engage customers effectively.",
     impact: "Low",
-    category: "Reputation",
-    platforms: "All sites",
+    category: "Photos",
+    locations: 1,
+  },
+  {
+    id: "r4",
+    title: "Relax The Back® in Alpharetta...",
+    description: "Adding \"pizza delivery\" helps target local searches, even by stating that it is not offered, which clarifies services.",
+    impact: "Low",
+    category: "Google description",
+    locations: 1,
+  },
+  {
+    id: "r5",
+    title: "Silver Shop delivers comprehensive...",
+    description: "Adding roofing, concrete work, and project planning will help people find Silver Shop's specialized services, boosting SEO ranking.",
+    impact: "Low",
+    category: "Google description",
+    locations: 1,
   },
 ];
 
@@ -65,97 +79,104 @@ function impactVariant(impact: SearchAIRecommendation["impact"]): "default" | "s
 export function SearchAIRecommendationsPanel() {
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-background">
-      <div className="flex shrink-0 flex-col gap-1 border-b border-border px-4 py-4 sm:px-6 sm:py-4">
-        <h1 className="text-lg font-semibold tracking-tight text-foreground">Recommendations</h1>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          Prioritized actions to improve how often and how positively AI assistants mention your brand across
-          platforms.
-        </p>
+      <div className="flex shrink-0 items-start justify-between border-b border-border px-6 py-5">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-lg font-semibold tracking-tight text-foreground">AI recommendations</h1>
+          <p className="max-w-2xl text-sm text-muted-foreground">
+            Enhance your business's search ranking with AI-driven recommendations and one-click optimization
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" className="shrink-0">
+            <MoreVertical size={16} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
+          </Button>
+          <Button variant="outline" size="icon" className="shrink-0">
+            <Filter size={16} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
+          </Button>
+        </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4 pb-8 pt-4 sm:px-6 sm:pt-6">
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-6 pb-8 pt-6">
+        <div className="mx-auto flex w-full flex-col gap-6">
           <div className="grid gap-4 sm:grid-cols-3">
-            <Card className="border-border shadow-none">
-              <CardHeader className="gap-2 pb-2">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Sparkles className="size-4 shrink-0" strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth aria-hidden />
-                  <CardDescription>Open recommendations</CardDescription>
-                </div>
-                <CardTitle className="text-2xl font-semibold tabular-nums text-foreground">12</CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-muted-foreground">Across all platforms</CardContent>
-            </Card>
-            <Card className="border-border shadow-none">
-              <CardHeader className="gap-2 pb-2">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <TrendingUp className="size-4 shrink-0" strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth aria-hidden />
-                  <CardDescription>High impact</CardDescription>
-                </div>
-                <CardTitle className="text-2xl font-semibold tabular-nums text-foreground">4</CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-muted-foreground">Suggested this week</CardContent>
-            </Card>
-            <Card className="border-border shadow-none">
-              <CardHeader className="gap-2 pb-2">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Lightbulb className="size-4 shrink-0" strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth aria-hidden />
-                  <CardDescription>Est. lift</CardDescription>
-                </div>
-                <CardTitle className="text-2xl font-semibold tabular-nums text-foreground">+6–9%</CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-muted-foreground">Visibility if applied (mock)</CardContent>
-            </Card>
+            <div className="bg-blue-50 dark:bg-blue-950/40 rounded-xl p-6 flex flex-col justify-between h-[104px]">
+              <span className="text-3xl font-semibold tabular-nums text-foreground">5</span>
+              <div className="flex items-center gap-2">
+                <div className="size-2 rounded-full bg-blue-500" />
+                <span className="text-xs font-medium text-foreground">Pending</span>
+              </div>
+            </div>
+            
+            <div className="bg-card border border-border rounded-xl p-6 flex flex-col justify-between h-[104px]">
+              <span className="text-3xl font-semibold tabular-nums text-foreground">1</span>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 size={12} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth className="text-emerald-500" />
+                <span className="text-xs font-medium text-foreground">Accepted</span>
+              </div>
+            </div>
+
+            <div className="bg-card border border-border rounded-xl p-6 flex flex-col justify-between h-[104px]">
+              <span className="text-3xl font-semibold tabular-nums text-foreground">1</span>
+              <div className="flex items-center gap-2">
+                <XCircle size={12} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth className="text-muted-foreground" />
+                <span className="text-xs font-medium text-foreground">Rejected</span>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-2" role="toolbar" aria-label="Filter by impact">
-            {FILTER_CHIPS.map((label) => (
-              <Button
-                key={label}
-                type="button"
-                size="sm"
-                variant={label === "All" ? "default" : "outline"}
-                className="rounded-full"
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-
-          <ul className="flex flex-col gap-4" aria-label="Recommendation list">
-            {MOCK_RECOMMENDATIONS.map((rec) => (
-              <li key={rec.id}>
-                <Card className="border-border shadow-none">
-                  <CardHeader className="gap-2 pb-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="flex min-w-0 flex-1 flex-col gap-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant={impactVariant(rec.impact)}>{rec.impact}</Badge>
-                        <Badge variant="outline">{rec.category}</Badge>
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="text-xs font-medium">Recommendations</TableHead>
+                  <TableHead className="text-xs font-medium w-[160px]">
+                    <div className="flex items-center gap-1">
+                      Ranking Impact
+                      <ChevronDown size={14} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
+                    </div>
+                  </TableHead>
+                  <TableHead className="text-xs font-medium w-auto"></TableHead>
+                  <TableHead className="text-xs font-medium w-[120px]">
+                    <div className="flex items-center gap-1">
+                      Locations
+                      <ChevronDown size={14} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
+                    </div>
+                  </TableHead>
+                  <TableHead className="w-[48px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {MOCK_RECOMMENDATIONS.map((rec) => (
+                  <TableRow key={rec.id} className="group">
+                    <TableCell className="py-4 align-top w-[300px]">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs text-muted-foreground">{rec.category}</span>
+                        <span className="text-sm font-medium text-foreground">{rec.title}</span>
                       </div>
-                      <CardTitle className="text-base font-semibold leading-snug text-foreground">{rec.title}</CardTitle>
-                      <CardDescription className="text-sm leading-relaxed text-muted-foreground">
+                    </TableCell>
+                    <TableCell className="py-4 align-top">
+                      <Badge variant={rec.impact === "High" ? "destructive" : "secondary"} className={rec.impact === "High" ? "bg-red-50 text-red-600 border-red-100 hover:bg-red-50" : ""}>
+                        {rec.impact}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="py-4 align-top">
+                      <p className="text-sm text-foreground leading-relaxed">
                         {rec.description}
-                      </CardDescription>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-4 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-xs text-muted-foreground">
-                      <span className="font-medium text-foreground">Platforms: </span>
-                      {rec.platforms}
-                    </p>
-                    <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
-                      <Button type="button" variant="outline" size="sm">
-                        Dismiss
+                      </p>
+                    </TableCell>
+                    <TableCell className="py-4 align-top">
+                      <span className="text-sm text-foreground">{rec.locations}</span>
+                    </TableCell>
+                    <TableCell className="py-4 align-top text-right">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                        <MoreVertical size={16} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
                       </Button>
-                      <Button type="button" size="sm">
-                        Apply
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </li>
-            ))}
-          </ul>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
     </div>

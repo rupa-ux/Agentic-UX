@@ -21,6 +21,10 @@ import {
 import {
   Tooltip, TooltipContent, TooltipTrigger, TooltipProvider,
 } from "@/app/components/ui/tooltip";
+import { GoogleSuggestionsPanel } from "./listings/GoogleSuggestionsPanel";
+import { ListingsAllSitesPanel, AccuracyBar, Site, MOCK_SITES } from "./listings/ListingsAllSitesPanel";
+import { ListingsCitationsPanel } from "./listings/ListingsCitationsPanel";
+import { SearchAIRecommendationsPanel } from "./searchai/SearchAIRecommendationsPanel";
 
 /* ─── Types ─── */
 type ListingStatus = "synced" | "error" | "needs_update" | "not_listed" | "pending";
@@ -43,28 +47,7 @@ interface Location {
   sites: SitePresence[];
 }
 
-interface Site {
-  id: string;
-  name: string;
-  category: string;
-  locationsListed: number;
-  locationsTotal: number;
-  avgAccuracy: number;
-  lastSynced: string;
-}
-
 /* ─── Mock data ─── */
-const SITES: Site[] = [
-  { id: "google",      name: "Google Business",   category: "Search",    locationsListed: 6, locationsTotal: 6, avgAccuracy: 96, lastSynced: "2h ago" },
-  { id: "yelp",        name: "Yelp",               category: "Reviews",   locationsListed: 6, locationsTotal: 6, avgAccuracy: 88, lastSynced: "4h ago" },
-  { id: "facebook",    name: "Facebook",            category: "Social",    locationsListed: 5, locationsTotal: 6, avgAccuracy: 82, lastSynced: "6h ago" },
-  { id: "apple",       name: "Apple Maps",          category: "Maps",      locationsListed: 6, locationsTotal: 6, avgAccuracy: 91, lastSynced: "1d ago" },
-  { id: "bing",        name: "Bing Places",         category: "Search",    locationsListed: 4, locationsTotal: 6, avgAccuracy: 74, lastSynced: "2d ago" },
-  { id: "foursquare",  name: "Foursquare",          category: "Discovery", locationsListed: 5, locationsTotal: 6, avgAccuracy: 79, lastSynced: "3d ago" },
-  { id: "tripadvisor", name: "TripAdvisor",         category: "Reviews",   locationsListed: 3, locationsTotal: 6, avgAccuracy: 68, lastSynced: "4d ago" },
-  { id: "yahoo",       name: "Yahoo Local",         category: "Search",    locationsListed: 4, locationsTotal: 6, avgAccuracy: 71, lastSynced: "5d ago" },
-];
-
 const LOCATIONS: Location[] = [
   {
     id: "l1", name: "Downtown Austin", address: "210 W 6th St", city: "Austin", state: "TX", phone: "(512) 555-0101",
@@ -165,20 +148,6 @@ function StatusBadge({ status }: { status: ListingStatus }) {
   );
 }
 
-function AccuracyBar({ value }: { value: number | null }) {
-  if (value === null) return <span className="text-xs text-muted-foreground">—</span>;
-  const color = value >= 90 ? "bg-emerald-500" : value >= 70 ? "bg-amber-400" : "bg-red-400";
-  const textColor = value >= 90 ? "text-emerald-700 dark:text-emerald-400" : value >= 70 ? "text-amber-700 dark:text-amber-400" : "text-red-600 dark:text-red-400";
-  return (
-    <div className="flex items-center gap-2">
-      <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${value}%` }} />
-      </div>
-      <span className={`text-xs font-medium ${textColor}`}>{value}%</span>
-    </div>
-  );
-}
-
 /* ─── Location detail sheet ─── */
 function LocationDetailSheet({
   location,
@@ -224,7 +193,8 @@ function LocationDetailSheet({
         {/* Per-site breakdown */}
         <div className="flex flex-col gap-3">
           {location.sites.map((sp) => {
-            const site = SITES.find((s) => s.id === sp.siteId)!;
+            const site = MOCK_SITES.find((s) => s.id === sp.siteId);
+            if (!site) return null;
             const cfg  = STATUS_CFG[sp.status];
             return (
               <div
@@ -471,8 +441,46 @@ function SitesTab({ search }: { search: string }) {
 }
 
 /* ─── Main view ─── */
-export function ListingsView() {
+export function ListingsView({ l2ActiveItem }: { l2ActiveItem?: string }) {
   const [search, setSearch] = useState("");
+
+  if (l2ActiveItem === "Actions/Recommendations") {
+    return <SearchAIRecommendationsPanel />;
+  }
+
+  if (l2ActiveItem === "Actions/Google suggestions") {
+    return <GoogleSuggestionsPanel />;
+  }
+  
+  if (l2ActiveItem === "Ranking reports/Citations" || l2ActiveItem === "Settings/Citations") {
+    return <ListingsCitationsPanel />;
+  }
+
+  // All sites view
+  if (l2ActiveItem === "Search performance/All sites") {
+    return (
+      <div className="flex flex-col h-full overflow-hidden bg-background">
+        <div className="px-6 pt-5 pb-4 flex items-center justify-between shrink-0 border-b border-border">
+          <div>
+            <h1 className="text-lg font-semibold text-foreground">All sites</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Directory coverage and accuracy breakdown.
+            </p>
+          </div>
+          <div className="relative max-w-xs w-64">
+            <Search size={13} strokeWidth={1.6} absoluteStrokeWidth className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Search sites…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-8 h-8 text-xs"
+            />
+          </div>
+        </div>
+        <ListingsAllSitesPanel search={search} />
+      </div>
+    );
+  }
 
   // Aggregate stats
   const allSitePresences = LOCATIONS.flatMap((l) => l.sites);
@@ -501,7 +509,7 @@ export function ListingsView() {
           <div>
             <h1 className="text-lg font-semibold text-foreground">Listings</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {LOCATIONS.length} locations · {SITES.length} directories · {overallAccuracy}% avg. accuracy
+              {LOCATIONS.length} locations · {MOCK_SITES.length} directories · {overallAccuracy}% avg. accuracy
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -565,7 +573,7 @@ export function ListingsView() {
 
             {/* Sites */}
             <TabsContent value="sites" className="flex-1 overflow-y-auto mt-0">
-              <SitesTab search={search} />
+              <ListingsAllSitesPanel search={search} />
             </TabsContent>
           </Tabs>
         </div>

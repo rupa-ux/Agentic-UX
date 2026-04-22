@@ -24,3 +24,27 @@ export default meta;
 type Story = StoryObj<typeof ListingsView>;
 
 export const Default: Story = {};
+
+export const AllSites: Story = {
+  args: {
+    l2ActiveItem: "Search performance/All sites",
+  },
+};
+
+export const Citations: Story = {
+  args: {
+    l2ActiveItem: "Ranking reports/Citations",
+  },
+};
+
+export const GoogleSuggestions: Story = {
+  args: {
+    l2ActiveItem: "Actions/Google suggestions",
+  },
+};
+
+export const Recommendations: Story = {
+  args: {
+    l2ActiveItem: "Actions/Recommendations",
+  },
+};
