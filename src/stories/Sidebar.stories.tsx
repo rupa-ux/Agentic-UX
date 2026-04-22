@@ -18,8 +18,11 @@ import {
 } from "@/app/components/Sidebar";
 import { ReviewsL2NavPanel as ReviewsL2NavPanelV1 } from "@/app/components/Sidebar.v1";
 import { ReviewsL2NavPanel as ReviewsL2NavPanelV2 } from "@/app/components/Sidebar.v2";
+import { SidebarSectioned } from "@/app/components/SidebarSectioned.v1";
 import { AgentsL2NavPanel as AgentsL2NavPanelV1 } from "@/app/components/AgentsL2NavPanel.v1";
 import { AgentsL2NavPanel as AgentsL2NavPanelV2 } from "@/app/components/AgentsL2NavPanel.v2";
+import { APP_SHELL_GUTTER_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
+import { MonitorNotificationsProvider } from "@/app/context/MonitorNotificationsContext";
 import type { AppView } from "@/app/App";
 import { CONTACTS_L2_KEY_ALL } from "@/app/components/ContactsView";
 import { SEARCH_AI_L2_DEFAULT_ACTIVE } from "@/app/components/searchai/searchAIL2Keys";
@@ -39,8 +42,6 @@ function ContactsL2NavPanelStateful() {
     />
   );
 }
-import { APP_SHELL_GUTTER_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
-import { MonitorNotificationsProvider } from "@/app/context/MonitorNotificationsContext";
 
 // ─── All selectable views ─────────────────────────────
 const VIEW_OPTIONS: AppView[] = [
@@ -139,7 +140,7 @@ type Story = StoryObj<{ currentView: AppView; iconSize: number }>;
    ══════════════════════════════════════════════════════ */
 export const IconStripOnly: Story = {
   name: "Icon Strip",
-    args: { currentView: "agents-monitor", iconSize: 16.2 },
+  args: { currentView: "agents-monitor", iconSize: 16.2 },
   render: ({ currentView: argView, iconSize }) => {
     const [view, setView] = useState<AppView>(argView);
     useEffect(() => { setView(argView); }, [argView]);
@@ -158,7 +159,7 @@ export const IconStripOnly: Story = {
    ══════════════════════════════════════════════════════ */
 export const SidebarCombined: Story = {
   name: "Sidebar",
-    args: { currentView: "dashboard", iconSize: 16.2 },
+  args: { currentView: "dashboard", iconSize: 16.2 },
   render: ({ currentView: argView, iconSize }) => {
     const [view, setView] = useState<AppView>(argView);
     useEffect(() => { setView(argView); }, [argView]);
@@ -171,6 +172,15 @@ export const SidebarCombined: Story = {
       </MonitorNotificationsProvider>
     );
   },
+};
+
+export const SidebarSectionedStory: Story = {
+  name: "Sidebar / Sectioned",
+  render: () => (
+    <SidebarFrame>
+      <SidebarSectioned />
+    </SidebarFrame>
+  ),
 };
 
 /* ══════════════════════════════════════════════════════
