@@ -647,34 +647,51 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
           {sidebarSections.map(renderPanelSection)}
         </div>
 
-        {/* Footer row — Settings + Notifications + Avatar in horizontal layout */}
-        <div className="flex flex-row items-center gap-2 pb-3 pt-2 px-[12px] shrink-0">
-          <button
-            type="button"
-            aria-label="Settings"
-            className="group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail"
-          >
-            <Settings
-              width={L1_STRIP_ICON_SIZE}
-              height={L1_STRIP_ICON_SIZE}
-              strokeWidth={L1_STRIP_ICON_STROKE_PX}
-              absoluteStrokeWidth
-              className="text-[#505050] dark:text-[#9ba2b0] group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] transition-colors"
-            />
-          </button>
-          <MonitorNotificationsTrigger />
-          <Button
-            type="button"
-            variant="ghost"
-            size="iconXs"
-            onClick={() => {
-              setProfileOpen(!profileOpen);
-              if (profileOpen) setShowAppearance(false);
-            }}
-            className="relative min-h-0 min-w-0 shrink-0 cursor-pointer overflow-hidden rounded-full p-0 shadow-sm ring-2 ring-white/80 transition-all hover:ring-white dark:ring-[#3d4555] dark:hover:ring-[#4d5568]"
-          >
-            <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" />
-          </Button>
+        {/* Footer row — keep the same order as collapsed: Settings, Notifications, Profile */}
+        <div className="flex flex-row items-center gap-3 pb-3 pt-2 px-[12px] shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              aria-label="Settings"
+              className="group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail"
+            >
+              <Settings
+                width={L1_STRIP_ICON_SIZE}
+                height={L1_STRIP_ICON_SIZE}
+                strokeWidth={L1_STRIP_ICON_STROKE_PX}
+                absoluteStrokeWidth
+                className="text-[#505050] dark:text-[#9ba2b0] group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] transition-colors"
+              />
+            </button>
+            <span className="text-[13px] font-normal leading-none text-[#212121] dark:text-[#e4e4e4] whitespace-nowrap">
+              Settings
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <MonitorNotificationsTrigger />
+            <span className="text-[13px] font-normal leading-none text-[#212121] dark:text-[#e4e4e4] whitespace-nowrap">
+              Notifications
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 min-w-0">
+            <Button
+              type="button"
+              variant="ghost"
+              size="iconXs"
+              onClick={() => {
+                setProfileOpen(!profileOpen);
+                if (profileOpen) setShowAppearance(false);
+              }}
+              className="relative min-h-0 min-w-0 shrink-0 cursor-pointer overflow-hidden rounded-full p-0 shadow-sm ring-2 ring-white/80 transition-all hover:ring-white dark:ring-[#3d4555] dark:hover:ring-[#4d5568]"
+            >
+              <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" />
+            </Button>
+            <span className="min-w-0 truncate text-[13px] font-normal leading-none text-[#212121] dark:text-[#e4e4e4]">
+              John Doe
+            </span>
+          </div>
         </div>
       </div>
 
