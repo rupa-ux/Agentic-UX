@@ -327,7 +327,6 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
 
   const renderRailSection = (section: SidebarNavSection, index: number) => (
     <div key={section.title ?? `top-${index}`} className="flex flex-col items-center gap-[2px] w-full">
-      {index > 0 && <div className="w-[24px] h-px my-1 bg-[#d0d4dc] dark:bg-[#333a47]" />}
       {section.items.map((item) => renderRailButton(item))}
     </div>
   );
@@ -365,7 +364,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
       </div>
 
       {/* Icon buttons */}
-      <div className="flex flex-col items-center pb-[8px] pt-0 gap-[2px] flex-1 overflow-y-auto overflow-x-hidden px-[12px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex flex-col items-center pb-[8px] pt-0 gap-[8px] flex-1 overflow-y-auto overflow-x-hidden px-[12px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {sidebarSections.map(renderRailSection)}
       </div>
 
