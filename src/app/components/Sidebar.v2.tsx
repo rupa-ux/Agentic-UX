@@ -518,7 +518,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                         </button>
                       )}
                       <div className="w-full rounded-lg px-3 py-2 text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06] flex items-center justify-between gap-3">
-                        <span>Expand sidebar on hover</span>
+                        <span className="text-[#212121] dark:text-[#e4e4e4]">Expand sidebar on hover</span>
                         <Switch
                           checked={hoverExpandEnabled}
                           onCheckedChange={setHoverExpandEnabled}
