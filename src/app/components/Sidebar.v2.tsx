@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
 import { usePersistedState } from "@/app/hooks/usePersistedState";
 import {
-  ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Plus, Info,
+  ChevronDown, ChevronUp, ChevronRight, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Plus, Info, MessageSquare,
 } from "lucide-react";
 import {
   FigmaIconBirdAI, FigmaIconOverview, FigmaIconInbox, FigmaIconListings,
@@ -55,23 +55,54 @@ export function openReportingModuleInNewTab() {
 
 const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1617853701628-bfcf8b81d13d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBtYW4lMjBoZWFkc2hvdCUyMHNtaWxlJTIwc3R1ZGlvJTIwbGlnaHRpbmd8ZW58MXx8fHwxNzczMjE4MDIzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 
-/* ─── Icon-strip items — Figma "Visual Uplift 2.0" icons ─── */
-const iconStripItems: { label: string; Icon: React.ElementType }[] = [
-  { label: "Agents",       Icon: FigmaIconBirdAI      },
-  { label: "Inbox",        Icon: FigmaIconInbox       },
-  { label: "Listings",     Icon: FigmaIconListings    },
-  { label: "Reviews",      Icon: FigmaIconReviews     },
-  { label: "Referrals",    Icon: FigmaIconReferrals   },
-  { label: "Payments",     Icon: FigmaIconPayments    },
-  { label: "Appointments", Icon: FigmaIconAppointments},
-  { label: "Social",       Icon: FigmaIconSocial      },
-  { label: "Surveys",      Icon: FigmaIconSurveys     },
-  { label: "Ticketing",    Icon: FigmaIconTicketing   },
-  { label: "Contacts",     Icon: FigmaIconContacts    },
-  { label: "Campaigns",    Icon: FigmaIconCampaigns   },
-  { label: "Competitors",  Icon: FigmaIconCompetitors },
-  { label: "Insights",     Icon: FigmaIconInsights    },
-  { label: "Reports",      Icon: FigmaIconReports     },
+type SidebarNavItem = {
+  label: string;
+  Icon: React.ElementType;
+  view: AppView;
+  hasChildren?: boolean;
+};
+
+type SidebarNavSection = {
+  title?: string;
+  items: SidebarNavItem[];
+};
+
+const sidebarSections: SidebarNavSection[] = [
+  {
+    items: [
+      { label: "Overview", Icon: FigmaIconOverview, view: "business-overview" },
+      { label: "Agents", Icon: FigmaIconBirdAI, view: "agents-monitor" },
+    ],
+  },
+  {
+    title: "Marketing",
+    items: [
+      { label: "Reviews", Icon: FigmaIconReviews, view: "reviews", hasChildren: true },
+      { label: "Listings", Icon: FigmaIconListings, view: "listings" },
+      { label: "Social", Icon: FigmaIconSocial, view: "social" },
+      { label: "Referrals", Icon: FigmaIconReferrals, view: "referrals" },
+      { label: "Marketing automations", Icon: FigmaIconCampaigns, view: "campaigns" },
+      { label: "Campaigns", Icon: FigmaIconCampaigns, view: "campaigns" },
+    ],
+  },
+  {
+    title: "Operations",
+    items: [
+      { label: "Inbox", Icon: FigmaIconInbox, view: "inbox" },
+      { label: "Appointments", Icon: FigmaIconAppointments, view: "appointments" },
+      { label: "Chatbot", Icon: MessageSquare, view: "searchai" },
+      { label: "Reports", Icon: FigmaIconReports, view: "dashboard" },
+      { label: "Insights", Icon: FigmaIconInsights, view: "insights" },
+    ],
+  },
+  {
+    title: "Customer experience",
+    items: [
+      { label: "Ticketing", Icon: FigmaIconTicketing, view: "ticketing" },
+      { label: "Surveys", Icon: FigmaIconSurveys, view: "surveys" },
+      { label: "Settings", Icon: Settings, view: "agent-config" },
+    ],
+  },
 ];
 
 /* ═══════════════════════════════════════════
@@ -157,12 +188,12 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
 
   // Sync activeIcon with currentView (layout effect avoids wrong rail highlight on first paint)
   useLayoutEffect(() => {
-    if (currentView === "business-overview") setActiveIcon("Agents");
+    if (currentView === "business-overview") setActiveIcon("Overview");
     else if (currentView === "inbox") setActiveIcon("Inbox");
     else if (currentView === "reviews") setActiveIcon("Reviews");
     else if (currentView === "social") setActiveIcon("Social");
-    else if (currentView === "searchai") setActiveIcon("Insights");
-    else if (currentView === "contacts") setActiveIcon("Contacts");
+    else if (currentView === "searchai" || currentView === "conversation-stream") setActiveIcon("Chatbot");
+    else if (currentView === "contacts") setActiveIcon("Settings");
     else if (currentView === "listings") setActiveIcon("Listings");
     else if (currentView === "surveys") setActiveIcon("Surveys");
     else if (currentView === "ticketing") setActiveIcon("Ticketing");
@@ -170,9 +201,10 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
     else if (currentView === "insights") setActiveIcon("Insights");
     else if (currentView === "competitors") setActiveIcon("Competitors");
     else if (currentView === "referrals") setActiveIcon("Referrals");
-    else if (currentView === "payments") setActiveIcon("Payments");
+    else if (currentView === "payments") setActiveIcon("Settings");
     else if (currentView === "appointments") setActiveIcon("Appointments");
     else if (currentView === "dashboard" || currentView === "shared-by-me") setActiveIcon("Reports");
+    else if (currentView === "agent-config") setActiveIcon("Settings");
     else if (currentView === "agents-monitor" || currentView === "agents-analyze-performance" || currentView === "agents-builder" || currentView === "agent-detail" || currentView === "agents-onboarding" || currentView === "birdai-reports" || currentView === "birdai-journeys") setActiveIcon("Agents");
     // scheduled-deliveries / schedule-builder: no icon mapping
   }, [currentView]);
@@ -203,34 +235,34 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
 
   const handleNavClick = (label: string) => {
     setActiveIcon(label);
-    if (label === "Inbox") onViewChange("inbox");
-    else if (label === "Reports") onViewChange("dashboard");
-    else if (label === "Reviews") onViewChange("reviews");
-    else if (label === "Social") onViewChange("social");
-    else if (label === "Insights") onViewChange("searchai");
-    else if (label === "Contacts") onViewChange("contacts");
+    if (label === "Overview") onViewChange("business-overview");
     else if (label === "Agents") onViewChange("agents-monitor");
+    else if (label === "Reviews") onViewChange("reviews");
     else if (label === "Listings") onViewChange("listings");
-    else if (label === "Surveys") onViewChange("surveys");
-    else if (label === "Ticketing") onViewChange("ticketing");
-    else if (label === "Campaigns") onViewChange("campaigns");
-    else if (label === "Competitors") onViewChange("competitors");
+    else if (label === "Social") onViewChange("social");
     else if (label === "Referrals") onViewChange("referrals");
-    else if (label === "Payments") onViewChange("payments");
+    else if (label === "Marketing automations" || label === "Campaigns") onViewChange("campaigns");
+    else if (label === "Inbox") onViewChange("inbox");
     else if (label === "Appointments") onViewChange("appointments");
+    else if (label === "Chatbot") onViewChange("searchai");
+    else if (label === "Reports") onViewChange("dashboard");
+    else if (label === "Insights") onViewChange("insights");
+    else if (label === "Ticketing") onViewChange("ticketing");
+    else if (label === "Surveys") onViewChange("surveys");
+    else if (label === "Settings") onViewChange("agent-config");
   };
 
   const navActiveBg = "bg-[#d4dae3] dark:bg-[#282e3a]";
   const navHoverBg = "hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845]";
 
-  const renderRailButton = (label: string, Icon: React.ElementType) => {
-    const isActive = label === activeIcon;
+  const renderRailButton = (item: SidebarNavItem) => {
+    const isActive = item.label === activeIcon;
     const btn = (
       <button
-        key={label}
+        key={item.label}
         type="button"
-        onClick={() => handleNavClick(label)}
-        aria-label={label}
+        onClick={() => handleNavClick(item.label)}
+        aria-label={item.label}
         className={`
           group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0
           transition-all duration-200 ease-out outline-none
@@ -238,33 +270,33 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
           ${isActive ? `${navActiveBg} shadow-none` : `bg-transparent ${navHoverBg} hover:scale-110 active:scale-95`}
         `}
       >
-        <Icon
+        <item.Icon
           size={iconSize}
           className={`transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] ${
             isActive
               ? "text-[#1E44CC] dark:text-[#2952E3]"
               : "text-[#505050] dark:text-[#9ba2b0] group-hover:scale-110"
-          } ${label === "Agents" && isActive ? "group-hover:animate-[agents-shimmer_3s_ease-in-out_infinite]" : ""}`}
+          } ${item.label === "Agents" && isActive ? "group-hover:animate-[agents-shimmer_3s_ease-in-out_infinite]" : ""}`}
         />
       </button>
     );
     if (hoverExpandEnabled) return btn;
     return (
-      <Tooltip key={label}>
+      <Tooltip key={item.label}>
         <TooltipTrigger asChild>{btn}</TooltipTrigger>
-        <TooltipContent side="right" sideOffset={8}>{label}</TooltipContent>
+        <TooltipContent side="right" sideOffset={8}>{item.label}</TooltipContent>
       </Tooltip>
     );
   };
 
-  const renderPanelButton = (label: string, Icon: React.ElementType) => {
-    const isActive = label === activeIcon;
+  const renderPanelButton = (item: SidebarNavItem) => {
+    const isActive = item.label === activeIcon;
     return (
       <button
-        key={label}
+        key={item.label}
         type="button"
-        onClick={() => handleNavClick(label)}
-        aria-label={label}
+        onClick={() => handleNavClick(item.label)}
+        aria-label={item.label}
         className={`
           group relative w-full h-[32px] flex items-center rounded-[10px] shrink-0 outline-none
           transition-colors duration-200 ease-out
@@ -273,7 +305,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
         `}
       >
         <span className="flex w-[32px] h-[32px] items-center justify-center shrink-0">
-          <Icon
+          <item.Icon
             size={iconSize}
             className={`transition-colors duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] ${
               isActive
@@ -289,11 +321,38 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
               : "text-[#303030] dark:text-[#c0c6d4]"
           }`}
         >
-          {label}
+          {item.label}
         </span>
+        {item.hasChildren && (
+          <ChevronRight className="mr-1 size-[14px] text-[#999] dark:text-[#6b7280] shrink-0" />
+        )}
       </button>
     );
   };
+
+  const renderRailSection = (section: SidebarNavSection, index: number) => (
+    <div key={section.title ?? `top-${index}`} className="flex flex-col items-center gap-[2px] w-full">
+      {index > 0 && <div className="w-[24px] h-px my-1 bg-[#d0d4dc] dark:bg-[#333a47]" />}
+      {section.items.map((item) => renderRailButton(item))}
+    </div>
+  );
+
+  const renderPanelSection = (section: SidebarNavSection, index: number) => (
+    <div key={section.title ?? `top-${index}`} className="flex flex-col">
+      {section.title && (
+        <div className="px-2 pt-3 pb-1 text-[10px] uppercase tracking-[0.6px] text-[#8b92a5] dark:text-[#6b7280]">
+          {section.title}
+        </div>
+      )}
+      {!section.title && index > 0 && <div className="my-1 h-px bg-[#f0f1f5] dark:bg-[#2e3340]" />}
+      <div className="flex flex-col gap-[2px]">
+        {section.items.map((item) => renderPanelButton(item))}
+      </div>
+      {index < sidebarSections.length - 1 && section.title && (
+        <div className="my-2 h-px bg-[#f0f1f5] dark:bg-[#2e3340]" />
+      )}
+    </div>
+  );
 
   return (
     <TooltipProvider delayDuration={250}>
@@ -316,7 +375,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
 
       {/* Icon buttons */}
       <div className="flex flex-col items-center pb-[8px] pt-0 gap-[2px] flex-1 overflow-y-auto overflow-x-hidden px-[12px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {iconStripItems.map(({ label, Icon }) => renderRailButton(label, Icon))}
+        {sidebarSections.map(renderRailSection)}
       </div>
 
       {/* ─── Bottom tower: Settings + Notifications + Profile (matches main rail order + v2 notifications) ─── */}
@@ -602,7 +661,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
 
         {/* Labeled nav rows */}
         <div className="flex flex-col items-stretch pb-[8px] pt-0 gap-[2px] flex-1 overflow-y-auto overflow-x-hidden px-[12px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {iconStripItems.map(({ label, Icon }) => renderPanelButton(label, Icon))}
+          {sidebarSections.map(renderPanelSection)}
         </div>
 
         {/* Footer row — Settings + Notifications + Avatar in horizontal layout */}
