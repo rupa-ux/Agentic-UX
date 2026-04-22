@@ -148,6 +148,20 @@ L2 column corners: `rounded-tl-lg rounded-bl-lg` (left side only). Main canvas: 
 
 ### Copy-paste prompts
 
+**Pre-build analysis prompt** (paste this first with any screenshot or Figma URL — generates the design-specific mapping before any code is written):
+
+```text
+Before writing any code, analyze this screenshot and output:
+1. Map every major visual zone to its Birdeye shell equivalent: L1 strip (66px) / TopBar (48px) / L2 panel (220px) / Main canvas / FloatingSheetFrame (right drawer) / not applicable
+2. Flag anything that would be wrong if copied literally from the screenshot — widths that differ from shell constants, inline panels that should be FloatingSheetFrame drawers, colors that need theme.css token mapping, nav structures wider or different from L2NavLayout
+3. Name any existing Birdeye stories or components to read before building (e.g. InboxView.stories.tsx, ReviewsL2Nav.stories.tsx, AppShell.stories.tsx)
+Output only this mapping. Do not write any code yet.
+```
+
+Then review the mapping output, then paste the build prompt below to proceed.
+
+---
+
 **User prompt** (paste when attaching a screenshot or Figma URL):
 
 ```text
