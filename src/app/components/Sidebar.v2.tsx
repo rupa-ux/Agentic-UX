@@ -20,6 +20,13 @@ import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "./l1StripIconTokens
 import { MonitorNotificationsTrigger } from "./MonitorNotificationsTrigger";
 import { AccountSettingsSheet } from "./settings/AccountSettingsSheet";
 import { useTheme, type ThemePreference } from "./useTheme";
+import { useSidebarHoverExpand } from "@/app/hooks/useSidebarHoverExpand";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/app/components/ui/tooltip";
 import {
   L2NavLayout,
   PANEL,
@@ -86,6 +93,49 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
   const [activeIcon, setActiveIcon] = useState("Agents");
   const [profileOpen, setProfileOpen] = useState(false);
   const [accountSheetOpen, setAccountSheetOpen] = useState(false);
+
+  /* ── L1 hover-to-expand (user preference; see useSidebarHoverExpand) ── */
+  const [hoverExpandEnabled, setHoverExpandEnabled] = useSidebarHoverExpand();
+  const [expanded, setExpanded] = useState(false);
+  const openTimerRef = useRef<number | null>(null);
+  const closeTimerRef = useRef<number | null>(null);
+
+  const handleRailEnter = useCallback(() => {
+    if (!hoverExpandEnabled) return;
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    if (openTimerRef.current) clearTimeout(openTimerRef.current);
+    openTimerRef.current = window.setTimeout(() => {
+      setExpanded(true);
+      openTimerRef.current = null;
+    }, 160);
+  }, [hoverExpandEnabled]);
+
+  const handleRailLeave = useCallback(() => {
+    if (openTimerRef.current) {
+      clearTimeout(openTimerRef.current);
+      openTimerRef.current = null;
+    }
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = window.setTimeout(() => {
+      setExpanded(false);
+      closeTimerRef.current = null;
+    }, 200);
+  }, []);
+
+  // If preference flips off while expanded, collapse immediately.
+  useEffect(() => {
+    if (!hoverExpandEnabled && expanded) setExpanded(false);
+  }, [hoverExpandEnabled, expanded]);
+
+  useEffect(() => {
+    return () => {
+      if (openTimerRef.current) clearTimeout(openTimerRef.current);
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  }, []);
   // Portal tooltip — fixed position so it escapes overflow-y: auto clipping
   const [tooltip, setTooltip] = useState<{ label: string; top: number } | null>(null);
 
@@ -151,81 +201,151 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  const handleNavClick = (label: string) => {
+    setActiveIcon(label);
+    if (label === "Inbox") onViewChange("inbox");
+    else if (label === "Reports") onViewChange("dashboard");
+    else if (label === "Reviews") onViewChange("reviews");
+    else if (label === "Social") onViewChange("social");
+    else if (label === "Insights") onViewChange("searchai");
+    else if (label === "Contacts") onViewChange("contacts");
+    else if (label === "Agents") onViewChange("agents-monitor");
+    else if (label === "Listings") onViewChange("listings");
+    else if (label === "Surveys") onViewChange("surveys");
+    else if (label === "Ticketing") onViewChange("ticketing");
+    else if (label === "Campaigns") onViewChange("campaigns");
+    else if (label === "Competitors") onViewChange("competitors");
+    else if (label === "Referrals") onViewChange("referrals");
+    else if (label === "Payments") onViewChange("payments");
+    else if (label === "Appointments") onViewChange("appointments");
+  };
+
+  const navActiveBg = "bg-[#d4dae3] dark:bg-[#282e3a]";
+  const navHoverBg = "hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845]";
+
+  const renderRailButton = (label: string, Icon: React.ElementType) => {
+    const isActive = label === activeIcon;
+    const btn = (
+      <button
+        key={label}
+        type="button"
+        onClick={() => handleNavClick(label)}
+        aria-label={label}
+        className={`
+          group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0
+          transition-all duration-200 ease-out outline-none
+          focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail
+          ${isActive ? `${navActiveBg} shadow-none` : `bg-transparent ${navHoverBg} hover:scale-110 active:scale-95`}
+        `}
+      >
+        <Icon
+          size={iconSize}
+          className={`transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] ${
+            isActive
+              ? "text-[#1E44CC] dark:text-[#2952E3]"
+              : "text-[#505050] dark:text-[#9ba2b0] group-hover:scale-110"
+          } ${label === "Agents" && isActive ? "group-hover:animate-[agents-shimmer_3s_ease-in-out_infinite]" : ""}`}
+        />
+      </button>
+    );
+    if (hoverExpandEnabled) return btn;
+    return (
+      <Tooltip key={label}>
+        <TooltipTrigger asChild>{btn}</TooltipTrigger>
+        <TooltipContent side="right" sideOffset={8}>{label}</TooltipContent>
+      </Tooltip>
+    );
+  };
+
+  const renderPanelButton = (label: string, Icon: React.ElementType) => {
+    const isActive = label === activeIcon;
+    return (
+      <button
+        key={label}
+        type="button"
+        onClick={() => handleNavClick(label)}
+        aria-label={label}
+        className={`
+          group relative w-full h-[32px] flex items-center rounded-[10px] shrink-0 outline-none
+          transition-colors duration-200 ease-out
+          focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1
+          ${isActive ? navActiveBg : `bg-transparent ${navHoverBg}`}
+        `}
+      >
+        <span className="flex w-[32px] h-[32px] items-center justify-center shrink-0">
+          <Icon
+            size={iconSize}
+            className={`transition-colors duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] ${
+              isActive
+                ? "text-[#1E44CC] dark:text-[#2952E3]"
+                : "text-[#505050] dark:text-[#9ba2b0]"
+            }`}
+          />
+        </span>
+        <span
+          className={`ml-3 text-[13px] whitespace-nowrap ${
+            isActive
+              ? "text-[#1E44CC] dark:text-[#2952E3]"
+              : "text-[#303030] dark:text-[#c0c6d4]"
+          }`}
+        >
+          {label}
+        </span>
+      </button>
+    );
+  };
+
   return (
+    <TooltipProvider delayDuration={250}>
     <div
-      className={`w-[66px] flex flex-col items-center shrink-0 text-base ${APP_SHELL_RAIL_SURFACE_CLASS}`}
+      className="relative w-[66px] shrink-0 h-full text-base"
       data-no-print
     >
+      <div
+        onMouseEnter={handleRailEnter}
+        onMouseLeave={handleRailLeave}
+        aria-expanded={expanded}
+        className={`absolute inset-0 flex flex-col ${APP_SHELL_RAIL_SURFACE_CLASS}`}
+      >
       {/* Birdeye logo */}
-      <div className="h-[48px] w-[55px] flex items-center justify-center shrink-0">
-        <svg width="17.55" height="16.875" viewBox="0 0 19.5 18.75" fill="none">
+      <div className="h-[48px] w-[55px] flex items-center justify-center shrink-0 self-center">
+        <svg width="17.55" height="16.875" viewBox="0 0 19.5 18.75" fill="none" className="shrink-0">
           <path clipRule="evenodd" d={svgPaths.p23fcc000} fill="#2552ED" fillRule="evenodd" />
         </svg>
       </div>
 
       {/* Icon buttons */}
-      <div className="flex flex-col items-center px-[12px] pb-[8px] pt-0 gap-[2px] flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {iconStripItems.map(({ label, Icon }) => {
-          const isActive = label === activeIcon;
-          return (
-            <button
-              key={label}
-              onClick={() => {
-                setActiveIcon(label);
-                if (label === "Inbox") onViewChange("inbox");
-                else if (label === "Reports") onViewChange("dashboard");
-                else if (label === "Reviews") onViewChange("reviews");
-                else if (label === "Social") onViewChange("social");
-                else if (label === "Insights") onViewChange("searchai");
-                else if (label === "Contacts") onViewChange("contacts");
-                else if (label === "Agents") onViewChange("agents-monitor");
-                else if (label === "Listings") onViewChange("listings");
-                else if (label === "Surveys") onViewChange("surveys");
-                else if (label === "Ticketing") onViewChange("ticketing");
-                else if (label === "Campaigns") onViewChange("campaigns");
-                else if (label === "Competitors") onViewChange("competitors");
-                else if (label === "Referrals") onViewChange("referrals");
-                else if (label === "Payments") onViewChange("payments");
-                else if (label === "Appointments") onViewChange("appointments");
-              }}
-              className={`
-                group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0
-                transition-all duration-200 ease-out outline-none
-                focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail
-                ${isActive
-                  ? "bg-[#d4dae3] dark:bg-[#282e3a] shadow-none"
-                  : "bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95"
-                }
-              `}
-            >
-              <Icon
-                size={iconSize}
-                className={`transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] ${
-                  isActive
-                    ? "text-[#1E44CC] dark:text-[#2952E3]"
-                    : "text-[#505050] dark:text-[#9ba2b0] group-hover:scale-110"
-                } ${label === "Agents" && isActive ? "group-hover:animate-[agents-shimmer_3s_ease-in-out_infinite]" : ""}`}
-              />
-            </button>
-          );
-        })}
+      <div className="flex flex-col items-center pb-[8px] pt-0 gap-[2px] flex-1 overflow-y-auto overflow-x-hidden px-[12px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {iconStripItems.map(({ label, Icon }) => renderRailButton(label, Icon))}
       </div>
 
       {/* ─── Bottom tower: Settings + Notifications + Profile (matches main rail order + v2 notifications) ─── */}
       <div className="flex flex-col items-center gap-2 pb-3 pt-2 shrink-0">
         {/* Settings gear — same surface / hover / focus as L1 nav icons */}
-        <button
-          type="button"
-          className="group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail"
-        >
-          <Settings
-            width={L1_STRIP_ICON_SIZE}
-            height={L1_STRIP_ICON_SIZE}
-            strokeWidth={L1_STRIP_ICON_STROKE_PX}
-            absoluteStrokeWidth
-            className="text-[#505050] dark:text-[#9ba2b0] transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] group-hover:scale-110"
-          />
-        </button>
+        {(() => {
+          const settingsBtn = (
+            <button
+              type="button"
+              aria-label="Settings"
+              className="group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail"
+            >
+              <Settings
+                width={L1_STRIP_ICON_SIZE}
+                height={L1_STRIP_ICON_SIZE}
+                strokeWidth={L1_STRIP_ICON_STROKE_PX}
+                absoluteStrokeWidth
+                className="text-[#505050] dark:text-[#9ba2b0] transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] group-hover:scale-110"
+              />
+            </button>
+          );
+          if (hoverExpandEnabled) return settingsBtn;
+          return (
+            <Tooltip>
+              <TooltipTrigger asChild>{settingsBtn}</TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8}>Settings</TooltipContent>
+            </Tooltip>
+          );
+        })()}
 
         <MonitorNotificationsTrigger />
 
@@ -351,6 +471,20 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                       )}
                       <button
                         type="button"
+                        onClick={() => setHoverExpandEnabled(!hoverExpandEnabled)}
+                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06] flex items-center justify-between gap-3"
+                        aria-pressed={hoverExpandEnabled}
+                      >
+                        <span className="flex flex-col">
+                          <span>Expand sidebar on hover</span>
+                          <span className="text-[11px] text-[#999] dark:text-[#777]">Show labels when hovering the left rail. When off, each icon shows a tooltip.</span>
+                        </span>
+                        <span className={`text-[11px] shrink-0 ${hoverExpandEnabled ? "text-[#2552ED] dark:text-[#6b9bff]" : "text-[#999] dark:text-[#777]"}`}>
+                          {hoverExpandEnabled ? "On" : "Off"}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => setShowAppearance(true)}
                         className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
                       >
@@ -443,6 +577,64 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
           )}
         </div>
       </div>
+      </div>
+
+      {/* ═══ Floating expanded panel — appears on hover ═══ */}
+      <div
+        onMouseEnter={handleRailEnter}
+        onMouseLeave={handleRailLeave}
+        aria-hidden={!expanded}
+        className={`absolute top-2 bottom-2 left-2 w-[272px] flex flex-col rounded-lg shadow-xl bg-white dark:bg-[#1e2229] z-30 transition-[opacity,transform] duration-200 ease-out ${
+          expanded
+            ? "opacity-100 translate-x-0 pointer-events-auto"
+            : "opacity-0 -translate-x-2 pointer-events-none"
+        }`}
+      >
+        {/* Logo + Birdeye label */}
+        <div className="h-[48px] pl-[17px] flex items-center gap-2 shrink-0">
+          <svg width="17.55" height="16.875" viewBox="0 0 19.5 18.75" fill="none" className="shrink-0">
+            <path clipRule="evenodd" d={svgPaths.p23fcc000} fill="#2552ED" fillRule="evenodd" />
+          </svg>
+          <span className="text-[15px] font-medium text-[#212121] dark:text-[#e4e4e4] whitespace-nowrap">
+            Birdeye
+          </span>
+        </div>
+
+        {/* Labeled nav rows */}
+        <div className="flex flex-col items-stretch pb-[8px] pt-0 gap-[2px] flex-1 overflow-y-auto overflow-x-hidden px-[12px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {iconStripItems.map(({ label, Icon }) => renderPanelButton(label, Icon))}
+        </div>
+
+        {/* Footer row — Settings + Notifications + Avatar in horizontal layout */}
+        <div className="flex flex-row items-center gap-2 pb-3 pt-2 px-[12px] shrink-0">
+          <button
+            type="button"
+            aria-label="Settings"
+            className="group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent hover:bg-[#f3f4f6] dark:hover:bg-[#282e3a] active:bg-[#e5e7eb] dark:active:bg-[#313845] focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1"
+          >
+            <Settings
+              width={L1_STRIP_ICON_SIZE}
+              height={L1_STRIP_ICON_SIZE}
+              strokeWidth={L1_STRIP_ICON_STROKE_PX}
+              absoluteStrokeWidth
+              className="text-[#505050] dark:text-[#9ba2b0] group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] transition-colors"
+            />
+          </button>
+          <MonitorNotificationsTrigger />
+          <Button
+            type="button"
+            variant="ghost"
+            size="iconXs"
+            onClick={() => {
+              setProfileOpen(!profileOpen);
+              if (profileOpen) setShowAppearance(false);
+            }}
+            className="relative min-h-0 min-w-0 shrink-0 cursor-pointer overflow-hidden rounded-full p-0 shadow-sm ring-2 ring-white/80 transition-all hover:ring-white dark:ring-[#3d4555] dark:hover:ring-[#4d5568]"
+          >
+            <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" />
+          </Button>
+        </div>
+      </div>
 
       <AccountSettingsSheet
         open={accountSheetOpen}
@@ -454,6 +646,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
         defaultEmail="john.doe@acmecorp.com"
       />
     </div>
+    </TooltipProvider>
   );
 }
 

@@ -12,6 +12,8 @@ import {
   Send,
   Pencil,
   MessageCircle,
+  List,
+  Columns2,
 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { ManusToolbarIconHit } from "@/app/components/ManusToolbarIconHit";
@@ -45,6 +47,8 @@ import {
 import {
   createInitialReviewsFilters,
 } from "@/app/data/reviewsFilters";
+import { SegmentedToggle } from "@/app/components/ui/segmented-toggle";
+import type { ReviewsViewMode } from "./ReviewsView";
 
 // Types
 interface Review {
@@ -935,9 +939,16 @@ function ReviewCardSkeleton() {
 
 const PAGE_SIZE = 3;
 
-/* ─── Main ReviewsView ─── */
-export function ReviewsView() {
+/* ─── Main ReviewsView (list mode) ─── */
+export function ReviewsViewList({
+  viewMode,
+  onViewModeChange,
+}: {
+  viewMode?: ReviewsViewMode;
+  onViewModeChange?: (mode: ReviewsViewMode) => void;
+} = {}) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const [filters, setFilters] = useState<FilterItem[]>(() =>
     createInitialReviewsFilters(),
@@ -956,8 +967,11 @@ export function ReviewsView() {
       const detail = (e as CustomEvent<{ action: ReviewsShortcutAction }>).detail;
       if (!detail) return;
       if (detail.action === "focus-search") {
-        searchInputRef.current?.focus();
-        searchInputRef.current?.select();
+        setSearchOpen(true);
+        queueMicrotask(() => {
+          searchInputRef.current?.focus();
+          searchInputRef.current?.select();
+        });
       }
       if (detail.action === "toggle-filters") {
         setFilterPanelOpen((open) => !open);
@@ -1039,18 +1053,55 @@ export function ReviewsView() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="relative h-[var(--button-height)] min-w-[200px] max-w-[280px]">
-              <Search className="pointer-events-none absolute left-2 top-1/2 size-[14px] -translate-y-1/2 text-[#303030] dark:text-[#8b92a5]" aria-hidden />
-              <input
-                ref={searchInputRef}
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search reviews"
-                className="h-full w-full rounded-[8px] border border-[#e5e9f0] bg-white py-0 pr-2 pl-8 text-[14px] text-[#212121] outline-none transition-colors placeholder:text-[#757575] focus:border-[#2552ED] focus:ring-1 focus:ring-[#2552ED] dark:border-[#333a47] dark:bg-[#262b35] dark:text-[#e4e4e4] dark:placeholder:text-[#8b92a5]"
-                aria-label="Search reviews"
+            {searchOpen ? (
+              <div className="relative h-[var(--button-height)] w-[240px]">
+                <Search className="pointer-events-none absolute left-2 top-1/2 size-[14px] -translate-y-1/2 text-[#303030] dark:text-[#8b92a5]" aria-hidden />
+                <input
+                  ref={searchInputRef}
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onBlur={() => {
+                    if (searchQuery === "") setSearchOpen(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setSearchQuery("");
+                      setSearchOpen(false);
+                    }
+                  }}
+                  autoFocus
+                  placeholder="Search reviews"
+                  className="h-full w-full rounded-[8px] border border-[#e5e9f0] bg-white py-0 pr-2 pl-8 text-[14px] text-[#212121] outline-none transition-colors placeholder:text-[#757575] focus:border-[#2552ED] focus:ring-1 focus:ring-[#2552ED] dark:border-[#333a47] dark:bg-[#262b35] dark:text-[#e4e4e4] dark:placeholder:text-[#8b92a5]"
+                  aria-label="Search reviews"
+                />
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                aria-label="Open search"
+                aria-expanded={false}
+                title="Search reviews"
+                onClick={() => setSearchOpen(true)}
+              >
+                <Search className="w-[14px] h-[14px] text-[#303030] dark:text-[#8b92a5]" aria-hidden />
+              </Button>
+            )}
+
+            {viewMode && onViewModeChange && (
+              <SegmentedToggle<ReviewsViewMode>
+                iconOnly
+                ariaLabel="Reviews view"
+                value={viewMode}
+                onChange={onViewModeChange}
+                items={[
+                  { value: "list",         label: "List view",         icon: <List className="size-[14px]" aria-hidden /> },
+                  { value: "conversation", label: "Conversation view", icon: <Columns2 className="size-[14px]" aria-hidden /> },
+                ]}
               />
-            </div>
+            )}
 
             {/* More options */}
             <Button variant="outline" size="icon">

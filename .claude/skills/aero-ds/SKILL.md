@@ -146,6 +146,49 @@ L2 column corners: `rounded-tl-lg rounded-bl-lg` (left side only). Main canvas: 
 
 ---
 
+### Resizable list / detail split panels
+
+For any `<list panel | detail panel>` layout where the user can drag to resize (inbox-style conversation view, reviews conversation view, etc.), reuse the inbox pattern — **do not** introduce `ResizablePanelGroup` / `ResizablePanel` / `ResizableHandle` from `ui/resizable`.
+
+Canonical pieces:
+
+- **Handle component:** `HorizontalResizeHandle` from `src/app/components/layout/HorizontalResizeHandle.tsx`
+  - Invisible 8px hit strip positioned at the left or right edge of a panel (`side="left" | "right"`), 2px highlight on hover/drag.
+  - Props: `onPointerDown`, `onDoubleClick`, `aria-label`, `aria-valuenow/min/max`.
+- **Width hook (per consumer):** each consumer defines a small hook in `src/app/hooks/` following the shape of `useInboxListPanelWidth.ts`. The hook owns: `STORAGE_KEY`, `*_DEFAULT`, `*_MIN`, `*_MAX`, `max*ListWidth(rowWidth)`, `clamp*ListWidth(w, rowWidth)`, `use*ListPanelWidth(rowWidth)` returning `{ width, setWidth, widthRef }`. sessionStorage for persistence.
+- **Pointer handler (inline in the view):** `onPointerDown` captures the pointer, attaches window-level `pointermove` / `pointerup` / `pointercancel`, writes the new width directly to the container element's `style.width` during drag, commits to state on release. `onDoubleClick` resets to the default. Use `listContainerRef.current?.parentElement?.clientWidth` for the available row width.
+
+Container pattern:
+
+```tsx
+<div className="flex-1 flex min-h-0 overflow-hidden">
+  <div ref={listContainerRef} className="relative flex shrink-0 flex-col" style={{ width: listWidth }}>
+    <HorizontalResizeHandle side="right" aria-label="Resize list" … onPointerDown={…} onDoubleClick={…} />
+    <ListPanel … />
+  </div>
+  <div className="flex-1 min-w-0">{/* detail */}</div>
+</div>
+```
+
+Reference implementations: `InboxView.v1.tsx` + `useInboxListPanelWidth.ts`, `ReviewsView.v2.tsx` + `useReviewsListPanelWidth.ts`.
+
+When a third consumer appears, consider lifting the shared pieces (hook skeleton + pointer handler) into a generic `useResizableListWidth(config)` helper in `src/app/hooks/`. Until then, mirror the existing per-consumer hook to keep storage keys and clamp rules explicit.
+
+---
+
+### Segmented toggles (mode/view switchers)
+
+For any two-or-more-option mode/view switcher (AI/Manual, List/Conversation, Day/Week/Month, etc.), use the canonical pill control:
+
+- **Component:** `SegmentedToggle` from `src/app/components/ui/segmented-toggle.tsx`
+- **Pattern:** soft gray pill container, active segment becomes a white card with a 1px shadow, inactive segments are muted text-only.
+- **Variants:** label mode (default) and `iconOnly` for compact toolbars.
+- **Do not** roll your own segmented control with custom borders, ring outlines, or filled-background icon buttons. If a Figma spec shows a different pattern, surface it before building so we can decide whether to update the canonical or keep the spec consistent.
+
+Reference call sites: `AgentsBuilderView.v1.tsx` (label mode, AI/Manual), `ReviewsView.v1.tsx` / `ReviewsView.v2.tsx` (icon-only, List/Conversation).
+
+---
+
 ### Copy-paste prompts
 
 **Pre-build analysis prompt** (paste this first with any screenshot or Figma URL — generates the design-specific mapping before any code is written):

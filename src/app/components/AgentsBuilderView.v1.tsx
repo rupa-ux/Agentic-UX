@@ -8,6 +8,7 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/app/components/ui/button";
 import { InlineSelectField } from "@/app/components/ui/inline-select-field";
+import { SegmentedToggle } from "@/app/components/ui/segmented-toggle";
 
 /* ═══════════════════════════════════════════
    Types
@@ -100,25 +101,15 @@ function ToolboxPanel({ mode, onModeChange }: { mode: BuilderMode; onModeChange:
     <div className="w-[280px] border-r border-[#e5e9f0] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] flex flex-col shrink-0 overflow-hidden">
       {/* Mode toggle */}
       <div className="px-4 pt-4 pb-3 shrink-0">
-        <div className="inline-flex bg-[#f0f1f5] dark:bg-[#262b35] rounded-full p-[2px]">
-          <button
-            onClick={() => onModeChange("ai")}
-            className={`flex items-center justify-center gap-1 px-3 py-[5px] rounded-full text-[12px] transition-all duration-200 ${
-              mode === "ai" ? "bg-white dark:bg-[#333a47] shadow-[0_1px_3px_rgba(0,0,0,0.08)] text-[#212121] dark:text-[#e4e4e4]" : "text-[#888] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#c0c6d4]"
-            }`}
-          >
-            <Sparkles className="w-3 h-3 text-[#6834B7]" />
-            AI
-          </button>
-          <button
-            onClick={() => onModeChange("manual")}
-            className={`flex items-center justify-center px-3 py-[5px] rounded-full text-[12px] transition-all duration-200 ${
-              mode === "manual" ? "bg-white dark:bg-[#333a47] shadow-[0_1px_3px_rgba(0,0,0,0.08)] text-[#212121] dark:text-[#e4e4e4]" : "text-[#888] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#c0c6d4]"
-            }`}
-          >
-            Manual
-          </button>
-        </div>
+        <SegmentedToggle<BuilderMode>
+          ariaLabel="Builder mode"
+          value={mode}
+          onChange={onModeChange}
+          items={[
+            { value: "ai",     label: "AI",     icon: <Sparkles className="w-3 h-3 text-[#6834B7]" aria-hidden /> },
+            { value: "manual", label: "Manual" },
+          ]}
+        />
       </div>
 
       {/* Search */}

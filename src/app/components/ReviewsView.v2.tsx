@@ -1,13 +1,19 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import {
   AlignJustify, AlignLeft, ArrowLeft, ChevronDown, ChevronLeft, ChevronRight,
-  ExternalLink, Filter, MessageCircle, Mic2, MoreVertical, Pencil, Search,
+  Columns2, ExternalLink, Filter, List, MessageCircle, Mic2, MoreVertical, Pencil, Search,
   Send, Settings2, Sparkles, SpellCheck, Star, LayoutTemplate,
 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
+import { HorizontalResizeHandle } from "@/app/components/layout/HorizontalResizeHandle";
 import {
-  ResizablePanelGroup, ResizablePanel, ResizableHandle,
-} from "@/app/components/ui/resizable";
+  clampReviewsListWidth,
+  maxReviewsListWidth,
+  REVIEWS_LIST_WIDTH_DEFAULT,
+  REVIEWS_LIST_WIDTH_MIN,
+  useReviewsListPanelWidth,
+} from "@/app/hooks/useReviewsListPanelWidth";
 import {
   Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle,
 } from "@/app/components/ui/dialog";
@@ -17,6 +23,8 @@ import {
   DropdownMenuSubContent, DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
 import { ReviewBody, formatReviewDateRelative } from "./ReviewsView.v1";
+import { SegmentedToggle } from "@/app/components/ui/segmented-toggle";
+import type { ReviewsViewMode } from "./ReviewsView";
 import svgPaths from "../../imports/svg-k7qrt1366a";
 import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 
@@ -1253,10 +1261,14 @@ function ReviewListPanel({
   reviews,
   selectedId,
   onSelect,
+  viewMode,
+  onViewModeChange,
 }: {
   reviews: Review[];
   selectedId: number;
   onSelect: (id: number) => void;
+  viewMode?: ReviewsViewMode;
+  onViewModeChange?: (mode: ReviewsViewMode) => void;
 }) {
   const [search, setSearch] = useState("");
 
@@ -1282,6 +1294,18 @@ function ReviewListPanel({
             </div>
           </div>
           <div className="flex items-center gap-1">
+            {viewMode && onViewModeChange && (
+              <SegmentedToggle<ReviewsViewMode>
+                iconOnly
+                ariaLabel="Reviews view"
+                value={viewMode}
+                onChange={onViewModeChange}
+                items={[
+                  { value: "list",         label: "List view",         icon: <List className="size-[14px]" aria-hidden /> },
+                  { value: "conversation", label: "Conversation view", icon: <Columns2 className="size-[14px]" aria-hidden /> },
+                ]}
+              />
+            )}
             <button type="button" title="Filter" className="flex size-7 items-center justify-center rounded-md hover:bg-muted text-muted-foreground">
               <Filter className="size-[13px]" />
             </button>
@@ -1365,7 +1389,13 @@ function ReviewListPanel({
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
-export function ReviewsView() {
+export function ReviewsViewConversation({
+  viewMode,
+  onViewModeChange,
+}: {
+  viewMode?: ReviewsViewMode;
+  onViewModeChange?: (mode: ReviewsViewMode) => void;
+} = {}) {
   const [selectedId, setSelectedId] = useState<number>(mockReviews[0].id);
   const [rightPaneMode, setRightPaneMode] = useState<"detail" | "conversation">("detail");
   const [replyEditing, setReplyEditing] = useState(false);
@@ -1382,37 +1412,119 @@ export function ReviewsView() {
     setReplyEditing(false);
   };
 
+  /* ── Resizable list panel (same pattern as InboxView) ── */
+  const listContainerRef = useRef<HTMLDivElement>(null);
+  const resizeDraggingRef = useRef(false);
+  const resizeStartXRef = useRef(0);
+  const resizeStartWRef = useRef(0);
+
+  const rowWidth =
+    listContainerRef.current?.parentElement?.clientWidth ?? 1200;
+  const { width: listWidth, setWidth: setListWidth, widthRef: listWidthRef } =
+    useReviewsListPanelWidth(rowWidth);
+  const maxListW = maxReviewsListWidth(rowWidth);
+
+  const onResizePointerDown = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      resizeDraggingRef.current = true;
+      resizeStartXRef.current = e.clientX;
+      resizeStartWRef.current = listWidthRef.current;
+      e.currentTarget.setPointerCapture(e.pointerId);
+
+      const onMove = (ev: PointerEvent) => {
+        if (!resizeDraggingRef.current) return;
+        const delta = ev.clientX - resizeStartXRef.current;
+        const rW =
+          listContainerRef.current?.parentElement?.clientWidth ?? rowWidth;
+        const next = clampReviewsListWidth(resizeStartWRef.current + delta, rW);
+        listWidthRef.current = next;
+        const el = listContainerRef.current;
+        if (el) el.style.width = `${next}px`;
+      };
+
+      const onUp = (ev: PointerEvent) => {
+        resizeDraggingRef.current = false;
+        try {
+          e.currentTarget.releasePointerCapture(ev.pointerId);
+        } catch {
+          /* ignore */
+        }
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onUp);
+        const rW =
+          listContainerRef.current?.parentElement?.clientWidth ?? rowWidth;
+        const finalW = clampReviewsListWidth(listWidthRef.current, rW);
+        listWidthRef.current = finalW;
+        setListWidth(finalW);
+      };
+
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+    },
+    [rowWidth, setListWidth, listWidthRef]
+  );
+
+  const onResizeHandleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const rW =
+        listContainerRef.current?.parentElement?.clientWidth ?? rowWidth;
+      const target = clampReviewsListWidth(REVIEWS_LIST_WIDTH_DEFAULT, rW);
+      listWidthRef.current = target;
+      setListWidth(target);
+      const el = listContainerRef.current;
+      if (el) el.style.width = `${target}px`;
+    },
+    [rowWidth, setListWidth, listWidthRef]
+  );
+
   return (
     <div className="flex-1 flex min-h-0 overflow-hidden bg-white dark:bg-[#1e2229]">
-      <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
-        <ResizablePanel defaultSize={35} minSize={22} maxSize={50}>
-          <ReviewListPanel
-            reviews={mockReviews}
-            selectedId={selectedId}
-            onSelect={handleSelectReview}
+      <div
+        ref={listContainerRef}
+        className="relative flex shrink-0 flex-col min-h-0"
+        style={{ width: listWidth }}
+      >
+        <HorizontalResizeHandle
+          side="right"
+          aria-label="Resize review list"
+          aria-valuenow={Math.round(listWidth)}
+          aria-valuemin={REVIEWS_LIST_WIDTH_MIN}
+          aria-valuemax={Math.round(maxListW)}
+          onPointerDown={onResizePointerDown}
+          onDoubleClick={onResizeHandleDoubleClick}
+        />
+        <ReviewListPanel
+          reviews={mockReviews}
+          selectedId={selectedId}
+          onSelect={handleSelectReview}
+          viewMode={viewMode}
+          onViewModeChange={onViewModeChange}
+        />
+      </div>
+
+      <div className="flex-1 min-w-0 min-h-0">
+        {rightPaneMode === "detail" ? (
+          <ReviewDetailPanel
+            review={selectedReview}
+            replyEditing={replyEditing}
+            onEditReply={() => setReplyEditing(true)}
+            onCancelReply={() => setReplyEditing(false)}
+            onPostReply={handlePostReply}
+            onOpenConversation={() => { setRightPaneMode("conversation"); setReplyEditing(false); }}
           />
-        </ResizablePanel>
-
-        <ResizableHandle withHandle />
-
-        <ResizablePanel defaultSize={65} minSize={50}>
-          {rightPaneMode === "detail" ? (
-            <ReviewDetailPanel
-              review={selectedReview}
-              replyEditing={replyEditing}
-              onEditReply={() => setReplyEditing(true)}
-              onCancelReply={() => setReplyEditing(false)}
-              onPostReply={handlePostReply}
-              onOpenConversation={() => { setRightPaneMode("conversation"); setReplyEditing(false); }}
-            />
-          ) : (
-            <ReviewConversationPanel
-              review={selectedReview}
-              onBack={() => setRightPaneMode("detail")}
-            />
-          )}
-        </ResizablePanel>
-      </ResizablePanelGroup>
+        ) : (
+          <ReviewConversationPanel
+            review={selectedReview}
+            onBack={() => setRightPaneMode("detail")}
+          />
+        )}
+      </div>
     </div>
   );
 }
