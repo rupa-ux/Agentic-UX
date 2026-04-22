@@ -647,8 +647,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
           {sidebarSections.map(renderPanelSection)}
         </div>
 
-        {/* Footer row — keep the same order as collapsed: Settings, Notifications, Profile */}
-        <div className="flex flex-row items-center gap-3 pb-3 pt-2 px-[12px] shrink-0">
+        {/* Footer stack — keep the same order as collapsed: Settings, Notifications, Profile */}
+        <div className="flex flex-col items-start gap-2 pb-3 pt-2 px-[12px] shrink-0">
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
