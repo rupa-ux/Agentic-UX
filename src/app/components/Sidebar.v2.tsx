@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
 import { usePersistedState } from "@/app/hooks/usePersistedState";
 import {
-  ChevronDown, ChevronUp, ChevronRight, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Plus, Info, MessageSquare,
+  ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Plus, Info, MessageSquare,
 } from "lucide-react";
 import {
   FigmaIconBirdAI, FigmaIconOverview, FigmaIconInbox, FigmaIconListings,
@@ -59,7 +59,6 @@ type SidebarNavItem = {
   label: string;
   Icon: React.ElementType;
   view: AppView;
-  hasChildren?: boolean;
 };
 
 type SidebarNavSection = {
@@ -77,12 +76,11 @@ const sidebarSections: SidebarNavSection[] = [
   {
     title: "Marketing",
     items: [
-      { label: "Reviews", Icon: FigmaIconReviews, view: "reviews", hasChildren: true },
+      { label: "Reviews", Icon: FigmaIconReviews, view: "reviews" },
       { label: "Listings", Icon: FigmaIconListings, view: "listings" },
       { label: "Social", Icon: FigmaIconSocial, view: "social" },
       { label: "Referrals", Icon: FigmaIconReferrals, view: "referrals" },
       { label: "Marketing automations", Icon: FigmaIconCampaigns, view: "campaigns" },
-      { label: "Campaigns", Icon: FigmaIconCampaigns, view: "campaigns" },
     ],
   },
   {
@@ -323,9 +321,6 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
         >
           {item.label}
         </span>
-        {item.hasChildren && (
-          <ChevronRight className="mr-1 size-[14px] text-[#999] dark:text-[#6b7280] shrink-0" />
-        )}
       </button>
     );
   };

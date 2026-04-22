@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Settings, MessageSquare } from "lucide-react";
+import { ChevronLeft, Settings, MessageSquare } from "lucide-react";
 import {
   FigmaIconBirdAI, FigmaIconOverview, FigmaIconInbox, FigmaIconListings,
   FigmaIconReviews, FigmaIconReferrals, FigmaIconAppointments,
@@ -34,7 +34,6 @@ type NavItem = {
   Icon: React.ElementType;
   /** Optional right-side affordances shown in the expanded panel only. */
   badge?: NavBadge;
-  hasChildren?: boolean;
 };
 
 type NavSection = {
@@ -53,18 +52,17 @@ const DEFAULT_SECTIONS: NavSection[] = [
   {
     title: "Marketing",
     items: [
-      { label: "Reviews", Icon: FigmaIconReviews, hasChildren: true },
+      { label: "Reviews", Icon: FigmaIconReviews },
       { label: "Listings", Icon: FigmaIconListings },
       { label: "Social", Icon: FigmaIconSocial },
       { label: "Referrals", Icon: FigmaIconReferrals },
       { label: "Marketing automations", Icon: FigmaIconCampaigns },
-      { label: "Campaigns", Icon: FigmaIconCampaigns },
     ],
   },
   {
     title: "Operations",
     items: [
-      { label: "Inbox", Icon: FigmaIconInbox, badge: { kind: "dot", tone: "blue" }, hasChildren: true },
+      { label: "Inbox", Icon: FigmaIconInbox, badge: { kind: "dot", tone: "blue" } },
       { label: "Appointments", Icon: FigmaIconAppointments },
       { label: "Chatbot", Icon: MessageSquare },
       { label: "Reports", Icon: FigmaIconReports },
@@ -203,9 +201,6 @@ export function SidebarSectioned({
           <span className="mr-2 inline-flex items-center px-[6px] py-[1px] text-[10px] font-medium rounded-md bg-[#d1f4d9] text-[#1f7a2f] dark:bg-[#1f4a28] dark:text-[#6be78b]">
             {item.badge.text}
           </span>
-        )}
-        {item.hasChildren && (
-          <ChevronRight className="mr-1 size-[14px] text-[#999] dark:text-[#6b7280] shrink-0" />
         )}
       </button>
     );
