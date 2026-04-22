@@ -648,8 +648,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
         </div>
 
         {/* Footer stack — keep the same order as collapsed: Settings, Notifications, Profile */}
-        <div className="flex flex-col items-start gap-2 pb-3 pt-2 px-[12px] shrink-0">
-          <div className="flex items-center gap-2 shrink-0">
+        <div className="flex w-full flex-col gap-2 pb-3 pt-2 px-[12px] shrink-0">
+          <div className="grid w-full grid-cols-[32px_minmax(0,1fr)] items-center gap-2">
             <button
               type="button"
               aria-label="Settings"
@@ -668,14 +668,14 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
             </span>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="grid w-full grid-cols-[32px_minmax(0,1fr)] items-center gap-2">
             <MonitorNotificationsTrigger />
-            <span className="text-[13px] font-normal leading-none text-[#212121] dark:text-[#e4e4e4] whitespace-nowrap">
+            <span className="min-w-0 truncate text-[13px] font-normal leading-none text-[#212121] dark:text-[#e4e4e4]">
               Notifications
             </span>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0 min-w-0">
+          <div className="grid w-full grid-cols-[32px_minmax(0,1fr)] items-center gap-2">
             <Button
               type="button"
               variant="ghost"
