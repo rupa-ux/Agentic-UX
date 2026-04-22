@@ -658,7 +658,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
           <button
             type="button"
             aria-label="Settings"
-            className="group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-white/35 hover:bg-white/60 dark:bg-white/5 dark:hover:bg-white/10 active:bg-white/75 dark:active:bg-white/15 backdrop-blur-md focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1"
+            className="group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail"
           >
             <Settings
               width={L1_STRIP_ICON_SIZE}
