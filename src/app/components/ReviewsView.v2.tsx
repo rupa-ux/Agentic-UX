@@ -1302,7 +1302,7 @@ function ReviewListPanel({
                 onChange={onViewModeChange}
                 items={[
                   { value: "list",         label: "List view",         icon: <List className="size-[14px]" aria-hidden /> },
-                  { value: "conversation", label: "Conversation view", icon: <Columns2 className="size-[14px]" aria-hidden /> },
+                  { value: "conversation", label: "Split view",        icon: <Columns2 className="size-[14px]" aria-hidden /> },
                 ]}
               />
             )}
