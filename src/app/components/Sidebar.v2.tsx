@@ -364,7 +364,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
       </div>
 
       {/* Icon buttons */}
-      <div className="flex flex-col items-center pb-[8px] pt-0 gap-[12px] flex-1 overflow-y-auto overflow-x-hidden px-[12px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex flex-col items-center pb-[8px] pt-0 gap-[18px] flex-1 overflow-y-auto overflow-x-hidden px-[12px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {sidebarSections.map(renderRailSection)}
       </div>
 
