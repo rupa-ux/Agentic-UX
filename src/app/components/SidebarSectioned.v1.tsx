@@ -87,6 +87,7 @@ interface SidebarSectionedProps {
   activeLabel?: string;
   onActiveChange?: (label: string) => void;
   iconSize?: number;
+  defaultExpanded?: boolean;
 }
 
 export function SidebarSectioned({
@@ -94,13 +95,14 @@ export function SidebarSectioned({
   activeLabel,
   onActiveChange,
   iconSize = L1_STRIP_ICON_SIZE,
+  defaultExpanded = false,
 }: SidebarSectionedProps) {
   const [internalActive, setInternalActive] = useState<string>(activeLabel ?? "Agents");
   const current = activeLabel ?? internalActive;
   const setCurrent = onActiveChange ?? setInternalActive;
 
   const [hoverExpandEnabled] = useSidebarHoverExpand();
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const openTimerRef = useRef<number | null>(null);
   const closeTimerRef = useRef<number | null>(null);
 
@@ -247,14 +249,14 @@ export function SidebarSectioned({
           onMouseEnter={onEnter}
           onMouseLeave={onLeave}
           aria-hidden={!expanded}
-          className={`absolute top-2 bottom-2 left-2 w-[272px] flex flex-col rounded-lg shadow-xl bg-white dark:bg-[#1e2229] z-30 transition-[opacity,transform] duration-200 ease-out ${
+          className={`absolute top-2 bottom-2 left-2 w-[272px] flex flex-col rounded-lg shadow-xl bg-[#f4f6fb] dark:bg-[#1e2229] z-30 transition-[opacity,transform] duration-200 ease-out ${
             expanded
               ? "opacity-100 translate-x-0 pointer-events-auto"
               : "opacity-0 -translate-x-2 pointer-events-none"
           }`}
         >
           {/* Header — logo + Birdeye + collapse chevron */}
-          <div className="h-[48px] pl-[17px] pr-3 flex items-center gap-2 shrink-0 border-b border-[#f0f1f5] dark:border-[#2e3340]">
+          <div className="h-[48px] pl-[17px] pr-3 flex items-center gap-2 shrink-0 border-b border-[#dfe3ec] dark:border-[#2e3340]">
             <svg width="17.55" height="16.875" viewBox="0 0 19.5 18.75" fill="none" className="shrink-0">
               <path clipRule="evenodd" d={svgPaths.p23fcc000} fill="#2552ED" fillRule="evenodd" />
             </svg>
@@ -262,7 +264,7 @@ export function SidebarSectioned({
             <button
               type="button"
               aria-label="Collapse sidebar"
-              className="flex w-[24px] h-[24px] items-center justify-center rounded-md text-[#999] dark:text-[#6b7280] hover:bg-[#f3f4f6] dark:hover:bg-[#262b35]"
+              className="flex w-[24px] h-[24px] items-center justify-center rounded-md text-[#8b92a5] dark:text-[#6b7280] hover:bg-[#e8edf7] dark:hover:bg-[#262b35]"
               onClick={() => setExpanded(false)}
             >
               <ChevronLeft className="size-[14px]" />
@@ -274,23 +276,23 @@ export function SidebarSectioned({
             {sections.map((sec, i) => (
               <div key={sec.title ?? `top-${i}`} className="flex flex-col">
                 {sec.title && (
-                  <div className="px-2 pt-3 pb-1 text-[10px] uppercase tracking-[0.6px] text-[#8b92a5] dark:text-[#6b7280]">
+                  <div className="px-2 pt-3 pb-1 text-[10px] uppercase tracking-[0.6px] text-[#9298a8] dark:text-[#6b7280]">
                     {sec.title}
                   </div>
                 )}
-                {!sec.title && i > 0 && <div className="my-1 h-px bg-[#f0f1f5] dark:bg-[#2e3340]" />}
+                {!sec.title && i > 0 && <div className="my-1 h-px bg-[#dfe3ec] dark:bg-[#2e3340]" />}
                 <div className="flex flex-col gap-[2px]">
                   {sec.items.map((item) => panelButton(item, `panel-${i}-`))}
                 </div>
                 {i < sections.length - 1 && sec.title && (
-                  <div className="my-2 h-px bg-[#f0f1f5] dark:bg-[#2e3340]" />
+                  <div className="my-2 h-px bg-[#dfe3ec] dark:bg-[#2e3340]" />
                 )}
               </div>
             ))}
           </div>
 
           {/* Footer: Settings */}
-          <div className="px-[12px] py-2 border-t border-[#f0f1f5] dark:border-[#2e3340] shrink-0">
+          <div className="px-[12px] py-2 border-t border-[#dfe3ec] dark:border-[#2e3340] shrink-0">
             {panelButton(FOOTER_ITEM, "panel-footer-")}
           </div>
         </div>

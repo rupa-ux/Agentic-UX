@@ -175,10 +175,10 @@ export const SidebarCombined: Story = {
 };
 
 export const SidebarSectionedStory: Story = {
-  name: "Sidebar / Sectioned",
+  name: "Sidebar / Sectioned (Expanded)",
   render: () => (
     <SidebarFrame>
-      <SidebarSectioned />
+      <SidebarSectioned defaultExpanded />
     </SidebarFrame>
   ),
 };
