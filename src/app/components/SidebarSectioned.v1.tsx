@@ -224,7 +224,7 @@ export function SidebarSectioned({
           </div>
 
           {/* Sections as grouped icon list */}
-          <div className="flex flex-col items-center pb-2 pt-0 flex-1 overflow-y-auto overflow-x-hidden px-[12px] gap-[8px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex flex-col items-center pb-2 pt-0 flex-1 overflow-y-auto overflow-x-hidden px-[12px] gap-[12px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {sections.map((sec, i) => (
               <div key={sec.title ?? `top-${i}`} className="flex flex-col items-center gap-[2px] w-full">
                 {sec.items.map((item) => railButton(item, `rail-${i}-`))}
