@@ -339,13 +339,9 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
           {section.title}
         </div>
       )}
-      {!section.title && index > 0 && <div className="my-1 h-px bg-[#f0f1f5] dark:bg-[#2e3340]" />}
       <div className="flex flex-col gap-[2px]">
         {section.items.map((item) => renderPanelButton(item))}
       </div>
-      {index < sidebarSections.length - 1 && section.title && (
-        <div className="my-2 h-px bg-[#f0f1f5] dark:bg-[#2e3340]" />
-      )}
     </div>
   );
 
@@ -561,7 +557,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                   {/* ─── Appearance sub-panel ─── */}
                   <div className="w-full shrink-0">
                     {/* Header row */}
-                    <div className="flex items-center gap-2 border-b border-[#f0f0f0] px-4 py-2 dark:border-[#333a47]">
+                    <div className="flex items-center gap-2 px-4 py-2">
                       <Button
                         type="button"
                         variant="outline"

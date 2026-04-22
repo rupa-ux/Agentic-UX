@@ -251,7 +251,7 @@ export function SidebarSectioned({
           }`}
         >
           {/* Header — logo + Birdeye + collapse chevron */}
-          <div className="h-[48px] pl-[17px] pr-3 flex items-center gap-2 shrink-0 border-b border-[#dfe3ec] dark:border-[#2e3340]">
+          <div className="h-[48px] pl-[17px] pr-3 flex items-center gap-2 shrink-0">
             <svg width="17.55" height="16.875" viewBox="0 0 19.5 18.75" fill="none" className="shrink-0">
               <path clipRule="evenodd" d={svgPaths.p23fcc000} fill="#2552ED" fillRule="evenodd" />
             </svg>
@@ -275,19 +275,15 @@ export function SidebarSectioned({
                     {sec.title}
                   </div>
                 )}
-                {!sec.title && i > 0 && <div className="my-1 h-px bg-[#dfe3ec] dark:bg-[#2e3340]" />}
                 <div className="flex flex-col gap-[2px]">
                   {sec.items.map((item) => panelButton(item, `panel-${i}-`))}
                 </div>
-                {i < sections.length - 1 && sec.title && (
-                  <div className="my-2 h-px bg-[#dfe3ec] dark:bg-[#2e3340]" />
-                )}
               </div>
             ))}
           </div>
 
           {/* Footer: Settings */}
-          <div className="px-[12px] py-2 border-t border-[#dfe3ec] dark:border-[#2e3340] shrink-0">
+          <div className="px-[12px] py-2 shrink-0">
             {panelButton(FOOTER_ITEM, "panel-footer-")}
           </div>
         </div>
