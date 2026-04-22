@@ -182,6 +182,9 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
   const [avatarUrl, setAvatarUrl] = useState<string>(() => {
     return localStorage.getItem("profile_avatar") || DEFAULT_AVATAR;
   });
+  const hoverExpandPreferenceLabel = hoverExpandEnabled
+    ? "Collapse sidebar on hover"
+    : "Expand sidebar on hover";
 
   // Sync activeIcon with currentView (layout effect avoids wrong rail highlight on first paint)
   useLayoutEffect(() => {
@@ -523,7 +526,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                         className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06] flex items-center justify-between gap-3"
                         aria-pressed={hoverExpandEnabled}
                       >
-                        <span>Expand sidebar on hover</span>
+                        <span>{hoverExpandPreferenceLabel}</span>
                       </button>
                       <button
                         type="button"
