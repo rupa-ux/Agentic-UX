@@ -524,9 +524,6 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                         aria-pressed={hoverExpandEnabled}
                       >
                         <span>Expand sidebar on hover</span>
-                        <span className={`text-[11px] shrink-0 ${hoverExpandEnabled ? "text-[#2552ED] dark:text-[#6b9bff]" : "text-[#999] dark:text-[#777]"}`}>
-                          {hoverExpandEnabled ? "On" : "Off"}
-                        </span>
                       </button>
                       <button
                         type="button"
