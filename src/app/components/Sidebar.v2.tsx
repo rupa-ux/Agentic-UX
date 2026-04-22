@@ -98,7 +98,6 @@ const sidebarSections: SidebarNavSection[] = [
     items: [
       { label: "Ticketing", Icon: FigmaIconTicketing, view: "ticketing" },
       { label: "Surveys", Icon: FigmaIconSurveys, view: "surveys" },
-      { label: "Settings", Icon: Settings, view: "agent-config" },
     ],
   },
 ];
