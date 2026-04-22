@@ -1,4 +1,11 @@
-import { useState, useRef, useEffect, useCallback, type RefObject } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  type RefObject,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { Button } from "@/app/components/ui/button";
 import {
   INBOX_SHORTCUT_EVENT,
@@ -23,6 +30,14 @@ import {
 } from "lucide-react";
 import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 import { HOVER } from "./L2NavLayout";
+import { HorizontalResizeHandle } from "@/app/components/layout/HorizontalResizeHandle";
+import {
+  clampInboxListWidth,
+  INBOX_LIST_WIDTH_DEFAULT,
+  INBOX_LIST_WIDTH_MIN,
+  maxInboxListWidth,
+  useInboxListPanelWidth,
+} from "@/app/hooks/useInboxListPanelWidth";
 
 /* ─── Types ─── */
 interface Conversation {
@@ -860,6 +875,77 @@ export function InboxView() {
   const listShimmerClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const composeTextareaRef = useRef<HTMLTextAreaElement>(null);
 
+  /* ── Resizable conversation list ── */
+  const listContainerRef = useRef<HTMLDivElement>(null);
+  const resizeDraggingRef = useRef(false);
+  const resizeStartXRef = useRef(0);
+  const resizeStartWRef = useRef(0);
+
+  const rowWidth =
+    listContainerRef.current?.parentElement?.clientWidth ?? 1200;
+  const { width: listWidth, setWidth: setListWidth, widthRef: listWidthRef } =
+    useInboxListPanelWidth(rowWidth);
+  const maxListW = maxInboxListWidth(rowWidth);
+
+  const onResizePointerDown = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      resizeDraggingRef.current = true;
+      resizeStartXRef.current = e.clientX;
+      resizeStartWRef.current = listWidthRef.current;
+      e.currentTarget.setPointerCapture(e.pointerId);
+
+      const onMove = (ev: PointerEvent) => {
+        if (!resizeDraggingRef.current) return;
+        const delta = ev.clientX - resizeStartXRef.current;
+        const rW =
+          listContainerRef.current?.parentElement?.clientWidth ?? rowWidth;
+        const next = clampInboxListWidth(resizeStartWRef.current + delta, rW);
+        listWidthRef.current = next;
+        const el = listContainerRef.current;
+        if (el) el.style.width = `${next}px`;
+      };
+
+      const onUp = (ev: PointerEvent) => {
+        resizeDraggingRef.current = false;
+        try {
+          e.currentTarget.releasePointerCapture(ev.pointerId);
+        } catch {
+          /* ignore */
+        }
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onUp);
+        const rW =
+          listContainerRef.current?.parentElement?.clientWidth ?? rowWidth;
+        const finalW = clampInboxListWidth(listWidthRef.current, rW);
+        listWidthRef.current = finalW;
+        setListWidth(finalW);
+      };
+
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+    },
+    [rowWidth, setListWidth, listWidthRef]
+  );
+
+  const onResizeHandleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const rW =
+        listContainerRef.current?.parentElement?.clientWidth ?? rowWidth;
+      const target = clampInboxListWidth(INBOX_LIST_WIDTH_DEFAULT, rW);
+      listWidthRef.current = target;
+      setListWidth(target);
+      const el = listContainerRef.current;
+      if (el) el.style.width = `${target}px`;
+    },
+    [rowWidth, setListWidth, listWidthRef]
+  );
+
   const selectConversation = useCallback((id: string) => {
     setDetailLoading(true);
     setSelectedId(id);
@@ -911,8 +997,21 @@ export function InboxView() {
 
   return (
     <div className="flex-1 flex min-h-0 overflow-hidden bg-[#f8f9fa] dark:bg-[#13161b] transition-colors duration-300 ">
-      {/* ═══ CENTER-LEFT: Conversation list ═══ */}
-      <div className="flex w-[360px] shrink-0 flex-col border-l border-r border-[#eaeaea] bg-white transition-colors duration-300 dark:border-[#333a47] dark:bg-[#1e2229]">
+      {/* ═══ CENTER-LEFT: Conversation list (resizable) ═══ */}
+      <div
+        ref={listContainerRef}
+        className="relative flex shrink-0 flex-col border-l border-r border-[#eaeaea] bg-white transition-colors duration-300 dark:border-[#333a47] dark:bg-[#1e2229]"
+        style={{ width: listWidth }}
+      >
+        <HorizontalResizeHandle
+          side="right"
+          aria-label="Resize conversation list"
+          aria-valuenow={Math.round(listWidth)}
+          aria-valuemin={INBOX_LIST_WIDTH_MIN}
+          aria-valuemax={Math.round(maxListW)}
+          onPointerDown={onResizePointerDown}
+          onDoubleClick={onResizeHandleDoubleClick}
+        />
         {/* List header — same left rail + horizontal rhythm as conversation rows; icons align with title row */}
         <div className="shrink-0 px-4 pt-4 pb-2">
           <div className="flex flex-col gap-1">

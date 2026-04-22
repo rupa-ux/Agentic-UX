@@ -5,6 +5,8 @@ import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent }
 export type HorizontalResizeHandleProps = {
   onPointerDown: (e: ReactPointerEvent<HTMLDivElement>) => void;
   onDoubleClick?: (e: ReactMouseEvent<HTMLDivElement>) => void;
+  /** Which edge of the parent the handle sits on. Default "left". */
+  side?: "left" | "right";
   "aria-label": string;
   "aria-valuenow"?: number;
   "aria-valuemin"?: number;
@@ -18,11 +20,13 @@ export type HorizontalResizeHandleProps = {
 export function HorizontalResizeHandle({
   onPointerDown,
   onDoubleClick,
+  side = "left",
   "aria-label": ariaLabel,
   "aria-valuenow": valueNow,
   "aria-valuemin": valueMin,
   "aria-valuemax": valueMax,
 }: HorizontalResizeHandleProps) {
+  const posClass = side === "left" ? "-left-[3px]" : "-right-[3px]";
   return (
     <div
       role="separator"
@@ -31,7 +35,7 @@ export function HorizontalResizeHandle({
       aria-valuenow={valueNow}
       aria-valuemin={valueMin}
       aria-valuemax={valueMax}
-      className="group absolute inset-y-0 -left-[3px] z-10 w-[8px] cursor-col-resize touch-none select-none"
+      className={`group absolute inset-y-0 ${posClass} z-10 w-[8px] cursor-col-resize touch-none select-none`}
       onPointerDown={onPointerDown}
       onDoubleClick={onDoubleClick}
     >
