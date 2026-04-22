@@ -243,7 +243,7 @@ export function SidebarSectioned({
           onMouseEnter={onEnter}
           onMouseLeave={onLeave}
           aria-hidden={!expanded}
-          className={`absolute top-2 bottom-2 left-2 w-[272px] flex flex-col rounded-lg shadow-xl bg-[#f4f6fb] dark:bg-[#1e2229] z-30 transition-[opacity,transform] duration-200 ease-out ${
+          className={`absolute top-2 bottom-2 left-2 w-[272px] flex flex-col rounded-[20px] border border-white/45 bg-white/70 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_18px_60px_rgba(17,24,39,0.14)] dark:border-white/10 dark:bg-[#151922]/72 z-30 transition-[opacity,transform] duration-200 ease-out ${
             expanded
               ? "opacity-100 translate-x-0 pointer-events-auto"
               : "opacity-0 -translate-x-2 pointer-events-none"
@@ -258,7 +258,7 @@ export function SidebarSectioned({
             <button
               type="button"
               aria-label="Collapse sidebar"
-              className="flex w-[24px] h-[24px] items-center justify-center rounded-md text-[#8b92a5] dark:text-[#6b7280] hover:bg-[#e8edf7] dark:hover:bg-[#262b35]"
+              className="flex w-[24px] h-[24px] items-center justify-center rounded-md text-[#8b92a5] dark:text-[#6b7280] hover:bg-white/55 dark:hover:bg-white/10"
               onClick={() => setExpanded(false)}
             >
               <ChevronLeft className="size-[14px]" />

@@ -632,7 +632,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
         onMouseEnter={handleRailEnter}
         onMouseLeave={handleRailLeave}
         aria-hidden={!expanded}
-        className={`absolute top-2 bottom-2 left-2 w-[272px] flex flex-col rounded-lg shadow-xl bg-white dark:bg-[#1e2229] z-30 transition-[opacity,transform] duration-200 ease-out ${
+        className={`absolute top-2 bottom-2 left-2 w-[272px] flex flex-col rounded-[20px] border border-white/45 bg-white/70 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_18px_60px_rgba(17,24,39,0.14)] dark:border-white/10 dark:bg-[#151922]/72 z-30 transition-[opacity,transform] duration-200 ease-out ${
           expanded
             ? "opacity-100 translate-x-0 pointer-events-auto"
             : "opacity-0 -translate-x-2 pointer-events-none"
@@ -658,7 +658,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
           <button
             type="button"
             aria-label="Settings"
-            className="group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent hover:bg-[#f3f4f6] dark:hover:bg-[#282e3a] active:bg-[#e5e7eb] dark:active:bg-[#313845] focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1"
+            className="group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-white/35 hover:bg-white/60 dark:bg-white/5 dark:hover:bg-white/10 active:bg-white/75 dark:active:bg-white/15 backdrop-blur-md focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1"
           >
             <Settings
               width={L1_STRIP_ICON_SIZE}
