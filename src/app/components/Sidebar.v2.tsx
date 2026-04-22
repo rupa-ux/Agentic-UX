@@ -14,6 +14,7 @@ import type { AppView } from "../App";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent } from "@/app/components/ui/card";
 import { Progress } from "@/app/components/ui/progress";
+import { Switch } from "@/app/components/ui/switch";
 import { APP_SHELL_RAIL_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
 import { FLOATING_PANEL_SURFACE_CLASSNAME } from "@/app/components/ui/floatingPanelSurface";
 import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "./l1StripIconTokens";
@@ -182,10 +183,6 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
   const [avatarUrl, setAvatarUrl] = useState<string>(() => {
     return localStorage.getItem("profile_avatar") || DEFAULT_AVATAR;
   });
-  const hoverExpandPreferenceLabel = hoverExpandEnabled
-    ? "Collapse sidebar on hover"
-    : "Expand sidebar on hover";
-
   // Sync activeIcon with currentView (layout effect avoids wrong rail highlight on first paint)
   useLayoutEffect(() => {
     if (currentView === "business-overview") setActiveIcon("Overview");
@@ -520,14 +517,14 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                           Keyboard shortcuts
                         </button>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => setHoverExpandEnabled(!hoverExpandEnabled)}
-                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06] flex items-center justify-between gap-3"
-                        aria-pressed={hoverExpandEnabled}
-                      >
-                        <span>{hoverExpandPreferenceLabel}</span>
-                      </button>
+                      <div className="w-full rounded-lg px-3 py-2 text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06] flex items-center justify-between gap-3">
+                        <span>Expand sidebar on hover</span>
+                        <Switch
+                          checked={hoverExpandEnabled}
+                          onCheckedChange={setHoverExpandEnabled}
+                          aria-label="Expand sidebar on hover"
+                        />
+                      </div>
                       <button
                         type="button"
                         onClick={() => setShowAppearance(true)}
