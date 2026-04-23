@@ -40,3 +40,12 @@ export const WithActions: Story = {
     ),
   },
 };
+
+/** Same tokens as default, but **`font-normal`** on the title (Profile performance dashboard). */
+export const RegularWeightTitle: Story = {
+  args: {
+    title: "Profile performance",
+    titleClassName: "font-normal",
+    description: "9 active · 58,386 total sent",
+  },
+};

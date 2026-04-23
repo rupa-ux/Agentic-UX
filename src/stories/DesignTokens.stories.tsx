@@ -1,5 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { APP_SHELL_BELOW_TOPBAR_CARD_CLASS } from "@/app/components/layout/appShellClasses";
+import {
+  MAIN_VIEW_PRIMARY_HEADING_CLASS,
+  MAIN_VIEW_SUBHEADING_CLASS,
+} from "@/app/components/layout/mainViewTitleClasses";
 
 const meta: Meta = {
   title: "Design System/Tokens",
@@ -8,7 +12,7 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          "Before adding new UI primitives or Storybook stories, read **Design System → Before you add a component** (checklist + Sheet/floating panels).",
+          "Before adding new UI primitives or Storybook stories, read **Design System → Before you add a component** (checklist + Sheet/floating panels). For stacked **page title + bordered widgets** (dashboard-style), see **Tokens → Main canvas + bordered widgets**.",
       },
     },
   },
@@ -791,6 +795,71 @@ export const ButtonSystem: Story = {
         </div>
       </div>
 
+    </div>
+  ),
+};
+
+/* ══════════════════════════════════════════════════════
+   MAIN CANVAS + BORDERED WIDGET BANDS
+   Reference: `Dashboard.v1.tsx` + `MainCanvasViewHeader`
+   ══════════════════════════════════════════════════════ */
+
+export const MainCanvasAndWidgetBands: Story = {
+  name: "Main canvas + bordered widgets",
+  render: () => (
+    <div className="flex max-w-3xl flex-col gap-8">
+      <div>
+        <SectionLabel>Main canvas + bordered widgets</SectionLabel>
+        <p className="mb-4 max-w-2xl text-sm text-muted-foreground">
+          For views that stack a <strong>page title</strong> (<code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">MainCanvasViewHeader</code>) and one or more{" "}
+          <strong>bordered cards</strong> (charts, KPI bands, tables), keep <strong>one horizontal band</strong> so the{" "}
+          <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">h1</code> and card titles share a vertical alignment line, then add{" "}
+          <strong>inner padding on the card</strong> so body content does not touch the border.
+        </p>
+        <ul className="mb-6 max-w-2xl list-disc space-y-2 pl-4 text-sm text-foreground">
+          <li>
+            <strong>Band (page + scroll body):</strong> use matching horizontal padding on the sticky header and the scrollable body below — e.g.{" "}
+            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">px-8</code> on both. On{" "}
+            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">MainCanvasViewHeader</code>, override the default{" "}
+            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">px-6</code> from{" "}
+            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">MAIN_VIEW_HEADER_BAND_CLASS</code> with{" "}
+            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">className=&quot;!px-8&quot;</code> when the view needs the wider gutter.
+          </li>
+          <li>
+            <strong>Titles:</strong> page title uses the same tokens as everywhere else —{" "}
+            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">MAIN_VIEW_PRIMARY_HEADING_CLASS</code> on the{" "}
+            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">h1</code> from{" "}
+            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">MainCanvasViewHeader</code>; card titles use the same class on an{" "}
+            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">h3</code> (or equivalent). Subcopy under card titles:{" "}
+            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">MAIN_VIEW_SUBHEADING_CLASS</code>.
+          </li>
+          <li>
+            <strong>Card shell:</strong> bordered surface — e.g. <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">rounded-lg border border-border bg-card</code> (or product hex borders where legacy). Card <strong>interior</strong>:{" "}
+            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">px-6</code> horizontal padding so headers, charts, and tables inset from the card edge (see **Elevation → Card** <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">px-6 py-4</code> pattern).
+          </li>
+          <li>
+            <strong>Column layout:</strong> use <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">flex-col items-stretch</code> on the card so header rows span full width (avoid <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">items-center</code>, which shrinks children and breaks alignment).
+          </li>
+        </ul>
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-border bg-background shadow-sm">
+        <div className="flex items-start justify-between border-b border-border px-8 py-5">
+          <h1 className={MAIN_VIEW_PRIMARY_HEADING_CLASS}>Profile performance</h1>
+          <span className="rounded-md border border-border bg-muted/40 px-2 py-1 text-xs text-muted-foreground">Actions</span>
+        </div>
+        <div className="flex flex-col gap-6 px-8 pb-8 pt-6">
+          <div className="flex flex-col items-stretch gap-4 rounded-lg border border-border bg-card px-6 py-5">
+            <div>
+              <h3 className={MAIN_VIEW_PRIMARY_HEADING_CLASS}>Performance summary</h3>
+              <p className={MAIN_VIEW_SUBHEADING_CLASS}>This month vs previous period</p>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              KPI row and chart would continue here — all insets are <code className="font-mono text-xs">px-6</code> from the card border.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   ),
 };
