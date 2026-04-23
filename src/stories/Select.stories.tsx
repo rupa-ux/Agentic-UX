@@ -19,7 +19,7 @@ const meta: Meta<typeof Select> = {
     docs: {
       description: {
         component:
-          "**SelectContent** uses the shared floating panel surface (`FLOATING_PANEL_SURFACE_CLASSNAME`) and `p-2` viewport padding so the list matches **Popover** / **DropdownMenu** elevation and corner radius.",
+          "**SelectContent** uses the shared floating panel surface (`FLOATING_PANEL_SURFACE_CLASSNAME`) and `p-2` viewport padding so the list matches **Popover** / **DropdownMenu** elevation, corner radius, and **borderless** shell (shadow only).",
       },
     },
   },

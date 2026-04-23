@@ -5,10 +5,10 @@ const STORAGE_KEY = "sidebar.hover-expand";
 function readStored(): boolean {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw === null) return true;
-    return raw !== "0";
+    if (raw === null) return false;
+    return raw === "1";
   } catch {
-    return true;
+    return false;
   }
 }
 

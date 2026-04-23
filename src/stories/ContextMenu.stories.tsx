@@ -19,6 +19,14 @@ import {
 const meta: Meta = {
   title: "UI/ContextMenu",
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "**ContextMenuContent** (and sub-content) use **`FLOATING_PANEL_SURFACE_CLASSNAME`**: **no** outer **border**; depth from shadow only, consistent with **Popover** / **DropdownMenu**.",
+      },
+    },
+  },
 };
 
 export default meta;

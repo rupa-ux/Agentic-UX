@@ -115,7 +115,15 @@ function SidebarFrame({ children }: { children: React.ReactNode }) {
 // ─── Storybook meta ───────────────────────────────────
 const meta: Meta = {
   title: "App/Sidebar",
-  parameters: { layout: "fullscreen" },
+  parameters: {
+    layout: "fullscreen",
+    docs: {
+      description: {
+        component:
+          "**IconStrip** (L1 rail) uses a **70 / 20 / 10** vertical split when the sectioned icon stack is taller than the nav region: fixed prefix icons, one **swap** slot, then **⋯ More**. The overflow list opens as an **anchored** panel (`FLOATING_PANEL_SURFACE_CLASSNAME`, `w-[260px]`, to the right of the rail)—same interaction family as the **profile** avatar menu, **not** a Radix **Sheet**.",
+      },
+    },
+  },
   argTypes: {
     currentView: {
       name: "Active view",

@@ -11,6 +11,14 @@ import { CalendarDays, MapPin, Star } from "lucide-react";
 const meta: Meta = {
   title: "UI/HoverCard",
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "**HoverCardContent** uses **`FLOATING_PANEL_SURFACE_CLASSNAME`** from [`floatingPanelSurface.ts`](src/app/components/ui/floatingPanelSurface.ts): large radius, **no** perimeter **border**, soft shadow (same shell as **Popover** / profile menus).",
+      },
+    },
+  },
 };
 
 export default meta;

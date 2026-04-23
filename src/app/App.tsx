@@ -1,6 +1,6 @@
 import {
-  IconStrip, L2NavPanel, ReviewsL2NavPanel, SocialL2NavPanel, SearchAIL2NavPanel,
-  ContactsL2NavPanel, AgentsL2NavPanel, ListingsL2NavPanel, TicketingL2NavPanel,
+  IconStrip, L2NavPanel, ReviewsL2NavPanel, SocialL2NavPanel,
+  ContactsL2NavPanel, ListingsL2NavPanel, TicketingL2NavPanel,
   CampaignsL2NavPanel, SurveysL2NavPanel, InsightsL2NavPanel, CompetitorsL2NavPanel,
   AppointmentsL2NavPanel, InboxL2NavPanel, MynaConversationsL2NavPanel,
 } from "./components/Sidebar";
@@ -15,7 +15,12 @@ import { InboxView } from "./components/InboxView";
 import { ComponentShowcase } from "./components/ComponentShowcase";
 import { ReviewsView } from "./components/ReviewsView";
 import { SocialView } from "./components/SocialView";
-import { SearchAIView } from "./components/SearchAIView";
+import { AppShellContentPlaceholder } from "./components/layout/AppShellContentPlaceholder";
+import { AppShellL2Placeholder } from "./components/layout/AppShellL2Placeholder";
+import {
+  birdAiShellShowsL2Placeholder,
+  birdAiShellShowsMainPlaceholder,
+} from "./components/layout/birdAiShellRoutes";
 import {
   ContactsView,
   CONTACTS_L2_KEY_ALL,
@@ -23,14 +28,7 @@ import {
   type ContactsSheetMode,
 } from "./components/ContactsView";
 import { ScheduledDeliveriesView } from "./components/ScheduledDeliveriesView";
-import { AgentsMonitorView } from "./components/AgentsMonitorView";
-import { AnalyzePerformanceView } from "./components/AnalyzePerformanceView";
-import { AgentsBuilderView } from "./components/AgentsBuilderView";
-import { AgentDetailView } from "./components/AgentDetailView";
-import { AgentOnboardingView } from "./components/AgentOnboardingView";
 import { ScheduleBuilderView } from "./components/ScheduleBuilderView";
-import { BirdAIReportsView } from "./components/BirdAIReportsView";
-import { BirdAIJourneysPlaceholderView } from "./components/BirdAIJourneysPlaceholderView";
 import { ReferralsView } from "./components/ReferralsView";
 import { PaymentsView } from "./components/PaymentsView";
 import { AppointmentsView } from "./components/AppointmentsView";
@@ -62,7 +60,6 @@ import { AgentActivityView } from "./components/AgentActivityView";
 import { AgentConfigView } from "./components/AgentConfigView";
 import { BirdAILoginPage } from "./components/auth/BirdAILoginPage";
 import { AppBootShimmer } from "./components/layout/AppBootShimmer";
-import { SEARCH_AI_L2_DEFAULT_ACTIVE } from "./components/searchai/searchAIL2Keys";
 
 const AUTH_STORAGE_KEY = "birdai_demo_authenticated";
 const LOGIN_TAB_TITLE_INDEX_KEY = "auth:login_tab_title_index";
@@ -162,8 +159,6 @@ export default function App() {
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [currentView, setCurrentView] = usePersistedState<AppView>("nav:l1", "reviews");
   const [editingDraft, setEditingDraft] = useState<DraftReport | null>(null);
-  const [selectedAgentSlug, setSelectedAgentSlug] = usePersistedState<string>("nav:l2:agents", "");
-  const [selectedAnalyzeItem, setSelectedAnalyzeItem] = usePersistedState<string>("nav:l2:agents:analyze", "overview");
   /** Journeys L2 compound key — synced when navigating via `l2:` slug prefix in handleViewChange. */
   const [journeysL2ActiveKey, setJourneysL2ActiveKey] = usePersistedState<string>(
     "nav:journeys-l2-key",
@@ -216,34 +211,16 @@ export default function App() {
     }
   }, [currentView]);
 
-  const [searchAIL2Active, setSearchAIL2Active] = usePersistedState("nav:l2:searchai", SEARCH_AI_L2_DEFAULT_ACTIVE);
-  const handleSearchAIL2Change = useCallback((key: string) => {
-    setSearchAIL2Active(key);
-  }, []);
-
-  useEffect(() => {
-    if (currentView !== "searchai") {
-      setSearchAIL2Active(SEARCH_AI_L2_DEFAULT_ACTIVE);
-    }
-  }, [currentView]);
-
-  const handleViewChange = useCallback((view: AppView, slug?: string) => {
+  const handleViewChange = useCallback((view: AppView, _slug?: string) => {
     if (view !== currentView) {
       setMynaChatExpanded(false);
     }
-    if (slug?.startsWith("l2:")) {
-      setJourneysL2ActiveKey(slug.slice(3));
+    if (_slug?.startsWith("l2:")) {
+      setJourneysL2ActiveKey(_slug.slice(3));
       setCurrentView(view);
       return;
     }
     setCurrentView(view);
-    if (slug) {
-      if (view === "agents-analyze-performance") {
-        setSelectedAnalyzeItem(slug);
-      } else {
-        setSelectedAgentSlug(slug);
-      }
-    }
   }, [currentView]);
 
   const handleEditDraft = (draft: DraftReport) => {
@@ -456,12 +433,9 @@ export default function App() {
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "social" && (
             <SocialL2NavPanel />
           )}
-          {/* Search AI L2 nav panel */}
+          {/* Chatbot (`searchai`) — shell L2 is preview only; product is not hosted here */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "searchai" && (
-            <SearchAIL2NavPanel
-              activeItem={searchAIL2Active}
-              onActiveItemChange={handleSearchAIL2Change}
-            />
+            <AppShellL2Placeholder />
           )}
           {/* Contacts L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "contacts" && (
@@ -506,15 +480,9 @@ export default function App() {
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "inbox" && (
             <InboxL2NavPanel />
           )}
-          {/* Agents L2 nav panel — suppressed for agents-builder (creation layout takes full width) */}
-          {!aiPanelOpen && !mynaWorkspaceExpanded && (currentView === "agents-monitor" || currentView === "agents-analyze-performance" || currentView === "agents-onboarding" || currentView === "agent-detail" || currentView === "birdai-reports" || currentView === "birdai-journeys") && (
-            <AgentsL2NavPanel
-              currentView={currentView}
-              onViewChange={handleViewChange}
-              selectedAgentSlug={selectedAgentSlug}
-              selectedAnalyzeItem={selectedAnalyzeItem}
-              journeysL2ActiveKey={journeysL2ActiveKey}
-            />
+          {/* BirdAI — shell L2 is preview only (same pattern as Chatbot); no rail on agents-builder */}
+          {!aiPanelOpen && !mynaWorkspaceExpanded && birdAiShellShowsL2Placeholder(currentView) && (
+            <AppShellL2Placeholder caption="BirdAI is not hosted in this shell — secondary nav is a preview only." />
           )}
 
           {/* Main content + optional Myna chat (flex row, main keeps ≥60% when possible) */}
@@ -539,43 +507,15 @@ export default function App() {
             ) : currentView === "social" ? (
               <SocialView />
             ) : currentView === "searchai" ? (
-              <SearchAIView l2ActiveItem={searchAIL2Active} />
+              <AppShellContentPlaceholder view="searchai" />
+            ) : birdAiShellShowsMainPlaceholder(currentView) ? (
+              <AppShellContentPlaceholder view={currentView} />
             ) : currentView === "contacts" ? (
               <ContactsView app={contactsApp} />
             ) : currentView === "scheduled-deliveries" ? (
               <ScheduledDeliveriesView onCreateSchedule={() => handleViewChange("schedule-builder")} />
-            ) : currentView === "agents-monitor" ? (
-              <AgentsMonitorView
-                onBack={() => setCurrentView("agents-monitor")}
-                onNavigateToReviews={() => handleViewChange("reviews")}
-              />
-            ) : currentView === "agents-analyze-performance" ? (
-              <AnalyzePerformanceView selectedItem={selectedAnalyzeItem} />
-            ) : currentView === "agents-builder" ? (
-              <AgentsBuilderView onBack={() => handleViewChange("agents-monitor")} />
-            ) : currentView === "agent-detail" ? (
-              <AgentDetailView
-                agentSlug={selectedAgentSlug}
-                onOpenBuilder={(_templateName) => {
-                  if (selectedAgentSlug === "scheduled-reports") {
-                    handleViewChange("schedule-builder");
-                  } else {
-                    handleViewChange("agents-builder");
-                  }
-                }}
-              />
-            ) : currentView === "agents-onboarding" ? (
-              <AgentOnboardingView
-                onComplete={() => handleViewChange("agents-monitor")}
-                onSkip={() => handleViewChange("agents-monitor")}
-                onGoToMonitor={() => handleViewChange("agents-monitor")}
-              />
             ) : currentView === "schedule-builder" ? (
               <ScheduleBuilderView onBack={() => handleViewChange("agent-detail", "scheduled-reports")} />
-            ) : currentView === "birdai-reports" ? (
-              <BirdAIReportsView />
-            ) : currentView === "birdai-journeys" ? (
-              <BirdAIJourneysPlaceholderView journeysL2Key={journeysL2ActiveKey} />
             ) : currentView === "listings" ? (
               <ListingsView l2ActiveItem={journeysL2ActiveKey} />
             ) : currentView === "surveys" ? (

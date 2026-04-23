@@ -20,7 +20,7 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          "Confirmation pattern on Radix **AlertDialog**. Overlay matches **Dialog** / **Sheet**: **`MODAL_OVERLAY_VISUAL_CLASS`** from `@/app/components/ui/modalOverlayClasses` (light blur + semantic tint, not a black veil).",
+          "Confirmation pattern on Radix **AlertDialog**. Overlay matches **Dialog** / **Sheet**: **`MODAL_OVERLAY_VISUAL_CLASS`** from `@/app/components/ui/modalOverlayClasses` (light blur + semantic tint, not a black veil). **`AlertDialogContent`** has no perimeter border (same **`shadow-lg`** treatment as **Dialog**).",
       },
     },
   },

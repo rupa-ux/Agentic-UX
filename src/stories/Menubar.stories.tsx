@@ -20,6 +20,14 @@ import {
 const meta: Meta = {
   title: "UI/Menubar",
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "**Menubar** dropdown surfaces use **`FLOATING_PANEL_SURFACE_CLASSNAME`** — **borderless** floating panels with shadow elevation, aligned with **Popover** and **DropdownMenu**.",
+      },
+    },
+  },
 };
 
 export default meta;

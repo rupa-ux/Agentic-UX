@@ -5,9 +5,7 @@ import {
   L2NavPanel,
   ReviewsL2NavPanel,
   SocialL2NavPanel,
-  SearchAIL2NavPanel,
   ContactsL2NavPanel,
-  AgentsL2NavPanel,
   ListingsL2NavPanel,
   TicketingL2NavPanel,
   CampaignsL2NavPanel,
@@ -23,14 +21,11 @@ import {
   APP_SHELL_BELOW_TOPBAR_CARD_CLASS,
   APP_SHELL_GUTTER_SURFACE_CLASS,
 } from "@/app/components/layout/appShellClasses";
+import { AppShellContentPlaceholder } from "@/app/components/layout/AppShellContentPlaceholder";
+import { AppShellL2Placeholder } from "@/app/components/layout/AppShellL2Placeholder";
+import { birdAiShellShowsL2Placeholder } from "@/app/components/layout/birdAiShellRoutes";
 import type { AppView } from "@/app/App";
 import { CONTACTS_L2_KEY_ALL } from "@/app/components/ContactsView";
-import { SEARCH_AI_L2_DEFAULT_ACTIVE } from "@/app/components/searchai/searchAIL2Keys";
-
-function SearchAIL2ForAppShell() {
-  const [activeItem, setActiveItem] = useState(SEARCH_AI_L2_DEFAULT_ACTIVE);
-  return <SearchAIL2NavPanel activeItem={activeItem} onActiveItemChange={setActiveItem} />;
-}
 
 function ContactsL2ForAppShell() {
   const [activeItem, setActiveItem] = useState(CONTACTS_L2_KEY_ALL);
@@ -52,7 +47,7 @@ const VIEWS: { value: AppView; label: string; group: string }[] = [
   { value: "shared-by-me",         label: "Reports — Shared by me",  group: "Reports" },
   { value: "reviews",              label: "Reviews",                 group: "Modules" },
   { value: "social",               label: "Social AI",               group: "Modules" },
-  { value: "searchai",             label: "Search AI",               group: "Modules" },
+  { value: "searchai",             label: "Chatbot",                 group: "Modules" },
   { value: "listings",             label: "Listings",                group: "Modules" },
   { value: "contacts",             label: "Contacts",                group: "Modules" },
   { value: "inbox",                label: "Inbox",                   group: "Modules" },
@@ -68,7 +63,7 @@ function L2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v: AppV
   if (view === "business-overview") return null;
   if (view === "reviews")     return <ReviewsL2NavPanel />;
   if (view === "social")      return <SocialL2NavPanel />;
-  if (view === "searchai")    return <SearchAIL2ForAppShell />;
+  if (view === "searchai")    return <AppShellL2Placeholder />;
   if (view === "contacts")    return <ContactsL2ForAppShell />;
   if (view === "listings")    return <ListingsL2NavPanel />;
   if (view === "surveys")     return <SurveysL2NavPanel />;
@@ -77,106 +72,15 @@ function L2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v: AppV
   if (view === "insights")    return <InsightsL2NavPanel />;
   if (view === "competitors") return <CompetitorsL2NavPanel />;
   if (view === "inbox")       return <InboxL2NavPanel />;
-  if (["agents-monitor","agents-builder","agents-onboarding","agent-detail","birdai-reports","birdai-journeys"].includes(view))
+  if (view === "agents-builder") return null;
+  if (birdAiShellShowsL2Placeholder(view)) {
     return (
-      <AgentsL2NavPanel
-        currentView={view}
-        onViewChange={onViewChange}
-        selectedAgentSlug=""
-        journeysL2ActiveKey="Agents/workflow"
-      />
+      <AppShellL2Placeholder caption="BirdAI is not hosted in this shell — secondary nav is a preview only." />
     );
+  }
   if (["scheduled-deliveries","storybook","shared-by-me"].includes(view))
     return null;
   return <L2NavPanel currentView={view} onViewChange={onViewChange} />;
-}
-
-/* ─── Main content placeholder ─── */
-function ContentPlaceholder({ view }: { view: AppView }) {
-  if (view === "business-overview") {
-    return (
-      <div className="flex-1 min-h-0 min-w-0 flex flex-col items-center justify-center gap-2 overflow-hidden bg-app-shell-main px-8 transition-colors duration-300">
-        <p className="text-sm font-medium text-foreground">Overview</p>
-        <p className="text-[13px] text-muted-foreground text-center max-w-sm">
-          Empty state — content is shown on the real Overview page in the app.
-        </p>
-      </div>
-    );
-  }
-  const label = VIEWS.find(v => v.value === view)?.label ?? view;
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center gap-6 min-w-0 min-h-0 overflow-hidden overflow-y-auto p-8 bg-app-shell-main transition-colors duration-300">
-      {/* Skeleton card grid */}
-      <div className="w-full max-w-4xl flex flex-col gap-6">
-        {/* Header placeholder */}
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col gap-2">
-            <div className="h-6 w-48 rounded-lg bg-black/8 dark:bg-white/8 animate-pulse" />
-            <div className="h-4 w-72 rounded-lg bg-black/5 dark:bg-white/5 animate-pulse" />
-          </div>
-          <div className="flex gap-2">
-            <div className="h-9 w-24 rounded-lg bg-black/8 dark:bg-white/8 animate-pulse" />
-            <div className="h-9 w-24 rounded-lg bg-black/5 dark:bg-white/5 animate-pulse" />
-          </div>
-        </div>
-
-        {/* Stat cards row */}
-        <div className="grid grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white dark:bg-app-shell-main p-4 flex flex-col gap-4"
-            >
-              <div className="h-3 w-20 rounded bg-black/8 dark:bg-white/8 animate-pulse" />
-              <div className="h-8 w-16 rounded bg-black/10 dark:bg-white/10 animate-pulse" />
-              <div className="h-2 w-24 rounded bg-black/5 dark:bg-white/5 animate-pulse" />
-            </div>
-          ))}
-        </div>
-
-        {/* Main chart placeholder */}
-        <div className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white dark:bg-app-shell-main p-6 flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <div className="h-4 w-32 rounded bg-black/8 dark:bg-white/8 animate-pulse" />
-            <div className="h-7 w-28 rounded-lg bg-black/5 dark:bg-white/5 animate-pulse" />
-          </div>
-          <div className="h-48 rounded-lg bg-gradient-to-br from-black/[0.03] to-black/[0.06] dark:from-white/[0.03] dark:to-white/[0.06] flex items-center justify-center">
-            <span className="text-[13px] text-[#999] dark:text-[#555] select-none">
-              {label} · main content
-            </span>
-          </div>
-        </div>
-
-        {/* Table placeholder */}
-        <div className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white dark:bg-app-shell-main overflow-hidden">
-          {/* Table header */}
-          <div className="flex gap-4 px-6 py-4 border-b border-black/[0.06] dark:border-white/[0.06]">
-            {[160, 96, 80, 64].map((w, i) => (
-              <div key={i} className="h-3 rounded bg-black/8 dark:bg-white/8 animate-pulse" style={{ width: w }} />
-            ))}
-          </div>
-          {/* Table rows */}
-          {Array.from({ length: 5 }).map((_, row) => (
-            <div
-              key={row}
-              className="flex gap-4 px-6 py-4 border-b last:border-0 border-black/[0.04] dark:border-white/[0.04]"
-            >
-              {[160, 96, 80, 64].map((w, i) => (
-                <div
-                  key={i}
-                  className="h-3 rounded animate-pulse"
-                  style={{
-                    width: w * (0.7 + Math.random() * 0.5),
-                    background: `rgba(0,0,0,${0.04 + i * 0.01})`,
-                  }}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
 }
 
 /* ─── View switcher bar (only visible in Storybook for demo) ─── */
@@ -260,7 +164,7 @@ export const Default: Story = {
               <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
                 <L2Panel view={view} onViewChange={setView} />
                 <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
-                  <ContentPlaceholder view={view} />
+                  <AppShellContentPlaceholder view={view} />
                 </div>
               </div>
             </div>
@@ -291,7 +195,7 @@ export const StartingWithAgents: Story = {
               <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
                 <L2Panel view={view} onViewChange={setView} />
                 <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
-                  <ContentPlaceholder view={view} />
+                  <AppShellContentPlaceholder view={view} />
                 </div>
               </div>
             </div>
@@ -320,7 +224,7 @@ export const StartingWithReviews: Story = {
               <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
                 <L2Panel view={view} onViewChange={setView} />
                 <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
-                  <ContentPlaceholder view={view} />
+                  <AppShellContentPlaceholder view={view} />
                 </div>
               </div>
             </div>
@@ -348,7 +252,7 @@ export const NoL2Panel: Story = {
             >
               <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
                 <div className={APP_MAIN_CONTENT_SHELL_CLASS}>
-                  <ContentPlaceholder view={view} />
+                  <AppShellContentPlaceholder view={view} />
                 </div>
               </div>
             </div>

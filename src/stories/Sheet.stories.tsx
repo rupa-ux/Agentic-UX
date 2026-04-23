@@ -21,7 +21,7 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          "Floating **side panels** only: **Radix `Sheet`** with `side=\"right\"`, `inset=\"floating\"`, and `floatingSize` (**sm** 340px, **md** 480px, **lg** 640px, **xl** ~85vw capped with `calc(100vw-2rem)`). Inset from top, right, and bottom with rounded corners. **Backdrop:** same Aero scrim as Dialog — **`MODAL_OVERLAY_VISUAL_CLASS`** (`backdrop-blur-sm` + semantic tint from `@/app/components/ui/modalOverlayClasses`), not `bg-black/*`. Dismiss with the **top-right** close control on **`SheetContent`** (single close affordance; avoid duplicating it in the footer). Prefer **`FloatingSheetFrame`** (`@/app/components/layout/FloatingSheetFrame`) for edging header, scrollable body only, and sticky footer actions; set **`SheetContent`** `className` to include **`FLOATING_SHEET_FRAME_CONTENT_CLASS`** (`overflow-hidden`) so the frame body owns vertical scroll. For a full product example on **medium** (profile + password), see **App/Settings/Account settings**. For **xl**, you can split the frame body into a fixed-width form column (~**lg** / 640px) plus a flexible preview column — see **Extra large with preview**.",
+          "Floating **side panels** only: **Radix `Sheet`** with `side=\"right\"`, `inset=\"floating\"`, and `floatingSize` (**sm** 340px, **md** 480px, **lg** 640px, **xl** ~85vw capped with `calc(100vw-2rem)`). Inset from top, right, and bottom with rounded corners; **`SheetContent`** has **no** outer **border** (edge and floating variants use **`shadow-lg`** only). **Backdrop:** same Aero scrim as Dialog — **`MODAL_OVERLAY_VISUAL_CLASS`** (light `backdrop-blur-[2px]` + semantic tint from `@/app/components/ui/modalOverlayClasses`), not `bg-black/*`. Dismiss with the **top-right** close control on **`SheetContent`** (single close affordance; avoid duplicating it in the footer). Prefer **`FloatingSheetFrame`** (`@/app/components/layout/FloatingSheetFrame`) for edging header, scrollable body only, and sticky footer actions; set **`SheetContent`** `className` to include **`FLOATING_SHEET_FRAME_CONTENT_CLASS`** (`overflow-hidden`) so the frame body owns vertical scroll. For a full product example on **medium** (profile + password), see **App/Settings/Account settings**. For **xl**, you can split the frame body into a fixed-width form column (~**lg** / 640px) plus a flexible preview column — see **Extra large with preview**.",
       },
     },
   },
@@ -121,7 +121,7 @@ function PreviewMockPage({
 }) {
   return (
     <div
-      className="w-full shrink-0 overflow-hidden rounded-md border bg-background shadow-sm"
+      className="w-full shrink-0 overflow-hidden rounded-md bg-background shadow-sm"
       style={{ aspectRatio: "1 / 1.4142" }}
     >
       <div className="flex h-full min-h-0 flex-col p-4">
@@ -204,7 +204,7 @@ function ExtraLargeWithPreviewDemo() {
           }}
         >
           <div className="flex min-h-0 flex-1 flex-row">
-            <div className="w-full max-w-[640px] shrink-0 overflow-y-auto border-r border-border px-6 py-4">
+            <div className="w-full max-w-[640px] shrink-0 overflow-y-auto px-6 py-4">
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="sheet-preview-report-title">Report title</Label>

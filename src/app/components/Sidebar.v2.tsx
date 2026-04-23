@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } fr
 import { usePersistedState } from "@/app/hooks/usePersistedState";
 import {
   ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Plus, Info, MessageSquare,
+  MoreHorizontal,
 } from "lucide-react";
 import {
   FigmaIconBirdAI, FigmaIconOverview, FigmaIconInbox,
@@ -104,6 +105,24 @@ const sidebarSections: SidebarNavSection[] = [
   },
 ];
 
+const RAIL_ICON_PX = 32;
+const RAIL_SECTION_INNER_GAP_PX = 2;
+const RAIL_SECTION_BREAK_GAP_PX = 18;
+/** Uniform stack pitch when the rail is in overflow mode (icon + gap-2). */
+const RAIL_OVERFLOW_ROW_PITCH_PX = RAIL_ICON_PX + 8;
+
+function heightOfCollapsedSectionedRail(sections: SidebarNavSection[]): number {
+  let h = 0;
+  for (let i = 0; i < sections.length; i++) {
+    const sec = sections[i];
+    const n = sec.items.length;
+    if (n === 0) continue;
+    h += n * RAIL_ICON_PX + (n - 1) * RAIL_SECTION_INNER_GAP_PX;
+    if (i < sections.length - 1) h += RAIL_SECTION_BREAK_GAP_PX;
+  }
+  return h;
+}
+
 /* ═══════════════════════════════════════════
    Icon Strip (L1 nav rail) – exported separately
    (sizes / stroke: `l1StripIconTokens`)
@@ -178,12 +197,20 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
   void showTooltip; void hideTooltip; void tooltip;
   const [showAppearance, setShowAppearance] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const overflowNavRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isDark, preference, setPreference } = useTheme();
 
   const [avatarUrl, setAvatarUrl] = useState<string>(() => {
     return localStorage.getItem("profile_avatar") || DEFAULT_AVATAR;
   });
+
+  const flatNav = useMemo(() => sidebarSections.flatMap((s) => s.items), []);
+  const [swapView, setSwapView] = usePersistedState<AppView | null>("nav:l1:swapView", null);
+  const navMeasureRef = useRef<HTMLDivElement>(null);
+  const [navInnerH, setNavInnerH] = useState(0);
+  const [overflowNavOpen, setOverflowNavOpen] = useState(false);
+
   // Sync activeIcon with currentView (layout effect avoids wrong rail highlight on first paint)
   useLayoutEffect(() => {
     if (currentView === "business-overview") setActiveIcon("Overview");
@@ -221,9 +248,13 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+      const t = e.target as Node;
+      if (profileRef.current && !profileRef.current.contains(t)) {
         setProfileOpen(false);
         setShowAppearance(false);
+      }
+      if (overflowNavRef.current && !overflowNavRef.current.contains(t)) {
+        setOverflowNavOpen(false);
       }
     };
     document.addEventListener("mousedown", handler);
@@ -249,6 +280,52 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
     else if (label === "Surveys") onViewChange("surveys");
     else if (label === "Settings") onViewChange("agent-config");
   };
+
+  useLayoutEffect(() => {
+    const el = navMeasureRef.current;
+    if (!el) return;
+    const apply = () => setNavInnerH(el.clientHeight);
+    apply();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const railMetrics = useMemo(() => {
+    const measured = navInnerH > 0;
+    const fullH = heightOfCollapsedSectionedRail(sidebarSections);
+    const overflowMode = measured && fullH > navInnerH;
+    const maxRows = Math.max(2, Math.floor((navInnerH + 8) / RAIL_OVERFLOW_ROW_PITCH_PX));
+    const P =
+      overflowMode
+        ? Math.max(0, Math.min(maxRows - 2, Math.max(0, flatNav.length - 2)))
+        : flatNav.length;
+    const tailSlice = overflowMode ? flatNav.slice(P) : [];
+    const defaultSwapItem = flatNav[Math.min(P, flatNav.length - 1)] ?? flatNav[0];
+    return { overflowMode, P, maxRows, tailSlice, defaultSwapItem };
+  }, [navInnerH, flatNav]);
+
+  const effectiveSwapItem = useMemo(() => {
+    if (!railMetrics.overflowMode) return null;
+    const { tailSlice, defaultSwapItem } = railMetrics;
+    if (swapView !== null) {
+      const hit = flatNav.find((i) => i.view === swapView);
+      if (hit && tailSlice.some((t) => t.view === hit.view)) return hit;
+    }
+    return defaultSwapItem ?? null;
+  }, [railMetrics, swapView, flatNav]);
+
+  useLayoutEffect(() => {
+    if (!railMetrics.overflowMode || swapView === null) return;
+    if (!railMetrics.tailSlice.some((t) => t.view === swapView)) {
+      setSwapView(null);
+    }
+  }, [railMetrics.overflowMode, railMetrics.tailSlice, swapView, setSwapView]);
+
+  useEffect(() => {
+    if (!railMetrics.overflowMode && overflowNavOpen) setOverflowNavOpen(false);
+  }, [railMetrics.overflowMode, overflowNavOpen]);
 
   const navActiveBg = "bg-[#d4dae3] dark:bg-[#282e3a]";
   const navHoverBg = "hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845]";
@@ -363,13 +440,110 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
         </svg>
       </div>
 
-      {/* Icon buttons */}
-      <div className="flex flex-col items-center pb-[8px] pt-0 gap-[18px] flex-1 overflow-y-auto overflow-x-hidden px-[12px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {sidebarSections.map(renderRailSection)}
-      </div>
+      {/* 70% main nav · 20% spacer · 10% bottom cluster (settings, notifications, profile) */}
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div
+          ref={navMeasureRef}
+          className={`flex min-h-0 flex-[7] flex-col px-[12px] ${
+            /* L1 ⋯ flyout is `absolute` to the right; `overflow-hidden` here clips it off. */
+            railMetrics.overflowMode ? "overflow-visible" : "overflow-hidden"
+          }`}
+        >
+          <div
+            className={`flex min-h-0 flex-1 flex-col items-center py-2 ${
+              railMetrics.overflowMode
+                ? "justify-start gap-2 overflow-visible"
+                : "justify-start gap-[18px] overflow-hidden"
+            }`}
+          >
+            {railMetrics.overflowMode ? (
+              <>
+                {flatNav.slice(0, railMetrics.P).map((item) => renderRailButton(item))}
+                {effectiveSwapItem ? renderRailButton(effectiveSwapItem) : null}
+                <div className="relative shrink-0" ref={overflowNavRef}>
+                  {(() => {
+                    const moreBtn = (
+                      <button
+                        type="button"
+                        aria-label="More navigation"
+                        aria-expanded={overflowNavOpen}
+                        onClick={() => {
+                          setProfileOpen(false);
+                          setShowAppearance(false);
+                          setOverflowNavOpen((o) => !o);
+                        }}
+                        className={`
+                          group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0
+                          transition-all duration-200 ease-out outline-none
+                          focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail
+                          bg-transparent ${navHoverBg} hover:scale-110 active:scale-95
+                        `}
+                      >
+                        <MoreHorizontal
+                          size={iconSize}
+                          strokeWidth={L1_STRIP_ICON_STROKE_PX}
+                          absoluteStrokeWidth
+                          className="text-[#505050] dark:text-[#9ba2b0] transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-hover:scale-110"
+                        />
+                      </button>
+                    );
+                    return hoverExpandEnabled ? (
+                      moreBtn
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>{moreBtn}</TooltipTrigger>
+                        <TooltipContent side="right" sideOffset={8}>More navigation</TooltipContent>
+                      </Tooltip>
+                    );
+                  })()}
+                  {overflowNavOpen ? (
+                    <div
+                      className={`absolute left-[calc(100%+8px)] top-1/2 z-50 flex w-[260px] max-h-[min(480px,calc(100vh-2rem))] -translate-y-1/2 flex-col overflow-hidden transition-colors duration-300 ${FLOATING_PANEL_SURFACE_CLASSNAME}`}
+                    >
+                      <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2 pb-3 pt-3">
+                        {railMetrics.tailSlice.map((item) => (
+                          <button
+                            key={item.view}
+                            type="button"
+                            onClick={() => {
+                              setSwapView(item.view);
+                              handleNavClick(item.label);
+                              setOverflowNavOpen(false);
+                            }}
+                            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150 ${
+                              activeIcon === item.label
+                                ? "bg-[#e8effe] text-[#2552ED] dark:bg-[#1e2d5e] dark:text-[#6b9bff]"
+                                : "text-[#212121] hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
+                            }`}
+                          >
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-transparent">
+                              <item.Icon
+                                size={iconSize}
+                                className={
+                                  activeIcon === item.label
+                                    ? "text-[#2552ED] dark:text-[#6b9bff]"
+                                    : "text-[#505050] dark:text-[#9ba2b0]"
+                                }
+                              />
+                            </span>
+                            <span className="min-w-0 truncate">{item.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </>
+            ) : (
+              sidebarSections.map(renderRailSection)
+            )}
+          </div>
+        </div>
 
-      {/* ─── Bottom tower: Settings + Notifications + Profile (matches main rail order + v2 notifications) ─── */}
-      <div className="flex flex-col items-center gap-2 pb-3 pt-2 shrink-0">
+        <div className="min-h-0 flex-[2] shrink-0 basis-0" aria-hidden />
+
+        {/* ─── Bottom tower: Settings + Notifications + Profile ─── */}
+        <div className="flex min-h-0 flex-[1] shrink-0 basis-0 flex-col items-center justify-end gap-2 pb-3 pt-2">
         {/* Settings gear — same surface / hover / focus as L1 nav icons */}
         {(() => {
           const settingsBtn = (
@@ -405,6 +579,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
             variant="ghost"
             size="iconXs"
             onClick={() => {
+              setOverflowNavOpen(false);
               setProfileOpen(!profileOpen);
               if (profileOpen) setShowAppearance(false);
             }}
@@ -621,6 +796,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
         </div>
       </div>
       </div>
+      </div>
 
       {/* ═══ Floating expanded panel — appears on hover ═══ */}
       <div
@@ -682,6 +858,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
               variant="ghost"
               size="iconXs"
               onClick={() => {
+                setOverflowNavOpen(false);
                 setProfileOpen(!profileOpen);
                 if (profileOpen) setShowAppearance(false);
               }}
@@ -967,11 +1144,12 @@ export function SocialL2NavPanel() {
 /* ═══════════════════════════════════════════
    Search AI L2 Nav Panel – uses L2NavLayout
    ═══════════════════════════════════════════ */
+/** L2 config for Chatbot (`searchai`) — used in Storybook / demos when not using shell placeholders. */
 const searchAIConfig = {
   sections: [
-    { label: "Actions", children: ["Recommendations", "Track progress"] },
-    { label: "Reports", children: ["Citations", "Visibility", "Rankings", "Accuracy", "Sentiment"] },
-    { label: "Settings", children: ["Prompts"] },
+    { label: "Conversations", children: ["Active threads", "Handoffs"] },
+    { label: "Knowledge", children: ["Articles", "Snippets", "FAQs"] },
+    { label: "Settings", children: ["Channels", "Hours", "Tone"] },
   ],
 };
 

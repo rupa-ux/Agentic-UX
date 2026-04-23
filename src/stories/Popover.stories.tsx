@@ -18,7 +18,7 @@ const meta: Meta = {
   parameters: {
     docs: {
       description: {
-        component: `**Popover** panels use the same floating shell as the L1 profile menu and other overlays: \`FLOATING_PANEL_SURFACE_CLASSNAME\` in [\`floatingPanelSurface.ts\`](src/app/components/ui/floatingPanelSurface.ts) — \`rounded-2xl\`, light border, and soft elevation shadow. **DropdownMenu**, **Select**, **ContextMenu**, and **Menubar** content use the same surface. Override padding with \`className\` (e.g. \`p-2\` for dense lists, default content uses \`p-4\`).`,
+        component: `**Popover** panels use the same floating shell as the L1 profile menu and other overlays: \`FLOATING_PANEL_SURFACE_CLASSNAME\` in [\`floatingPanelSurface.ts\`](src/app/components/ui/floatingPanelSurface.ts) — \`rounded-2xl\`, **no** outer **border** (shadow-only depth), \`bg-popover\`. **DropdownMenu**, **Select**, **ContextMenu**, and **Menubar** content use the same surface. Override padding with \`className\` (e.g. \`p-2\` for dense lists, default content uses \`p-4\`).`,
       },
     },
   },

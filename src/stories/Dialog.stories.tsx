@@ -20,7 +20,7 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          "Centered Radix **Dialog**. The overlay uses **`MODAL_OVERLAY_VISUAL_CLASS`** from `@/app/components/ui/modalOverlayClasses`. **`DialogTitle`** defaults to **`MAIN_VIEW_PRIMARY_HEADING_CLASS`** (same as **Layout/Main canvas view header**). Match that recipe for any custom modal backdrop.",
+          "Centered Radix **Dialog**. The overlay uses **`MODAL_OVERLAY_VISUAL_CLASS`** from `@/app/components/ui/modalOverlayClasses`. **`DialogTitle`** defaults to **`MAIN_VIEW_PRIMARY_HEADING_CLASS`** (same as **Layout/Main canvas view header**). **`DialogContent`** has no perimeter **border** — depth comes from **`shadow-lg`** only. Match that recipe for any custom modal backdrop. Overlay blur is a light `backdrop-blur-[2px]` (~half the old `sm` strength).",
       },
     },
   },
