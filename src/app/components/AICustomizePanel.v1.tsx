@@ -11,6 +11,13 @@ import {
   PromptInputAction,
 } from "./ui/prompt-input";
 import { Button } from "@/app/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/app/components/ui/dropdown-menu";
 import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 
 import imgCover from "figma:asset/cf41ec9f747e1d47078180a05f5f2ca35443cb9a.png";
@@ -473,41 +480,14 @@ export function AICustomizePanel({ onClose, themeColor, onThemeColorChange, show
   // Share modal state
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareModalTab, setShareModalTab] = useState<"share" | "export" | "email">("share");
-  const [shareDropdownOpen, setShareDropdownOpen] = useState(false);
-  const shareDropdownRef = useRef<HTMLDivElement>(null);
-
   // Schedule modal state (used when entryMode === "schedule")
   const [showScheduleModal, setShowScheduleModal] = useState(false);
-
-  // Close share dropdown on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (shareDropdownRef.current && !shareDropdownRef.current.contains(e.target as Node)) {
-        setShareDropdownOpen(false);
-      }
-    };
-    if (shareDropdownOpen) document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [shareDropdownOpen]);
 
   // View state
   const [viewMode, setViewMode] = useState<"single" | "two">("single");
   const [zoomPercent, setZoomPercent] = useState(100);
   const [autoFit, setAutoFit] = useState(true);
-  const [showZoomDropdown, setShowZoomDropdown] = useState(false);
-  const zoomDropdownRef = useRef<HTMLDivElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
-
-  // Close zoom dropdown on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (zoomDropdownRef.current && !zoomDropdownRef.current.contains(e.target as Node)) {
-        setShowZoomDropdown(false);
-      }
-    };
-    if (showZoomDropdown) document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [showZoomDropdown]);
 
   const zoomPresets = [
     { label: "Fit width", value: -1 },
@@ -1055,40 +1035,54 @@ export function AICustomizePanel({ onClose, themeColor, onThemeColorChange, show
               <span className="font-['Roboto',sans-serif] text-[16px] tracking-[-0.32px] whitespace-nowrap leading-[24px]" style={{ fontVariationSettings: "'wdth' 100" }}>Schedule</span>
             </Button>
           ) : (
-            <div className="relative" ref={shareDropdownRef}>
-              <Button
-                type="button"
-                onClick={() => setShowShareModal(true)}
-                className="rounded-[4px] bg-[#2552ED] px-3 font-normal text-white hover:bg-[#1E44CC]"
-              >
-                <span className="font-['Roboto',sans-serif] text-[16px] tracking-[-0.32px] whitespace-nowrap leading-[24px]" style={{ fontVariationSettings: "'wdth' 100" }}>Share</span>
-              </Button>
-              {shareDropdownOpen && (
-                <div className="absolute right-0 top-full mt-1.5 bg-white dark:bg-[#22262f] rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.12)] dark:shadow-[0px_4px_20px_rgba(0,0,0,0.35)] border border-[#e8eaed] dark:border-[#333a47] py-1.5 w-[210px] z-50">
-                  <button
-                    onClick={() => { setShareDropdownOpen(false); setShowShareModal(true); setShareModalTab("share"); }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  className="rounded-[4px] bg-[#2552ED] px-3 font-normal text-white hover:bg-[#1E44CC]"
+                >
+                  <span
+                    className="font-['Roboto',sans-serif] text-[16px] tracking-[-0.32px] whitespace-nowrap leading-[24px]"
+                    style={{ fontVariationSettings: "'wdth' 100" }}
                   >
-                    <Link className="w-[14px] h-[14px] text-[#5f6368] dark:text-[#8b92a5]" />
-                    <span className="text-[14px] text-[#202124] dark:text-[#e4e4e4]">Share link</span>
-                  </button>
-                  <button
-                    onClick={() => { setShareDropdownOpen(false); setShowShareModal(true); setShareModalTab("export"); }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
-                  >
-                    <Download className="w-[14px] h-[14px] text-[#5f6368] dark:text-[#8b92a5]" />
-                    <span className="text-[14px] text-[#202124] dark:text-[#e4e4e4]">Export</span>
-                  </button>
-                  <button
-                    onClick={() => { setShareDropdownOpen(false); setShowShareModal(true); setShareModalTab("email"); }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
-                  >
-                    <Mail className="w-[14px] h-[14px] text-[#5f6368] dark:text-[#8b92a5]" />
-                    <span className="text-[14px] text-[#202124] dark:text-[#e4e4e4]">Send via email</span>
-                  </button>
-                </div>
-              )}
-            </div>
+                    Share
+                  </span>
+                  <ChevronDown className="ml-1 size-4 shrink-0 opacity-80" aria-hidden />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[210px]">
+                <DropdownMenuItem
+                  className="text-sm"
+                  onSelect={() => {
+                    setShowShareModal(true);
+                    setShareModalTab("share");
+                  }}
+                >
+                  <Link className="size-3.5 text-muted-foreground" />
+                  Share link
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-sm"
+                  onSelect={() => {
+                    setShowShareModal(true);
+                    setShareModalTab("export");
+                  }}
+                >
+                  <Download className="size-3.5 text-muted-foreground" />
+                  Export
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-sm"
+                  onSelect={() => {
+                    setShowShareModal(true);
+                    setShareModalTab("email");
+                  }}
+                >
+                  <Mail className="size-3.5 text-muted-foreground" />
+                  Send via email
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
           
         </div>
@@ -1738,52 +1732,55 @@ export function AICustomizePanel({ onClose, themeColor, onThemeColorChange, show
               <button onClick={() => { setAutoFit(false); setZoomPercent(p => Math.max(25, p - 10)); }} title="Zoom out (−)" className="p-1.5 rounded-full hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors text-[#555] dark:text-[#9ba2b0]">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.2" fill="none"/><line x1="4.5" y1="7" x2="9.5" y2="7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><line x1="11" y1="11" x2="14" y2="14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
               </button>
-              <div className="relative" ref={zoomDropdownRef}>
-                <button
-                  onClick={() => setShowZoomDropdown(!showZoomDropdown)}
-                  title="Zoom level"
-                  className={`text-[12px] min-w-[46px] text-center tabular-nums select-none cursor-pointer rounded-full px-1.5 py-0.5 transition-colors flex items-center gap-0.5 justify-center ${autoFit ? "text-[#2552ED]" : "text-[#555] dark:text-[#9ba2b0] hover:text-[#2552ED]"}`}
-                >
-                  {zoomPercent}%
-                  <ChevronDown className="w-3 h-3 opacity-50" />
-                </button>
-                {showZoomDropdown && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 bg-white dark:bg-[#22262f] rounded-lg shadow-[0px_4px_16px_rgba(0,0,0,0.14)] dark:shadow-[0px_4px_16px_rgba(0,0,0,0.35)] border border-[#e8eaed] dark:border-[#333a47] py-1 w-[140px] z-50">
-                    {zoomPresets.map((item, i) => {
-                      if ('divider' in item) return <div key={i} className="h-px bg-[#e8eaed] dark:bg-[#333a47] my-1" />;
-                      const isActive = item.value === -1 ? autoFit : item.value === -2 ? false : (!autoFit && zoomPercent === item.value);
-                      return (
-                        <button
-                          key={i}
-                          onClick={() => {
-                            if (item.value === -1) {
-                              setAutoFit(true);
-                            } else if (item.value === -2) {
-                              // Fit page: calculate zoom to fit full page height
-                              const container = previewContainerRef.current;
-                              if (container) {
-                                const availH = container.clientHeight - 48;
-                                const fitZoom = Math.min(400, Math.max(25, Math.round((availH / pageH) * 100)));
-                                setAutoFit(false);
-                                setZoomPercent(fitZoom);
-                              }
-                            } else {
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    title="Zoom level"
+                    className={`text-[12px] min-w-[46px] text-center tabular-nums select-none cursor-pointer rounded-full px-1.5 py-0.5 transition-colors flex items-center gap-0.5 justify-center ${autoFit ? "text-[#2552ED]" : "text-[#555] dark:text-[#9ba2b0] hover:text-[#2552ED]"}`}
+                  >
+                    {zoomPercent}%
+                    <ChevronDown className="w-3 h-3 opacity-50" aria-hidden />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="min-w-[140px]">
+                  {zoomPresets.map((item, i) => {
+                    if ("divider" in item) return <DropdownMenuSeparator key={`d-${i}`} />;
+                    const isActive =
+                      item.value === -1
+                        ? autoFit
+                        : item.value === -2
+                          ? false
+                          : !autoFit && zoomPercent === item.value;
+                    return (
+                      <DropdownMenuItem
+                        key={i}
+                        className="justify-between text-xs"
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          if (item.value === -1) {
+                            setAutoFit(true);
+                          } else if (item.value === -2) {
+                            const container = previewContainerRef.current;
+                            if (container) {
+                              const availH = container.clientHeight - 48;
+                              const fitZoom = Math.min(400, Math.max(25, Math.round((availH / pageH) * 100)));
                               setAutoFit(false);
-                              setZoomPercent(item.value);
+                              setZoomPercent(fitZoom);
                             }
-                            setShowZoomDropdown(false);
-                          }}
-                          className={`w-full flex items-center justify-between px-3 py-1.5 text-[12px] transition-colors ${isActive ? "bg-[#e8effe] dark:bg-[#1e2d5e] text-[#2552ED]" : "hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] text-[#333] dark:text-[#e4e4e4]"}`}
-                          style={{ fontWeight: isActive ? 400 : 300 }}
-                        >
-                          <span>{item.label}</span>
-                          {isActive && <Check className="w-3 h-3 text-[#2552ED]" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+                          } else {
+                            setAutoFit(false);
+                            setZoomPercent(item.value);
+                          }
+                        }}
+                      >
+                        <span>{item.label}</span>
+                        {isActive ? <Check className="size-3 shrink-0 text-primary" /> : null}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <button onClick={() => { setAutoFit(false); setZoomPercent(p => Math.min(400, p + 10)); }} title="Zoom in (+)" className="p-1.5 rounded-full hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors text-[#555] dark:text-[#9ba2b0]">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.2" fill="none"/><line x1="4.5" y1="7" x2="9.5" y2="7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><line x1="7" y1="4.5" x2="7" y2="9.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><line x1="11" y1="11" x2="14" y2="14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
               </button>

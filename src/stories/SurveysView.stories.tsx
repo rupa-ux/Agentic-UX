@@ -10,10 +10,10 @@ const meta: Meta<typeof SurveysView> = {
       description: {
         component:
           "Surveys product view. Migrated from `UI-web-2.0/src/app/pages/surveys/`. " +
-          "Survey listing table (name, type badge, status, sent, responses, completion bar, NPS score, " +
-          "last updated, owner, ⋯ actions). Clicking a row or 'View reports' opens a detail Sheet " +
-          "with summary stats, NPS breakdown bars, per-question distributions, and recent responses. " +
-          "All data is mocked for prototype use.",
+          "Directory of ~50 mocked surveys with infinite scroll (IntersectionObserver on the list scroll root), " +
+          "shimmer placeholder rows while the next page loads, and a sticky toolbar (search, filters, columns). " +
+          "Survey table columns: name, type badge, status, sent, responses, completion bar, NPS score, " +
+          "last updated, owner, ⋯ actions. Row click or View reports opens a floating medium Sheet (FloatingSheetFrame) with stats, NPS breakdown, questions, recent responses, and footer actions.",
       },
     },
   },

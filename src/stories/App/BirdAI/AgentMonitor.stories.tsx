@@ -55,7 +55,7 @@ function AgentMonitorShell() {
               <p className="text-[14px] font-semibold text-[#212121] dark:text-[#e4e4e4]">Review Response Agent</p>
               <p className="text-[11px] text-[#999] dark:text-[#6b7280]">Automatically drafts and sends review replies across all channels</p>
             </div>
-            <span className="ml-2 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-400">
+            <span className="ml-2 rounded-md border-0 bg-emerald-50 px-2 py-0.5 text-[12px] font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
               ● Active
             </span>
           </div>

@@ -338,10 +338,7 @@ export function L2NavLayout({
     </>
   );
 
-  const navScrollClass = cn(
-    "min-h-0 flex-1 overflow-y-auto px-[8px] pb-4",
-    footerSlot && "border-b border-app-shell-border",
-  );
+  const navScrollClass = "min-h-0 flex-1 overflow-y-auto px-[8px] pb-4";
 
   return (
     <div className={PANEL} data-no-print={noprint}>
@@ -364,7 +361,7 @@ export function L2NavLayout({
       )}
 
       {footerSlot ? (
-        <div className="shrink-0 px-[8px] pt-2 pb-4">
+        <div className="shrink-0 p-2">
           {footerSlot}
         </div>
       ) : null}

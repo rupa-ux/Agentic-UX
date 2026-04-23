@@ -1,17 +1,19 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import {
   Search, MoreHorizontal, Download, Copy, Trash2, BarChart2,
-  ChevronDown, Users, Send, TrendingUp, Star, Eye,
+  Filter, Users, Send, TrendingUp, Star, Eye,
   CheckCircle2, Clock, XCircle, Edit3,
 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { Input } from "@/app/components/ui/input";
 import { AppDataTable } from "@/app/components/ui/AppDataTable";
+import { Sheet, SheetContent } from "@/app/components/ui/sheet";
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
-} from "@/app/components/ui/sheet";
+  FLOATING_SHEET_FRAME_CONTENT_CLASS,
+  FloatingSheetFrame,
+} from "@/app/components/layout/FloatingSheetFrame";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -57,7 +59,7 @@ interface SurveyResponse {
 }
 
 /* ─── Mock data ─── */
-const SURVEYS: Survey[] = [
+const SURVEY_SEEDS: Survey[] = [
   {
     id: "s1",
     name: "Post-Visit Patient Satisfaction",
@@ -239,17 +241,136 @@ const SURVEYS: Survey[] = [
   },
 ];
 
+const SURVEY_GENERATION_OWNERS = [
+  "Sarah Chen", "Marcus Webb", "Priya Nair", "James Osei", "Jordan Lee", "Alex Rivera", "Taylor Brooks", "Casey Morgan",
+] as const;
+
+const SURVEY_SUBJECTS = [
+  "Patient intake experience",
+  "Referral pathway feedback",
+  "Billing and statements clarity",
+  "Front desk courtesy",
+  "Clinical wait times",
+  "Facility cleanliness",
+  "Telehealth session quality",
+  "Pharmacy pickup experience",
+  "Lab results communication",
+  "Discharge instruction clarity",
+  "Care team coordination",
+  "Follow-up scheduling ease",
+  "Insurance benefits literacy",
+] as const;
+
+function createGeneratedSurvey(index: number): Survey {
+  const i = index - 7;
+  const types: SurveyType[] = ["nps", "standard", "custom"];
+  const statuses: SurveyStatus[] = ["active", "active", "active", "draft", "closed"];
+  const type = types[i % 3];
+  const status = statuses[i % 5];
+  const subject = SURVEY_SUBJECTS[i % SURVEY_SUBJECTS.length];
+  const wave = Math.floor(i / SURVEY_SUBJECTS.length) + 1;
+  const name = wave > 1 ? `${subject} (${wave})` : subject;
+  const sent = 120 + (i * 37) % 4_200;
+  const responses = Math.floor(sent * (0.35 + (i % 5) * 0.08));
+  const completionRate = Math.min(98, 62 + (i % 11) * 3);
+  const npsScore = type === "nps" ? 35 + (i % 48) : null;
+  const owner = SURVEY_GENERATION_OWNERS[i % SURVEY_GENERATION_OWNERS.length];
+  const lastUpdated = ["Apr 13, 2026", "Apr 11, 2026", "Apr 8, 2026", "Apr 4, 2026", "Mar 28, 2026", "Mar 15, 2026"][i % 6];
+
+  const questions: Question[] =
+    type === "nps"
+      ? [
+          {
+            id: "q1",
+            text: "How likely are you to recommend us to a friend or colleague?",
+            type: "nps",
+            options: [],
+          },
+        ]
+      : type === "standard"
+        ? [
+            {
+              id: "q1",
+              text: "How satisfied were you with your overall experience?",
+              type: "rating",
+              options: [],
+            },
+          ]
+        : [
+            {
+              id: "q1",
+              text: "What is the single biggest improvement we could make?",
+              type: "text",
+              options: [],
+            },
+          ];
+
+  return {
+    id: `s${index}`,
+    name,
+    type,
+    status,
+    sent,
+    responses,
+    npsScore,
+    completionRate,
+    lastUpdated,
+    owner,
+    questions,
+    recentResponses: [
+      {
+        id: "r1",
+        respondentName: "Jamie Quinn",
+        score: type === "nps" ? 9 : null,
+        comment: "Clear questions and quick to complete.",
+        respondedOn: "Apr 12",
+      },
+    ],
+  };
+}
+
+/** 6 hand-authored seeds + 44 generated rows → 50 directory surveys. */
+const SURVEY_CATALOG: Survey[] = [
+  ...SURVEY_SEEDS,
+  ...Array.from({ length: 44 }, (_, k) => createGeneratedSurvey(7 + k)),
+];
+
+const SURVEYS_PAGE_SIZE = 12;
+
+function SurveysLoadMoreShimmer() {
+  return (
+    <div
+      className="flex flex-col gap-2 border-t border-border px-6 py-4"
+      aria-busy="true"
+      aria-live="polite"
+    >
+      <span className="sr-only">Loading more surveys</span>
+      {[0, 1, 2].map((row) => (
+        <div key={row} className="flex min-h-[52px] items-center gap-4">
+          <div className="inbox-proto-shimmer-block h-4 max-w-[220px] flex-1 rounded-md" />
+          <div className="inbox-proto-shimmer-block h-6 w-20 shrink-0 rounded-full" />
+          <div className="inbox-proto-shimmer-block h-6 w-24 shrink-0 rounded-full" />
+          <div className="inbox-proto-shimmer-block h-4 w-16 shrink-0 rounded-md" />
+          <div className="inbox-proto-shimmer-block h-4 w-20 shrink-0 rounded-md" />
+          <div className="inbox-proto-shimmer-block h-2 w-24 shrink-0 rounded-full" />
+        </div>
+      ))}
+      <div className="inbox-proto-shimmer-block mx-auto mt-2 h-3 w-40 rounded-full" />
+    </div>
+  );
+}
+
 /* ─── Config ─── */
 const TYPE_CONFIG: Record<SurveyType, { label: string; className: string }> = {
-  nps:      { label: "NPS",      className: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-400" },
-  standard: { label: "Standard", className: "bg-blue-50   text-blue-700   border-blue-200   dark:bg-blue-950/40   dark:text-blue-400"   },
-  custom:   { label: "Custom",   className: "bg-amber-50  text-amber-700  border-amber-200  dark:bg-amber-950/40  dark:text-amber-400"  },
+  nps:      { label: "NPS",      className: "bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400" },
+  standard: { label: "Standard", className: "bg-blue-50   text-blue-700   dark:bg-blue-950/40   dark:text-blue-400"   },
+  custom:   { label: "Custom",   className: "bg-amber-50  text-amber-700  dark:bg-amber-950/40  dark:text-amber-400"  },
 };
 
 const STATUS_CONFIG: Record<SurveyStatus, { label: string; className: string; icon: React.ElementType }> = {
-  active: { label: "Active", className: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400", icon: CheckCircle2 },
-  draft:  { label: "Draft",  className: "bg-slate-50  text-slate-600  border-slate-200  dark:bg-slate-800/40  dark:text-slate-400",  icon: Clock },
-  closed: { label: "Closed", className: "bg-red-50    text-red-600    border-red-200    dark:bg-red-950/40    dark:text-red-400",    icon: XCircle },
+  active: { label: "Active", className: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400", icon: CheckCircle2 },
+  draft:  { label: "Draft",  className: "bg-slate-50  text-slate-600  dark:bg-slate-800/40  dark:text-slate-400",  icon: Clock },
+  closed: { label: "Closed", className: "bg-red-50    text-red-600    dark:bg-red-950/40    dark:text-red-400",    icon: XCircle },
 };
 
 const NPS_COLOR_CLASS = (score: number) =>
@@ -314,8 +435,9 @@ function SurveyReportsSheet({
   onClose: () => void;
 }) {
   if (!survey) return null;
-  const typeCfg   = TYPE_CONFIG[survey.type];
-  const statusCfg = STATUS_CONFIG[survey.status];
+  const typeCfg    = TYPE_CONFIG[survey.type];
+  const statusCfg  = STATUS_CONFIG[survey.status];
+  const StatusIcon = statusCfg.icon;
 
   const npsPromoters  = survey.questions.find((q) => q.type === "nps")?.options?.[0]?.pct ?? 0;
   const npsPassives   = survey.questions.find((q) => q.type === "nps")?.options?.[1]?.pct ?? 0;
@@ -323,15 +445,40 @@ function SurveyReportsSheet({
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full max-w-xl overflow-y-auto flex flex-col gap-0">
-        <SheetHeader className="mb-6">
-          <SheetTitle className="text-base leading-snug pr-8">{survey.name}</SheetTitle>
-          <SheetDescription className="flex items-center gap-2 mt-1">
-            <Badge variant="outline" className={`text-xs ${typeCfg.className}`}>{typeCfg.label}</Badge>
-            <Badge variant="outline" className={`text-xs ${statusCfg.className}`}>{survey.status}</Badge>
-          </SheetDescription>
-        </SheetHeader>
-
+      <SheetContent
+        side="right"
+        inset="floating"
+        floatingSize="md"
+        className={FLOATING_SHEET_FRAME_CONTENT_CLASS}
+      >
+        <FloatingSheetFrame
+          title={survey.name}
+          description={
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline" className={typeCfg.className}>{typeCfg.label}</Badge>
+              <Badge variant="outline" className={`gap-1 ${statusCfg.className}`}>
+                <StatusIcon size={10} strokeWidth={1.6} absoluteStrokeWidth />
+                {statusCfg.label}
+              </Badge>
+            </div>
+          }
+          classNames={{
+            footer:
+              "flex w-full flex-row flex-wrap justify-start gap-2 border-t border-border sm:justify-start",
+          }}
+          footer={
+            <>
+              <Button variant="outline" size="sm" className="cursor-pointer gap-1.5 text-xs">
+                <Download size={12} strokeWidth={1.6} absoluteStrokeWidth />
+                Export responses
+              </Button>
+              <Button variant="outline" size="sm" className="cursor-pointer gap-1.5 text-xs">
+                <Send size={12} strokeWidth={1.6} absoluteStrokeWidth />
+                Send survey
+              </Button>
+            </>
+          }
+        >
         {/* Summary cards */}
         <div className="grid grid-cols-2 gap-3 mb-6">
           {[
@@ -429,18 +576,7 @@ function SurveyReportsSheet({
             </p>
           </div>
         )}
-
-        {/* Footer actions */}
-        <div className="flex gap-2 mt-6 pt-4 border-t border-border shrink-0">
-          <Button variant="outline" size="sm" className="cursor-pointer gap-1.5 text-xs">
-            <Download size={12} strokeWidth={1.6} absoluteStrokeWidth />
-            Export responses
-          </Button>
-          <Button variant="outline" size="sm" className="cursor-pointer gap-1.5 text-xs">
-            <Send size={12} strokeWidth={1.6} absoluteStrokeWidth />
-            Send survey
-          </Button>
-        </div>
+        </FloatingSheetFrame>
       </SheetContent>
     </Sheet>
   );
@@ -499,12 +635,60 @@ export function SurveysView() {
   const [statusFilter, setStatusFilter] = useState<SurveyStatus | "all">("all");
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(SURVEYS_PAGE_SIZE);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const listScrollRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const loadMoreLockRef = useRef(false);
 
-  const filtered = SURVEYS.filter((s) => {
-    const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) || s.owner.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === "all" || s.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filtered = useMemo(
+    () =>
+      SURVEY_CATALOG.filter((s) => {
+        const matchesSearch =
+          s.name.toLowerCase().includes(search.toLowerCase()) ||
+          s.owner.toLowerCase().includes(search.toLowerCase());
+        const matchesStatus = statusFilter === "all" || s.status === statusFilter;
+        return matchesSearch && matchesStatus;
+      }),
+    [search, statusFilter],
+  );
+
+  useEffect(() => {
+    loadMoreLockRef.current = false;
+    setVisibleCount(Math.min(SURVEYS_PAGE_SIZE, Math.max(filtered.length, 0)));
+  }, [search, statusFilter, filtered.length]);
+
+  useEffect(() => {
+    const root = listScrollRef.current;
+    const sentinel = sentinelRef.current;
+    if (!root || !sentinel || filtered.length === 0 || visibleCount >= filtered.length || isLoadingMore) {
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (
+          !entry.isIntersecting ||
+          isLoadingMore ||
+          loadMoreLockRef.current ||
+          visibleCount >= filtered.length
+        ) {
+          return;
+        }
+        loadMoreLockRef.current = true;
+        setIsLoadingMore(true);
+        window.setTimeout(() => {
+          setVisibleCount((c) => Math.min(c + SURVEYS_PAGE_SIZE, filtered.length));
+          setIsLoadingMore(false);
+          loadMoreLockRef.current = false;
+        }, 780);
+      },
+      { root, rootMargin: "96px", threshold: 0 },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [filtered.length, isLoadingMore, visibleCount]);
+
+  const pagedSurveys = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
 
   const openReports = useCallback((survey: Survey) => {
     setSelectedSurvey(survey);
@@ -518,8 +702,8 @@ export function SurveysView() {
     { label: "Closed",     value: "closed" },
   ];
 
-  const activeSurveys = SURVEYS.filter((s) => s.status === "active").length;
-  const totalResponses = SURVEYS.reduce((sum, s) => sum + s.responses, 0);
+  const activeSurveys = SURVEY_CATALOG.filter((s) => s.status === "active").length;
+  const totalResponses = SURVEY_CATALOG.reduce((sum, s) => sum + s.responses, 0);
 
   const surveyColumns = useMemo(
     () => [
@@ -542,7 +726,7 @@ export function SurveysView() {
         cell: (info) => {
           const typeCfg = TYPE_CONFIG[info.getValue()];
           return (
-            <Badge variant="outline" className={`text-[length:var(--font-size)] ${typeCfg.className}`}>
+            <Badge variant="outline" className={typeCfg.className}>
               {typeCfg.label}
             </Badge>
           );
@@ -556,9 +740,10 @@ export function SurveysView() {
         enableSorting: true,
         cell: (info) => {
           const statusCfg = STATUS_CONFIG[info.getValue()];
+          const RowStatusIcon = statusCfg.icon;
           return (
-            <Badge variant="outline" className={`gap-1 text-[length:var(--font-size)] ${statusCfg.className}`}>
-              <statusCfg.icon size={10} strokeWidth={1.6} absoluteStrokeWidth />
+            <Badge variant="outline" className={`gap-1 ${statusCfg.className}`}>
+              <RowStatusIcon size={10} strokeWidth={1.6} absoluteStrokeWidth />
               {statusCfg.label}
             </Badge>
           );
@@ -663,6 +848,7 @@ export function SurveysView() {
         header: "",
         meta: { settingsLabel: "Actions" },
         size: 52,
+        enableSorting: false,
         enableResizing: false,
         enableHiding: false,
         cell: ({ row }) => (
@@ -692,18 +878,20 @@ export function SurveysView() {
 
         {/* ── Table card ── */}
         <div className="mx-6 mb-6 flex min-h-0 flex-1 flex-col overflow-hidden bg-background">
-          <div className="min-h-0 flex-1 overflow-y-auto border-b border-border">
+          <div ref={listScrollRef} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
             <AppDataTable<Survey>
               tableId="surveys.directory"
-              data={filtered}
+              data={pagedSurveys}
               columns={surveyColumns}
+              initialSorting={[{ id: "lastUpdated", desc: true }]}
               onRowClick={openReports}
               getRowId={(row) => row.id}
               emptyState={surveysEmpty}
               columnSheetTitle="Survey columns"
               className="min-h-0 min-w-0 px-0"
+              stickyToolbar
               toolbarLeft={
-                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                   <div className="relative max-w-xs flex-1">
                     <Search
                       size={13}
@@ -720,9 +908,15 @@ export function SurveysView() {
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-8 cursor-pointer gap-1.5 text-xs">
-                        {STATUS_OPTS.find((o) => o.value === statusFilter)?.label}
-                        <ChevronDown size={12} strokeWidth={1.6} absoluteStrokeWidth />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="shrink-0"
+                        aria-label={`Survey status: ${STATUS_OPTS.find((o) => o.value === statusFilter)?.label ?? "All status"}`}
+                        title={`Survey status: ${STATUS_OPTS.find((o) => o.value === statusFilter)?.label ?? "All status"}`}
+                      >
+                        <Filter className="size-4 shrink-0" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-36">
@@ -738,28 +932,29 @@ export function SurveysView() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <div className="ml-auto flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">
-                      {filtered.length} survey{filtered.length !== 1 ? "s" : ""}
-                    </span>
-                    <Button variant="outline" size="sm" className="h-8 cursor-pointer gap-1.5 text-xs">
-                      <Download size={12} strokeWidth={1.6} absoluteStrokeWidth />
-                      Export
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="shrink-0"
+                      aria-label="Export surveys"
+                      title="Export surveys"
+                    >
+                      <Download className="size-4 shrink-0" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
                     </Button>
                   </div>
                 </div>
               }
             />
-          </div>
-
-          {/* Footer */}
-          <div className="px-4 py-3 border-t border-border flex items-center justify-between shrink-0">
-            <p className="text-xs text-muted-foreground">
-              Showing {filtered.length} of {SURVEYS.length} surveys
-            </p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="h-7 text-xs cursor-pointer" disabled>Previous</Button>
-              <Button variant="outline" size="sm" className="h-7 text-xs cursor-pointer" disabled>Next</Button>
-            </div>
+            {isLoadingMore ? <SurveysLoadMoreShimmer /> : null}
+            {visibleCount < filtered.length && !isLoadingMore ? (
+              <div ref={sentinelRef} className="h-2 w-full shrink-0" aria-hidden />
+            ) : null}
+            {visibleCount >= filtered.length && filtered.length > 0 ? (
+              <p className="px-6 pb-4 text-center text-xs text-muted-foreground">
+                All {filtered.length} matching survey{filtered.length !== 1 ? "s" : ""} loaded
+              </p>
+            ) : null}
           </div>
         </div>
 

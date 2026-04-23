@@ -694,7 +694,7 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
                     ].map(col => (
                       <th
                         key={col.key}
-                        className={`${col.width} text-left px-4 py-3 text-[11px] text-[#888] dark:text-[#6b7280] font-['Inter',sans-serif] uppercase tracking-[0.5px]`}
+                        className={`${col.width} text-left px-4 py-3 text-[length:var(--table-label-size)] text-[#888] dark:text-[#6b7280] font-['Inter',sans-serif] uppercase tracking-[0.5px]`}
                         style={{ fontWeight: 400 }}
                       >
                         {col.key !== "actions" ? (
@@ -838,18 +838,6 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
                 </tbody>
               </table>
             </div>
-
-            {/* Table footer */}
-            {filteredSchedules.length > 0 && (
-              <div className="px-5 py-3 border-t border-[#eaeaea] dark:border-[#333a47] flex items-center justify-between">
-                <span className="text-[11px] text-[#999] dark:text-[#6b7280] font-['Inter',sans-serif]">
-                  Showing {filteredSchedules.length} of {activeTab === "mine" ? allSchedules.filter(s => s.owner === currentUser).length : allSchedules.filter(s => s.owner !== currentUser).length} schedules
-                </span>
-                <span className="text-[11px] text-[#bbb] dark:text-[#4d5568] font-['Inter',sans-serif]">
-                  {totalSends} total sends across all schedules
-                </span>
-              </div>
-            )}
           </div>
         )}
       </div>

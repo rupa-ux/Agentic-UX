@@ -4,17 +4,31 @@ import * as React from "react";
 
 import { cn } from "./utils";
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+type TableProps = React.ComponentProps<"table"> & {
+  /**
+   * When false, render the `<table>` only (no outer `overflow-x-auto` shell).
+   * Use when a parent already owns horizontal scroll — e.g. {@link AppDataTable}
+   * — so `position: sticky` on cells works against a single scrollport.
+   * @default true
+   */
+  withScrollContainer?: boolean;
+};
+
+function Table({ className, withScrollContainer = true, ...props }: TableProps) {
+  const tableEl = (
+    <table
+      data-slot="table"
+      className={cn("w-full caption-bottom text-sm", className)}
+      {...props}
+    />
+  );
+  if (!withScrollContainer) return tableEl;
   return (
     <div
       data-slot="table-container"
       className="relative w-full overflow-x-auto"
     >
-      <table
-        data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
-        {...props}
-      />
+      {tableEl}
     </div>
   );
 }
@@ -70,7 +84,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "text-foreground h-10 px-2 text-left align-middle text-[length:var(--table-label-size)] font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className,
       )}
       {...props}

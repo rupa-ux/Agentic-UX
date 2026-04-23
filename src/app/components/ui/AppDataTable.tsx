@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type UIEvent,
 } from "react";
 import { AppDataTableColumnSettingsTrigger } from "@/app/components/ui/AppDataTableColumnSettingsTrigger";
 import {
@@ -38,6 +39,12 @@ import {
   buildAppDataTableStorageKey,
 } from "@/app/components/ui/appDataTableTypes";
 import {
+  type AppDataTableRowDensity,
+  APP_DATA_TABLE_DENSITY_CELL,
+  APP_DATA_TABLE_DENSITY_HEAD,
+  APP_DATA_TABLE_DENSITY_RESIZE_HANDLE_H,
+} from "@/app/components/ui/appDataTableRowDensity";
+import {
   buildLayoutInputsFromColumnDefs,
   buildSizeWeightsFromColumnDefs,
   distributeWidths,
@@ -59,6 +66,25 @@ function isSameColumnSizing(next: ColumnSizingState, prev: ColumnSizingState): b
     if (prev[k] !== next[k]) return false;
   }
   return true;
+}
+
+/** Non-frozen header cells: pin to top of the table scrollport; z below inline leader heads (30+). */
+const STICKY_SCROLLING_HEAD_CLASS = "sticky top-0 z-[25] bg-background";
+const STICKY_SCROLLING_CELL_CLASS = "relative z-0";
+
+/** Leading sticky columns share background + row state; `left` / `z-index` are set inline from column widths. */
+const STICKY_LEADER_HEAD_BASE =
+  "sticky top-0 border-r border-transparent bg-background transition-[box-shadow,border-color] duration-200 ease-out overflow-visible";
+const STICKY_LEADER_CELL_BASE =
+  "sticky border-r border-transparent bg-background transition-[box-shadow,border-color] duration-200 ease-out overflow-visible group-hover/table-row:bg-muted/30 group-data-[state=selected]/table-row:bg-muted";
+/** Applied on the **last** leading sticky column when `scrollLeft > 0` (edge of the frozen band). */
+const STICKY_EDGE_ACTIVE_CLASS =
+  "border-border shadow-[8px_0_24px_-10px_rgba(15,23,42,0.1)] dark:shadow-[8px_0_28px_-12px_rgba(0,0,0,0.55)]";
+
+function sumColumnWidthsBefore(beforeIndex: number, getSizeAt: (i: number) => number): number {
+  let sum = 0;
+  for (let i = 0; i < beforeIndex; i++) sum += getSizeAt(i);
+  return sum;
 }
 
 function mergeColumnOrder(saved: string[], defaults: string[]): string[] {
@@ -106,11 +132,37 @@ export interface AppDataTableProps<TData> {
   className?: string;
   /** Marks row as selected (e.g. `data-state="selected"` for directory tables). */
   isRowSelected?: (row: TData) => boolean;
+  /**
+   * Pin the first **visible** column while scrolling horizontally (primary label column stays readable).
+   * Default true for all directory `AppDataTable` instances; set false only for rare layouts that conflict with sticky.
+   */
+  stickyFirstColumn?: boolean;
+  /**
+   * Pin the first N **visible** columns (left offsets stack). When {@link stickyFirstColumn} is false, this is ignored.
+   * Default **1** when omitted. Use **0** with `stickyFirstColumn` true to disable horizontal pinning.
+   */
+  stickyLeadingColumnCount?: number;
   /** When true, omit the built-in Columns control; use with `columnSheetOpen` + `onColumnSheetOpenChange` and {@link AppDataTableColumnSettingsTrigger} in the page header. */
   hideColumnsButton?: boolean;
   /** Controlled column sheet open state (pair with `onColumnSheetOpenChange`). */
   columnSheetOpen?: boolean;
   onColumnSheetOpenChange?: (open: boolean) => void;
+  /**
+   * Keep the toolbar row (filters + Columns) pinned to the top of the **nearest vertical scroll ancestor**.
+   * Use when the table lives inside a scrollable canvas (e.g. Surveys).
+   */
+  stickyToolbar?: boolean;
+  /**
+   * Scroll the table body vertically **inside** this component (`overflow-auto` on the table scrollport).
+   * Keeps thead `position: sticky` reliable (parent flex column should use `min-h-0 flex-1`).
+   */
+  scrollableBody?: boolean;
+  /**
+   * Row vertical padding + header min-height. **`default`** = compact reference (Payments/Contacts directory);
+   * **`medium`** = legacy AppDataTable spacing; **`large`** = extra comfort. See `appDataTableRowDensity.ts`.
+   * @default "medium"
+   */
+  rowDensity?: AppDataTableRowDensity;
 }
 
 export function AppDataTable<TData>({
@@ -130,7 +182,15 @@ export function AppDataTable<TData>({
   hideColumnsButton = false,
   columnSheetOpen: columnSheetOpenProp,
   onColumnSheetOpenChange,
+  stickyFirstColumn = true,
+  stickyLeadingColumnCount: stickyLeadingColumnCountProp,
+  stickyToolbar = false,
+  scrollableBody = false,
+  rowDensity = "medium",
 }: AppDataTableProps<TData>) {
+  const densityCell = APP_DATA_TABLE_DENSITY_CELL[rowDensity];
+  const densityHead = APP_DATA_TABLE_DENSITY_HEAD[rowDensity];
+  const densityResizeH = APP_DATA_TABLE_DENSITY_RESIZE_HANDLE_H[rowDensity];
   if (
     process.env.NODE_ENV !== "production" &&
     hideColumnsButton &&
@@ -176,6 +236,8 @@ export function AppDataTable<TData>({
   const [sorting, setSorting] = useState<SortingState>(() => initialSorting ?? []);
   const layoutRef = useRef<HTMLDivElement>(null);
   const [layoutW, setLayoutW] = useState(0);
+  /** Sticky first-column edge shadow only while horizontally scrolled (see `STICKY_EDGE_ACTIVE_CLASS`). */
+  const [stickyHScroll, setStickyHScroll] = useState(false);
 
   const setColumnOrder: OnChangeFn<ColumnOrderState> = useCallback(
     (updater) => {
@@ -228,12 +290,20 @@ export function AppDataTable<TData>({
     enableColumnResizing: true,
     getRowId,
     defaultColumn: {
-      enableSorting: false,
+      /** Directory tables: sort any accessor column unless the column opts out (`enableSorting: false`). */
+      enableSorting: true,
       minSize: 72,
       maxSize: 640,
       size: 160,
     },
   });
+
+  const visibleLeafCount = table.getVisibleLeafColumns().length;
+  const stickyN =
+    stickyLeadingColumnCountProp !== undefined ? stickyLeadingColumnCountProp : 1;
+  const effectiveStickyCount = stickyFirstColumn
+    ? Math.min(Math.max(0, stickyN), visibleLeafCount)
+    : 0;
 
   const visibleOrderedIds = useMemo(() => {
     return merged.columnOrder.filter((id) => {
@@ -276,17 +346,11 @@ export function AppDataTable<TData>({
     canHide: col.getCanHide(),
   }));
 
-  const handleMove = useCallback(
-    (columnId: string, direction: -1 | 1) => {
-      const order = [...merged.columnOrder];
-      const i = order.indexOf(columnId);
-      if (i < 0) return;
-      const j = i + direction;
-      if (j < 0 || j >= order.length) return;
-      [order[i], order[j]] = [order[j], order[i]];
-      setColumnOrder(order);
+  const handleReorderColumnIds = useCallback(
+    (orderedIds: string[]) => {
+      setColumnOrder(mergeColumnOrder(orderedIds, columnIds));
     },
-    [merged.columnOrder, setColumnOrder],
+    [columnIds, setColumnOrder],
   );
 
   const handleReset = useCallback(() => {
@@ -305,6 +369,35 @@ export function AppDataTable<TData>({
    */
   const tableWidthPx = layoutW > 0 ? Math.max(layoutW, tableMinWidthPx) : tableMinWidthPx;
 
+  const setStickyEdgeFromScrollLeft = useCallback((scrollLeft: number) => {
+    const next = scrollLeft > 1;
+    setStickyHScroll((prev) => (prev !== next ? next : prev));
+  }, []);
+
+  const handleTableHorizontalScroll = useCallback(
+    (e: UIEvent<HTMLDivElement>) => {
+      if (effectiveStickyCount === 0) return;
+      setStickyEdgeFromScrollLeft(e.currentTarget.scrollLeft);
+    },
+    [effectiveStickyCount, setStickyEdgeFromScrollLeft],
+  );
+
+  useLayoutEffect(() => {
+    if (effectiveStickyCount === 0) {
+      setStickyHScroll(false);
+      return;
+    }
+    const el = layoutRef.current;
+    setStickyEdgeFromScrollLeft(el?.scrollLeft ?? 0);
+  }, [
+    effectiveStickyCount,
+    setStickyEdgeFromScrollLeft,
+    layoutW,
+    tableMinWidthPx,
+    data.length,
+    visibleOrderedIds,
+  ]);
+
   if (data.length === 0 && emptyState) {
     return <>{emptyState}</>;
   }
@@ -313,9 +406,21 @@ export function AppDataTable<TData>({
     Boolean(toolbarTitle) || Boolean(toolbarLeft) || !hideColumnsButton;
 
   return (
-    <div className={cn("flex min-w-0 flex-col gap-2 px-6", className)}>
+    <div
+      className={cn(
+        "flex min-h-0 min-w-0 flex-col gap-2 px-6",
+        scrollableBody && "min-h-0 flex-1",
+        className,
+      )}
+    >
       {showToolbar ? (
-        <div className="flex flex-col gap-2">
+        <div
+          className={cn(
+            "flex shrink-0 flex-col gap-2",
+            stickyToolbar &&
+              "sticky top-0 z-[25] shrink-0 border-b border-border bg-background pb-2 pt-0",
+          )}
+        >
           {toolbarTitle ? (
             <>
               <div className="flex min-h-0 items-center justify-between gap-2">
@@ -356,40 +461,74 @@ export function AppDataTable<TData>({
         onOpenChange={setColumnSheetOpen}
         title={columnsLabel}
         columns={sheetColumns}
-        onMove={handleMove}
+        onReorder={handleReorderColumnIds}
         onToggleVisibility={(id, visible) => {
           table.getColumn(id)?.toggleVisibility(visible);
         }}
         onReset={handleReset}
       />
 
-      <div ref={layoutRef} className="relative min-w-0 w-full overflow-x-auto">
+      <div
+        ref={layoutRef}
+        className={cn(
+          "relative w-full min-w-0",
+          scrollableBody ? "min-h-0 flex-1 overflow-auto" : "min-h-0 overflow-x-auto",
+        )}
+        onScroll={effectiveStickyCount > 0 ? handleTableHorizontalScroll : undefined}
+      >
         <Table
-          className="table-fixed w-full text-[length:var(--font-size)] leading-normal"
+          withScrollContainer={false}
+          className={cn(
+            "table-fixed w-full text-[length:var(--font-size)] leading-normal",
+            effectiveStickyCount > 0 && "isolate",
+          )}
           style={{ width: tableWidthPx, minWidth: tableMinWidthPx }}
         >
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="border-b border-border hover:bg-transparent">
-                {headerGroup.headers.map((header) => {
+                {headerGroup.headers.map((header, headerIndex) => {
                   const canSort = header.column.getCanSort();
                   const sorted = header.column.getIsSorted();
                   const sortedActive = sorted === "asc" || sorted === "desc";
+                  const isStickyLeader =
+                    effectiveStickyCount > 0 && headerIndex < effectiveStickyCount && !header.isPlaceholder;
+                  const isLastStickyLeader = isStickyLeader && headerIndex === effectiveStickyCount - 1;
+                  const stickyLeftPx = isStickyLeader
+                    ? sumColumnWidthsBefore(headerIndex, (i) => headerGroup.headers[i].getSize())
+                    : undefined;
                   return (
                     <TableHead
                       key={header.id}
                       className={cn(
-                        "relative h-auto min-h-[52px] overflow-hidden px-4 py-4 text-left align-middle text-[length:var(--font-size)] font-medium leading-normal text-muted-foreground",
+                        "h-auto text-left align-middle text-[length:var(--table-label-size)] font-medium leading-normal text-muted-foreground",
+                        densityHead,
+                        isStickyLeader ? "overflow-visible" : "overflow-hidden",
+                        (effectiveStickyCount === 0 || !isStickyLeader) && STICKY_SCROLLING_HEAD_CLASS,
                         header.column.getIsResizing() && "select-none",
+                        isStickyLeader &&
+                          effectiveStickyCount > 0 &&
+                          cn(
+                            STICKY_LEADER_HEAD_BASE,
+                            isLastStickyLeader && stickyHScroll && STICKY_EDGE_ACTIVE_CLASS,
+                          ),
                       )}
-                      style={{ width: header.getSize() }}
+                      style={{
+                        width: header.getSize(),
+                        ...(isStickyLeader
+                          ? {
+                              left: stickyLeftPx,
+                              zIndex: 30 + headerIndex,
+                            }
+                          : {}),
+                      }}
                     >
                       {header.isPlaceholder ? null : (
                         <div className="flex min-w-0 items-center gap-1 pr-2">
                           {canSort ? (
                             <button
                               type="button"
-                              className="flex min-w-0 items-center gap-1 rounded-md p-1 text-left text-[length:var(--font-size)] leading-normal font-medium text-muted-foreground hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                              className="flex min-w-0 items-center gap-1 rounded-md p-1 text-left text-[length:var(--table-label-size)] leading-normal font-medium text-muted-foreground hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                               onClick={header.column.getToggleSortingHandler()}
                             >
                               <span
@@ -433,7 +572,10 @@ export function AppDataTable<TData>({
                           aria-label={`Resize ${header.column.id}`}
                           onMouseDown={header.getResizeHandler()}
                           onTouchStart={header.getResizeHandler()}
-                          className="absolute top-1/2 right-0 z-10 flex h-10 w-3 -translate-y-1/2 cursor-col-resize touch-none items-center justify-center hover:[&>span]:bg-primary"
+                          className={cn(
+                            "absolute top-1/2 right-0 z-10 flex w-3 -translate-y-1/2 cursor-col-resize touch-none items-center justify-center hover:[&>span]:bg-primary",
+                            densityResizeH,
+                          )}
                           data-active={header.column.getIsResizing()}
                         >
                           <span
@@ -452,33 +594,61 @@ export function AppDataTable<TData>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={isRowSelected?.(row.original) ? "selected" : undefined}
-                className={cn(
-                  "border-b border-border hover:bg-muted/30 data-[state=selected]:bg-muted",
-                  onRowClick && "cursor-pointer",
-                )}
-                onClick={onRowClick ? () => onRowClick(row.original) : undefined}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    className="min-w-0 overflow-hidden whitespace-normal px-4 py-4 align-middle text-[length:var(--font-size)] leading-normal text-foreground"
-                    style={{ width: cell.column.getSize() }}
-                    onClick={
-                      cell.column.id === "actions" ||
-                      (cell.column.columnDef.meta as { stopRowClick?: boolean } | undefined)?.stopRowClick
-                        ? (e) => e.stopPropagation()
-                        : undefined
-                    }
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
+            {table.getRowModel().rows.map((row) => {
+              const visibleCells = row.getVisibleCells();
+              return (
+                <TableRow
+                  key={row.id}
+                  data-state={isRowSelected?.(row.original) ? "selected" : undefined}
+                  className={cn(
+                    "group/table-row border-b border-border hover:bg-muted/30 data-[state=selected]:bg-muted",
+                    onRowClick && "cursor-pointer",
+                  )}
+                  onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+                >
+                {visibleCells.map((cell, cellIndex) => {
+                  const isStickyLeader = effectiveStickyCount > 0 && cellIndex < effectiveStickyCount;
+                  const isLastStickyLeader = isStickyLeader && cellIndex === effectiveStickyCount - 1;
+                  const stickyLeftPx = isStickyLeader
+                    ? sumColumnWidthsBefore(cellIndex, (i) => visibleCells[i].column.getSize())
+                    : undefined;
+                  return (
+                    <TableCell
+                      key={cell.id}
+                      className={cn(
+                        "min-w-0 whitespace-normal align-middle text-[length:var(--font-size)] leading-normal text-foreground",
+                        densityCell,
+                        isStickyLeader ? "overflow-visible" : "overflow-hidden",
+                        effectiveStickyCount > 0 && !isStickyLeader && STICKY_SCROLLING_CELL_CLASS,
+                        isStickyLeader &&
+                          cn(
+                            STICKY_LEADER_CELL_BASE,
+                            isLastStickyLeader && stickyHScroll && STICKY_EDGE_ACTIVE_CLASS,
+                          ),
+                      )}
+                      style={{
+                        width: cell.column.getSize(),
+                        ...(isStickyLeader
+                          ? {
+                              left: stickyLeftPx,
+                              zIndex: 20 + cellIndex,
+                            }
+                          : {}),
+                      }}
+                      onClick={
+                        cell.column.id === "actions" ||
+                        (cell.column.columnDef.meta as { stopRowClick?: boolean } | undefined)?.stopRowClick
+                          ? (e) => e.stopPropagation()
+                          : undefined
+                      }
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  );
+                })}
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>

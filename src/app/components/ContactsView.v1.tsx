@@ -1,9 +1,8 @@
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { createColumnHelper } from "@tanstack/react-table";
 import {
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   ChevronUp,
   Eye,
   Mail,
@@ -22,6 +21,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
+import { TooltipContent, TooltipProvider } from "@/app/components/ui/tooltip";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { Checkbox } from "@/app/components/ui/checkbox";
@@ -103,10 +103,14 @@ export interface Contact {
   locationCount?: number;
   lastActivity: string;
   email?: string;
+  /** Shown in the Phone column when `hasPhone` is true. */
+  phone?: string;
   contactType?: string;
   segments?: string[];
   createdOn?: string;
   externalId?: string;
+  /** Reasons for the score; shown in a tooltip on the score badge (not inline). */
+  experienceTags?: string[];
 }
 
 const mockContacts: Contact[] = [
@@ -122,26 +126,443 @@ const mockContacts: Contact[] = [
     location: "San Francisco, CA",
     lastActivity: "Apr 14, 2026",
     email: "b.peters@example.com",
+    phone: "(415) 555-0142",
     contactType: "Customer",
     segments: ["High value", "Newsletter", "Dental reminders"],
     createdOn: "Jan 12, 2024",
     externalId: "ext-bp-001",
+    experienceTags: ["Verified", "Promoter", "Multi-channel"],
   },
-  { id: 1, name: "Emma Reynolds", score: 4, scoreLevel: "green", hasPhone: true, hasEmail: true, hasWhatsapp: false, isLead: false, location: "Atlanta, GA", lastActivity: "Jul 05, 2024", email: "emma@example.com", contactType: "Lead", segments: ["Newsletter"], createdOn: "Mar 02, 2024", externalId: "ext-1" },
-  { id: 2, name: "Liam Mitchell", score: 1, scoreLevel: "yellow", hasPhone: true, hasEmail: true, hasWhatsapp: true, isLead: false, location: "", locationCount: 2, lastActivity: "Jul 05, 2024" },
-  { id: 3, name: "Ava Simmons", score: 6, scoreLevel: "red", hasPhone: true, hasEmail: false, hasWhatsapp: false, isLead: false, location: "", locationCount: 3, lastActivity: "Jul 05, 2024" },
-  { id: 4, name: "Noah Hayes", score: 6, scoreLevel: "red", hasPhone: true, hasEmail: true, hasWhatsapp: false, isLead: false, location: "", locationCount: 3, lastActivity: "Jul 05, 2024" },
-  { id: 5, name: "Isabella Cooper", score: 4, scoreLevel: "green", hasPhone: true, hasEmail: true, hasWhatsapp: true, isLead: false, location: "New York City, NY", lastActivity: "Jul 05, 2024" },
-  { id: 6, name: "Ethan Brooks", score: 6, scoreLevel: "red", hasPhone: false, hasEmail: false, hasWhatsapp: false, isLead: true, location: "", locationCount: 3, lastActivity: "Jul 05, 2024" },
-  { id: 7, name: "Mia Campbell", score: 4, scoreLevel: "green", hasPhone: true, hasEmail: true, hasWhatsapp: false, isLead: false, location: "Chicago, IL", lastActivity: "Jul 05, 2024" },
-  { id: 8, name: "Jackson Rivera", score: 4, scoreLevel: "green", hasPhone: true, hasEmail: true, hasWhatsapp: true, isLead: true, location: "", locationCount: 3, lastActivity: "Jul 05, 2024" },
-  { id: 9, name: "Harper Lewis", score: 6, scoreLevel: "red", hasPhone: true, hasEmail: true, hasWhatsapp: false, isLead: true, location: "San Diego, CA", lastActivity: "Jul 05, 2024" },
-  { id: 10, name: "Benjamin Foster", score: 8, scoreLevel: "green", hasPhone: true, hasEmail: true, hasWhatsapp: false, isLead: false, location: "", locationCount: 3, lastActivity: "Jul 05, 2024" },
-  { id: 11, name: "Chloe Bennett", score: 1, scoreLevel: "yellow", hasPhone: false, hasEmail: false, hasWhatsapp: false, isLead: true, location: "", locationCount: 2, lastActivity: "Jul 05, 2024" },
-  { id: 12, name: "Caleb Morris", score: 6, scoreLevel: "red", hasPhone: true, hasEmail: true, hasWhatsapp: false, isLead: false, location: "", locationCount: 8, lastActivity: "Jul 05, 2024" },
-  { id: 13, name: "Zoey Parker", score: 4, scoreLevel: "green", hasPhone: true, hasEmail: true, hasWhatsapp: true, isLead: false, location: "", locationCount: 3, lastActivity: "Jul 05, 2024" },
-  { id: 14, name: "Harper Lewis", score: 1, scoreLevel: "yellow", hasPhone: true, hasEmail: true, hasWhatsapp: false, isLead: false, location: "", locationCount: 10, lastActivity: "Jul 05, 2024" },
-  { id: 15, name: "Sophia Carter", score: 4, scoreLevel: "green", hasPhone: true, hasEmail: true, hasWhatsapp: false, isLead: false, location: "", locationCount: 3, lastActivity: "Jul 05, 2024" },
+  {
+    id: 1,
+    name: "Emma Reynolds",
+    score: 4,
+    scoreLevel: "green",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: false,
+    isLead: false,
+    location: "Atlanta, GA",
+    lastActivity: "Jul 05, 2024",
+    email: "emma@example.com",
+    phone: "(404) 555-0101",
+    contactType: "Lead",
+    segments: ["Newsletter"],
+    createdOn: "Mar 02, 2024",
+    externalId: "ext-1",
+    experienceTags: ["Engaged"],
+  },
+  {
+    id: 2,
+    name: "Liam Mitchell",
+    score: 1,
+    scoreLevel: "yellow",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: true,
+    isLead: false,
+    location: "",
+    locationCount: 2,
+    lastActivity: "Jul 05, 2024",
+    email: "liam.mitchell@example.com",
+    phone: "(312) 555-0112",
+    experienceTags: ["At risk", "SMS active"],
+  },
+  {
+    id: 3,
+    name: "Ava Simmons",
+    score: 6,
+    scoreLevel: "red",
+    hasPhone: true,
+    hasEmail: false,
+    hasWhatsapp: false,
+    isLead: false,
+    location: "",
+    locationCount: 3,
+    lastActivity: "Jul 05, 2024",
+    phone: "(206) 555-0199",
+    experienceTags: ["Detractor"],
+  },
+  {
+    id: 4,
+    name: "Noah Hayes",
+    score: 6,
+    scoreLevel: "red",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: false,
+    isLead: false,
+    location: "",
+    locationCount: 3,
+    lastActivity: "Jul 05, 2024",
+    email: "noah.hayes@example.com",
+    phone: "(617) 555-0166",
+    experienceTags: ["Slow response"],
+  },
+  {
+    id: 5,
+    name: "Isabella Cooper",
+    score: 4,
+    scoreLevel: "green",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: true,
+    isLead: false,
+    location: "New York City, NY",
+    lastActivity: "Jul 05, 2024",
+    email: "isabella.cooper@example.com",
+    phone: "(212) 555-0188",
+    experienceTags: ["VIP", "Messaging"],
+  },
+  {
+    id: 6,
+    name: "Ethan Brooks",
+    score: 6,
+    scoreLevel: "red",
+    hasPhone: false,
+    hasEmail: false,
+    hasWhatsapp: false,
+    isLead: true,
+    location: "",
+    locationCount: 3,
+    lastActivity: "Jul 05, 2024",
+    experienceTags: ["Unknown"],
+  },
+  {
+    id: 7,
+    name: "Mia Campbell",
+    score: 4,
+    scoreLevel: "green",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: false,
+    isLead: false,
+    location: "Chicago, IL",
+    lastActivity: "Jul 05, 2024",
+    email: "mia.campbell@example.com",
+    phone: "(773) 555-0133",
+    experienceTags: ["Loyal"],
+  },
+  {
+    id: 8,
+    name: "Jackson Rivera",
+    score: 4,
+    scoreLevel: "green",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: true,
+    isLead: true,
+    location: "",
+    locationCount: 3,
+    lastActivity: "Jul 05, 2024",
+    email: "jackson.rivera@example.com",
+    phone: "(305) 555-0144",
+    experienceTags: ["Lead", "Omnichannel"],
+  },
+  {
+    id: 9,
+    name: "Harper Lewis",
+    score: 6,
+    scoreLevel: "red",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: false,
+    isLead: true,
+    location: "San Diego, CA",
+    lastActivity: "Jul 05, 2024",
+    email: "harper.lewis@example.com",
+    phone: "(619) 555-0177",
+    experienceTags: ["Complaint filed"],
+  },
+  {
+    id: 10,
+    name: "Benjamin Foster",
+    score: 8,
+    scoreLevel: "green",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: false,
+    isLead: false,
+    location: "",
+    locationCount: 3,
+    lastActivity: "Jul 05, 2024",
+    email: "benjamin.foster@example.com",
+    phone: "(512) 555-0120",
+    experienceTags: ["Advocate", "Referrer"],
+  },
+  {
+    id: 11,
+    name: "Chloe Bennett",
+    score: 1,
+    scoreLevel: "yellow",
+    hasPhone: false,
+    hasEmail: false,
+    hasWhatsapp: false,
+    isLead: true,
+    location: "",
+    locationCount: 2,
+    lastActivity: "Jul 05, 2024",
+    experienceTags: ["Cold"],
+  },
+  {
+    id: 12,
+    name: "Caleb Morris",
+    score: 6,
+    scoreLevel: "red",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: false,
+    isLead: false,
+    location: "",
+    locationCount: 8,
+    lastActivity: "Jul 05, 2024",
+    email: "caleb.morris@example.com",
+    phone: "(214) 555-0155",
+    experienceTags: ["Churn risk"],
+  },
+  {
+    id: 13,
+    name: "Zoey Parker",
+    score: 4,
+    scoreLevel: "green",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: true,
+    isLead: false,
+    location: "",
+    locationCount: 3,
+    lastActivity: "Jul 05, 2024",
+    email: "zoey.parker@example.com",
+    phone: "(503) 555-0160",
+    experienceTags: ["High CSAT"],
+  },
+  {
+    id: 14,
+    name: "Hannah Lowe",
+    score: 1,
+    scoreLevel: "yellow",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: false,
+    isLead: false,
+    location: "",
+    locationCount: 10,
+    lastActivity: "Jul 05, 2024",
+    email: "hannah.lowe@example.com",
+    phone: "(801) 555-0181",
+    experienceTags: ["Passive"],
+  },
+  {
+    id: 15,
+    name: "Sophia Carter",
+    score: 4,
+    scoreLevel: "green",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: false,
+    isLead: false,
+    location: "",
+    locationCount: 3,
+    lastActivity: "Jul 05, 2024",
+    email: "sophia.carter@example.com",
+    phone: "(615) 555-0191",
+    experienceTags: ["Repeat visit"],
+  },
+  {
+    id: 16,
+    name: "Aaron Blake",
+    score: 7,
+    scoreLevel: "green",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: true,
+    isLead: false,
+    location: "Austin, TX",
+    lastActivity: "Apr 18, 2026",
+    email: "aaron.blake@example.com",
+    phone: "(512) 555-0202",
+    contactType: "Customer",
+    experienceTags: ["New", "Messaging"],
+  },
+  {
+    id: 17,
+    name: "Bianca Ortiz",
+    score: 5,
+    scoreLevel: "green",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: false,
+    isLead: false,
+    location: "Phoenix, AZ",
+    lastActivity: "Apr 17, 2026",
+    email: "bianca.ortiz@example.com",
+    phone: "(602) 555-0211",
+    experienceTags: ["Steady"],
+  },
+  {
+    id: 18,
+    name: "Diego Ramirez",
+    score: 2,
+    scoreLevel: "yellow",
+    hasPhone: true,
+    hasEmail: false,
+    hasWhatsapp: true,
+    isLead: true,
+    location: "",
+    locationCount: 1,
+    lastActivity: "Apr 16, 2026",
+    phone: "(915) 555-0222",
+    experienceTags: ["SMS only"],
+  },
+  {
+    id: 19,
+    name: "Elena Volkov",
+    score: 8,
+    scoreLevel: "green",
+    hasPhone: false,
+    hasEmail: true,
+    hasWhatsapp: false,
+    isLead: false,
+    location: "Seattle, WA",
+    lastActivity: "Apr 15, 2026",
+    email: "elena.volkov@example.com",
+    experienceTags: ["Email-first", "Promoter"],
+  },
+  {
+    id: 20,
+    name: "Felix Nguyen",
+    score: 3,
+    scoreLevel: "yellow",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: false,
+    isLead: false,
+    location: "Portland, OR",
+    lastActivity: "Apr 14, 2026",
+    email: "felix.nguyen@example.com",
+    phone: "(503) 555-0233",
+    experienceTags: ["Mixed signals"],
+  },
+  {
+    id: 21,
+    name: "Grace Okonkwo",
+    score: 9,
+    scoreLevel: "green",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: true,
+    isLead: false,
+    location: "Houston, TX",
+    lastActivity: "Apr 13, 2026",
+    email: "grace.okonkwo@example.com",
+    phone: "(713) 555-0244",
+    experienceTags: ["Champion", "Verified"],
+  },
+  {
+    id: 22,
+    name: "Hassan Ali",
+    score: 5,
+    scoreLevel: "green",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: false,
+    isLead: false,
+    location: "Detroit, MI",
+    lastActivity: "Apr 12, 2026",
+    email: "hassan.ali@example.com",
+    phone: "(313) 555-0255",
+    experienceTags: ["Family plan"],
+  },
+  {
+    id: 23,
+    name: "Ingrid Berg",
+    score: 6,
+    scoreLevel: "red",
+    hasPhone: false,
+    hasEmail: true,
+    hasWhatsapp: false,
+    isLead: false,
+    location: "",
+    locationCount: 4,
+    lastActivity: "Apr 11, 2026",
+    email: "ingrid.berg@example.com",
+    experienceTags: ["Unsub risk"],
+  },
+  {
+    id: 24,
+    name: "Jordan Miles",
+    score: 4,
+    scoreLevel: "green",
+    hasPhone: true,
+    hasEmail: false,
+    hasWhatsapp: false,
+    isLead: true,
+    location: "Denver, CO",
+    lastActivity: "Apr 10, 2026",
+    phone: "(720) 555-0266",
+    experienceTags: ["Walk-in"],
+  },
+  {
+    id: 25,
+    name: "Keisha Washington",
+    score: 7,
+    scoreLevel: "green",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: true,
+    isLead: false,
+    location: "Washington, DC",
+    lastActivity: "Apr 09, 2026",
+    email: "keisha.washington@example.com",
+    phone: "(202) 555-0277",
+    experienceTags: ["Government", "Secure"],
+  },
+  {
+    id: 26,
+    name: "Leo Santana",
+    score: 2,
+    scoreLevel: "yellow",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: true,
+    isLead: true,
+    location: "",
+    locationCount: 2,
+    lastActivity: "Apr 08, 2026",
+    email: "leo.santana@example.com",
+    phone: "(305) 555-0288",
+    experienceTags: ["Trial"],
+  },
+  {
+    id: 27,
+    name: "Maria Gonzales",
+    score: 5,
+    scoreLevel: "green",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: false,
+    isLead: false,
+    location: "San Antonio, TX",
+    lastActivity: "Apr 07, 2026",
+    email: "maria.gonzales@example.com",
+    phone: "(210) 555-0299",
+    experienceTags: ["Bilingual"],
+  },
+  {
+    id: 28,
+    name: "Nina Patel",
+    score: 8,
+    scoreLevel: "green",
+    hasPhone: true,
+    hasEmail: true,
+    hasWhatsapp: false,
+    isLead: false,
+    location: "Boston, MA",
+    lastActivity: "Apr 06, 2026",
+    email: "nina.patel@example.com",
+    phone: "(617) 555-0300",
+    experienceTags: ["Research", "High NPS"],
+  },
 ];
 
 type SavedListRow = { id: string; name: string; contacts: string; description: string; lastUpdated: string };
@@ -205,21 +626,55 @@ const mockActivity: ActivityEvent[] = [
   { id: "e5", icon: "eye", label: "Opened location announcement", at: "Apr 01, 2026 – 08:15 PM" },
 ];
 
-function ScoreChip({ score, level }: { score: number; level: ScoreLevel }) {
-  const colors: Record<ScoreLevel, string> = {
-    green: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
-    yellow: "bg-amber-500/15 text-amber-800 dark:text-amber-300",
-    red: "bg-destructive/15 text-destructive dark:text-red-300",
+/** Traffic-light backgrounds only (no border) — aligned with UI/Badge in Storybook. */
+function experienceScoreHeadlineBadgeClass(level: ScoreLevel): string {
+  const map: Record<ScoreLevel, string> = {
+    green:
+      "bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
+    yellow: "bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-200",
+    red: "bg-destructive/15 text-destructive dark:bg-destructive/20 dark:text-red-300",
   };
+  return map[level];
+}
+
+/** Numeric score as a `Badge`-style pill; `experienceTags` appear in a tooltip on hover. */
+function ExperienceScoreBatch({
+  score,
+  level,
+  tags,
+}: {
+  score: number;
+  level: ScoreLevel;
+  tags?: string[];
+}) {
+  const reasons = (tags ?? []).filter(Boolean);
+  const label =
+    reasons.length > 0
+      ? `Experience score ${score}. Reasons: ${reasons.join(", ")}.`
+      : `Experience score ${score}. No experience labels.`;
+
   return (
-    <span
-      className={cn(
-        "inline-flex min-w-8 items-center justify-center rounded-sm px-2 py-1 text-[length:var(--font-size)] font-medium",
-        colors[level],
-      )}
-    >
-      {score}
-    </span>
+    <TooltipPrimitive.Root>
+      <TooltipPrimitive.Trigger asChild>
+        <Badge
+          variant="secondary"
+          aria-label={label}
+          className={cn(
+            "h-6 min-w-6 shrink-0 justify-center border-0 px-2 py-0 font-medium tabular-nums shadow-none",
+            experienceScoreHeadlineBadgeClass(level),
+          )}
+        >
+          {score}
+        </Badge>
+      </TooltipPrimitive.Trigger>
+      <TooltipContent side="top" sideOffset={4} className="max-w-xs text-left text-xs leading-snug">
+        {reasons.length > 0 ? (
+          <span className="text-balance">{reasons.join(" · ")}</span>
+        ) : (
+          <span className="text-white/80">No experience labels on this contact.</span>
+        )}
+      </TooltipContent>
+    </TooltipPrimitive.Root>
   );
 }
 
@@ -283,16 +738,76 @@ function useContactsShell(app?: ContactsAppBridge) {
   ]);
 }
 
-function ChannelIcons({ c }: { c: Contact }) {
+function ChannelPhoneCell({ c }: { c: Contact }) {
   const dim = "text-muted-foreground/35";
   const on = "text-foreground";
   return (
-    <div className="flex items-center gap-2">
-      <Phone className={cn("size-4", c.hasPhone ? on : dim)} aria-hidden />
-      <Mail className={cn("size-4", c.hasEmail ? on : dim)} aria-hidden />
-      <MessageSquare className={cn("size-4", c.hasWhatsapp ? on : dim)} aria-label="WhatsApp" />
+    <div className="flex min-w-0 items-center gap-2">
+      <Phone className={cn("size-4 shrink-0", c.hasPhone ? on : dim)} aria-hidden />
+      {c.hasPhone ? (
+        <span className="min-w-0 truncate text-foreground" title={c.phone ?? "On file"}>
+          {c.phone ?? "On file"}
+        </span>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      )}
     </div>
   );
+}
+
+function ChannelEmailCell({ c }: { c: Contact }) {
+  const dim = "text-muted-foreground/35";
+  const on = "text-foreground";
+  const label = c.email?.trim();
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <Mail className={cn("size-4 shrink-0", c.hasEmail && label ? on : dim)} aria-hidden />
+      {c.hasEmail && label ? (
+        <span className="min-w-0 truncate text-foreground" title={label}>
+          {label}
+        </span>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      )}
+    </div>
+  );
+}
+
+function ChannelMessageCell({ c }: { c: Contact }) {
+  const dim = "text-muted-foreground/35";
+  const on = "text-foreground";
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <MessageSquare
+        className={cn("size-4 shrink-0", c.hasWhatsapp ? on : dim)}
+        aria-hidden
+        title={c.hasWhatsapp ? "Messaging on file" : undefined}
+      />
+      {c.hasWhatsapp ? (
+        <span className="text-sm text-foreground">On</span>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      )}
+    </div>
+  );
+}
+
+function contactLocationSortValue(c: Contact): string {
+  const primary = c.location?.trim();
+  if (primary) return primary.toLowerCase();
+  if (c.locationCount != null) return `\u0000${String(c.locationCount).padStart(4, "0")}`;
+  return "\uFFFF";
+}
+
+function contactPhoneSortValue(c: Contact): string {
+  if (!c.hasPhone) return "\uFFFF";
+  return (c.phone ?? "on file").toLowerCase();
+}
+
+function contactEmailSortValue(c: Contact): string {
+  const v = c.email?.trim();
+  if (!c.hasEmail || !v) return "\uFFFF";
+  return v.toLowerCase();
 }
 
 function DetailRows({ c }: { c: Contact }) {
@@ -301,6 +816,12 @@ function DetailRows({ c }: { c: Contact }) {
   const more = segs.length > 1 ? segs.length - 1 : 0;
   return (
     <dl className="flex flex-col gap-4 text-sm">
+      <div className="flex flex-col gap-1">
+        <dt className="text-muted-foreground">Phone</dt>
+        <dd className="text-foreground">
+          {c.hasPhone ? (c.phone ?? "On file") : "—"}
+        </dd>
+      </div>
       <div className="flex flex-col gap-1">
         <dt className="text-muted-foreground">Email</dt>
         <dd className="text-foreground">{c.email ?? "—"}</dd>
@@ -368,39 +889,108 @@ function ProfileBlock({
   );
 }
 
-function AiInsightsStrip({ name, onGenerate }: { name: string; onGenerate?: () => void }) {
+function AiInsightsStrip({ name }: { name: string }) {
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-border bg-accent/20 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="rounded-lg border border-border bg-accent/20 px-4 py-4">
       <div className="flex items-start gap-2 text-sm text-foreground">
         <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
         <span>
           AI — Get insights and actions for <span className="font-medium">{name}</span>
         </span>
       </div>
-      {onGenerate ? (
-        <Button type="button" className="shrink-0" onClick={onGenerate}>
-          Generate summary
-        </Button>
-      ) : null}
     </div>
   );
 }
+
+function cityKeyFromLocation(location: string): string {
+  const t = location.trim();
+  if (!t) return "";
+  return t.split(",")[0]?.trim().toLowerCase() ?? "";
+}
+
+function cityHeadingFromLocation(location: string): string {
+  const t = location.trim();
+  if (!t) return "Unknown city";
+  return t.split(",")[0]?.trim() || t;
+}
+
+function QuickViewCityGroup({
+  anchor,
+  directoryContacts,
+}: {
+  anchor: Contact;
+  directoryContacts: Contact[];
+}) {
+  const key = cityKeyFromLocation(anchor.location);
+  const label = cityHeadingFromLocation(anchor.location);
+  const peers = key
+    ? directoryContacts.filter((c) => c.id !== anchor.id && cityKeyFromLocation(c.location) === key)
+    : [];
+
+  return (
+    <section className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 px-4 py-4" aria-labelledby="qv-city-heading">
+      <h3 id="qv-city-heading" className="text-sm font-semibold text-foreground">
+        Contacts in {label}
+      </h3>
+      {peers.length === 0 ? (
+        <p className="text-muted-foreground text-sm">No other contacts in this city in the prototype directory.</p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {peers.slice(0, 8).map((c) => (
+            <li
+              key={c.id}
+              className="text-foreground flex flex-wrap items-baseline justify-between gap-2 border-b border-border/60 pb-2 text-sm last:border-b-0 last:pb-0"
+            >
+              <span className="font-medium">{c.name}</span>
+              <span className="text-muted-foreground text-xs">{c.location}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+type QuickViewMode = "view" | "edit";
 
 function QuickViewSheet({
   open,
   onOpenChange,
   contact,
+  directoryContacts,
   onViewAllDetails,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   contact: Contact | undefined;
+  directoryContacts: Contact[];
   onViewAllDetails: () => void;
 }) {
+  const [mode, setMode] = useState<QuickViewMode>("view");
   const [basicOpen, setBasicOpen] = useState(true);
   const [commOpen, setCommOpen] = useState(false);
+  const [draftName, setDraftName] = useState("");
+  const [draftEmail, setDraftEmail] = useState("");
+  const [draftPhone, setDraftPhone] = useState("");
+  const [draftLocation, setDraftLocation] = useState("");
+
+  useEffect(() => {
+    if (!open || !contact) return;
+    setMode("view");
+    setDraftName(contact.name);
+    setDraftEmail(contact.email ?? "");
+    setDraftPhone(contact.phone ?? "");
+    setDraftLocation(contact.location ?? "");
+  }, [open, contact?.id, contact?.name, contact?.email, contact?.phone, contact?.location]);
+
+  const handleSaveEdit = useCallback(() => {
+    toast.success("Contact updated (prototype)");
+    setMode("view");
+  }, []);
 
   if (!contact) return null;
+
+  const frameTitle = mode === "edit" ? "Edit contact" : "Quick view";
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -411,67 +1001,164 @@ function QuickViewSheet({
         className={FLOATING_SHEET_FRAME_CONTENT_CLASS}
       >
         <FloatingSheetFrame
-          title="Quick view"
-          primaryAction={{
-            label: "Generate summary",
-            onClick: () => toast.message("Summary generation is a prototype action."),
-          }}
-          secondaryAction={{
-            label: "Back",
-            onClick: () => onOpenChange(false),
-          }}
+          title={frameTitle}
+          primaryAction={
+            mode === "view"
+              ? {
+                  label: "View all details",
+                  onClick: onViewAllDetails,
+                }
+              : undefined
+          }
+          footer={
+            mode === "edit" ? (
+              <>
+                <Button type="button" variant="outline" onClick={() => setMode("view")}>
+                  Cancel
+                </Button>
+                <Button type="button" onClick={handleSaveEdit}>
+                  Save
+                </Button>
+              </>
+            ) : undefined
+          }
         >
-          <div className="flex flex-col gap-6 pb-4">
-            <div className="flex justify-end">
-              <button
-                type="button"
-                className="text-primary text-sm font-medium hover:underline"
-                onClick={onViewAllDetails}
-              >
-                View all details
-              </button>
-            </div>
+          <div className="grid min-h-0 grid-cols-1 grid-rows-1">
+            <div
+              className={cn(
+                "col-start-1 row-start-1 flex flex-col gap-6 pb-4 transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none",
+                mode === "view"
+                  ? "z-[1] translate-x-0 opacity-100"
+                  : "pointer-events-none z-0 -translate-x-3 opacity-0",
+              )}
+              aria-hidden={mode !== "view"}
+            >
+              <ProfileBlock c={contact} />
 
-            <ProfileBlock c={contact} />
+              <AiInsightsStrip name={contact.name} />
 
-            <AiInsightsStrip name={contact.name} />
+              <Collapsible open={basicOpen} onOpenChange={setBasicOpen}>
+                <div className="flex items-center justify-between gap-2">
+                  <CollapsibleTrigger asChild>
+                    <button
+                      type="button"
+                      className="text-foreground flex flex-1 items-center gap-2 text-left text-sm font-semibold"
+                    >
+                      {basicOpen ? (
+                        <ChevronUp className="size-4 shrink-0" />
+                      ) : (
+                        <ChevronDown className="size-4 shrink-0" />
+                      )}
+                      Basic details
+                    </button>
+                  </CollapsibleTrigger>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0"
+                    aria-label="Edit details"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setMode("edit");
+                    }}
+                  >
+                    <Pencil className="size-4" />
+                  </Button>
+                </div>
+                <CollapsibleContent className="pt-4">
+                  <DetailRows c={contact} />
+                </CollapsibleContent>
+              </Collapsible>
 
-            <Collapsible open={basicOpen} onOpenChange={setBasicOpen}>
-              <div className="flex items-center justify-between gap-2">
+              <Separator />
+
+              <Collapsible open={commOpen} onOpenChange={setCommOpen}>
                 <CollapsibleTrigger asChild>
                   <button
                     type="button"
-                    className="text-foreground flex flex-1 items-center gap-2 text-left text-sm font-semibold"
+                    className="text-foreground flex w-full items-center gap-2 text-left text-sm font-semibold"
                   >
-                    {basicOpen ? <ChevronUp className="size-4 shrink-0" /> : <ChevronDown className="size-4 shrink-0" />}
-                    Basic details
+                    {commOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+                    Communication preferences
                   </button>
                 </CollapsibleTrigger>
-                <Button type="button" variant="ghost" size="icon" className="shrink-0" aria-label="Edit details">
-                  <Pencil className="size-4" />
-                </Button>
-              </div>
-              <CollapsibleContent className="pt-4">
-                <DetailRows c={contact} />
-              </CollapsibleContent>
-            </Collapsible>
+                <CollapsibleContent className="text-muted-foreground pt-4 text-sm">
+                  Preferences are collapsed in the reference layout. Toggle to expand this section in the prototype.
+                </CollapsibleContent>
+              </Collapsible>
 
-            <Separator />
+              <QuickViewCityGroup anchor={contact} directoryContacts={directoryContacts} />
+            </div>
 
-            <Collapsible open={commOpen} onOpenChange={setCommOpen}>
-              <CollapsibleTrigger asChild>
-                <button
-                  type="button"
-                  className="text-foreground flex w-full items-center gap-2 text-left text-sm font-semibold"
-                >
-                  {commOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
-                  Communication preferences
-                </button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="text-muted-foreground pt-4 text-sm">
-                Preferences are collapsed in the reference layout. Toggle to expand this section in the prototype.
-              </CollapsibleContent>
-            </Collapsible>
+            <div
+              className={cn(
+                "col-start-1 row-start-1 flex flex-col gap-6 pb-4 transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none",
+                mode === "edit"
+                  ? "z-[1] translate-x-0 opacity-100"
+                  : "pointer-events-none z-0 translate-x-3 opacity-0",
+              )}
+              aria-hidden={mode !== "edit"}
+            >
+              <section className="flex flex-col gap-4">
+                <h3 className="text-sm font-semibold text-foreground">Contact details</h3>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="qv-edit-name">Name</Label>
+                  <div className="relative">
+                    <User className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                    <Input
+                      id="qv-edit-name"
+                      className="pl-10"
+                      value={draftName}
+                      onChange={(e) => setDraftName(e.target.value)}
+                      placeholder="Full name"
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="qv-edit-email">Email</Label>
+                  <div className="relative">
+                    <Mail className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                    <Input
+                      id="qv-edit-email"
+                      className="pl-10"
+                      type="email"
+                      value={draftEmail}
+                      onChange={(e) => setDraftEmail(e.target.value)}
+                      placeholder="name@company.com"
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="qv-edit-phone">Phone</Label>
+                  <div className="relative">
+                    <Phone className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                    <Input
+                      id="qv-edit-phone"
+                      className="pl-10"
+                      type="tel"
+                      value={draftPhone}
+                      onChange={(e) => setDraftPhone(e.target.value)}
+                      placeholder="Phone number"
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="qv-edit-loc">Location</Label>
+                  <div className="relative">
+                    <MapPin className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                    <Input
+                      id="qv-edit-loc"
+                      className="pl-10"
+                      value={draftLocation}
+                      onChange={(e) => setDraftLocation(e.target.value)}
+                      placeholder="City, state"
+                    />
+                  </div>
+                </div>
+              </section>
+            </div>
           </div>
         </FloatingSheetFrame>
       </SheetContent>
@@ -505,7 +1192,7 @@ function AddContactSheet({
           title="Add a contact"
           primaryAction={{ label: "Save", onClick: onSave }}
           secondaryAction={{
-            label: "Back",
+            label: "Cancel",
             onClick: () => onOpenChange(false),
           }}
         >
@@ -642,6 +1329,13 @@ function AddContactSheet({
 
 function ListsSegmentsView() {
   const [topTab, setTopTab] = useState<"saved" | "ai">("ai");
+  const [savedListColumnSheetOpen, setSavedListColumnSheetOpen] = useState(false);
+  const [aiSegmentColumnSheetOpen, setAiSegmentColumnSheetOpen] = useState(false);
+
+  useEffect(() => {
+    setSavedListColumnSheetOpen(false);
+    setAiSegmentColumnSheetOpen(false);
+  }, [topTab]);
 
   const aiColumns = useMemo(
     () => [
@@ -709,7 +1403,15 @@ function ListsSegmentsView() {
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-background">
       <MainCanvasViewHeader
         title="Lists & segments"
-        description="Create and manage your lists and segments or explore AI-recommended segments to reach the right audience."
+        actions={
+          <AppDataTableColumnSettingsTrigger
+            sheetTitle={topTab === "ai" ? "Segment columns" : "List columns"}
+            onClick={() => {
+              if (topTab === "ai") setAiSegmentColumnSheetOpen(true);
+              else setSavedListColumnSheetOpen(true);
+            }}
+          />
+        }
       />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden px-6 py-4">
@@ -746,18 +1448,28 @@ function ListsSegmentsView() {
               tableId="contacts.lists.ai"
               data={mockAiSegments}
               columns={aiColumns}
+              initialSorting={[{ id: "name", desc: false }]}
               getRowId={(r) => r.id}
               columnSheetTitle="Segment columns"
               className="min-w-0 px-0"
+              rowDensity="default"
+              hideColumnsButton
+              columnSheetOpen={aiSegmentColumnSheetOpen}
+              onColumnSheetOpenChange={setAiSegmentColumnSheetOpen}
             />
           ) : (
             <AppDataTable<SavedListRow>
               tableId="contacts.lists.saved"
               data={mockSavedLists}
               columns={savedListColumns}
+              initialSorting={[{ id: "name", desc: false }]}
               getRowId={(r) => r.id}
               columnSheetTitle="List columns"
               className="min-w-0 px-0"
+              rowDensity="default"
+              hideColumnsButton
+              columnSheetOpen={savedListColumnSheetOpen}
+              onColumnSheetOpenChange={setSavedListColumnSheetOpen}
             />
           )}
         </div>
@@ -835,9 +1547,11 @@ function CustomFieldsSettingsView() {
             tableId="contacts.settings.customFields"
             data={mockCustomFieldDefinitions}
             columns={columns}
+            initialSorting={[{ id: "name", desc: false }]}
             getRowId={(r) => r.id}
             columnSheetTitle="Field columns"
             className="min-w-0 px-0"
+            rowDensity="default"
             hideColumnsButton
             columnSheetOpen={columnSheetOpen}
             onColumnSheetOpenChange={setColumnSheetOpen}
@@ -906,9 +1620,11 @@ function TagsSettingsView() {
             tableId="contacts.settings.tags"
             data={mockWorkspaceTags}
             columns={columns}
+            initialSorting={[{ id: "name", desc: false }]}
             getRowId={(r) => r.id}
             columnSheetTitle="Tag columns"
             className="min-w-0 px-0"
+            rowDensity="default"
             hideColumnsButton
             columnSheetOpen={columnSheetOpen}
             onColumnSheetOpenChange={setColumnSheetOpen}
@@ -1057,15 +1773,7 @@ function ContactDetailsView({
 
 export function ContactsView({ app }: ContactsViewProps) {
   const shell = useContactsShell(app);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedRow, setSelectedRow] = useState<number | null>(null);
   const [directoryColumnSheetOpen, setDirectoryColumnSheetOpen] = useState(false);
-
-  const totalContacts = 262_164;
-  const pageSize = 15;
-  const totalPages = Math.max(1, Math.ceil(totalContacts / pageSize));
-
-  const pageRows = useMemo(() => mockContacts, []);
 
   const qContact = contactById(shell.quickViewContactId);
   const detailContact = contactById(shell.detailContactId);
@@ -1085,17 +1793,15 @@ export function ContactsView({ app }: ContactsViewProps) {
         header: "Contact name",
         meta: { settingsLabel: "Contact name" },
         size: 220,
-        enableSorting: true,
         cell: ({ row }) => {
           const contact = row.original;
-          const isSelected = selectedRow === contact.id;
           return (
             <div className="flex flex-wrap items-center gap-2">
-              <span className={cn(isSelected ? "font-medium text-primary" : "text-foreground")}>
+              <span className="text-foreground font-medium">
                 {contact.name}
               </span>
               {contact.isLead ? (
-                <Badge variant="secondary" className="font-normal text-[length:var(--font-size)]">
+                <Badge variant="secondary" className="font-normal">
                   Lead
                 </Badge>
               ) : null}
@@ -1103,29 +1809,26 @@ export function ContactsView({ app }: ContactsViewProps) {
           );
         },
       }),
-      contactColumnHelper.display({
-        id: "channels",
-        header: "Channel",
-        meta: { settingsLabel: "Channel" },
-        size: 128,
-        cell: ({ row }) => <ChannelIcons c={row.original} />,
-      }),
       contactColumnHelper.accessor("score", {
         id: "score",
         header: "Experience score",
         meta: { settingsLabel: "Experience score" },
-        size: 176,
-        minSize: 168,
-        enableSorting: true,
+        size: 120,
+        minSize: 88,
         cell: (info) => (
-          <ScoreChip score={info.getValue()} level={info.row.original.scoreLevel} />
+          <ExperienceScoreBatch
+            score={info.getValue()}
+            level={info.row.original.scoreLevel}
+            tags={info.row.original.experienceTags}
+          />
         ),
       }),
-      contactColumnHelper.display({
+      contactColumnHelper.accessor((row) => contactLocationSortValue(row), {
         id: "location",
         header: "Location",
         meta: { settingsLabel: "Location" },
         size: 200,
+        sortingFn: "alphanumeric",
         cell: ({ row }) => {
           const c = row.original;
           return (
@@ -1139,11 +1842,36 @@ export function ContactsView({ app }: ContactsViewProps) {
           );
         },
       }),
+      contactColumnHelper.accessor((row) => contactPhoneSortValue(row), {
+        id: "phoneChannel",
+        header: "Phone",
+        meta: { settingsLabel: "Phone" },
+        size: 148,
+        sortingFn: "alphanumeric",
+        cell: ({ row }) => <ChannelPhoneCell c={row.original} />,
+      }),
+      contactColumnHelper.accessor((row) => contactEmailSortValue(row), {
+        id: "emailChannel",
+        header: "Email",
+        meta: { settingsLabel: "Email" },
+        size: 200,
+        sortingFn: "alphanumeric",
+        cell: ({ row }) => <ChannelEmailCell c={row.original} />,
+      }),
+      contactColumnHelper.accessor((row) => (row.hasWhatsapp ? 1 : 0), {
+        id: "messageChannel",
+        header: "Message",
+        meta: { settingsLabel: "Message" },
+        size: 132,
+        sortingFn: "basic",
+        cell: ({ row }) => <ChannelMessageCell c={row.original} />,
+      }),
       contactColumnHelper.display({
         id: "actions",
         header: "",
         meta: { settingsLabel: "Actions" },
         size: 56,
+        enableSorting: false,
         enableResizing: false,
         enableHiding: false,
         cell: ({ row }) => {
@@ -1159,7 +1887,6 @@ export function ContactsView({ app }: ContactsViewProps) {
                 <DropdownMenuContent align="end" className="min-w-[180px]">
                   <DropdownMenuItem
                     onClick={() => {
-                      setSelectedRow(contact.id);
                       shell.setDetailContactId(contact.id);
                       shell.setSheetMode("none");
                       shell.setQuickViewContactId(null);
@@ -1175,7 +1902,7 @@ export function ContactsView({ app }: ContactsViewProps) {
         },
       }),
     ],
-    [openQuickView, selectedRow, shell],
+    [openQuickView, shell],
   );
 
   const onQuickSheetOpenChange = (open: boolean) => {
@@ -1216,6 +1943,7 @@ export function ContactsView({ app }: ContactsViewProps) {
       <div className="flex min-h-0 flex-1 flex-col">
         <MainCanvasViewHeader
           title="Contacts"
+          description={`${mockContacts.length.toLocaleString()} ${mockContacts.length === 1 ? "contact" : "contacts"}`}
           actions={
             <>
               <AppDataTableColumnSettingsTrigger
@@ -1231,81 +1959,38 @@ export function ContactsView({ app }: ContactsViewProps) {
 
         <div className="min-h-0 flex-1 overflow-auto">
           <AppDataTable<Contact>
-            tableId="contacts.directory"
-            data={pageRows}
+            tableId="contacts.directory.v3"
+            data={mockContacts}
             columns={contactColumns}
+            initialSorting={[{ id: "name", desc: false }]}
             getRowId={(c) => String(c.id)}
             onRowClick={(c) => {
-              setSelectedRow(c.id);
               openQuickView(c.id);
             }}
-            isRowSelected={(c) => selectedRow === c.id}
             columnSheetTitle="Contact columns"
             className="min-w-0"
+            rowDensity="default"
+            stickyLeadingColumnCount={5}
             hideColumnsButton
             columnSheetOpen={directoryColumnSheetOpen}
             onColumnSheetOpenChange={setDirectoryColumnSheetOpen}
           />
-        </div>
-
-        <div className="bg-background flex shrink-0 items-center justify-between border-t border-border px-6 py-4">
-          <span className="text-muted-foreground text-sm">
-            Showing {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, totalContacts)} of{" "}
-            {totalContacts.toLocaleString()} contacts
-          </span>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              aria-label="Previous page"
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-            {[1, 2, 3].map((p) => (
-              <Button
-                key={p}
-                type="button"
-                variant={currentPage === p ? "default" : "outline"}
-                size="icon"
-                className="min-w-8"
-                onClick={() => setCurrentPage(p)}
-              >
-                {p}
-              </Button>
-            ))}
-            <span className="text-muted-foreground px-2 text-sm">…</span>
-            <Button type="button" variant="outline" size="icon" onClick={() => setCurrentPage(totalPages)}>
-              {String(totalPages).slice(-3)}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              aria-label="Next page"
-            >
-              <ChevronRight className="size-4" />
-            </Button>
-          </div>
         </div>
       </div>
     </div>
     );
 
   return (
-    <>
+    <TooltipProvider delayDuration={200}>
       {mainSurface}
       <QuickViewSheet
         open={shell.sheetMode === "quickView"}
         onOpenChange={onQuickSheetOpenChange}
         contact={qContact}
+        directoryContacts={mockContacts}
         onViewAllDetails={goDetailsFromQuick}
       />
       <AddContactSheet open={shell.sheetMode === "addContact"} onOpenChange={onAddSheetOpenChange} />
-    </>
+    </TooltipProvider>
   );
 }

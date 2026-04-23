@@ -12,6 +12,8 @@ import {
   SurveysL2NavPanel,
   CompetitorsL2NavPanel,
   InboxL2NavPanel,
+  AeoProductListing1L2NavPanel,
+  AeoSearchAiL2NavPanel,
 } from "@/app/components/Sidebar";
 import { TopBar } from "@/app/components/TopBar";
 import { MonitorNotificationsProvider } from "@/app/context/MonitorNotificationsContext";
@@ -52,9 +54,11 @@ const VIEWS: { value: AppView; label: string; group: string }[] = [
   { value: "inbox",                label: "Inbox",                   group: "Modules" },
   { value: "surveys",              label: "Surveys",                 group: "Modules" },
   { value: "ticketing",            label: "Ticketing",               group: "Modules" },
-  { value: "campaigns",            label: "Campaigns",               group: "Modules" },
+  { value: "campaigns",            label: "Manage Automations",      group: "Modules" },
   { value: "insights",             label: "Insights",                group: "Modules" },
   { value: "competitors",          label: "Competitors",             group: "Modules" },
+  { value: "aeo-product-listing-1", label: "AEO — Listings", group: "Modules" },
+  { value: "aeo-search-ai",        label: "AEO — Search AI",         group: "Modules" },
 ];
 
 /* ─── Resolve which L2 panel to show for a given view ─── */
@@ -74,6 +78,8 @@ function L2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v: AppV
     );
   }
   if (view === "competitors") return <CompetitorsL2NavPanel />;
+  if (view === "aeo-product-listing-1") return <AeoProductListing1L2NavPanel />;
+  if (view === "aeo-search-ai") return <AeoSearchAiL2NavPanel />;
   if (view === "inbox")       return <InboxL2NavPanel />;
   if (view === "agents-builder") return null;
   if (birdAiShellShowsL2Placeholder(view)) {

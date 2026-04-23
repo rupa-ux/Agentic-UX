@@ -1,27 +1,29 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import {
-  DollarSign, Download, Search, MoreHorizontal,
-  TrendingUp, ArrowDownToLine, Receipt, Info,
-  CheckCircle2, X, RotateCcw, FileText,
+  Download, Search, MoreVertical,
+  CheckCircle2, X, RotateCcw, FileText, Tags, Filter,
 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
-import { Input } from "@/app/components/ui/input";
 import { AppDataTable } from "@/app/components/ui/AppDataTable";
+import { AppDataTableColumnSettingsTrigger } from "@/app/components/ui/AppDataTableColumnSettingsTrigger";
+import { Sheet, SheetContent } from "@/app/components/ui/sheet";
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
-} from "@/app/components/ui/sheet";
+  FLOATING_SHEET_FRAME_CONTENT_CLASS,
+  FloatingSheetFrame,
+} from "@/app/components/layout/FloatingSheetFrame";
+import { TooltipProvider } from "@/app/components/ui/tooltip";
 import {
-  Tooltip, TooltipContent, TooltipTrigger, TooltipProvider,
-} from "@/app/components/ui/tooltip";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/app/components/ui/dialog";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { L2_FLAT_NAV_KEY_PREFIX } from "@/app/components/L2NavLayout";
 
@@ -38,6 +40,21 @@ export function paymentsL2KeyToStatusFilter(l2Key: string): PaymentsStatusFilter
   if (l2Key === `${L2_FLAT_NAV_KEY_PREFIX}/cancelled`) return "cancelled";
   return "all";
 }
+
+const PAYMENT_STATUS_FILTER_OPTS: { label: string; value: PaymentsStatusFilter }[] = [
+  { label: "All statuses", value: "all" },
+  { label: "Received", value: "received" },
+  { label: "Requested", value: "requested" },
+  { label: "Not paid", value: "not_paid" },
+  { label: "Refunded", value: "refunded" },
+  { label: "Cancelled", value: "cancelled" },
+];
+
+type PaymentTagsQuickFilter = "all" | "unsettled";
+const PAYMENT_TAGS_QUICK_OPTS: { label: string; value: PaymentTagsQuickFilter }[] = [
+  { label: "All payments", value: "all" },
+  { label: "Unsettled only", value: "unsettled" },
+];
 
 interface Transaction {
   id: string;
@@ -60,31 +77,11 @@ const PIE_DATA = [
 
 const TOTAL_REQUESTED = 142_800;
 
-const METRIC_BLOCKS = [
-  {
-    label: "Available balance",
-    value: "$4,218.00",
-    icon: DollarSign,
-    tooltip: "Funds available for payout. A reserve of 5% is held for 7 days after each payment.",
-  },
-  {
-    label: "Net earnings",
-    value: "$97,104.00",
-    icon: TrendingUp,
-    tooltip: "Gross received minus refunds and fees. Formula: Received – Refunded – Processing fees.",
-  },
-  {
-    label: "Paid out",
-    value: "$92,886.00",
-    icon: ArrowDownToLine,
-    tooltip: null,
-  },
-  {
-    label: "Monthly bill",
-    value: "$349.00",
-    icon: Receipt,
-    tooltip: "Billing breakdown: 1 location × $349/mo Payments plan.",
-  },
+const METRIC_BLOCKS: { label: string; value: string }[] = [
+  { label: "Available balance", value: "$4,218.00" },
+  { label: "Net earnings", value: "$97,104.00" },
+  { label: "Paid out", value: "$92,886.00" },
+  { label: "Monthly bill", value: "$349.00" },
 ];
 
 const TRANSACTIONS: Transaction[] = [
@@ -100,21 +97,33 @@ const TRANSACTIONS: Transaction[] = [
   { id: "t10", contactName: "George Brennan",    businessName: "Brennan Roofing",     amount: 6_500.00, status: "not_paid",  date: "Apr 3, 2026",  description: "Full roof replacement" },
   { id: "t11", contactName: "Mei-Ling Chen",     businessName: "Chen Acupuncture",    amount: 180.00,  status: "received",   date: "Apr 2, 2026",  description: "Initial assessment" },
   { id: "t12", contactName: "Samuel Okonkwo",    businessName: "Okonkwo Electric",    amount: 950.00,  status: "refunded",   date: "Apr 1, 2026",  description: "Panel upgrade – partial refund" },
+  { id: "t13", contactName: "Elena Vasquez",     businessName: "Vasquez Realty",      amount: 275.00,  status: "received",   date: "Mar 31, 2026", description: "Listing photography package" },
+  { id: "t14", contactName: "James Whitmore",    businessName: "Whitmore Fitness",    amount: 129.00,  status: "requested",  date: "Mar 30, 2026", description: "Annual membership renewal" },
+  { id: "t15", contactName: "Sofia Nielsen",     businessName: "Nielsen Books",       amount: 88.50,   status: "received",   date: "Mar 29, 2026", description: "Inventory restock order" },
+  { id: "t16", contactName: "Carlos Mendez",     businessName: "Mendez Tile",         amount: 3_120.00, status: "not_paid",  date: "Mar 28, 2026", description: "Kitchen backsplash install" },
+  { id: "t17", contactName: "Yuki Tanaka",       businessName: "Tanaka Sushi",        amount: 412.00,  status: "received",   date: "Mar 27, 2026", description: "Corporate lunch catering" },
+  { id: "t18", contactName: "Olivia Grant",      businessName: "Grant Interiors",     amount: 1_890.00, status: "received",  date: "Mar 26, 2026", description: "Design consultation + samples" },
+  { id: "t19", contactName: "Hassan Ibrahim",    businessName: "Ibrahim Motors",      amount: 780.00,  status: "cancelled",  date: "Mar 25, 2026", description: "Brake service – cancelled" },
+  { id: "t20", contactName: "Rachel Simmons",    businessName: "Simmons Pet Grooming", amount: 95.00,  status: "received",   date: "Mar 24, 2026", description: "Full groom – large breed" },
+  { id: "t21", contactName: "Victor Nguyen",     businessName: "Nguyen Dental Lab",   amount: 560.00,  status: "requested",  date: "Mar 23, 2026", description: "Crown fabrication rush" },
+  { id: "t22", contactName: "Denise Brooks",     businessName: "Brooks Cleaning Co.", amount: 340.00,  status: "received",   date: "Mar 22, 2026", description: "Deep clean – 3 BR home" },
+  { id: "t23", contactName: "Ahmed Farouk",      businessName: "Farouk Electronics",  amount: 125.00,  status: "not_paid",   date: "Mar 21, 2026", description: "Phone screen repair" },
+  { id: "t24", contactName: "Camille Dubois",    businessName: "Dubois Bakery",       amount: 210.00,  status: "received",   date: "Mar 20, 2026", description: "Wedding cake deposit" },
 ];
 
 /* ─── Helpers ─── */
 const STATUS_CONFIG: Record<TxStatus, { label: string; className: string }> = {
-  received:   { label: "Received",   className: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400" },
-  requested:  { label: "Requested",  className: "bg-blue-50   text-blue-700   border-blue-200   dark:bg-blue-950/40   dark:text-blue-400" },
-  not_paid:   { label: "Not paid",   className: "bg-amber-50  text-amber-700  border-amber-200  dark:bg-amber-950/40  dark:text-amber-400" },
-  refunded:   { label: "Refunded",   className: "bg-slate-50  text-slate-600  border-slate-200  dark:bg-slate-800/40  dark:text-slate-400" },
-  cancelled:  { label: "Cancelled",  className: "bg-red-50    text-red-600    border-red-200    dark:bg-red-950/40    dark:text-red-400" },
+  received:   { label: "Received",   className: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400" },
+  requested:  { label: "Requested",  className: "bg-blue-50   text-blue-700   dark:bg-blue-950/40   dark:text-blue-400" },
+  not_paid:   { label: "Not paid",   className: "bg-amber-50  text-amber-700  dark:bg-amber-950/40  dark:text-amber-400" },
+  refunded:   { label: "Refunded",   className: "bg-slate-50  text-slate-600  dark:bg-slate-800/40  dark:text-slate-400" },
+  cancelled:  { label: "Cancelled",  className: "bg-red-50    text-red-600    dark:bg-red-950/40    dark:text-red-400" },
 };
 
 function StatusBadge({ status }: { status: TxStatus }) {
   const cfg = STATUS_CONFIG[status];
   return (
-    <Badge variant="outline" className={`text-[length:var(--font-size)] font-medium ${cfg.className}`}>
+    <Badge variant="outline" className={`font-medium ${cfg.className}`}>
       {cfg.label}
     </Badge>
   );
@@ -124,101 +133,48 @@ function fmtAmount(n: number) {
   return `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-/* ─── Donut summary ─── */
-function PaymentsSummaryCard() {
+/** Muted summary copy in the payments strip (12px — collected line, Received / Not paid / Refunded, metric labels). */
+const SUMMARY_STRIP_COPY = "text-[12px] font-medium leading-tight text-muted-foreground";
+
+/* ─── Single summary strip (no donut / separate metric cards) ─── */
+function PaymentsSummaryStrip() {
   const receivedPct = PIE_DATA[0].value;
 
   return (
-    <div className="bg-card border border-border rounded-xl p-5 flex gap-6 items-center">
-      {/* Donut */}
-      <div className="shrink-0 w-[120px] h-[120px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={PIE_DATA}
-              cx="50%"
-              cy="50%"
-              innerRadius={38}
-              outerRadius={56}
-              paddingAngle={2}
-              dataKey="value"
-              strokeWidth={0}
-            >
-              {PIE_DATA.map((entry, i) => (
-                <Cell key={i} fill={entry.color} />
-              ))}
-            </Pie>
-            <RechartsTooltip
-              formatter={(val, name) => [`${val}%`, name]}
-              contentStyle={{
-                borderRadius: 8,
-                border: "1px solid var(--border)",
-                background: "var(--card)",
-                color: "var(--foreground)",
-                fontSize: 12,
-              }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Total + legend */}
-      <div className="flex flex-col gap-3 min-w-0">
-        <div>
-          <p className="text-xs text-muted-foreground">Total requested</p>
-          <p className="text-2xl font-semibold text-foreground">
+    <div className="rounded-xl border border-border bg-card px-5 py-4">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
+        <div className="min-w-0 shrink-0 lg:max-w-[min(100%,380px)]">
+          <p className={SUMMARY_STRIP_COPY}>Total requested</p>
+          <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground tabular-nums">
             {fmtAmount(TOTAL_REQUESTED)}
           </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {receivedPct}% collected
-          </p>
+          <p className={`mt-1 ${SUMMARY_STRIP_COPY}`}>{receivedPct}% collected</p>
+          <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
+            {PIE_DATA.map((d) => (
+              <div
+                key={d.name}
+                className={`flex items-center gap-2 ${SUMMARY_STRIP_COPY}`}
+              >
+                <span
+                  className="size-2 shrink-0 rounded-full"
+                  style={{ background: d.color }}
+                  aria-hidden
+                />
+                <span>{d.name}</span>
+                <span className="font-medium tabular-nums text-foreground">{d.value}%</span>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-col gap-1.5">
-          {PIE_DATA.map((d) => (
-            <div key={d.name} className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span
-                className="w-2.5 h-2.5 rounded-full shrink-0"
-                style={{ background: d.color }}
-              />
-              <span>{d.name}</span>
-              <span className="ml-auto font-medium text-foreground">{d.value}%</span>
+
+        <div className="grid min-w-0 flex-1 grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4 lg:justify-items-stretch lg:gap-x-8">
+          {METRIC_BLOCKS.map((m) => (
+            <div key={m.label} className="flex min-w-0 flex-col gap-1">
+              <span className={`${SUMMARY_STRIP_COPY} min-w-0`}>{m.label}</span>
+              <span className="text-xl font-semibold tabular-nums text-foreground">{m.value}</span>
             </div>
           ))}
         </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Metric block ─── */
-function MetricBlock({
-  label, value, icon: Icon, tooltip,
-}: {
-  label: string; value: string;
-  icon: React.ElementType; tooltip: string | null;
-}) {
-  return (
-    <div className="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground font-medium">{label}</span>
-        {tooltip ? (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                  <Info size={13} strokeWidth={1.6} absoluteStrokeWidth />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-[220px] text-xs leading-relaxed">
-                {tooltip}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        ) : null}
-      </div>
-      <div className="flex items-end gap-2">
-        <Icon size={18} strokeWidth={1.6} absoluteStrokeWidth className="text-primary mb-0.5 shrink-0" />
-        <span className="text-xl font-semibold text-foreground">{value}</span>
       </div>
     </div>
   );
@@ -241,11 +197,13 @@ function TxActions({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           className="h-7 w-7 text-muted-foreground hover:text-foreground cursor-pointer"
+          aria-label="Row actions"
         >
-          <MoreHorizontal size={15} strokeWidth={1.6} absoluteStrokeWidth />
+          <MoreVertical className="size-4" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
@@ -364,57 +322,66 @@ function InvoiceSheet({
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full max-w-md overflow-y-auto">
-        <SheetHeader className="mb-6">
-          <SheetTitle className="text-base">Invoice detail</SheetTitle>
-          <SheetDescription className="sr-only">
-            Payment invoice for {tx.contactName}
-          </SheetDescription>
-        </SheetHeader>
-
-        {/* Contact */}
-        <div className="flex flex-col gap-1 mb-6">
-          <p className="text-sm font-semibold text-foreground">{tx.contactName}</p>
-          <p className="text-xs text-muted-foreground">{tx.businessName}</p>
-        </div>
-
-        {/* Amount + status */}
-        <div className="bg-muted/40 rounded-lg p-4 flex items-center justify-between mb-6">
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">Amount</p>
-            <p className="text-2xl font-bold text-foreground">{fmtAmount(tx.amount)}</p>
+      <SheetContent
+        side="right"
+        inset="floating"
+        floatingSize="md"
+        className={FLOATING_SHEET_FRAME_CONTENT_CLASS}
+      >
+        <FloatingSheetFrame
+          title="Invoice detail"
+          description={
+            <span className="sr-only">Payment invoice for {tx.contactName}</span>
+          }
+          classNames={{
+            footer:
+              "flex w-full flex-row flex-wrap justify-start gap-2 border-t border-border sm:justify-start",
+          }}
+          footer={
+            <>
+              <Button variant="outline" size="sm" className="cursor-pointer gap-1.5">
+                <Download size={13} strokeWidth={1.6} absoluteStrokeWidth />
+                Download PDF
+              </Button>
+              {tx.status === "not_paid" ? (
+                <Button size="sm" className="cursor-pointer">
+                  Send reminder
+                </Button>
+              ) : null}
+            </>
+          }
+        >
+          {/* Contact */}
+          <div className="flex flex-col gap-1 mb-6">
+            <p className="text-sm font-semibold text-foreground">{tx.contactName}</p>
+            <p className="text-xs text-muted-foreground">{tx.businessName}</p>
           </div>
-          <Badge variant="outline" className={`text-xs font-medium ${statusCfg.className}`}>
-            {statusCfg.label}
-          </Badge>
-        </div>
 
-        {/* Details */}
-        <div className="flex flex-col gap-4 text-sm">
-          {[
-            { label: "Date", value: tx.date },
-            { label: "Description", value: tx.description },
-            { label: "Transaction ID", value: `TXN-${tx.id.toUpperCase()}` },
-          ].map(({ label, value }) => (
-            <div key={label} className="flex flex-col gap-0.5">
-              <span className="text-xs text-muted-foreground">{label}</span>
-              <span className="text-foreground">{value}</span>
+          {/* Amount + status */}
+          <div className="bg-muted/40 rounded-lg p-4 flex items-center justify-between mb-6">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Amount</p>
+              <p className="text-2xl font-bold text-foreground">{fmtAmount(tx.amount)}</p>
             </div>
-          ))}
-        </div>
+            <Badge variant="outline" className={`font-medium ${statusCfg.className}`}>
+              {statusCfg.label}
+            </Badge>
+          </div>
 
-        {/* Actions */}
-        <div className="flex gap-2 mt-8">
-          <Button variant="outline" size="sm" className="cursor-pointer gap-1.5">
-            <Download size={13} strokeWidth={1.6} absoluteStrokeWidth />
-            Download PDF
-          </Button>
-          {tx.status === "not_paid" && (
-            <Button size="sm" className="cursor-pointer">
-              Send reminder
-            </Button>
-          )}
-        </div>
+          {/* Details */}
+          <div className="flex flex-col gap-4 text-sm">
+            {[
+              { label: "Date", value: tx.date },
+              { label: "Description", value: tx.description },
+              { label: "Transaction ID", value: `TXN-${tx.id.toUpperCase()}` },
+            ].map(({ label, value }) => (
+              <div key={label} className="flex flex-col gap-0.5">
+                <span className="text-xs text-muted-foreground">{label}</span>
+                <span className="text-foreground">{value}</span>
+              </div>
+            ))}
+          </div>
+        </FloatingSheetFrame>
       </SheetContent>
     </Sheet>
   );
@@ -430,18 +397,44 @@ const paymentColumnHelper = createColumnHelper<Transaction>();
 /* ─── Main view ─── */
 export function PaymentsView({ statusFilter }: PaymentsViewProps) {
   const [search, setSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [columnSheetOpen, setColumnSheetOpen] = useState(false);
+  const [tableStatusFilter, setTableStatusFilter] = useState<PaymentsStatusFilter>("all");
+  const [tagsQuick, setTagsQuick] = useState<PaymentTagsQuickFilter>("all");
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
   const [modalType, setModalType] = useState<ModalType>(null);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
 
-  const filtered = TRANSACTIONS.filter((tx) => {
-    const matchesSearch =
-      tx.contactName.toLowerCase().includes(search.toLowerCase()) ||
-      tx.businessName.toLowerCase().includes(search.toLowerCase()) ||
-      tx.description.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === "all" || tx.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  useEffect(() => {
+    if (statusFilter !== "all") {
+      setTableStatusFilter("all");
+      setTagsQuick("all");
+    }
+  }, [statusFilter]);
+
+  const activeStatusLabel =
+    PAYMENT_STATUS_FILTER_OPTS.find((o) => o.value === tableStatusFilter)?.label ?? "All statuses";
+  const activeTagsLabel =
+    PAYMENT_TAGS_QUICK_OPTS.find((o) => o.value === tagsQuick)?.label ?? "All payments";
+
+  const filtered = useMemo(() => {
+    return TRANSACTIONS.filter((tx) => {
+      const matchesSearch =
+        tx.contactName.toLowerCase().includes(search.toLowerCase()) ||
+        tx.businessName.toLowerCase().includes(search.toLowerCase()) ||
+        tx.description.toLowerCase().includes(search.toLowerCase());
+      const matchesL2 = statusFilter === "all" || tx.status === statusFilter;
+      const matchesTableStatus =
+        statusFilter !== "all" ||
+        tableStatusFilter === "all" ||
+        tx.status === tableStatusFilter;
+      const matchesTagsQuick =
+        statusFilter !== "all" ||
+        tagsQuick === "all" ||
+        (tagsQuick === "unsettled" && (tx.status === "requested" || tx.status === "not_paid"));
+      return matchesSearch && matchesL2 && matchesTableStatus && matchesTagsQuick;
+    });
+  }, [search, statusFilter, tableStatusFilter, tagsQuick]);
 
   const handleAction = useCallback((type: ModalType, tx: Transaction) => {
     setSelectedTx(tx);
@@ -514,9 +507,10 @@ export function PaymentsView({ statusFilter }: PaymentsViewProps) {
       }),
       paymentColumnHelper.display({
         id: "actions",
-        header: "",
+        header: () => <span className="sr-only">Row actions</span>,
         meta: { settingsLabel: "Actions" },
         size: 52,
+        enableSorting: false,
         enableResizing: false,
         enableHiding: false,
         cell: ({ row }) => <TxActions tx={row.original} onAction={handleAction} />,
@@ -537,79 +531,159 @@ export function PaymentsView({ statusFilter }: PaymentsViewProps) {
         {/* ── Header ── */}
         <MainCanvasViewHeader
           title="Payments"
-          description="Manage payment requests, track collections, and process refunds."
-        />
-
-        {/* ── Scrollable content ── */}
-        <div className="flex-1 overflow-y-auto px-6 pb-6 flex flex-col gap-5 min-h-0">
-
-          {/* Summary row */}
-          <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr] gap-4 items-stretch">
-            <PaymentsSummaryCard />
-            {METRIC_BLOCKS.map((m) => (
-              <MetricBlock key={m.label} {...m} />
-            ))}
-          </div>
-
-          {/* Transaction table */}
-          <div className="flex flex-col overflow-hidden border-0 bg-background">
-            <div className="overflow-x-auto border-b border-border">
-              <AppDataTable<Transaction>
-                tableId="payments.ledger"
-                data={filtered}
-                columns={paymentColumns}
-                onRowClick={(tx) => {
-                  setSelectedTx(tx);
-                  setInvoiceOpen(true);
-                }}
-                getRowId={(row) => row.id}
-                emptyState={paymentsEmpty}
-                columnSheetTitle="Payment columns"
-                className="min-w-0 px-0"
-                toolbarLeft={
-                  <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
-                    <div className="relative max-w-xs flex-1">
-                      <Search
-                        size={13}
-                        strokeWidth={1.6}
-                        absoluteStrokeWidth
-                        className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground"
-                      />
-                      <Input
-                        placeholder="Search transactions…"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="h-8 pl-8 text-xs"
-                      />
-                    </div>
-                    <div className="ml-auto flex items-center gap-2">
-                      <p className="text-xs text-muted-foreground">
-                        {filtered.length} transaction{filtered.length !== 1 ? "s" : ""}
-                      </p>
-                      <Button variant="outline" size="sm" className="h-8 cursor-pointer gap-1.5 text-xs">
-                        <Download size={12} strokeWidth={1.6} absoluteStrokeWidth />
-                        Export
-                      </Button>
-                    </div>
-                  </div>
-                }
+          description={`${filtered.length.toLocaleString()} showing · ${TRANSACTIONS.length.toLocaleString()} transactions`}
+          actions={
+            <div className="flex items-center gap-2">
+              {searchOpen ? (
+                <div className="relative h-[var(--button-height)] w-[min(100%,240px)] min-w-[200px] shrink">
+                  <Search
+                    className="pointer-events-none absolute top-1/2 left-2 size-[14px] -translate-y-1/2 text-[#303030] dark:text-[#8b92a5]"
+                    strokeWidth={1.6}
+                    absoluteStrokeWidth
+                    aria-hidden
+                  />
+                  <input
+                    type="search"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onBlur={() => {
+                      if (search === "") setSearchOpen(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        setSearch("");
+                        setSearchOpen(false);
+                      }
+                    }}
+                    autoFocus
+                    placeholder="Search transactions"
+                    className="h-full w-full rounded-[8px] border border-[#e5e9f0] bg-white py-0 pr-2 pl-8 text-[14px] text-[#212121] outline-none transition-colors placeholder:text-[#757575] focus:border-[#2552ED] focus:ring-1 focus:ring-[#2552ED] dark:border-[#333a47] dark:bg-[#262b35] dark:text-[#e4e4e4] dark:placeholder:text-[#8b92a5]"
+                    aria-label="Search transactions"
+                  />
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label="Open search"
+                  title="Search transactions"
+                  onClick={() => setSearchOpen(true)}
+                >
+                  <Search
+                    className="size-[14px] text-[#303030] dark:text-[#8b92a5]"
+                    strokeWidth={1.6}
+                    absoluteStrokeWidth
+                    aria-hidden
+                  />
+                </Button>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="shrink-0"
+                    aria-label={`Tags: ${activeTagsLabel}`}
+                    title={`Tags: ${activeTagsLabel}`}
+                  >
+                    <Tags className="size-4 shrink-0" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem className="cursor-pointer gap-2 text-xs">
+                    <Download size={13} strokeWidth={1.6} absoluteStrokeWidth className="shrink-0" aria-hidden />
+                    Export
+                  </DropdownMenuItem>
+                  {statusFilter === "all" ? (
+                    <>
+                      <DropdownMenuSeparator />
+                      {PAYMENT_TAGS_QUICK_OPTS.map((opt) => (
+                        <DropdownMenuItem
+                          key={opt.value}
+                          className="cursor-pointer text-xs"
+                          onClick={() => setTagsQuick(opt.value)}
+                        >
+                          {opt.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </>
+                  ) : null}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {statusFilter === "all" ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="shrink-0"
+                      aria-label={`Status: ${activeStatusLabel}`}
+                      title={`Status: ${activeStatusLabel}`}
+                    >
+                      <Filter className="size-4 shrink-0" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    {PAYMENT_STATUS_FILTER_OPTS.map((opt) => (
+                      <DropdownMenuItem
+                        key={String(opt.value)}
+                        className="cursor-pointer text-xs"
+                        onClick={() => setTableStatusFilter(opt.value)}
+                      >
+                        {opt.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  disabled
+                  aria-label="Status filter uses the left menu for this scope"
+                  title="Status filter uses the left menu for this scope"
+                >
+                  <Filter className="size-4 shrink-0 opacity-50" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                </Button>
+              )}
+              <AppDataTableColumnSettingsTrigger
+                sheetTitle="Payment columns"
+                onClick={() => setColumnSheetOpen(true)}
               />
             </div>
+          }
+        />
 
-            {/* Pagination stub */}
-            <div className="px-4 py-3 border-t border-border flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">
-                Showing {filtered.length} of {TRANSACTIONS.length} transactions
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="h-7 text-xs cursor-pointer" disabled>
-                  Previous
-                </Button>
-                <Button variant="outline" size="sm" className="h-7 text-xs cursor-pointer" disabled>
-                  Next
-                </Button>
-              </div>
-            </div>
+        {/* ── Summary + table (table body scrolls internally; thead stays sticky) ── */}
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden px-6 pb-6">
+          <div className="shrink-0">
+            <PaymentsSummaryStrip />
+          </div>
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col border-b border-border bg-background">
+            <AppDataTable<Transaction>
+              tableId="payments.ledger"
+              data={filtered}
+              columns={paymentColumns}
+              initialSorting={[{ id: "date", desc: true }]}
+              onRowClick={(tx) => {
+                setSelectedTx(tx);
+                setInvoiceOpen(true);
+              }}
+              getRowId={(row) => row.id}
+              emptyState={paymentsEmpty}
+              columnSheetTitle="Payment columns"
+              className="min-h-0 min-w-0 flex-1 px-0"
+              rowDensity="default"
+              scrollableBody
+              hideColumnsButton
+              columnSheetOpen={columnSheetOpen}
+              onColumnSheetOpenChange={setColumnSheetOpen}
+            />
           </div>
         </div>
 

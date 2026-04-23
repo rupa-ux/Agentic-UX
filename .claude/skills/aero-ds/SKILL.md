@@ -28,14 +28,18 @@ Storybook is the **primary visual verification surface** for UI work in this rep
 
 ### Data tables (`AppDataTable`)
 
-Use this stack for **sortable, resizable directory-style grids** in product views (campaigns, contacts, listings, payments, and similar).
+Use this stack for **sortable, resizable directory-style grids** in product views (campaigns, contacts, listings, payments, **ticketing**, and similar).
 
 | Piece | Role |
 | --- | --- |
 | **`@tanstack/react-table`** | Column model: sorting, sizing, visibility, order. |
 | **[`table.v1.tsx`](../../../src/app/components/ui/table.v1.tsx)** (`Table`, `TableHead`, …) | Visual layer only — same Aero tokens as the rest of the shell. |
-| **[`AppDataTable.tsx`](../../../src/app/components/ui/AppDataTable.tsx)** | Wires TanStack to `table.v1`, resize handles, toolbar **Columns** control, and [`ColumnSettingsSheet.tsx`](../../../src/app/components/ui/ColumnSettingsSheet.tsx) (reorder, show/hide, reset). |
+| **[`AppDataTable.tsx`](../../../src/app/components/ui/AppDataTable.tsx)** | Wires TanStack to `table.v1`, resize handles, toolbar **Columns** control, and [`ColumnSettingsSheet.tsx`](../../../src/app/components/ui/ColumnSettingsSheet.tsx) (reorder, show/hide, reset). Optional **`stickyToolbar`** pins the toolbar row inside a vertical scroll parent (see Surveys). |
 | **[`appDataTableTypes.ts`](../../../src/app/components/ui/appDataTableTypes.ts)** | Persisted slice: `columnOrder`, `columnVisibility`, `columnSizing`. |
+
+**Sticky first column (default):** The first **visible** column (after reorder/hide) is `position: sticky; left: 0` with `bg-background`, transparent right border, and row hover/selection tint so the primary label column (e.g. survey name, contact name) stays fixed during horizontal scroll. A **right-edge shadow + border** animates in (`transition` ~200ms) only while **`scrollLeft > 0`**, so the cue is invisible at rest and appears when the user scrolls horizontally. Scrolling columns use **`relative z-0`** so they paint **under** the sticky column (later `td`s would otherwise paint on top). Sticky header/body cells use **`overflow-visible`** so the shadow is not clipped. Implemented once in **`AppDataTable`**; optional prop **`stickyFirstColumn={false}`** only for rare conflicts. **`Table`** from [`table.v1.tsx`](../../../src/app/components/ui/table.v1.tsx) accepts **`withScrollContainer={false}`** when a parent already provides horizontal scroll — **`AppDataTable`** uses this so sticky targets a **single** scrollport.
+
+**New directory tables:** Keep the **primary human-readable identifier** as the **first column definition** in the column array (default order); users may reorder in the column sheet, but the default should match product language (“name”, “Survey name”, etc.).
 
 **Persistence:** Pass a stable **`tableId`** (e.g. `contacts.directory`). Session state is stored under **`appdt:v1:${tableId}`** via [`usePersistedState`](../../../src/app/hooks/usePersistedState.ts). Set **`persist={false}`** in Storybook-only demos.
 
@@ -46,6 +50,29 @@ Use this stack for **sortable, resizable directory-style grids** in product view
 **Bespoke grids not yet on `AppDataTable`:** Some views still use **native `<table>`** or custom flex grids for **wide matrix layouts**, **legacy section styling**, or **print-style output**. Examples: [`SearchAIView.v1.tsx`](../../../src/app/components/SearchAIView.v1.tsx) (dynamic brand columns + expandable theme rows), [`BirdAIReportsView.v1.tsx`](../../../src/app/components/BirdAIReportsView.v1.tsx), [`AgentConfigView.v1.tsx`](../../../src/app/components/AgentConfigView.v1.tsx), [`ScheduledDeliveriesView.v1.tsx`](../../../src/app/components/ScheduledDeliveriesView.v1.tsx), [`SharedByMe.v1.tsx`](../../../src/app/components/SharedByMe.v1.tsx), [`BusinessOverviewDashboard.v1.tsx`](../../../src/app/components/BusinessOverviewDashboard.v1.tsx). **[`ReportPages.v1.tsx`](../../../src/app/components/ReportPages.v1.tsx)** should generally stay on controlled `<table>` + inline typography for **export / WYSIWYG** parity unless product explicitly wants AppDataTable there.
 
 **Row UX defaults in `AppDataTable`:** Row dividers (`border-b border-border`), optional **`onRowClick`**, **`isRowSelected`** for keyed selection, **`actions`** column id (and `meta.stopRowClick`) so interactive cells do not bubble row clicks.
+
+### Ticketing directory (`TicketingView.v1.tsx`)
+
+- Mirror **`CampaignsView.v1.tsx`**: **`AppDataTable`** + header **`AppDataTableColumnSettingsTrigger`**, `createColumnHelper`, stable **`tableId`** (e.g. `ticketing.directory`), **`hideColumnsButton`** with controlled **`columnSheetOpen`**. Pin **`stickyLeadingColumnCount={2}`** when select + label columns should freeze together.
+- **Status:** **`Badge variant="outline"`** + semantic tinted **`className`** (**label only**—no status dot/icon inside the badge). Reuse the **Campaigns** `STATUS_CONFIG`-style palette (emerald / amber / slate / blue / purple families with dark variants).
+- **Channel:** Neutral publisher chip (**slate** outline + muted icon)—**not** Google/Facebook/etc. brand colours in the directory grid.
+- **Do not** add a **left priority colour stripe** on rows; avoid “unread” row fills that read like **selection**.
+
+### Social calendar (`SocialView.v1.tsx`)
+
+- **List / week / month** share one **calendar shell** (e.g. `mx-6 mb-6`, **`rounded-xl border border-border bg-background`**, **`shadow-sm`**, **`flex-1 min-h-0`**) so height and chrome stay consistent when toggling **`SegmentedToggle`** modes.
+- **Typography:** **`text-[13px]`** base for **list** and **week** body; month cells may use **`text-xs`** for dense chips.
+- **List / week cards:** **`bg-background`** + **`border-border`** (and light shadow)—avoid grey “tub” wells behind every card.
+- **Month grid (Sprout / Later–style):** **equal row heights** with **`gridTemplateRows: repeat(rowCount, minmax(0, 1fr))`** under a definite-height flex child; **per-cell borders** instead of a heavy **`gap-px`** matrix; stacked **chips** (icon + time + clamped copy) + **“+N more”**.
+
+### Shared by me (`SharedByMe.v1.tsx`) — wide `<table>` hygiene
+
+- **Left alignment:** Drop decorative **leading empty** `<th>` / `<td>` columns so the first real column aligns with the table edge.
+- **Icons:** Omit **KPI card icons** unless the spec requires them (label + value is cleaner). In rows, avoid **report-type avatars**, **channel row icons**, and **extra Lucide** when **`text-muted-foreground`** metadata is enough.
+- **Column design:** Put **expiry** in its **own column**, not under status. Split **last activity** into **time** vs **viewer email** columns instead of one stacked “Last accessed” cell.
+- **Row actions:** **`⋯`** menu **`opacity-0`** by default; reveal on **`group-hover:`** and **`group-focus-within:`** so the grid stays quiet until interaction.
+- **Time formatting:** One **Gmail-style** helper—**“Just now”**, **“N minutes ago”**, **hours / days** spelled out, **“1 week ago”** in a bounded window, then **`Mar 7, 2026`**—avoid **`1d ago`** plus a second absolute line in the same cell.
+- **Views column:** Show **total views only** unless the product explicitly asks for **unique viewers** in the same cell.
 
 ### Boot insights loader (`BootInsightsLoader`)
 
@@ -85,6 +112,12 @@ Use this pattern when the user wants **meaningful copy during auth delay or post
 - **Shared class:** [`src/app/components/ui/floatingPanelSurface.ts`](../../../src/app/components/ui/floatingPanelSurface.ts) exports **`FLOATING_PANEL_SURFACE_CLASSNAME`** (`rounded-2xl`, shadow tokens, `text-popover-foreground`) and **`FLOATING_PANEL_LIST_PADDING_CLASSNAME`**. Primitives under `src/app/components/ui/*.v1.tsx` that render portaled menus import it—reuse it for **custom** portaled menus (e.g. L1 profile dropdown and the **⋯ overflow nav** panel in [`Sidebar.v2.tsx`](../../../src/app/components/Sidebar.v2.tsx)) instead of inventing `border border-border/80` shells. Overflow **More** uses the **same anchored pattern** as profile (`absolute`, `left-[calc(100%+8px)]`, `w-[260px]`)—**not** a Radix **Sheet** drawer.
 - **Verify in Storybook:** **UI/Popover**, **UI/DropdownMenu**, **UI/Select**, **UI/HoverCard**, **UI/ContextMenu**, **UI/Menubar** — docs describe the borderless shell.
 
+### Status / type tags (`Badge` + table chips)
+
+- **Typography:** **`text-[12px]`** on the shared [`Badge`](../../../src/app/components/ui/badge.v1.tsx) primitive (`src/app/components/ui/badge.v1.tsx` via `badge.tsx`). Do **not** override with `text-xs`, `text-[10px]`, or `text-[length:var(--font-size)]` on status/type/role chips unless a spec explicitly requires a different size.
+- **Shape & stroke:** **No perimeter border** on semantic tags—use **tinted background + matching text** only (`bg-*-50` / `dark:bg-*-950/40` patterns). Avoid `border-*-200` / `dark:border-*-800` on `Badge variant="outline"` config maps (Campaigns, Surveys, Appointments, Ticketing, Payments, Listings, etc.) and on inline `span` chips (Inbox outcomes, Agent activity “Active”, policy kind pills on **Agent config**).
+- **Verify in Storybook:** **UI/Badge** after changing the primitive.
+
 ### Main canvas titles (view header + modals)
 
 - **Shared header row:** [`src/app/components/layout/MainCanvasViewHeader.tsx`](../../../src/app/components/layout/MainCanvasViewHeader.tsx) — `title`, optional `description`, optional `actions` (right column). Outer band uses **`MAIN_VIEW_HEADER_BAND_CLASS`** (`px-6 pt-5 pb-4`, `flex`, `justify-between`).
@@ -93,6 +126,12 @@ Use this pattern when the user wants **meaningful copy during auth delay or post
 - **No divider under the title band:** Do **not** pass `className` on `MainCanvasViewHeader` that adds **`border-b`** / **`border-b border-border`**. The title row is visually open into the scrollable body; horizontal rules belong on **inner** surfaces (data cards, sticky table toolbars, tabs), not on the shared canvas header strip.
 - **Product views using `MainCanvasViewHeader` (non-exhaustive):** Appointments, Payments, Referrals, Surveys, Ticketing, Campaigns, Listings (default + All sites), Agents Monitor, Reviews (list), Competitors (main column), Contacts (directory + lists), Business overview, Dashboard shell, Shared by me, Scheduled deliveries, Search AI (visibility + recommendations panel), Inbox (canvas title), Schedule builder, BirdAI reports, Journeys placeholder, Agent detail, Agents builder, Agent library, listings citations / Google suggestions, and similar. Add the component for any **new** full-width canvas view instead of hand-rolling `px-6 pt-5 pb-4` + bespoke `h1` classes.
 - **Floating sheets:** [`FloatingSheetFrame`](../../../src/app/components/layout/FloatingSheetFrame.tsx) — `title` renders as **`SheetTitle`** (inherits the same default heading class). Keep header padding aligned (`pt-5 pb-4` on the frame header).
+- **“Drawer” / right detail rail → `Sheet` (floating):** When a prompt asks for a **drawer**, **side panel**, or **slide-over detail** for row/record context, implement it with **Radix `Sheet`** from [`sheet.v1.tsx`](../../../src/app/components/ui/sheet.v1.tsx), not a bespoke `fixed` panel and not Vaul **`Drawer`** unless the spec explicitly requires bottom drawer UX. Use **`inset="floating"`**, pass **`FLOATING_SHEET_FRAME_CONTENT_CLASS`** on **`SheetContent`**, and compose **[`FloatingSheetFrame`](../../../src/app/components/layout/FloatingSheetFrame.tsx)** when the layout needs a fixed header/footer and a scrolling body (Campaigns campaign detail, Surveys reports, **Payments invoice**, Call recording, Agent trace, Ticketing reply, etc.). Verify **UI/Sheet** in Storybook.
+- **Choosing `floatingSize` when the user does not specify width:** Ask **one** clarifying question, then set **`SheetContent` `floatingSize`** (see `SheetFloatingSize` in `sheet.v1.tsx`—do not invent ad hoc `max-w-*` for floating rails):
+  1. **Small** → `sm` (~340px) — minimal copy, narrow confirmations.
+  2. **Medium** → `md` (~480px) — **default** for typical row detail (invoices, campaign/survey summaries, social preview).
+  3. **Large** → `lg` (~640px) — denser forms, more columns, long threaded content.
+  4. **Large with preview / split canvas** → `xl` (~85vw max) — when they need maximum floating width for a preview pane, comparison, or wide matrix beside fields—not the same as **edge** full-bleed `inset="edge"` (reserve edge sheets for explicit full-height / mobile-first specs).
 - **L2 vs main title:** When the main canvas already shows **`MainCanvasViewHeader`**, **omit** **`L2NavLayout` `panelTitle`** so the module name is not duplicated in the L2 rail. Use **`headerAction`** for a top-of-L2 CTA row (label + plus chip), e.g. **Book an appointment** on Appointments — same pattern as Inbox **New message**.
 
 ### Review platform logos (third‑party marks)

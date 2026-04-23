@@ -122,6 +122,7 @@ export function GoogleSuggestionsPanel() {
         header: "",
         meta: { settingsLabel: "Actions" },
         size: 52,
+        enableSorting: false,
         enableResizing: false,
         enableHiding: false,
         cell: () => (
@@ -203,6 +204,7 @@ export function GoogleSuggestionsPanel() {
               tableId="listings.googleSuggestions"
               data={MOCK_SUGGESTIONS}
               columns={columns}
+              initialSorting={[{ id: "createdOn", desc: true }]}
               getRowId={(r) => r.id}
               columnSheetTitle="Suggestion columns"
               className="min-w-0 px-0"

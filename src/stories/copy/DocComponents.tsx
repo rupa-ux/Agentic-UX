@@ -106,7 +106,7 @@ export function DataTable({ headers, rows }: { headers: string[]; rows: string[]
         <thead>
           <tr className="border-b border-border bg-muted/50">
             {headers.map((h, i) => (
-              <th key={i} className="text-left px-4 py-2 text-xs text-muted-foreground uppercase tracking-wide">
+              <th key={i} className="text-left px-4 py-2 text-[length:var(--table-label-size)] text-muted-foreground uppercase tracking-wide">
                 {h}
               </th>
             ))}

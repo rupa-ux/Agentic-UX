@@ -10,6 +10,7 @@ import {
 import svgPaths from "../../imports/svg-y1gexucine";
 import type { AppView } from "../App";
 import { Button } from "@/app/components/ui/button";
+import { FLOATING_PANEL_SURFACE_CLASSNAME } from "@/app/components/ui/floatingPanelSurface";
 import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "./l1StripIconTokens";
 import { MonitorNotificationsTrigger } from "./MonitorNotificationsTrigger";
 import { useTheme, type ThemePreference } from "./useTheme";
@@ -217,7 +218,9 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
           </Button>
 
           {profileOpen && (
-            <div className="absolute left-[calc(100%+8px)] bottom-0 bg-popover text-popover-foreground rounded-xl shadow-lg border border-border w-[260px] z-50 overflow-hidden transition-colors duration-300">
+            <div
+              className={`absolute left-[calc(100%+8px)] bottom-0 z-50 w-[260px] overflow-hidden text-popover-foreground transition-colors duration-300 ${FLOATING_PANEL_SURFACE_CLASSNAME}`}
+            >
               <div className="relative overflow-hidden">
                 <div
                   className="flex transition-transform duration-250 ease-in-out"

@@ -730,7 +730,7 @@ const contactsNavSections = [
 
 function ContactsL2UsageFooter() {
   return (
-    <Card className="gap-2 border-border bg-card py-0 shadow-none">
+    <Card className="gap-2 rounded-lg border border-border bg-card py-0 shadow-none">
       <CardContent className="flex flex-col gap-2 px-4 py-4">
         <div className="flex items-start justify-between gap-2">
           <p className="text-muted-foreground text-xs leading-snug">7/50 Reachable contacts added</p>

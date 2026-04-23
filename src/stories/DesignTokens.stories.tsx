@@ -359,7 +359,7 @@ export const BorderRadius: Story = {
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {["Token", "Tailwind class", "Value", "Used on"].map(h => (
-                  <th key={h} className="text-left px-4 py-2 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 text-[length:var(--table-label-size)] text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -384,8 +384,8 @@ export const BorderRadius: Story = {
           <button className="px-4 py-2 bg-primary text-primary-foreground text-sm rounded-md">
             Button — rounded-md
           </button>
-          <span className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded-full border border-border">
-            Badge — rounded-full
+          <span className="inline-flex items-center rounded-md border-0 px-2 py-0.5 bg-secondary text-secondary-foreground text-[12px] font-medium">
+            Badge — rounded-md (no border)
           </span>
           <div className="px-4 py-4 bg-card border border-border rounded-lg text-sm text-foreground">
             Card — rounded-lg
@@ -535,7 +535,7 @@ export const Shadows: Story = {
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {["Tailwind class", "Level", "Used on"].map(h => (
-                  <th key={h} className="text-left px-4 py-2 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 text-[length:var(--table-label-size)] text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -687,7 +687,7 @@ export const ButtonSystem: Story = {
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {["Token", "Value", "Size variant", "Live example"].map(h => (
-                  <th key={h} className="text-left px-4 py-2 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 text-[length:var(--table-label-size)] text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -765,13 +765,14 @@ export const ButtonSystem: Story = {
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {["Token", "Value", "Effect"].map(h => (
-                  <th key={h} className="text-left px-4 py-2 text-xs text-muted-foreground uppercase tracking-wide">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 text-[length:var(--table-label-size)] text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {[
                 { token: "--font-size", value: "13px", effect: "Sets `html` font size — `text-*` rem utilities scale from here (app + Storybook)" },
+                { token: "--table-label-size", value: "12px", effect: "Column headers and table label rows (`TableHead`, `AppDataTable` headers, `<th>` labels)" },
                 { token: "text-xs",    value: "0.75rem (≈ 10px)", effect: "Captions, metadata, timestamps" },
                 { token: "text-sm",    value: "0.875rem (≈ 11px)", effect: "Secondary text, table cells" },
                 { token: "text-base",  value: "1rem (= 13px)", effect: "Body copy, inputs, default UI text" },

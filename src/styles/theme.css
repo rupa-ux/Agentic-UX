@@ -143,6 +143,8 @@
 :root {
   /* ─── Base scale ─── */
   --font-size: 13px;
+  /** Column headers / table label row (`TableHead`, `AppDataTable` headers, raw `<th>` labels). */
+  --table-label-size: 12px;
   --button-height-xs: 24px;
   --button-height-sm: 32px;
   --button-height: 34px;
@@ -322,8 +324,9 @@
 
   /**
    * Type scale — rem units so `text-*` utilities scale with `:root` / `html`
-   * `--font-size` (13px). Matches Tailwind defaults; declared here so Vite +
-   * Storybook share one contract (see Design System → Tokens → Base font size).
+   * `--font-size` (13px). Table column labels use fixed `--table-label-size` (12px).
+   * Matches Tailwind defaults; declared here so Vite + Storybook share one contract
+   * (see Design System → Tokens → Base font size).
    */
   --text-xs: 0.75rem;
   --text-xs--line-height: calc(1 / 0.75);

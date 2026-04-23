@@ -131,12 +131,20 @@ const meta: Meta<typeof AppDataTable<DemoRow>> = {
   title: "UI/AppDataTable",
   component: AppDataTable,
   tags: ["autodocs"],
+  argTypes: {
+    rowDensity: {
+      control: "select",
+      options: ["default", "medium", "large"],
+      description:
+        "Directory row vertical padding. **default** = reference (Payments/Contacts); **medium** = legacy; **large** = comfort.",
+    },
+  },
   parameters: {
     layout: "padded",
     docs: {
       description: {
         component:
-          "**TanStack Table v8** + [`table.v1`](../app/components/ui/table.v1.tsx): headers/body use **`--font-size` (13px)**, **chevron** sort (`ChevronDown` when unsorted/desc, `ChevronUp` when asc), short resize handle, **weighted widths** vs container when `columnSizing` is empty (`ResizeObserver`). **`minWidth`** is the sum of column sizes (scroll when needed); **`width`** is at least the scrollport so row borders span the container. Persisted widths are not auto-redistributed after resize. **Columns** opens **Sheet**; `toolbarTitle` shows a labeled Columns button, otherwise **icon-only**. State persists when `persist` is true. Use the theme toolbar for light/dark.",
+          "**TanStack Table v8** + [`table.v1`](../app/components/ui/table.v1.tsx): headers use **`--table-label-size` (12px)**; body cells use **`--font-size` (13px)**, **chevron** sort (`ChevronDown` when unsorted/desc, `ChevronUp` when asc), short resize handle, **weighted widths** vs container when `columnSizing` is empty (`ResizeObserver`). **`minWidth`** is the sum of column sizes (scroll when needed); **`width`** is at least the scrollport so row borders span the container. Persisted widths are not auto-redistributed after resize. **Columns** opens **Sheet**; `toolbarTitle` shows a labeled Columns button, otherwise **icon-only**. **`stickyFirstColumn`** (default true) pins the first **`stickyLeadingColumnCount`** visible columns on horizontal scroll (default **1**); cumulative `left` offsets stack. A right-edge shadow on the **last** pinned column appears when `scrollLeft > 0`. Set **`stickyLeadingColumnCount` to `0`** with **`stickyFirstColumn` true** to disable pinning. State persists when `persist` is true. Use the theme toolbar for light/dark.\n\n**`rowDensity`** — `default` (compact **8px** vertical padding; reference for Payments/Contacts), `medium` (legacy `py-4` body), `large` (roomier). Omit to keep **`medium`** for backward compatibility.",
       },
     },
   },
@@ -154,6 +162,46 @@ export const ReferenceChrome: Story = {
     persist: false,
     columnSheetTitle: "Columns",
     initialSorting: [{ id: "name", desc: false }],
+    rowDensity: "medium",
+  },
+};
+
+export const RowDensityDefault: Story = {
+  name: "Row density · default (reference)",
+  args: {
+    tableId: "storybook.appDataTable.rowDensity.default",
+    data: rows,
+    columns: referenceColumns,
+    persist: false,
+    columnSheetTitle: "Columns",
+    initialSorting: [{ id: "name", desc: false }],
+    rowDensity: "default",
+  },
+};
+
+export const RowDensityMedium: Story = {
+  name: "Row density · medium (legacy)",
+  args: {
+    tableId: "storybook.appDataTable.rowDensity.medium",
+    data: rows,
+    columns: referenceColumns,
+    persist: false,
+    columnSheetTitle: "Columns",
+    initialSorting: [{ id: "name", desc: false }],
+    rowDensity: "medium",
+  },
+};
+
+export const RowDensityLarge: Story = {
+  name: "Row density · large",
+  args: {
+    tableId: "storybook.appDataTable.rowDensity.large",
+    data: rows,
+    columns: referenceColumns,
+    persist: false,
+    columnSheetTitle: "Columns",
+    initialSorting: [{ id: "name", desc: false }],
+    rowDensity: "large",
   },
 };
 
@@ -226,5 +274,19 @@ export const ExternalColumnTrigger: Story = {
         />
       </div>
     );
+  },
+};
+
+export const StickyLeadingColumns: Story = {
+  name: "Sticky · first 3 visible columns",
+  args: {
+    tableId: "storybook.appDataTable.sticky.leading3",
+    data: rows,
+    columns: referenceColumns,
+    persist: false,
+    columnSheetTitle: "Columns",
+    initialSorting: [{ id: "name", desc: false }],
+    rowDensity: "default",
+    stickyLeadingColumnCount: 3,
   },
 };

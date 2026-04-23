@@ -1,21 +1,47 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
-  Search, ChevronDown, MoreHorizontal,
-  ArrowUpDown, ArrowUp, ArrowDown,
-  Link2, Mail, Download, Lock,
-  TrendingUp, Users, Calendar, Filter, FileText,
-  Eye, Pencil, Trash2, ExternalLink, RotateCcw, Printer, Copy, Ban
+  Search,
+  MoreHorizontal,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Download,
+  Lock,
+  Calendar,
+  Filter,
+  FileText,
+  Pencil,
+  Trash2,
+  ExternalLink,
+  RotateCcw,
+  Printer,
+  Copy,
+  Ban,
+  Tags,
 } from "lucide-react";
-import svgPaths from "../../imports/svg-zyxavbn7id";
 import { getDrafts, deleteDraft, subscribeDrafts, type DraftReport } from "./draftStore";
 import { toast } from "sonner";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { Button } from "@/app/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Badge } from "@/app/components/ui/badge";
 import {
-  FLOATING_PANEL_LIST_PADDING_CLASSNAME,
-  FLOATING_PANEL_SURFACE_CLASSNAME,
-} from "@/app/components/ui/floatingPanelSurface";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/app/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/app/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
 /* ─── Types ─── */
 type ShareStatus = "active" | "expired" | "revoked";
@@ -56,7 +82,7 @@ const mockSharedItems: SharedItem[] = [
     accessCount: 24,
     uniqueViewers: 8,
     lastAccessedAt: "2026-03-09T09:15:00Z",
-    lastAccessedBy: "sarah.chen@acmecorp.",
+    lastAccessedBy: "sarah.chen@acmecorp.com",
     shareLink: "https://app.birdeye.com/shared/rpt-a1b2c3d4",
     isPasswordProtected: true,
     downloadCount: 3,
@@ -94,7 +120,7 @@ const mockSharedItems: SharedItem[] = [
     accessCount: 47,
     uniqueViewers: 10,
     lastAccessedAt: "2026-03-09T07:30:00Z",
-    lastAccessedBy: "regional-mgrd@acmeco",
+    lastAccessedBy: "regional-mgrs@acmecorp.com",
     shareLink: "https://app.birdeye.com/shared/rpt-e5f6g7h8",
     isPasswordProtected: false,
     downloadCount: 8,
@@ -113,7 +139,7 @@ const mockSharedItems: SharedItem[] = [
     accessCount: 5,
     uniqueViewers: 1,
     lastAccessedAt: "2026-02-28T11:00:00Z",
-    lastAccessedBy: "alex.rivera@acmecorp.c",
+    lastAccessedBy: "alex.rivera@acmecorp.com",
     shareLink: null,
     isPasswordProtected: false,
     downloadCount: 2,
@@ -151,7 +177,7 @@ const mockSharedItems: SharedItem[] = [
     accessCount: 18,
     uniqueViewers: 6,
     lastAccessedAt: "2026-02-09T14:22:00Z",
-    lastAccessedBy: "exec-team@acmecorp.",
+    lastAccessedBy: "exec-team@acmecorp.com",
     shareLink: "https://app.birdeye.com/shared/rpt-m9n0p1q2",
     isPasswordProtected: true,
     downloadCount: 4,
@@ -170,7 +196,7 @@ const mockSharedItems: SharedItem[] = [
     accessCount: 9,
     uniqueViewers: 3,
     lastAccessedAt: "2026-01-12T10:15:00Z",
-    lastAccessedBy: "marketing@acmecorp.c",
+    lastAccessedBy: "marketing@acmecorp.com",
     shareLink: null,
     isPasswordProtected: false,
     downloadCount: 1,
@@ -210,136 +236,81 @@ const reportTypeLabels: Record<ReportType, string> = {
   custom_dashboard: "Custom dashboard",
 };
 
-const reportTypeColors: Record<ReportType, { text: string; bg: string }> = {
-  profile_performance: { text: "#2552ED", bg: "rgba(37,82,237,0.08)" },
-  review_summary: { text: "#E91E63", bg: "rgba(233,30,99,0.08)" },
-  social_analytics: { text: "#7B1FA2", bg: "rgba(123,31,162,0.08)" },
-  listing_audit: { text: "#FF9800", bg: "rgba(255,152,0,0.08)" },
-  survey_results: { text: "#4caf50", bg: "rgba(76,175,80,0.08)" },
-  campaign_report: { text: "#00BCD4", bg: "rgba(0,188,212,0.08)" },
-  competitor_analysis: { text: "#F44336", bg: "rgba(244,67,54,0.08)" },
-  custom_dashboard: { text: "#607D8B", bg: "rgba(96,125,139,0.08)" },
-};
+/** Reference “now” for mock relative times (aligned with mock data). */
+const REFERENCE_NOW = new Date("2026-03-09T12:00:00Z");
 
-const reportIconColors: Record<ReportType, string> = {
-  profile_performance: "#2552ED",
-  review_summary: "#E91E63",
-  social_analytics: "#7B1FA2",
-  listing_audit: "#FF9800",
-  survey_results: "#4caf50",
-  campaign_report: "#00BCD4",
-  competitor_analysis: "#F44336",
-  custom_dashboard: "#607D8B",
-};
+function formatFullCalendar(d: Date): string {
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
 
-const reportIconBgs: Record<ReportType, string> = {
-  profile_performance: "rgba(25,118,210,0.09)",
-  review_summary: "rgba(233,30,99,0.09)",
-  social_analytics: "rgba(123,31,162,0.09)",
-  listing_audit: "rgba(255,152,0,0.09)",
-  survey_results: "rgba(76,175,80,0.09)",
-  campaign_report: "rgba(0,188,212,0.09)",
-  competitor_analysis: "rgba(244,67,54,0.09)",
-  custom_dashboard: "rgba(96,125,139,0.09)",
-};
-
-function formatRelativeDate(isoDate: string): string {
+/** Gmail-style: short relative when recent, otherwise “Mar 7, 2026”. */
+function formatSmartTime(isoDate: string): string {
   const date = new Date(isoDate);
-  const now = new Date("2026-03-09T12:00:00Z");
-  const diffMs = now.getTime() - date.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  const diffHr = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHr / 24);
+  const diffMs = REFERENCE_NOW.getTime() - date.getTime();
+  if (diffMs < 0) return formatFullCalendar(date);
 
-  if (diffMin < 60) return `${diffMin}m ago`;
-  if (diffHr < 24) return `${diffHr}h ago`;
-  if (diffDay < 7) return `${diffDay}d ago`;
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const minutesTotal = Math.floor(diffMs / 60000);
+  if (minutesTotal < 1) return "Just now";
+  if (minutesTotal < 60) {
+    return minutesTotal === 1 ? "1 minute ago" : `${minutesTotal} minutes ago`;
+  }
+  const hours = Math.floor(minutesTotal / 60);
+  if (hours < 24) {
+    return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
+  }
+  const days = Math.floor(hours / 24);
+  if (days < 7) {
+    return days === 1 ? "1 day ago" : `${days} days ago`;
+  }
+  if (days >= 7 && days < 14) return "1 week ago";
+  return formatFullCalendar(date);
 }
 
-function formatDate(isoDate: string): string {
-  return new Date(isoDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+const shareMethodLabel: Record<ShareMethod, string> = {
+  link: "Via link",
+  email: "Via email",
+  download: "Via download",
+};
+
+function formatExpiryColumn(item: SharedItem): string {
+  if (!item.expiresAt) {
+    if (item.status === "expired") return "Expired";
+    return "—";
+  }
+  const exp = new Date(item.expiresAt);
+  const expiredByDate = exp.getTime() < REFERENCE_NOW.getTime();
+  if (item.status === "expired" || expiredByDate) {
+    return `Expired ${formatFullCalendar(exp)}`;
+  }
+  return formatFullCalendar(exp);
 }
 
-function formatShortDate(isoDate: string): string {
-  return new Date(isoDate).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+const SHARE_STATUS_BADGE: Record<
+  ShareStatus,
+  { label: string; className: string }
+> = {
+  active: {
+    label: "Active",
+    className: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400",
+  },
+  expired: {
+    label: "Expired",
+    className: "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
+  },
+  revoked: {
+    label: "Revoked",
+    className: "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300",
+  },
+};
+
+function ShareStatusBadge({ status }: { status: ShareStatus }) {
+  const cfg = SHARE_STATUS_BADGE[status];
+  return (
+    <Badge variant="outline" className={cn("font-medium", cfg.className)}>
+      {cfg.label}
+    </Badge>
+  );
 }
-
-/* ─── Status Badge ─── */
-const StatusBadge = ({ status }: { status: ShareStatus }) => {
-  const config = {
-    active: { label: "Active", bg: "#e8f5e9", color: "#2e7d32", dot: "#4caf50" },
-    expired: { label: "Expired", bg: "#fff3e0", color: "#e65100", dot: "#FF9800" },
-    revoked: { label: "Revoked", bg: "#fce4ec", color: "#c62828", dot: "#F44336" },
-  }[status];
-
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[11px]"
-      style={{ background: config.bg, color: config.color, fontWeight: 400, letterSpacing: "0.06px" }}
-    >
-      <span className="w-[6px] h-[6px] rounded-full" style={{ background: config.dot }} />
-      {config.label}
-    </span>
-  );
-};
-
-/* ─── Share Method Icon ─── */
-const ShareMethodIcon = ({ method }: { method: ShareMethod }) => {
-  const icons = {
-    link: <Link2 className="w-3.5 h-3.5 text-[#2552ED]" />,
-    email: <Mail className="w-3.5 h-3.5 text-[#2552ED]" />,
-    download: <Download className="w-3.5 h-3.5 text-[#2552ED]" />,
-  };
-  const labels = { link: "via link", email: "via email", download: "via download" };
-  return (
-    <span className="inline-flex items-center gap-1">
-      {icons[method]}
-      <span className="text-[10px] text-[#999]">{labels[method]}</span>
-    </span>
-  );
-};
-
-/* ─── Report Type Icon ─── */
-const ReportIcon = ({ type }: { type: ReportType }) => {
-  const color = reportIconColors[type];
-  const bg = reportIconBgs[type];
-
-  const iconMap: Record<ReportType, React.ReactNode> = {
-    profile_performance: <TrendingUp className="w-4 h-4" style={{ color }} />,
-    review_summary: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d={svgPaths.p1316c380} fill={color} stroke={color} strokeWidth="0.5" />
-        <path d={svgPaths.p1a14b300} fill={color} stroke={color} strokeWidth="0.5" />
-        <path d={svgPaths.p25954bf0} stroke={color} strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-    social_analytics: <Eye className="w-4 h-4" style={{ color }} />,
-    listing_audit: <FileText className="w-4 h-4" style={{ color }} />,
-    survey_results: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d={svgPaths.p27e3ce00} fill={color} />
-      </svg>
-    ),
-    campaign_report: <TrendingUp className="w-4 h-4" style={{ color }} />,
-    competitor_analysis: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d={svgPaths.p2853ef00} fill={color} />
-      </svg>
-    ),
-    custom_dashboard: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d={svgPaths.p27e3ce00} fill={color} />
-      </svg>
-    ),
-  };
-
-  return (
-    <div className="w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: bg }}>
-      {iconMap[type]}
-    </div>
-  );
-};
 
 /* ─── Sort Types ─── */
 type SortField = "reportName" | "sharedAt" | "status" | "accessCount";
@@ -352,16 +323,12 @@ interface SharedByMeProps {
 
 export function SharedByMe({ onEditDraft, onViewReport }: SharedByMeProps) {
   const [search, setSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [sortField, setSortField] = useState<SortField>("sharedAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [statusFilter, setStatusFilter] = useState<"all" | ShareStatus>("all");
   const [typeFilter, setTypeFilter] = useState<"all" | ReportType>("all");
-  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
-  const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
-  const [actionMenuId, setActionMenuId] = useState<string | null>(null);
-  const statusDropdownRef = useRef<HTMLDivElement>(null);
-  const typeDropdownRef = useRef<HTMLDivElement>(null);
-  const actionMenuRef = useRef<HTMLDivElement>(null);
+  const [timeRangeLabel, setTimeRangeLabel] = useState("All time");
 
   // Shared items — stateful so revoke / delete / reshare updates the list
   const [sharedItems, setSharedItems] = useState<SharedItem[]>(mockSharedItems);
@@ -377,17 +344,10 @@ export function SharedByMe({ onEditDraft, onViewReport }: SharedByMeProps) {
     const unsub = subscribeDrafts(() => setDrafts(getDrafts()));
     const handleFocus = () => setDrafts(getDrafts());
     window.addEventListener("focus", handleFocus);
-    return () => { unsub(); window.removeEventListener("focus", handleFocus); };
-  }, []);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (statusDropdownRef.current && !statusDropdownRef.current.contains(e.target as Node)) setStatusDropdownOpen(false);
-      if (typeDropdownRef.current && !typeDropdownRef.current.contains(e.target as Node)) setTypeDropdownOpen(false);
-      if (actionMenuRef.current && !actionMenuRef.current.contains(e.target as Node)) setActionMenuId(null);
+    return () => {
+      unsub();
+      window.removeEventListener("focus", handleFocus);
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
   const filtered = sharedItems
@@ -423,506 +383,480 @@ export function SharedByMe({ onEditDraft, onViewReport }: SharedByMeProps) {
   };
 
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return <ArrowUpDown className="w-3 h-3 text-[#bbb]" />;
-    return sortDir === "asc"
-      ? <ArrowUp className="w-3 h-3 text-[#2552ED]" />
-      : <ArrowDown className="w-3 h-3 text-[#2552ED]" />;
+    if (sortField !== field) return <ArrowUpDown className="size-3 text-muted-foreground/60" />;
+    return sortDir === "asc" ? (
+      <ArrowUp className="size-3 text-primary" />
+    ) : (
+      <ArrowDown className="size-3 text-primary" />
+    );
   };
 
-  const totalActive = sharedItems.filter(i => i.status === "active").length;
+  const totalActive = sharedItems.filter((i) => i.status === "active").length;
   const totalViews = sharedItems.reduce((s, i) => s + i.accessCount, 0);
   const totalUniqueViewers = sharedItems.reduce((s, i) => s + i.uniqueViewers, 0);
   const totalDownloads = sharedItems.reduce((s, i) => s + i.downloadCount, 0);
 
+  const activeStatusLabel =
+    statusFilter === "all"
+      ? "All statuses"
+      : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1);
+  const activeTypeLabel = typeFilter === "all" ? "All types" : reportTypeLabels[typeFilter];
+
+  const metricCards = [
+    { label: "Active shares", value: String(totalActive) },
+    { label: "Total views", value: totalViews.toLocaleString() },
+    { label: "Unique viewers", value: totalUniqueViewers.toLocaleString() },
+    { label: "Downloads", value: totalDownloads.toLocaleString() },
+  ] as const;
+
+  const pendingDeleteReport =
+    confirmDeleteId != null ? sharedItems.find((i) => i.id === confirmDeleteId) : undefined;
+
   return (
-    <div className="flex-1 bg-[#f8f9fa] dark:bg-[#13161b] overflow-auto transition-colors duration-300">
+    <div className="flex h-full flex-col overflow-hidden bg-background">
       <MainCanvasViewHeader
-        className="bg-[#f8f9fa] dark:bg-[#13161b]"
         title="Shared by me"
+        description={`${filtered.length.toLocaleString()} showing · ${sharedItems.length.toLocaleString()} shares`}
         actions={
-          <div className="flex items-center gap-[3px]">
-            {/* All time */}
-            <button className="flex items-center gap-2 px-4 py-2 border border-[#e5e9f0] dark:border-[#333a47] rounded-[10px] bg-white dark:bg-[#262b35] text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors" style={{ fontWeight: 400 }}>
-              <Calendar className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
-              <span>All time</span>
-              <ChevronDown className="w-3.5 h-3.5 text-[#999] dark:text-[#6b7280]" />
-            </button>
-
-            {/* Status filter */}
-            <div className="relative" ref={statusDropdownRef}>
-              <button
-                onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}
-                className="flex items-center gap-2 px-3.5 py-2 border border-[#e5e9f0] dark:border-[#333a47] rounded-[10px] bg-white dark:bg-[#262b35] text-[13px] text-[#555] dark:text-[#8b92a5] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
-                style={{ fontWeight: 400 }}
+          <div className="flex items-center gap-2">
+            {searchOpen ? (
+              <div className="relative h-[var(--button-height)] w-[min(100%,280px)] min-w-[200px] shrink">
+                <Search
+                  className="pointer-events-none absolute top-1/2 left-2 size-[14px] -translate-y-1/2 text-muted-foreground"
+                  strokeWidth={1.6}
+                  absoluteStrokeWidth
+                  aria-hidden
+                />
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onBlur={() => {
+                    if (search === "") setSearchOpen(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setSearch("");
+                      setSearchOpen(false);
+                    }
+                  }}
+                  autoFocus
+                  placeholder="Search reports, recipients…"
+                  className="h-full w-full rounded-lg border border-border bg-background py-0 pr-2 pl-8 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary"
+                  aria-label="Search shared reports"
+                />
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                aria-label="Open search"
+                title="Search"
+                onClick={() => setSearchOpen(true)}
               >
-                <Filter className="w-3.5 h-3.5 text-[#555] dark:text-[#8b92a5]" />
-                <span>{statusFilter === "all" ? "Status" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}</span>
-                <ChevronDown className="w-3 h-3 text-[#555] dark:text-[#aaa]" />
-              </button>
-              {statusDropdownOpen && (
-                <div
-                  className={cn(
-                    "absolute right-0 top-full z-50 mt-1 flex min-w-[140px] flex-col gap-1",
-                    FLOATING_PANEL_SURFACE_CLASSNAME,
-                    FLOATING_PANEL_LIST_PADDING_CLASSNAME,
-                  )}
+                <Search className="size-[14px] text-muted-foreground" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+              </Button>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  aria-label={`Date range: ${timeRangeLabel}`}
+                  title={timeRangeLabel}
                 >
-                  {(["all", "active", "expired", "revoked"] as const).map(s => (
-                    <button
-                      key={s}
-                      onClick={() => { setStatusFilter(s); setStatusDropdownOpen(false); }}
-                      className={cn(
-                        "w-full rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150 hover:bg-muted",
-                        statusFilter === s ? "bg-primary/10 text-primary" : "text-foreground",
-                      )}
-                      style={{ fontWeight: statusFilter === s ? 400 : 300 }}
-                    >
-                      {s === "all" ? "All statuses" : s.charAt(0).toUpperCase() + s.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Type filter */}
-            <div className="relative" ref={typeDropdownRef}>
-              <button
-                onClick={() => setTypeDropdownOpen(!typeDropdownOpen)}
-                className="flex items-center gap-2 px-3.5 py-2 border border-[#e5e9f0] dark:border-[#333a47] rounded-[10px] bg-white dark:bg-[#262b35] text-[13px] text-[#555] dark:text-[#9ba2b0] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
-                style={{ fontWeight: 400 }}
-              >
-                <FileText className="w-3.5 h-3.5 text-[#555] dark:text-[#8b92a5]" />
-                <span>{typeFilter === "all" ? "Type" : reportTypeLabels[typeFilter]}</span>
-                <ChevronDown className="w-3 h-3 text-[#555] dark:text-[#aaa]" />
-              </button>
-              {typeDropdownOpen && (
-                <div
-                  className={cn(
-                    "absolute right-0 top-full z-50 mt-1 flex min-w-[180px] flex-col gap-1",
-                    FLOATING_PANEL_SURFACE_CLASSNAME,
-                    FLOATING_PANEL_LIST_PADDING_CLASSNAME,
-                  )}
-                >
-                  <button
-                    onClick={() => { setTypeFilter("all"); setTypeDropdownOpen(false); }}
-                    className={cn(
-                      "w-full rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150 hover:bg-muted",
-                      typeFilter === "all" ? "bg-primary/10 text-primary" : "text-foreground",
-                    )}
-                    style={{ fontWeight: typeFilter === "all" ? 400 : 300 }}
+                  <Calendar className="size-4 shrink-0" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {(["All time", "Last 90 days", "Last 30 days"] as const).map((label) => (
+                  <DropdownMenuItem
+                    key={label}
+                    className="cursor-pointer text-xs"
+                    onClick={() => setTimeRangeLabel(label)}
                   >
-                    All types
-                  </button>
-                  {(Object.keys(reportTypeLabels) as ReportType[]).map(t => (
-                    <button
-                      key={t}
-                      onClick={() => { setTypeFilter(t); setTypeDropdownOpen(false); }}
-                      className={cn(
-                        "w-full rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150 hover:bg-muted",
-                        typeFilter === t ? "bg-primary/10 text-primary" : "text-foreground",
-                      )}
-                      style={{ fontWeight: typeFilter === t ? 400 : 300 }}
-                    >
-                      {reportTypeLabels[t]}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+                    {label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  aria-label={`Status: ${activeStatusLabel}`}
+                  title={`Status: ${activeStatusLabel}`}
+                >
+                  <Filter className="size-4 shrink-0" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {(["all", "active", "expired", "revoked"] as const).map((s) => (
+                  <DropdownMenuItem
+                    key={s}
+                    className="cursor-pointer text-xs"
+                    onClick={() => setStatusFilter(s)}
+                  >
+                    {s === "all" ? "All statuses" : s.charAt(0).toUpperCase() + s.slice(1)}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  aria-label={`Type: ${activeTypeLabel}`}
+                  title={`Type: ${activeTypeLabel}`}
+                >
+                  <FileText className="size-4 shrink-0" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="max-h-64 w-56 overflow-y-auto">
+                <DropdownMenuItem className="cursor-pointer text-xs" onClick={() => setTypeFilter("all")}>
+                  All types
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {(Object.keys(reportTypeLabels) as ReportType[]).map((t) => (
+                  <DropdownMenuItem key={t} className="cursor-pointer text-xs" onClick={() => setTypeFilter(t)}>
+                    {reportTypeLabels[t]}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button type="button" variant="outline" size="icon" className="shrink-0" aria-label="Export" title="Export">
+                  <Tags className="size-4 shrink-0" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  className="cursor-pointer gap-2 text-xs"
+                  onClick={() => toast.message("Export", { description: "Connect your workspace to export share activity." })}
+                >
+                  <Download size={13} strokeWidth={1.6} absoluteStrokeWidth className="shrink-0" aria-hidden />
+                  Export list
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         }
       />
 
-      {/* Stat Cards */}
-      <div className="px-8 pb-4">
-        <div className="grid grid-cols-4 gap-4">
-          {/* Active shares */}
-          <div className="bg-white dark:bg-[#1e2229] rounded-[14px] px-5 pt-5 pb-4 flex items-start gap-4 transition-colors duration-300">
-            <div className="w-10 h-10 rounded-[10px] bg-[#e3f2fd] flex items-center justify-center shrink-0">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d={svgPaths.p2d06c1f2} stroke="#2552ED" strokeWidth="1.667" strokeLinecap="round" strokeLinejoin="round" />
-                <path d={svgPaths.p352f0080} stroke="#2552ED" strokeWidth="1.667" strokeLinecap="round" strokeLinejoin="round" />
-                <path d={svgPaths.p12385e80} stroke="#2552ED" strokeWidth="1.667" strokeLinecap="round" strokeLinejoin="round" />
-                <path d={svgPaths.p2fddaf00} stroke="#2552ED" strokeWidth="1.667" strokeLinecap="round" strokeLinejoin="round" />
-                <path d={svgPaths.p2ed86a80} stroke="#2552ED" strokeWidth="1.667" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 pb-6">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {metricCards.map(({ label, value }) => (
+            <div key={label} className="flex flex-col gap-2 rounded-xl border border-border bg-card p-5">
+              <span className="text-xs font-medium text-muted-foreground">{label}</span>
+              <span className="text-xl font-semibold tabular-nums text-foreground">{value}</span>
             </div>
-            <div>
-              <p className="text-[26px] text-[#212121] dark:text-[#e4e4e4] tracking-[0.22px]" style={{ fontWeight: 400 }}>{totalActive}</p>
-              <p className="text-[12px] text-[#999] dark:text-[#6b7280] mt-0.5">Active shares</p>
-            </div>
-          </div>
-
-          {/* Total views */}
-          <div className="bg-white dark:bg-[#1e2229] rounded-[14px] px-5 pt-5 pb-4 flex items-start gap-4 transition-colors duration-300">
-            <div className="w-10 h-10 rounded-[10px] bg-[#f3e5f5] flex items-center justify-center shrink-0">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d={svgPaths.pbd79600} stroke="#7B1FA2" strokeWidth="1.667" strokeLinecap="round" strokeLinejoin="round" />
-                <path d={svgPaths.p393cc300} stroke="#7B1FA2" strokeWidth="1.667" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-[26px] text-[#212121] dark:text-[#e4e4e4] tracking-[0.22px]" style={{ fontWeight: 400 }}>{totalViews}</p>
-              <p className="text-[12px] text-[#999] dark:text-[#6b7280] mt-0.5">Total views</p>
-            </div>
-          </div>
-
-          {/* Unique viewers */}
-          <div className="bg-white dark:bg-[#1e2229] rounded-[14px] px-5 pt-5 pb-4 flex items-start gap-4 transition-colors duration-300">
-            <div className="w-10 h-10 rounded-[10px] bg-[#e8f5e9] flex items-center justify-center shrink-0">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d={svgPaths.p2a5a7a80} stroke="#2E7D32" strokeWidth="1.667" strokeLinecap="round" strokeLinejoin="round" />
-                <path d={svgPaths.p3c437f00} stroke="#2E7D32" strokeWidth="1.667" strokeLinecap="round" strokeLinejoin="round" />
-                <path d={svgPaths.p387a3e80} stroke="#2E7D32" strokeWidth="1.667" strokeLinecap="round" strokeLinejoin="round" />
-                <path d={svgPaths.p196aa440} stroke="#2E7D32" strokeWidth="1.667" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-[26px] text-[#212121] dark:text-[#e4e4e4] tracking-[0.22px]" style={{ fontWeight: 400 }}>{totalUniqueViewers}</p>
-              <p className="text-[12px] text-[#999] dark:text-[#6b7280] mt-0.5">Unique viewers</p>
-            </div>
-          </div>
-
-          {/* Downloads */}
-          <div className="bg-white dark:bg-[#1e2229] rounded-[14px] px-5 pt-5 pb-4 flex items-start gap-4 transition-colors duration-300">
-            <div className="w-10 h-10 rounded-[10px] bg-[#fff3e0] flex items-center justify-center shrink-0">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d={svgPaths.p3ed29900} stroke="#E65100" strokeWidth="1.667" strokeLinecap="round" strokeLinejoin="round" />
-                <path d={svgPaths.pb337180} stroke="#E65100" strokeWidth="1.667" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M10 20.5V10.5" stroke="#E65100" strokeWidth="1.667" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-[26px] text-[#212121] dark:text-[#e4e4e4] tracking-[0.22px]" style={{ fontWeight: 400 }}>{totalDownloads}</p>
-              <p className="text-[12px] text-[#999] dark:text-[#6b7280] mt-0.5">Downloads</p>
-            </div>
-          </div>
+          ))}
         </div>
-      </div>
 
-      {/* Drafts Section */}
-      {drafts.length > 0 && (
-        <div className="px-8 pb-4">
-          <div className="bg-white dark:bg-[#1e2229] rounded-[14px] overflow-hidden transition-colors duration-300">
-            <div className="px-5 py-3.5 border-b border-[#e5e9f0] dark:border-[#333a47] flex items-center justify-between">
+        {drafts.length > 0 ? (
+          <div className="bg-card overflow-hidden rounded-xl border border-border">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#FF9800]" />
-                <span className="text-[14px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>Drafts</span>
-                <span className="text-[12px] text-[#999] dark:text-[#777] ml-1">{drafts.length} unsent {drafts.length === 1 ? "report" : "reports"}</span>
+                <span className="size-2 shrink-0 rounded-full bg-amber-500" aria-hidden />
+                <span className="text-sm font-medium text-foreground">Drafts</span>
+                <span className="text-xs text-muted-foreground">
+                  {drafts.length} unsent {drafts.length === 1 ? "report" : "reports"}
+                </span>
               </div>
             </div>
-            <div className="divide-y divide-[#e5e9f0] dark:divide-[#333a47]">
+            <div className="divide-y divide-border">
               {drafts.map((draft) => (
                 <div
                   key={draft.id}
-                  className="flex items-center gap-4 px-5 py-3.5 hover:bg-[#fafbfc] dark:hover:bg-[#262b35] transition-colors group"
+                  className="group flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/40"
                 >
-                  {/* Draft icon */}
-                  <div className="w-8 h-8 rounded-[10px] bg-[#fff3e0] flex items-center justify-center shrink-0">
-                    <FileText className="w-4 h-4 text-[#FF9800]" />
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/15">
+                    <FileText className="size-4 text-amber-700 dark:text-amber-400" />
                   </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4] truncate" style={{ fontWeight: 400 }}>{draft.reportName}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span
-                        className="inline-flex items-center gap-1.5 px-2 py-[2px] rounded-full text-[10px]"
-                        style={{ background: "#fff3e0", color: "#e65100", fontWeight: 400 }}
-                      >
-                        <span className="w-[5px] h-[5px] rounded-full bg-[#FF9800]" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm text-foreground">{draft.reportName}</p>
+                    <div className="mt-0.5 flex items-center gap-2">
+                      <Badge variant="secondary" className="font-normal">
                         Draft
-                      </span>
-                      <span className="text-[11px] text-[#999] dark:text-[#777]">
-                        Last edited {formatRelativeDate(draft.updatedAt)}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        Last edited {formatSmartTime(draft.updatedAt)}
                       </span>
                     </div>
                   </div>
-
-                  {/* Theme color indicator */}
-                  <div className="flex items-center gap-1.5 mr-2">
-                    <span className="w-3 h-3 rounded-full border border-white shadow-sm" style={{ backgroundColor: draft.themeColor }} />
-                    <span className="text-[11px] text-[#999] dark:text-[#777]">{draft.selectedFont}</span>
+                  <div className="mr-2 flex items-center gap-1.5">
+                    <span
+                      className="size-3 shrink-0 rounded-full border border-border shadow-sm"
+                      style={{ backgroundColor: draft.themeColor }}
+                    />
+                    <span className="text-xs text-muted-foreground">{draft.selectedFont}</span>
                   </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => onEditDraft?.(draft)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2552ED] hover:bg-[#1E44CC] transition-colors text-white text-[12px]"
-                      style={{ fontWeight: 400 }}
-                    >
-                      <Pencil className="w-3 h-3" />
+                  <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                    <Button type="button" size="sm" className="gap-1.5" onClick={() => onEditDraft?.(draft)}>
+                      <Pencil className="size-3.5" />
                       Edit
-                    </button>
-                    <button
-                      onClick={() => { deleteDraft(draft.id); setDrafts(getDrafts()); }}
-                      className="p-1.5 rounded-lg hover:bg-[#fce4ec] transition-colors"
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-destructive"
                       title="Delete draft"
+                      onClick={() => {
+                        deleteDraft(draft.id);
+                        setDrafts(getDrafts());
+                      }}
                     >
-                      <Trash2 className="w-3.5 h-3.5 text-[#999] hover:text-[#c62828]" />
-                    </button>
+                      <Trash2 className="size-4" />
+                    </Button>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-        </div>
-      )}
+        ) : null}
 
-      {/* Table Card */}
-      <div className="px-8 pb-6">
-        <div className="bg-white dark:bg-[#1e2229] rounded-[14px] overflow-hidden transition-colors duration-300">
-          {/* Search bar */}
-          <div className="px-5 py-3.5 border-b border-[#e5e9f0] dark:border-[#333a47] flex items-center gap-3">
-            <div className="flex-1 flex items-center gap-2 px-3.5 py-2 bg-[#f8f9fa] dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[10px]">
-              <Search className="w-4 h-4 text-[#999] dark:text-[#666]" />
-              <input
-                type="text"
-                placeholder="Search reports, recipients..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="flex-1 bg-transparent text-[13px] text-[#212121] dark:text-[#e4e4e4] placeholder:text-[#bbb] dark:placeholder:text-[#4d5568] outline-none"
-              />
-            </div>
-          </div>
-
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1200px]">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden border-0 bg-background">
+          <div className="overflow-x-auto border-b border-border">
+            <table className="w-full min-w-[1180px]">
               <thead>
-                <tr className="border-b border-[#e5e9f0] dark:border-[#333a47]">
-                  <th className="w-[46px] px-4 py-4" />
-                  <th className="text-left py-4 px-4">
-                    <button onClick={() => toggleSort("reportName")} className="flex items-center gap-1.5 text-[11px] text-[#777] tracking-[0.06px]" style={{ fontWeight: 400 }}>
+                <tr className="border-b border-border">
+                  <th className="px-4 py-4 text-left">
+                    <button
+                      type="button"
+                      onClick={() => toggleSort("reportName")}
+                      className="flex items-center gap-2 text-[length:var(--table-label-size)] font-normal tracking-wide text-muted-foreground"
+                    >
                       Report <SortIcon field="reportName" />
                     </button>
                   </th>
-                  <th className="text-left py-4 px-4">
-                    <span className="text-[11px] text-[#777] tracking-[0.06px]" style={{ fontWeight: 400 }}>Shared with</span>
+                  <th className="px-4 py-4 text-left">
+                    <span className="text-[length:var(--table-label-size)] font-normal tracking-wide text-muted-foreground">
+                      Shared with
+                    </span>
                   </th>
-                  <th className="text-left py-4 px-4">
-                    <button onClick={() => toggleSort("sharedAt")} className="flex items-center gap-1.5 text-[11px] text-[#777] tracking-[0.06px]" style={{ fontWeight: 400 }}>
+                  <th className="px-4 py-4 text-left">
+                    <button
+                      type="button"
+                      onClick={() => toggleSort("sharedAt")}
+                      className="flex items-center gap-2 text-[length:var(--table-label-size)] font-normal tracking-wide text-muted-foreground"
+                    >
                       Shared <SortIcon field="sharedAt" />
                     </button>
                   </th>
-                  <th className="text-left py-4 px-4">
-                    <button onClick={() => toggleSort("status")} className="flex items-center gap-1.5 text-[11px] text-[#777] tracking-[0.06px]" style={{ fontWeight: 400 }}>
+                  <th className="px-4 py-4 text-left">
+                    <button
+                      type="button"
+                      onClick={() => toggleSort("status")}
+                      className="flex items-center gap-2 text-[length:var(--table-label-size)] font-normal tracking-wide text-muted-foreground"
+                    >
                       Status <SortIcon field="status" />
                     </button>
                   </th>
-                  <th className="text-left py-4 px-4">
-                    <button onClick={() => toggleSort("accessCount")} className="flex items-center gap-1.5 text-[11px] text-[#777] tracking-[0.06px]" style={{ fontWeight: 400 }}>
+                  <th className="px-4 py-4 text-left">
+                    <span className="text-[length:var(--table-label-size)] font-normal tracking-wide text-muted-foreground">
+                      Expires
+                    </span>
+                  </th>
+                  <th className="px-4 py-4 text-left">
+                    <button
+                      type="button"
+                      onClick={() => toggleSort("accessCount")}
+                      className="flex items-center gap-2 text-[length:var(--table-label-size)] font-normal tracking-wide text-muted-foreground"
+                    >
                       Views <SortIcon field="accessCount" />
                     </button>
                   </th>
-                  <th className="text-left py-4 px-4">
-                    <span className="text-[11px] text-[#777] tracking-[0.06px]" style={{ fontWeight: 400 }}>Last accessed</span>
+                  <th className="px-4 py-4 text-left">
+                    <span className="text-[length:var(--table-label-size)] font-normal tracking-wide text-muted-foreground">
+                      Last active
+                    </span>
                   </th>
-                  <th className="w-[56px] py-4 px-4" />
+                  <th className="min-w-[200px] px-4 py-4 text-left">
+                    <span className="text-[length:var(--table-label-size)] font-normal tracking-wide text-muted-foreground">
+                      Last viewer
+                    </span>
+                  </th>
+                  <th className="w-12 px-2 py-4" aria-label="Actions" />
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((item) => (
-                  <tr key={item.id} className="border-b border-[#e5e9f0] dark:border-[#333a47] hover:bg-[#fafbfc] dark:hover:bg-[#262b35] transition-colors group">
-                    {/* Checkbox placeholder */}
-                    <td className="px-4 py-4" />
-
+                  <tr
+                    key={item.id}
+                    className="group border-b border-border transition-colors hover:bg-muted/40"
+                  >
                     {/* Report */}
-                    <td className="px-4 py-4">
-                      <div className="flex items-start gap-3">
-                        <ReportIcon type={item.reportType} />
-                        <div className="flex flex-col gap-1 min-w-0">
-                          <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4] truncate" style={{ fontWeight: 400 }}>{item.reportName}</p>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="inline-block px-1.5 py-[1px] rounded text-[10px] tracking-[0.12px] truncate"
-                              style={{
-                                background: reportTypeColors[item.reportType].bg,
-                                color: reportTypeColors[item.reportType].text,
-                                fontWeight: 400,
-                              }}
-                            >
-                              {reportTypeLabels[item.reportType]}
+                    <td className="px-4 py-4 align-top">
+                      <div className="flex min-w-0 flex-col gap-1">
+                        <p className="truncate text-sm font-medium text-foreground">{item.reportName}</p>
+                        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                          <span>{reportTypeLabels[item.reportType]}</span>
+                          <span aria-hidden className="text-border">
+                            ·
+                          </span>
+                          <span>{shareMethodLabel[item.sharedVia]}</span>
+                          {item.isPasswordProtected ? (
+                            <span className="inline-flex items-center gap-1">
+                              <span aria-hidden>·</span>
+                              <Lock className="size-3 shrink-0" aria-hidden />
+                              <span className="sr-only">Password protected</span>
                             </span>
-                            <ShareMethodIcon method={item.sharedVia} />
-                            {item.isPasswordProtected && (
-                              <Lock className="w-3 h-3 text-[#999] dark:text-[#666]" />
-                            )}
-                          </div>
+                          ) : null}
                         </div>
                       </div>
                     </td>
 
                     {/* Shared with */}
-                    <td className="px-4 py-4">
-                      <div className="flex flex-col gap-0.5">
-                        <div className="flex items-center gap-1 text-[13px] text-[#555] dark:text-[#aaa]">
-                          <Users className="w-3.5 h-3.5 text-[#bbb] dark:text-[#666]" />
-                          <span>{item.sharedWith.length}</span>
-                          <span className="text-[11px] text-[#999] dark:text-[#777]">
-                            {item.sharedWith.length === 1 ? "" : "recipients"}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-[#999] dark:text-[#777] truncate max-w-[160px]">{item.sharedWith[0]}</p>
+                    <td className="px-4 py-4 align-top">
+                      <div className="flex flex-col gap-1">
+                        <p className="text-sm text-foreground">
+                          {item.sharedWith.length}{" "}
+                          {item.sharedWith.length === 1 ? "recipient" : "recipients"}
+                        </p>
+                        <p className="max-w-[220px] truncate text-xs text-muted-foreground">{item.sharedWith[0]}</p>
                       </div>
                     </td>
 
-                    {/* Shared date */}
-                    <td className="px-4 py-4">
-                      <div className="flex flex-col gap-0.5">
-                        <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4]">{formatRelativeDate(item.sharedAt)}</p>
-                        <p className="text-[11px] text-[#999] dark:text-[#777]">{formatDate(item.sharedAt)}</p>
-                      </div>
+                    {/* Shared */}
+                    <td className="px-4 py-4 align-top">
+                      <p className="text-sm text-foreground">{formatSmartTime(item.sharedAt)}</p>
                     </td>
 
                     {/* Status */}
-                    <td className="px-4 py-4">
-                      <div className="flex flex-col gap-1">
-                        <StatusBadge status={item.status} />
-                        {item.expiresAt && (
-                          <p className="text-[10px] text-[#999] dark:text-[#777] pl-0.5">
-                            Expires {formatShortDate(item.expiresAt)}
-                          </p>
-                        )}
-                      </div>
+                    <td className="px-4 py-4 align-top">
+                      <ShareStatusBadge status={item.status} />
+                    </td>
+
+                    {/* Expires */}
+                    <td className="px-4 py-4 align-top">
+                      <p className="text-sm text-muted-foreground">{formatExpiryColumn(item)}</p>
                     </td>
 
                     {/* Views */}
-                    <td className="px-4 py-4">
-                      <div className="flex flex-col gap-0.5">
-                        <div className="flex items-center gap-1">
-                          <Eye className="w-3.5 h-3.5 text-[#bbb] dark:text-[#666]" />
-                          <span className="text-[13px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{item.accessCount}</span>
-                        </div>
-                        <p className="text-[11px] text-[#999] dark:text-[#777]">{item.uniqueViewers} unique</p>
-                      </div>
+                    <td className="px-4 py-4 align-top">
+                      <span className="text-sm tabular-nums text-foreground">{item.accessCount}</span>
                     </td>
 
-                    {/* Last accessed */}
-                    <td className="px-4 py-4">
-                      <div className="flex flex-col gap-0.5">
-                        <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4]">
-                          {item.lastAccessedAt ? formatRelativeDate(item.lastAccessedAt) : "—"}
-                        </p>
-                        {item.lastAccessedBy && (
-                          <p className="text-[11px] text-[#999] dark:text-[#777] truncate max-w-[160px]">
-                            by {item.lastAccessedBy}
-                          </p>
-                        )}
-                      </div>
+                    {/* Last active */}
+                    <td className="px-4 py-4 align-top">
+                      <p className="text-sm text-foreground">
+                        {item.lastAccessedAt ? formatSmartTime(item.lastAccessedAt) : "—"}
+                      </p>
                     </td>
 
-                    {/* Actions */}
-                    <td className="px-4 py-4 relative">
-                      <div ref={actionMenuId === item.id ? actionMenuRef : undefined}>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setActionMenuId(actionMenuId === item.id ? null : item.id)}
-                          className="text-[#999] dark:text-[#666] hover:bg-[#f0f0f0] dark:hover:bg-[#2e3340]"
-                        >
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                        {actionMenuId === item.id && (
-                          <div className="absolute right-4 top-full mt-1 bg-white dark:bg-[#262b35] rounded-lg shadow-lg border border-[#e5e9f0] dark:border-[#333a47] py-1 z-50 min-w-[180px]">
-                            {/* Copy link */}
-                            <button
-                              className="w-full text-left px-3 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] flex items-center gap-2.5"
-                              onClick={() => {
-                                const link = item.shareLink || `https://app.birdeye.com/shared/${item.id}`;
-                                navigator.clipboard.writeText(link).then(() => {
-                                  toast.success("Link copied to clipboard");
-                                }).catch(() => {
-                                  toast.error("Failed to copy link");
-                                });
-                                setActionMenuId(null);
-                              }}
-                            >
-                              <Copy className="w-3.5 h-3.5 text-[#777] dark:text-[#aaa]" />
-                              Copy link
-                            </button>
+                    {/* Last viewer */}
+                    <td className="min-w-[200px] px-4 py-4 align-top">
+                      {item.lastAccessedBy ? (
+                        <p className="truncate text-sm text-muted-foreground">{item.lastAccessedBy}</p>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">—</span>
+                      )}
+                    </td>
 
-                            {/* View report — opens full editor */}
-                            <button
-                              className="w-full text-left px-3 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] flex items-center gap-2.5"
-                              onClick={() => {
-                                setActionMenuId(null);
-                                onViewReport?.(item.reportName);
-                              }}
+                    <td className="px-2 py-4 align-top text-right">
+                      <div className="inline-flex justify-end opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                        <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="text-muted-foreground hover:text-foreground"
+                            aria-label="Row actions"
+                          >
+                            <MoreHorizontal className="size-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="min-w-[180px]">
+                          <DropdownMenuItem
+                            className="cursor-pointer gap-2 text-xs"
+                            onClick={() => {
+                              const link = item.shareLink || `https://app.birdeye.com/shared/${item.id}`;
+                              void navigator.clipboard
+                                .writeText(link)
+                                .then(() => toast.success("Link copied to clipboard"))
+                                .catch(() => toast.error("Failed to copy link"));
+                            }}
+                          >
+                            <Copy className="size-3.5 shrink-0" />
+                            Copy link
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="cursor-pointer gap-2 text-xs"
+                            onClick={() => onViewReport?.(item.reportName)}
+                          >
+                            <ExternalLink className="size-3.5 shrink-0" />
+                            View report
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="cursor-pointer gap-2 text-xs"
+                            onClick={() => {
+                              onViewReport?.(item.reportName);
+                              toast.info("Opening report editor — use Print from there");
+                            }}
+                          >
+                            <Printer className="size-3.5 shrink-0" />
+                            Print
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="cursor-pointer gap-2 text-xs"
+                            onClick={() => {
+                              setSharedItems((prev) =>
+                                prev.map((i) =>
+                                  i.id === item.id
+                                    ? {
+                                        ...i,
+                                        status: "active" as ShareStatus,
+                                        sharedAt: new Date().toISOString(),
+                                        expiresAt: null,
+                                      }
+                                    : i,
+                                ),
+                              );
+                              toast.success(`"${item.reportName}" reshared successfully`);
+                            }}
+                          >
+                            <RotateCcw className="size-3.5 shrink-0" />
+                            Reshare
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          {item.status === "revoked" ? (
+                            <DropdownMenuItem
+                              className="cursor-pointer gap-2 text-xs text-destructive focus:text-destructive"
+                              onClick={() => setConfirmDeleteId(item.id)}
                             >
-                              <ExternalLink className="w-3.5 h-3.5 text-[#777] dark:text-[#aaa]" />
-                              View report
-                            </button>
-
-                            {/* Print */}
-                            <button
-                              className="w-full text-left px-3 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] flex items-center gap-2.5"
+                              <Trash2 className="size-3.5 shrink-0" />
+                              Delete
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              className="cursor-pointer gap-2 text-xs text-destructive focus:text-destructive"
                               onClick={() => {
-                                setActionMenuId(null);
-                                // Open editor in print mode
-                                onViewReport?.(item.reportName);
-                                // The user can print from the editor
-                                toast.info("Opening report editor — use Print from there");
-                              }}
-                            >
-                              <Printer className="w-3.5 h-3.5 text-[#777] dark:text-[#aaa]" />
-                              Print
-                            </button>
-
-                            {/* Reshare */}
-                            <button
-                              className="w-full text-left px-3 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] flex items-center gap-2.5"
-                              onClick={() => {
-                                setActionMenuId(null);
-                                setSharedItems(prev =>
-                                  prev.map(i =>
-                                    i.id === item.id
-                                      ? { ...i, status: "active" as ShareStatus, sharedAt: new Date().toISOString(), expiresAt: null }
-                                      : i
-                                  )
+                                setSharedItems((prev) =>
+                                  prev.map((i) =>
+                                    i.id === item.id ? { ...i, status: "revoked" as ShareStatus } : i,
+                                  ),
                                 );
-                                toast.success(`"${item.reportName}" reshared successfully`);
+                                toast.success(`Access revoked for "${item.reportName}"`);
                               }}
                             >
-                              <RotateCcw className="w-3.5 h-3.5 text-[#777] dark:text-[#aaa]" />
-                              Reshare
-                            </button>
-
-                            <div className="border-t border-[#e5e9f0] dark:border-[#333a47] my-1" />
-
-                            {/* Revoke / Delete */}
-                            {item.status === "revoked" ? (
-                              <button
-                                className="w-full text-left px-3 py-2 text-[13px] text-[#c62828] hover:bg-[#fce4ec] flex items-center gap-2.5"
-                                onClick={() => {
-                                  setActionMenuId(null);
-                                  setConfirmDeleteId(item.id);
-                                }}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                Delete
-                              </button>
-                            ) : (
-                              <button
-                                className="w-full text-left px-3 py-2 text-[13px] text-[#c62828] hover:bg-[#fce4ec] flex items-center gap-2.5"
-                                onClick={() => {
-                                  setActionMenuId(null);
-                                  setSharedItems(prev =>
-                                    prev.map(i =>
-                                      i.id === item.id ? { ...i, status: "revoked" as ShareStatus } : i
-                                    )
-                                  );
-                                  toast.success(`Access revoked for "${item.reportName}"`);
-                                }}
-                              >
-                                <Ban className="w-3.5 h-3.5" />
-                                Revoke access
-                              </button>
-                            )}
-                          </div>
-                        )}
+                              <Ban className="size-3.5 shrink-0" />
+                              Revoke access
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       </div>
                     </td>
                   </tr>
@@ -933,40 +867,31 @@ export function SharedByMe({ onEditDraft, onViewReport }: SharedByMeProps) {
         </div>
       </div>
 
-      {/* Confirm Delete Modal */}
-      {confirmDeleteId && (() => {
-        const item = sharedItems.find(i => i.id === confirmDeleteId);
-        return (
-          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[100]" onClick={() => setConfirmDeleteId(null)}>
-            <div className="bg-white dark:bg-[#262b35] rounded-2xl shadow-2xl p-6 w-[380px]" onClick={e => e.stopPropagation()}>
-              <h3 className="text-[16px] text-[#212121] dark:text-[#e4e4e4] mb-2" style={{ fontWeight: 400 }}>Delete shared report?</h3>
-              <p className="text-[13px] text-[#555] dark:text-[#aaa] mb-5">
-                This will permanently remove <span style={{ fontWeight: 400 }}>"{item?.reportName}"</span> from your shared reports. This action cannot be undone.
-              </p>
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={() => setConfirmDeleteId(null)}
-                  className="px-4 py-2 text-[13px] text-[#555] dark:text-[#9ba2b0] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] rounded-lg transition-colors"
-                  style={{ fontWeight: 400 }}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    setSharedItems(prev => prev.filter(i => i.id !== confirmDeleteId));
-                    toast.success(`"${item?.reportName}" deleted`);
-                    setConfirmDeleteId(null);
-                  }}
-                  className="px-4 py-2 text-[13px] text-white bg-[#c62828] hover:bg-[#b71c1c] rounded-lg transition-colors"
-                  style={{ fontWeight: 400 }}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
+      <AlertDialog open={confirmDeleteId != null} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete shared report?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove &quot;{pendingDeleteReport?.reportName}&quot; from your shared reports. This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (confirmDeleteId == null) return;
+                setSharedItems((prev) => prev.filter((i) => i.id !== confirmDeleteId));
+                toast.success(`"${pendingDeleteReport?.reportName}" deleted`);
+                setConfirmDeleteId(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

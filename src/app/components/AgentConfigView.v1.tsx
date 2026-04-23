@@ -146,7 +146,7 @@ function SecVoice() {
             <thead className="bg-[#fafafa] dark:bg-[#1a1d23]">
               <tr>
                 {["Scenario","How to respond","Matches","Last edited"].map((h) => (
-                  <th key={h} className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wide text-[#999]">{h}</th>
+                  <th key={h} className="px-4 py-2.5 text-left text-[length:var(--table-label-size)] font-semibold uppercase tracking-wide text-[#999]">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -179,9 +179,9 @@ function SecVoice() {
 
 /* ─── Section: Policies ──────────────────────────────────────────────── */
 const KIND_BADGE: Record<PolicyRule["kind"], { label: string; cls: string }> = {
-  hard:      { label: "Hard",      cls: "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800" },
-  soft:      { label: "Soft",      cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800" },
-  escalation:{ label: "Escalation",cls: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/40 dark:text-violet-400 dark:border-violet-800" },
+  hard:      { label: "Hard",      cls: "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400" },
+  soft:      { label: "Soft",      cls: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400" },
+  escalation:{ label: "Escalation",cls: "bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-400" },
 };
 
 function RuleCard({ rule, onToggle }: { rule: PolicyRule; onToggle: (id: string) => void }) {
@@ -190,7 +190,7 @@ function RuleCard({ rule, onToggle }: { rule: PolicyRule; onToggle: (id: string)
     <div className={cn("flex gap-4 rounded-xl border p-4 transition-all", rule.active ? "border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229]" : "border-dashed border-[#e0e4ea] dark:border-[#2e3340] bg-[#fafafa] dark:bg-[#1a1d23] opacity-60")}>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <span className={cn("rounded-full border px-2 py-px text-[10px] font-medium", badge.cls)}>{badge.label}</span>
+          <span className={cn("rounded-md border-0 px-2 py-0.5 text-[12px] font-medium", badge.cls)}>{badge.label}</span>
           <span className="text-[13px] font-medium text-[#212121] dark:text-[#e4e4e4]">{rule.title}</span>
         </div>
         <p className="text-[12px] leading-snug text-[#666] dark:text-[#9ba2b0] mb-2">{rule.desc}</p>
@@ -224,7 +224,7 @@ function SecPolicies() {
         return (
           <div key={kind}>
             <div className="mb-3 flex items-center gap-2">
-              <span className={cn("rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", badge.cls)}>{badge.label} rules</span>
+              <span className={cn("rounded-md border-0 px-2 py-0.5 text-[12px] font-semibold", badge.cls)}>{badge.label} rules</span>
               <span className="font-mono text-[11px] text-[#999]">{kindRules.filter(r=>r.active).length} active</span>
             </div>
             <div className="flex flex-col gap-2">
@@ -339,7 +339,7 @@ function SecKnowledge() {
           <thead className="bg-[#fafafa] dark:bg-[#1a1d23]">
             <tr>
               {["Source","Type","Size","Retrievals","Last refreshed",""].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-[#999]">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-[length:var(--table-label-size)] font-semibold uppercase tracking-wide text-[#999]">{h}</th>
               ))}
             </tr>
           </thead>
@@ -375,7 +375,7 @@ function SecLocations() {
         <thead className="bg-[#fafafa] dark:bg-[#1a1d23]">
           <tr>
             {["Location","Autonomy","Floor","Always escalate",""].map((h) => (
-              <th key={h} className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-[#999]">{h}</th>
+              <th key={h} className="px-4 py-3 text-left text-[length:var(--table-label-size)] font-semibold uppercase tracking-wide text-[#999]">{h}</th>
             ))}
           </tr>
         </thead>
@@ -404,9 +404,9 @@ function SecLocations() {
 
 /* ─── Section: Integrations ──────────────────────────────────────────── */
 const STATE_STYLE: Record<string, string> = {
-  connected: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800",
-  issue:     "border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800",
-  available: "border-[#e5e9f0] bg-white text-[#555] dark:border-[#333a47] dark:bg-[#1e2229] dark:text-[#9ba2b0]",
+  connected: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400",
+  issue:     "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400",
+  available: "bg-muted/60 text-muted-foreground dark:bg-muted/30",
 };
 
 function SecIntegrations() {
@@ -418,7 +418,7 @@ function SecIntegrations() {
             <div className="flex size-9 items-center justify-center rounded-full text-[13px] font-bold text-white" style={{ backgroundColor: ig.color }}>
               {ig.abbr}
             </div>
-            <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium capitalize", STATE_STYLE[ig.state])}>
+            <span className={cn("rounded-md border-0 px-2 py-0.5 text-[12px] font-medium capitalize", STATE_STYLE[ig.state])}>
               {ig.state === "connected" && <CheckCircle2 className="mr-0.5 inline size-2.5" />}
               {ig.state === "issue" && <AlertTriangle className="mr-0.5 inline size-2.5" />}
               {ig.state}
@@ -439,9 +439,9 @@ function SecIntegrations() {
 
 /* ─── Section: Team ──────────────────────────────────────────────────── */
 const PERM_STYLE: Record<string, string> = {
-  admin: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/40 dark:text-violet-400 dark:border-violet-800",
-  edit:  "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800",
-  view:  "border-[#e5e9f0] text-[#555] dark:border-[#333a47] dark:text-[#9ba2b0]",
+  admin: "bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-400",
+  edit:  "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400",
+  view:  "bg-slate-50 text-slate-600 dark:bg-slate-800/40 dark:text-slate-400",
 };
 const PERM_LABEL: Record<string, string> = { admin:"Admin", edit:"Can edit & approve", view:"View only" };
 
@@ -453,7 +453,7 @@ function SecTeam() {
           <thead className="bg-[#fafafa] dark:bg-[#1a1d23]">
             <tr>
               {["Member","Role","Permission","Approvals / wk",""].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-[#999]">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-[length:var(--table-label-size)] font-semibold uppercase tracking-wide text-[#999]">{h}</th>
               ))}
             </tr>
           </thead>
@@ -471,7 +471,7 @@ function SecTeam() {
                 </td>
                 <td className="px-4 py-3 text-[12px] text-[#555] dark:text-[#9ba2b0]">{m.role}</td>
                 <td className="px-4 py-3">
-                  <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium", PERM_STYLE[m.perm])}>{PERM_LABEL[m.perm]}</span>
+                  <span className={cn("rounded-md border-0 px-2 py-0.5 text-[12px] font-medium", PERM_STYLE[m.perm])}>{PERM_LABEL[m.perm]}</span>
                 </td>
                 <td className="px-4 py-3 font-mono text-[12px] text-[#555] dark:text-[#9ba2b0]">{m.approvals > 0 ? m.approvals : "—"}</td>
                 <td className="px-4 py-3"><Button variant="ghost" size="icon" className="size-6"><MoreHorizontal className="size-3.5" /></Button></td>

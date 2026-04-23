@@ -1,17 +1,26 @@
-import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useCallback,
+} from "react";
 import { usePersistedState } from "@/app/hooks/usePersistedState";
 import {
   ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Plus, Info, MessageSquare,
   MoreHorizontal,
+  Search,
 } from "lucide-react";
 import {
   FigmaIconBirdAI, FigmaIconOverview, FigmaIconInbox,
   FigmaIconReviews, FigmaIconReferrals, FigmaIconPayments, FigmaIconAppointments,
   FigmaIconSocial, FigmaIconSurveys, FigmaIconTicketing, FigmaIconContacts,
   FigmaIconCampaigns, FigmaIconCompetitors, FigmaIconInsights, FigmaIconReports,
+  FigmaIconListings,
 } from "./l1Icons";
-import svgPaths from "../../imports/svg-y1gexucine";
 import type { AppView } from "../App";
+import { BirdeyeLogoMark } from "@/app/components/brand/BirdeyeLogoMark";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent } from "@/app/components/ui/card";
 import { Progress } from "@/app/components/ui/progress";
@@ -69,6 +78,17 @@ type SidebarNavSection = {
   items: SidebarNavItem[];
 };
 
+function AeoSearchAiL1Icon({ size, className }: { size?: number; className?: string }) {
+  return (
+    <Search
+      size={size}
+      className={className}
+      strokeWidth={L1_STRIP_ICON_STROKE_PX}
+      absoluteStrokeWidth
+    />
+  );
+}
+
 const sidebarSections: SidebarNavSection[] = [
   {
     items: [
@@ -102,6 +122,13 @@ const sidebarSections: SidebarNavSection[] = [
     items: [
       { label: "Ticketing", Icon: FigmaIconTicketing, view: "ticketing" },
       { label: "Surveys", Icon: FigmaIconSurveys, view: "surveys" },
+    ],
+  },
+  {
+    title: "AEO/SEO experience",
+    items: [
+      { label: "Listings", Icon: FigmaIconListings, view: "aeo-product-listing-1" },
+      { label: "Search AI", Icon: AeoSearchAiL1Icon, view: "aeo-search-ai" },
     ],
   },
 ];
@@ -139,7 +166,13 @@ interface IconStripProps {
   onSignOut?: () => void;
 }
 
-export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_SIZE, onOpenKeyboardShortcuts, onSignOut }: IconStripProps) {
+export function IconStrip({
+  currentView,
+  onViewChange,
+  iconSize = L1_STRIP_ICON_SIZE,
+  onOpenKeyboardShortcuts,
+  onSignOut,
+}: IconStripProps) {
   const [activeIcon, setActiveIcon] = useState("Agents");
   const [profileOpen, setProfileOpen] = useState(false);
   const [accountSheetOpen, setAccountSheetOpen] = useState(false);
@@ -228,6 +261,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
     else if (currentView === "referrals") setActiveIcon("Referrals");
     else if (currentView === "payments") setActiveIcon("Payments");
     else if (currentView === "appointments") setActiveIcon("Appointments");
+    else if (currentView === "aeo-product-listing-1") setActiveIcon("Listings");
+    else if (currentView === "aeo-search-ai") setActiveIcon("Search AI");
     else if (currentView === "dashboard" || currentView === "shared-by-me") setActiveIcon("Reports");
     else if (currentView === "agent-config") setActiveIcon("Settings");
     else if (currentView === "agents-monitor" || currentView === "agents-analyze-performance" || currentView === "agents-builder" || currentView === "agent-detail" || currentView === "agents-onboarding" || currentView === "birdai-reports" || currentView === "birdai-journeys") setActiveIcon("Agents");
@@ -279,6 +314,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
     else if (label === "Insights") onViewChange("insights");
     else if (label === "Ticketing") onViewChange("ticketing");
     else if (label === "Surveys") onViewChange("surveys");
+    else if (label === "Listings") onViewChange("aeo-product-listing-1");
+    else if (label === "Search AI") onViewChange("aeo-search-ai");
     else if (label === "Settings") onViewChange("agent-config");
   };
 
@@ -441,9 +478,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
       >
       {/* Birdeye logo */}
       <div className="h-[48px] w-[55px] flex items-center justify-center shrink-0 self-center">
-        <svg width="17.55" height="16.875" viewBox="0 0 19.5 18.75" fill="none" className="shrink-0">
-          <path clipRule="evenodd" d={svgPaths.p23fcc000} fill="#2552ED" fillRule="evenodd" />
-        </svg>
+        <BirdeyeLogoMark />
       </div>
 
       {/* 70% main nav · 20% spacer · 10% bottom cluster (settings, notifications, profile) */}
@@ -817,9 +852,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
       >
         {/* Logo + Birdeye label */}
         <div className="h-[48px] pl-[17px] flex items-center gap-2 shrink-0">
-          <svg width="17.55" height="16.875" viewBox="0 0 19.5 18.75" fill="none" className="shrink-0">
-            <path clipRule="evenodd" d={svgPaths.p23fcc000} fill="#2552ED" fillRule="evenodd" />
-          </svg>
+          <BirdeyeLogoMark />
           <span className="text-[15px] font-medium text-foreground whitespace-nowrap">
             Birdeye
           </span>
@@ -1250,7 +1283,7 @@ const contactsNavSections = [
 
 function ContactsL2UsageFooter() {
   return (
-    <Card className="gap-2 border-border bg-card py-0 shadow-none">
+    <Card className="gap-2 rounded-lg border border-border bg-card py-0 shadow-none">
       <CardContent className="flex flex-col gap-2 px-4 py-4">
         <div className="flex items-start justify-between gap-2">
           <p className="text-muted-foreground text-xs leading-snug">7/50 Reachable contacts added</p>
@@ -1375,6 +1408,31 @@ const surveysConfig = {
 
 export function SurveysL2NavPanel() {
   return <L2NavLayout {...surveysConfig} storageKey="nav:l2:surveys" data-no-print />;
+}
+
+/* ═══════════════════════════════════════════
+   AEO/SEO experience — L2 placeholders
+   ═══════════════════════════════════════════ */
+const aeoProductListing1L2Config = {
+  sections: [
+    { label: "Actions", children: ["Overview", "Sync status"] },
+    { label: "Workspace", children: ["Placeholder A", "Placeholder B"] },
+  ],
+};
+
+const aeoSearchAiL2Config = {
+  sections: [
+    { label: "Actions", children: ["New query", "Saved views"] },
+    { label: "Workspace", children: ["Results preview", "Settings"] },
+  ],
+};
+
+export function AeoProductListing1L2NavPanel() {
+  return <L2NavLayout {...aeoProductListing1L2Config} storageKey="nav:l2:aeo-product-listing-1" data-no-print />;
+}
+
+export function AeoSearchAiL2NavPanel() {
+  return <L2NavLayout {...aeoSearchAiL2Config} storageKey="nav:l2:aeo-search-ai" data-no-print />;
 }
 
 /* ═══════════════════════════════════════════

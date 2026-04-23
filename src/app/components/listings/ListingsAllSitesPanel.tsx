@@ -88,11 +88,12 @@ export function ListingsAllSitesPanel({
         size: 112,
         cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
       }),
-      siteColumnHelper.display({
+      siteColumnHelper.accessor((row) => coveragePct(row), {
         id: "coverage",
         header: "Coverage",
         meta: { settingsLabel: "Coverage" },
         size: 168,
+        sortingFn: "basic",
         cell: ({ row }) => {
           const site = row.original;
           const pct = coveragePct(site);
@@ -132,6 +133,7 @@ export function ListingsAllSitesPanel({
         header: "",
         meta: { settingsLabel: "Actions" },
         size: 52,
+        enableSorting: false,
         enableResizing: false,
         enableHiding: false,
         cell: () => (
@@ -170,6 +172,7 @@ export function ListingsAllSitesPanel({
         tableId="listings.allSites"
         data={filtered}
         columns={columns}
+        initialSorting={[{ id: "directory", desc: false }]}
         getRowId={(s) => s.id}
         columnSheetTitle="Directory columns"
         className="min-h-0 min-w-0 px-0"

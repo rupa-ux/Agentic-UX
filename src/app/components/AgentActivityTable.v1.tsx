@@ -11,18 +11,18 @@ import {
 
 /* ─── State chip ─────────────────────────────────────────────────────── */
 const STATE_CONFIG: Record<ActivityState, { label: string; icon: React.ElementType; cls: string }> = {
-  "auto-sent":  { label: "Auto-sent",  icon: Zap,          cls: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800" },
-  "queued":     { label: "Queued",     icon: Clock,        cls: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800" },
-  "approved":   { label: "Approved",   icon: CheckCircle2, cls: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800" },
-  "edited":     { label: "Edited",     icon: Pencil,       cls: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/40 dark:text-violet-400 dark:border-violet-800" },
-  "escalated":  { label: "Escalated",  icon: ArrowUpRight, cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800" },
-  "rejected":   { label: "Rejected",   icon: XCircle,      cls: "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800" },
+  "auto-sent":  { label: "Auto-sent",  icon: Zap,          cls: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400" },
+  "queued":     { label: "Queued",     icon: Clock,        cls: "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400" },
+  "approved":   { label: "Approved",   icon: CheckCircle2, cls: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400" },
+  "edited":     { label: "Edited",     icon: Pencil,       cls: "bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-400" },
+  "escalated":  { label: "Escalated",  icon: ArrowUpRight, cls: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400" },
+  "rejected":   { label: "Rejected",   icon: XCircle,      cls: "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400" },
 };
 
 function StateChip({ state }: { state: ActivityState }) {
   const { label, icon: Icon, cls } = STATE_CONFIG[state];
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium", cls)}>
+    <span className={cn("inline-flex items-center gap-1 rounded-md border-0 px-2 py-0.5 text-[12px] font-medium", cls)}>
       <Icon className="size-2.5 shrink-0" />
       {label}
     </span>
@@ -170,7 +170,7 @@ export function AgentActivityTable({
       {/* Table header */}
       <div className="grid shrink-0 grid-cols-[120px_1fr_110px_1fr_90px_110px_28px] gap-2 border-b border-[#eaeaea] dark:border-[#2e3340] bg-[#fafafa] dark:bg-[#1a1d23] px-5 py-2">
         {["WHEN", "CUSTOMER", "SOURCE", "DRAFT", "CONF.", "STATUS", ""].map((h) => (
-          <span key={h} className="text-[10px] font-semibold uppercase tracking-wide text-[#999] dark:text-[#6b7280]">
+          <span key={h} className="text-[length:var(--table-label-size)] font-semibold uppercase tracking-wide text-[#999] dark:text-[#6b7280]">
             {h}
           </span>
         ))}

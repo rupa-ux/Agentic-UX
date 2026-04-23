@@ -673,13 +673,13 @@ function SearchAIVisibilityDashboard() {
                 <table className="w-full min-w-[600px]">
                   <thead>
                     <tr className="border-b border-[#e9e9eb] dark:border-[#333a47]">
-                      <th className="text-left text-[12px] text-[#555] dark:text-[#8b92a5] py-4 px-4 min-w-[300px]" style={{ fontWeight: 400 }}>
+                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-4 px-4 min-w-[300px]" style={{ fontWeight: 400 }}>
                         <div className="flex items-center gap-1">
                           Themes <ChevronDown className="w-4 h-4" />
                         </div>
                       </th>
                       {rankingBrands.map((b, i) => (
-                        <th key={i} className="text-center py-4 px-3 min-w-[60px]">
+                        <th key={i} className="text-center py-4 px-3 min-w-[60px] text-[length:var(--table-label-size)]">
                           <div className="flex items-center justify-center">
                             {b.isYou ? (
                               <YouBadge />
@@ -803,9 +803,9 @@ function SearchAIVisibilityDashboard() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-[#e9e9eb] dark:border-[#333a47]">
-                        <th className="text-left text-[12px] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>Competitor</th>
-                        <th className="text-left text-[12px] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>Share %</th>
-                        <th className="text-left text-[12px] text-[#555] dark:text-[#8b92a5] py-3" style={{ fontWeight: 400 }}>No. of AI mentions</th>
+                        <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>Competitor</th>
+                        <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>Share %</th>
+                        <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3" style={{ fontWeight: 400 }}>No. of AI mentions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -846,13 +846,13 @@ function SearchAIVisibilityDashboard() {
                 <table className="w-full min-w-[700px]">
                   <thead>
                     <tr className="border-b border-[#e9e9eb] dark:border-[#333a47]">
-                      <th className="text-left text-[12px] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>Theme</th>
-                      <th className="text-left text-[12px] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>
+                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>Theme</th>
+                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>
                         <div className="flex items-center gap-1">Visibility (%)<ChevronDown className="w-3 h-3" /></div>
                       </th>
-                      <th className="text-left text-[12px] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>Citations</th>
-                      <th className="text-left text-[12px] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>Rankings</th>
-                      <th className="text-left text-[12px] text-[#555] dark:text-[#8b92a5] py-3" style={{ fontWeight: 400 }}>Sentiment</th>
+                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>Citations</th>
+                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>Rankings</th>
+                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3" style={{ fontWeight: 400 }}>Sentiment</th>
                     </tr>
                   </thead>
                   <tbody>

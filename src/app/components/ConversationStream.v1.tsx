@@ -471,7 +471,7 @@ export function ConversationStream() {
       {/* Participants */}
       <div className="flex items-center gap-4 border-b border-border/60 bg-card/40 px-6 py-2.5">
         <div className="flex items-center gap-1.5">
-          <Badge variant="secondary" className="gap-1 text-xs font-normal">
+          <Badge variant="secondary" className="gap-1 font-normal">
             <Headphones className="size-3" />
             Support Agent
           </Badge>
@@ -479,7 +479,7 @@ export function ConversationStream() {
         </div>
         <div className="h-3 w-px bg-border" />
         <div className="flex items-center gap-1.5">
-          <Badge variant="outline" className="gap-1 text-xs font-normal">
+          <Badge variant="outline" className="gap-1 font-normal">
             <User className="size-3" />
             Customer
           </Badge>

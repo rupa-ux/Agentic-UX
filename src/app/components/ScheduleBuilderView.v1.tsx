@@ -777,7 +777,7 @@ export function ScheduleBuilderView({ onBack }: ScheduleBuilderViewProps) {
               </Button>
               <Zap className="size-4 shrink-0 text-primary" aria-hidden />
               <span className="min-w-0 truncate">{scheduleConfig.name || "New scheduled agent"}</span>
-              <Badge variant="secondary" className="shrink-0 text-[10px] font-normal uppercase tracking-wide">
+              <Badge variant="secondary" className="shrink-0 font-normal uppercase tracking-wide">
                 Draft
               </Badge>
             </span>

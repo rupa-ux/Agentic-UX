@@ -193,9 +193,9 @@ export const FontWeights: Story = {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
-              <th className="text-left px-4 py-2 text-xs text-muted-foreground">Tailwind class</th>
-              <th className="text-left px-4 py-2 text-xs text-muted-foreground">Resolves to</th>
-              <th className="text-left px-4 py-2 text-xs text-muted-foreground">Live preview</th>
+              <th className="text-left px-4 py-2 text-[length:var(--table-label-size)] text-muted-foreground">Tailwind class</th>
+              <th className="text-left px-4 py-2 text-[length:var(--table-label-size)] text-muted-foreground">Resolves to</th>
+              <th className="text-left px-4 py-2 text-[length:var(--table-label-size)] text-muted-foreground">Live preview</th>
             </tr>
           </thead>
           <tbody>

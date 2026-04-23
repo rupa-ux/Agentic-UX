@@ -39,9 +39,9 @@ function seededWaveform(seed: number, bars = 80): number[] {
 }
 
 const OUTCOME_STYLES: Record<CallOutcome, { label: string; cls: string }> = {
-  resolved:   { label: "Resolved",   cls: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800" },
-  escalated:  { label: "Escalated",  cls: "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800" },
-  "follow-up":{ label: "Follow-up",  cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800" },
+  resolved:   { label: "Resolved",   cls: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400" },
+  escalated:  { label: "Escalated",  cls: "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400" },
+  "follow-up":{ label: "Follow-up",  cls: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400" },
 };
 
 const MARKER_STYLES: Record<string, { dot: string; bg: string; text: string }> = {
@@ -704,7 +704,7 @@ export function CallRecordingPlayer({ record }: CallRecordingPlayerProps) {
               </span>
               <span
                 className={cn(
-                  "rounded-full border px-2 py-0.5 text-[11px] font-medium",
+                  "rounded-md border-0 px-2 py-0.5 text-[12px] font-medium",
                   outcome.cls,
                 )}
               >

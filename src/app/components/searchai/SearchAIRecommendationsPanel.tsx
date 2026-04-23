@@ -145,6 +145,7 @@ export function SearchAIRecommendationsPanel() {
         header: "",
         meta: { settingsLabel: "Actions" },
         size: 52,
+        enableSorting: false,
         enableResizing: false,
         enableHiding: false,
         cell: () => (
@@ -213,6 +214,7 @@ export function SearchAIRecommendationsPanel() {
               tableId="searchai.recommendations"
               data={MOCK_RECOMMENDATIONS}
               columns={columns}
+              initialSorting={[{ id: "recommendation", desc: false }]}
               getRowId={(r) => r.id}
               columnSheetTitle="Recommendation columns"
               className="min-w-0 px-0"

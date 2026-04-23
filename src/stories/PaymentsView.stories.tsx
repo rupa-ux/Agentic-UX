@@ -15,8 +15,9 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          "Payments product view. Donut summary, metric blocks, and a transaction table. " +
+          "Payments product view. Summary strip (totals + metrics), and a transaction table. " +
           "L2 matches the app shell: Request a payment plus status scopes (All, Received, …). " +
+          "Row click opens a floating medium Sheet (FloatingSheetFrame) for invoice detail. " +
           "All data is mocked for prototype use.",
       },
     },

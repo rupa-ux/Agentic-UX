@@ -610,9 +610,9 @@ function ConversationItem({
             <Phone className="size-3 shrink-0 text-primary" aria-label="Call recording" />
             <span className="text-[12px] tabular-nums text-[#666] dark:text-[#9ba2b0]">{conv.callDuration}</span>
             <span className="text-[#ccc] dark:text-[#444]">·</span>
-            {conv.callOutcome === "resolved"   && <span className="rounded-full bg-emerald-50 border border-emerald-200 px-1.5 py-px text-[10px] font-medium text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-400">Resolved</span>}
-            {conv.callOutcome === "escalated"  && <span className="rounded-full bg-red-50 border border-red-200 px-1.5 py-px text-[10px] font-medium text-red-700 dark:bg-red-950/40 dark:border-red-800 dark:text-red-400">Escalated</span>}
-            {conv.callOutcome === "follow-up"  && <span className="rounded-full bg-amber-50 border border-amber-200 px-1.5 py-px text-[10px] font-medium text-amber-700 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-400">Follow-up</span>}
+            {conv.callOutcome === "resolved"   && <span className="rounded-md border-0 bg-emerald-50 px-2 py-0.5 text-[12px] font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">Resolved</span>}
+            {conv.callOutcome === "escalated"  && <span className="rounded-md border-0 bg-red-50 px-2 py-0.5 text-[12px] font-medium text-red-700 dark:bg-red-950/40 dark:text-red-400">Escalated</span>}
+            {conv.callOutcome === "follow-up"  && <span className="rounded-md border-0 bg-amber-50 px-2 py-0.5 text-[12px] font-medium text-amber-700 dark:bg-amber-950/40 dark:text-amber-400">Follow-up</span>}
           </div>
         ) : (
           <p className="truncate pl-4 text-base text-muted-foreground">{conv.preview}</p>

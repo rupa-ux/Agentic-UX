@@ -89,9 +89,9 @@ type RubricScore = "poor" | "ok" | "good";
 function RubricRow({ label, value, onChange }: { label: string; value: RubricScore; onChange: (v: RubricScore) => void }) {
   const opts: RubricScore[] = ["poor", "ok", "good"];
   const colors: Record<RubricScore, string> = {
-    poor: "bg-red-100 text-red-700 border-red-300 dark:bg-red-950/50 dark:text-red-400 dark:border-red-800",
-    ok:   "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-800",
-    good: "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800",
+    poor: "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400",
+    ok:   "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400",
+    good: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400",
   };
   return (
     <div className="flex items-center justify-between">
@@ -103,8 +103,10 @@ function RubricRow({ label, value, onChange }: { label: string; value: RubricSco
             type="button"
             onClick={() => onChange(o)}
             className={cn(
-              "cursor-pointer rounded border px-2.5 py-1 text-[11px] font-medium capitalize transition-colors",
-              value === o ? colors[o] : "border-[#eaeaea] dark:border-[#333a47] text-[#666] dark:text-[#9ba2b0] hover:bg-[#f0f1f5] dark:hover:bg-[#2e3340]",
+              "cursor-pointer rounded px-2.5 py-1 text-[12px] font-medium capitalize transition-colors",
+              value === o
+                ? cn("border-0", colors[o])
+                : "border border-[#eaeaea] dark:border-[#333a47] text-[#666] dark:text-[#9ba2b0] hover:bg-[#f0f1f5] dark:hover:bg-[#2e3340]",
             )}
           >
             {o}

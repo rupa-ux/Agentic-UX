@@ -495,7 +495,7 @@ export default function BusinessOverviewDashboard() {
                     {["Location", "BirdEye Score", "Sentiment Score", "Reputation Score", "Listing Score"].map((h) => (
                       <th
                         key={h}
-                        className="text-left py-2 pr-4 text-xs text-muted-foreground uppercase tracking-wide"
+                        className="text-left py-2 pr-4 text-[length:var(--table-label-size)] text-muted-foreground uppercase tracking-wide"
                         style={{ fontWeight: 400 }}
                       >
                         {h}

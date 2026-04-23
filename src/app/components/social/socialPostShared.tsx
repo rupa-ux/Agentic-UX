@@ -127,7 +127,7 @@ export function SocialPostPreviewBody({
 
   const textClass =
     variant === "compact"
-      ? "text-[10px] text-[#212121] dark:text-[#c0c6d4] leading-[1.4]"
+      ? "text-[13px] leading-snug text-foreground"
       : "text-sm leading-relaxed text-foreground";
 
   const imageClass =
@@ -174,21 +174,19 @@ export function SocialPostPreviewBody({
 
   return (
     <>
-      <span className="text-[10px] text-[#555] dark:text-[#8b92a5]">{post.time}</span>
+      <span className="text-xs text-muted-foreground">{post.time}</span>
       <SocialPostPlatformIcon platform={post.platform} size={16} />
       <p className={textClass} style={{ fontWeight: 400 }}>
         {displayText}
       </p>
       {post.image ? <img src={post.image} alt="Post media" className={imageClass} /> : null}
       {post.aiScheduled?.map((ai, idx) => (
-        <div key={idx} className="flex items-center gap-1.5 mt-1">
-          <div className="flex items-center gap-1 rounded bg-[#f0edff] px-1.5 py-0.5 dark:bg-[#2d2050]">
-            <Sparkles className="h-[10px] w-[10px] text-[#7c3aed]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
-            <span className="text-[10px] text-[#7c3aed]" style={{ fontWeight: 400 }}>
-              AI
-            </span>
+        <div key={idx} className="mt-1 flex items-center gap-2">
+          <div className="flex items-center gap-1 rounded bg-primary/10 px-2 py-0.5 dark:bg-primary/20">
+            <Sparkles className="size-3 text-primary" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+            <span className="text-xs font-medium text-primary">AI</span>
           </div>
-          <span className="text-[10px] text-[#999] dark:text-[#6b7280]">{ai.time}</span>
+          <span className="text-xs text-muted-foreground">{ai.time}</span>
         </div>
       ))}
     </>

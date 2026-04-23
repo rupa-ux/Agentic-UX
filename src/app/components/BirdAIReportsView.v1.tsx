@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   ChevronDown, Sparkles, Filter,
   TrendingUp, CheckCircle2, Zap, Users, Bot, AlertTriangle,
@@ -13,12 +13,14 @@ import { ReportActionsButton, buildReportContext } from "./report-actions/Report
 import type { ReportActionId } from "./report-actions/types";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { Button } from "@/app/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/app/components/ui/dropdown-menu";
 import { TextTabsRow } from "@/app/components/ui/text-tabs";
 import { cn } from "@/lib/utils";
-import {
-  FLOATING_PANEL_LIST_PADDING_CLASSNAME,
-  FLOATING_PANEL_SURFACE_CLASSNAME,
-} from "@/app/components/ui/floatingPanelSurface";
 
 /* ─── Report tab definitions ─── */
 type ReportTab =
@@ -278,51 +280,32 @@ function CustomTooltip({ active, payload, label }: any) {
   );
 }
 
-/* Date filter dropdown */
+/* Date filter — same DropdownMenu shell as report Actions / profile menus */
 function DateFilterDropdown({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
   return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-3 py-[7px] text-[13px] text-[#212121] dark:text-[#e4e4e4] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] bg-white dark:bg-[#1e2229] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
-        style={{ fontWeight: 400 }}
-      >
-        {value}
-        <ChevronDown className="w-3 h-3 text-[#999] dark:text-[#6b7280]" />
-      </button>
-      {open && (
-        <div
-          className={cn(
-            "absolute right-0 top-full z-50 mt-1 flex min-w-[160px] flex-col gap-1",
-            FLOATING_PANEL_SURFACE_CLASSNAME,
-            FLOATING_PANEL_LIST_PADDING_CLASSNAME,
-          )}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          className="gap-1.5 px-3 py-[7px] text-[13px] font-normal text-[#212121] dark:text-[#e4e4e4]"
         >
-          {dateOptions.map(o => (
-            <button
-              key={o}
-              onClick={() => { onChange(o); setOpen(false); }}
-              className={cn(
-                "w-full rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150",
-                o === value
-                  ? "bg-primary/10 text-primary"
-                  : "text-foreground hover:bg-muted",
-              )}
-              style={{ fontWeight: 400 }}
-            >
-              {o}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+          {value}
+          <ChevronDown className="size-3 shrink-0 text-muted-foreground" aria-hidden />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-[160px]">
+        {dateOptions.map((o) => (
+          <DropdownMenuItem
+            key={o}
+            className={cn("text-[13px] font-normal", o === value && "bg-primary/10 text-primary")}
+            onSelect={() => onChange(o)}
+          >
+            {o}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -375,9 +358,9 @@ function ExecutiveImpactPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-[#f0f1f5] dark:border-[#2e3340]">
-              <th className="text-left text-[length:var(--font-size)] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>Agent</th>
-              <th className="text-left text-[length:var(--font-size)] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>Tasks</th>
-              <th className="text-left text-[length:var(--font-size)] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>Success rate</th>
+              <th className="text-left text-[length:var(--table-label-size)] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>Agent</th>
+              <th className="text-left text-[length:var(--table-label-size)] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>Tasks</th>
+              <th className="text-left text-[length:var(--table-label-size)] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>Success rate</th>
             </tr>
           </thead>
           <tbody>
@@ -423,7 +406,7 @@ function AgentPerformancePage() {
           <thead>
             <tr className="border-b border-[#f0f1f5] dark:border-[#2e3340]">
               {["Agent", "Success", "Volume", "Failures", "Avg time"].map(h => (
-                <th key={h} className="text-left text-[length:var(--font-size)] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>{h}</th>
+                <th key={h} className="text-left text-[length:var(--table-label-size)] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>{h}</th>
               ))}
             </tr>
           </thead>

@@ -55,6 +55,17 @@ function listingSummaryStatus(loc: Location): ListingStatus {
   return "needs_update";
 }
 
+/** Lower = worse health (sorts before “all clear”). */
+function listingStatusSortRank(loc: Location): number {
+  const s = listingSummaryStatus(loc);
+  if (s === "error") return 0;
+  if (s === "needs_update") return 1;
+  if (s === "synced") return 2;
+  if (s === "pending") return 3;
+  if (s === "not_listed") return 4;
+  return 9;
+}
+
 function listingAvgAccuracy(loc: Location): number {
   const listed = loc.sites.filter((s) => s.accuracy !== null);
   if (!listed.length) return 0;
@@ -154,17 +165,17 @@ const LOCATIONS: Location[] = [
 
 /* ─── Config ─── */
 const STATUS_CFG: Record<ListingStatus, { label: string; icon: React.ElementType; className: string; dotColor: string }> = {
-  synced:       { label: "Synced",       icon: CheckCircle2, className: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400", dotColor: "#10b981" },
-  error:        { label: "Error",        icon: XCircle,      className: "bg-red-50    text-red-600    border-red-200    dark:bg-red-950/40    dark:text-red-400",    dotColor: "#ef4444" },
-  needs_update: { label: "Needs update", icon: AlertCircle,  className: "bg-amber-50  text-amber-700  border-amber-200  dark:bg-amber-950/40  dark:text-amber-400",  dotColor: "#f59e0b" },
-  not_listed:   { label: "Not listed",   icon: Minus,        className: "bg-slate-50  text-slate-500  border-slate-200  dark:bg-slate-800/40  dark:text-slate-400",  dotColor: "#94a3b8" },
-  pending:      { label: "Pending",      icon: RefreshCcw,   className: "bg-blue-50   text-blue-600   border-blue-200   dark:bg-blue-950/40   dark:text-blue-400",   dotColor: "#3b82f6" },
+  synced:       { label: "Synced",       icon: CheckCircle2, className: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400", dotColor: "#10b981" },
+  error:        { label: "Error",        icon: XCircle,      className: "bg-red-50    text-red-600    dark:bg-red-950/40    dark:text-red-400",    dotColor: "#ef4444" },
+  needs_update: { label: "Needs update", icon: AlertCircle,  className: "bg-amber-50  text-amber-700  dark:bg-amber-950/40  dark:text-amber-400",  dotColor: "#f59e0b" },
+  not_listed:   { label: "Not listed",   icon: Minus,        className: "bg-slate-50  text-slate-500  dark:bg-slate-800/40  dark:text-slate-400",  dotColor: "#94a3b8" },
+  pending:      { label: "Pending",      icon: RefreshCcw,   className: "bg-blue-50   text-blue-600   dark:bg-blue-950/40   dark:text-blue-400",   dotColor: "#3b82f6" },
 };
 
 function StatusBadge({ status }: { status: ListingStatus }) {
   const cfg = STATUS_CFG[status];
   return (
-    <Badge variant="outline" className={`gap-1 text-[length:var(--font-size)] ${cfg.className}`}>
+    <Badge variant="outline" className={`gap-1 ${cfg.className}`}>
       <cfg.icon size={9} strokeWidth={1.6} absoluteStrokeWidth />
       {cfg.label}
     </Badge>
@@ -301,11 +312,12 @@ function LocationsTab({ search }: { search: string }) {
           );
         },
       }),
-      locationColumnHelper.display({
+      locationColumnHelper.accessor((row) => listingStatusSortRank(row), {
         id: "overallStatus",
         header: "Overall status",
         meta: { settingsLabel: "Overall status" },
         size: 128,
+        sortingFn: "basic",
         cell: ({ row }) => <StatusBadge status={listingSummaryStatus(row.original)} />,
       }),
       locationColumnHelper.accessor((row) => listingAvgAccuracy(row), {
@@ -359,6 +371,7 @@ function LocationsTab({ search }: { search: string }) {
         header: "",
         meta: { settingsLabel: "Actions" },
         size: 52,
+        enableSorting: false,
         enableResizing: false,
         enableHiding: false,
         cell: () => (
@@ -405,6 +418,7 @@ function LocationsTab({ search }: { search: string }) {
         tableId="listings.locations"
         data={filtered}
         columns={locationColumns}
+        initialSorting={[{ id: "location", desc: false }]}
         getRowId={(l) => l.id}
         onRowClick={openLocation}
         emptyState={locationsEmpty}

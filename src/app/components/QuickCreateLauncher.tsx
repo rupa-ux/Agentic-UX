@@ -21,11 +21,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/app/components/ui/popover";
-import {
-  L2_HEADER_PLUS_GLYPH_BLUE,
-  L2_HEADER_PLUS_STROKE_PX,
-  L2_HEADER_PLUS_WRAPPER_BLUE,
-} from "@/app/components/L2NavLayout.v1";
 import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 import { cn } from "@/app/components/ui/utils";
 
@@ -219,14 +214,16 @@ export function QuickCreateLauncher({
           aria-haspopup="dialog"
           aria-controls={open ? panelId : undefined}
           className={cn(
-            L2_HEADER_PLUS_WRAPPER_BLUE,
-            "transition-colors hover:bg-primary/20 dark:hover:bg-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+            "flex h-[30px] min-h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border-0 px-0 py-0",
+            "bg-app-shell-l2-surface text-[12px] leading-none transition-colors",
+            "hover:bg-app-shell-l2-row-hover",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
             className,
           )}
         >
           <Plus
-            className={L2_HEADER_PLUS_GLYPH_BLUE}
-            strokeWidth={L2_HEADER_PLUS_STROKE_PX}
+            className="pointer-events-none h-3.5 w-3.5 shrink-0 text-[#212121] dark:text-[#e4e4e4]"
+            strokeWidth={L1_STRIP_ICON_STROKE_PX}
             absoluteStrokeWidth
             aria-hidden
           />

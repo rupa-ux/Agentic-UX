@@ -7,6 +7,8 @@ import {
   REFERRALS_L2_DEFAULT_ACTIVE_KEY,
   PaymentsL2NavPanel,
   PAYMENTS_L2_DEFAULT_ACTIVE_KEY,
+  AeoProductListing1L2NavPanel,
+  AeoSearchAiL2NavPanel,
 } from "./components/Sidebar";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { usePersistedState } from "./hooks/usePersistedState";
@@ -63,6 +65,9 @@ import { ConversationStream } from "./components/ConversationStream";
 import { AgentActivityView } from "./components/AgentActivityView";
 import { AgentConfigView } from "./components/AgentConfigView";
 import { BirdAILoginPage } from "./components/auth/BirdAILoginPage";
+import { AppEntryWithSplash } from "./components/layout/AppEntryWithSplash";
+import { MobileWebAppGate } from "./components/layout/MobileWebAppGate";
+import { useMobileWebGateActive } from "./hooks/useMobileWebGateActive";
 
 const AUTH_STORAGE_KEY = "birdai_demo_authenticated";
 const LOGIN_TAB_TITLE_INDEX_KEY = "auth:login_tab_title_index";
@@ -114,10 +119,13 @@ export type AppView =
   | "appointments"
   | "conversation-stream"
   | "agent-activity"
-  | "agent-config";
+  | "agent-config"
+  | "aeo-product-listing-1"
+  | "aeo-search-ai";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => readDemoAuthenticated());
+  const { gateActive } = useMobileWebGateActive();
 
   const signIn = useCallback(() => {
     try {
@@ -332,6 +340,15 @@ export default function App() {
     return () => ro.disconnect();
   }, []);
 
+  if (gateActive) {
+    return (
+      <>
+        <Toaster position="top-center" richColors />
+        <MobileWebAppGate />
+      </>
+    );
+  }
+
   // Views that have their own L2 panels (not the default Reports L2NavPanel)
   if (!isAuthenticated) {
     return (
@@ -344,6 +361,7 @@ export default function App() {
 
   const hasOwnL2Panel = (v: AppView) =>
     v === "business-overview" ||
+    v === "shared-by-me" ||
     v === "inbox" ||
     v === "storybook" ||
     v === "reviews" ||
@@ -368,7 +386,9 @@ export default function App() {
     v === "competitors" ||
     v === "referrals" ||
     v === "payments" ||
-    v === "appointments";
+    v === "appointments" ||
+    v === "aeo-product-listing-1" ||
+    v === "aeo-search-ai";
 
   return (
     <MonitorNotificationsProvider
@@ -377,6 +397,7 @@ export default function App() {
         setCurrentView("agents-monitor");
       }}
     >
+    <AppEntryWithSplash>
     <div className="h-screen w-screen flex overflow-hidden">
       <ShortcutsModal
         open={shortcutsModalOpen}
@@ -491,6 +512,12 @@ export default function App() {
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "appointments" && (
             <AppointmentsL2NavPanel />
           )}
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "aeo-product-listing-1" && (
+            <AeoProductListing1L2NavPanel />
+          )}
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "aeo-search-ai" && (
+            <AeoSearchAiL2NavPanel />
+          )}
           {/* Inbox L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "inbox" && (
             <InboxL2NavPanel />
@@ -549,6 +576,10 @@ export default function App() {
               <PaymentsView statusFilter={paymentsL2KeyToStatusFilter(paymentsL2Active)} />
             ) : currentView === "appointments" ? (
               <AppointmentsView />
+            ) : currentView === "aeo-product-listing-1" ? (
+              <AppShellContentPlaceholder view="aeo-product-listing-1" productLabel="Listings" />
+            ) : currentView === "aeo-search-ai" ? (
+              <AppShellContentPlaceholder view="aeo-search-ai" productLabel="Search AI" />
             ) : currentView === "conversation-stream" ? (
               <ConversationStream />
             ) : currentView === "agent-activity" ? (
@@ -576,6 +607,7 @@ export default function App() {
         </div>
       </div>
     </div>
+    </AppEntryWithSplash>
     </MonitorNotificationsProvider>
   );
 }

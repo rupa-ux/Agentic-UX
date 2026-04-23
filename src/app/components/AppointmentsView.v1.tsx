@@ -2,14 +2,14 @@ import { useCallback, useMemo, useState } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import {
   ChevronLeft, ChevronRight, Search, MoreHorizontal,
-  Clock, User, Calendar, List, CheckCircle2, X, Bell,
+  Clock, User, Calendar, CalendarRange, List, CheckCircle2, X, Bell,
   MapPin, Phone, Mail,
 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { Input } from "@/app/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { AppDataTable } from "@/app/components/ui/AppDataTable";
+import { SegmentedToggle } from "@/app/components/ui/segmented-toggle";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/app/components/ui/sheet";
@@ -19,9 +19,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/app/components/ui/dialog";
-import {
-  Tooltip, TooltipContent, TooltipTrigger, TooltipProvider,
-} from "@/app/components/ui/tooltip";
+import { TooltipProvider } from "@/app/components/ui/tooltip";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { cn } from "@/app/components/ui/utils";
 
@@ -89,12 +87,12 @@ const APPOINTMENTS: Appointment[] = [
 
 /* ─── Status config ─── */
 const STATUS_CONFIG: Record<ApptStatus, { label: string; className: string; dotColor: string }> = {
-  confirmed:   { label: "Confirmed",   className: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400", dotColor: "#10b981" },
-  requested:   { label: "Requested",   className: "bg-blue-50   text-blue-700   border-blue-200   dark:bg-blue-950/40   dark:text-blue-400",   dotColor: "#3b82f6" },
-  completed:   { label: "Completed",   className: "bg-slate-50  text-slate-600  border-slate-200  dark:bg-slate-800/40  dark:text-slate-400",  dotColor: "#94a3b8" },
-  cancelled:   { label: "Cancelled",   className: "bg-red-50    text-red-600    border-red-200    dark:bg-red-950/40    dark:text-red-400",    dotColor: "#ef4444" },
-  no_show:     { label: "No show",     className: "bg-amber-50  text-amber-700  border-amber-200  dark:bg-amber-950/40  dark:text-amber-400",  dotColor: "#f59e0b" },
-  in_progress: { label: "In progress", className: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-400", dotColor: "#8b5cf6" },
+  confirmed:   { label: "Confirmed",   className: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400", dotColor: "#10b981" },
+  requested:   { label: "Requested",   className: "bg-blue-50   text-blue-700   dark:bg-blue-950/40   dark:text-blue-400",   dotColor: "#3b82f6" },
+  completed:   { label: "Completed",   className: "bg-slate-50  text-slate-600  dark:bg-slate-800/40  dark:text-slate-400",  dotColor: "#94a3b8" },
+  cancelled:   { label: "Cancelled",   className: "bg-red-50    text-red-600    dark:bg-red-950/40    dark:text-red-400",    dotColor: "#ef4444" },
+  no_show:     { label: "No show",     className: "bg-amber-50  text-amber-700  dark:bg-amber-950/40  dark:text-amber-400",  dotColor: "#f59e0b" },
+  in_progress: { label: "In progress", className: "bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400", dotColor: "#8b5cf6" },
 };
 
 /* ─── Helpers ─── */
@@ -387,7 +385,7 @@ function DayCalendar({
                         </p>
                         <p className="text-[11px] text-muted-foreground truncate">{provider.name}</p>
                       </div>
-                      <Badge variant="outline" className={`text-[10px] shrink-0 ${statusCfg.className}`}>
+                      <Badge variant="outline" className={`shrink-0 ${statusCfg.className}`}>
                         {statusCfg.label}
                       </Badge>
                     </div>
@@ -501,7 +499,7 @@ function ScheduleList({
         cell: (info) => {
           const statusCfg = STATUS_CONFIG[info.getValue()];
           return (
-            <Badge variant="outline" className={`text-[length:var(--font-size)] ${statusCfg.className}`}>
+            <Badge variant="outline" className={statusCfg.className}>
               {statusCfg.label}
             </Badge>
           );
@@ -520,6 +518,7 @@ function ScheduleList({
         header: "",
         meta: { settingsLabel: "Actions" },
         size: 52,
+        enableSorting: false,
         enableResizing: false,
         enableHiding: false,
         cell: ({ row }) => (
@@ -545,6 +544,7 @@ function ScheduleList({
           tableId="appointments.schedule"
           data={filtered}
           columns={scheduleColumns}
+          initialSorting={[{ id: "when", desc: false }]}
           getRowId={(a) => a.id}
           onRowClick={handleRowClick}
           emptyState={scheduleEmpty}
@@ -638,7 +638,7 @@ function ApptDetailSheet({
             <p className="text-sm font-semibold text-foreground">{appt.service}</p>
             <p className="text-xs text-muted-foreground mt-0.5">{provider.name}</p>
           </div>
-          <Badge variant="outline" className={`text-xs ${statusCfg.className}`}>
+          <Badge variant="outline" className={statusCfg.className}>
             {statusCfg.label}
           </Badge>
         </div>
@@ -746,93 +746,93 @@ export function AppointmentsView() {
         <MainCanvasViewHeader
           title="Appointments"
           description="Schedule, manage, and track patient appointments."
-        />
-
-        {/* ── View toolbar ── */}
-        <div className="px-6 pb-4 flex items-center gap-3 shrink-0">
-          {/* Calendar / Schedule toggle */}
-          <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-            <button
-              onClick={() => setViewMode("calendar")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${viewMode === "calendar" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              <Calendar size={12} strokeWidth={1.6} absoluteStrokeWidth />
-              Calendar
-            </button>
-            <button
-              onClick={() => setViewMode("schedule")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${viewMode === "schedule" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              <List size={12} strokeWidth={1.6} absoluteStrokeWidth />
-              Schedule
-            </button>
-          </div>
-
-          {/* Date navigation (calendar mode only) */}
-          {viewMode === "calendar" && (
-            <>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7 cursor-pointer"
-                  disabled={calendarView === "day" && currentDateIdx === 0}
-                  onClick={() => {
-                    if (calendarView === "day") setCurrentDateIdx((i) => Math.max(0, i - 1));
-                  }}
-                >
-                  <ChevronLeft size={13} strokeWidth={1.6} absoluteStrokeWidth />
-                </Button>
-                <button className="px-3 py-1 text-xs font-medium text-foreground hover:bg-muted rounded-md cursor-pointer transition-colors">
-                  {calendarView === "week" ? weekLabel : dayLabel}
-                </button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7 cursor-pointer"
-                  disabled={calendarView === "day" && currentDateIdx === WEEK_DATES.length - 1}
-                  onClick={() => {
-                    if (calendarView === "day") setCurrentDateIdx((i) => Math.min(WEEK_DATES.length - 1, i + 1));
-                  }}
-                >
-                  <ChevronRight size={13} strokeWidth={1.6} absoluteStrokeWidth />
-                </Button>
-              </div>
-
-              {/* Day / Week toggle */}
-              <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-                {(["day", "week"] as CalendarView[]).map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => setCalendarView(v)}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all cursor-pointer capitalize ${calendarView === v ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                  >
-                    {v}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* Provider legend */}
-          {viewMode === "calendar" && (
-            <div className="ml-auto flex items-center gap-3">
-              {PROVIDERS.map((p) => (
-                <Tooltip key={p.id}>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1.5 cursor-default">
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ background: p.color }} />
-                      <span className="text-[11px] text-muted-foreground hidden lg:inline">{p.name.split(" ")[1]}</span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent className="text-xs">
-                    {p.name} · {p.specialty}
-                  </TooltipContent>
-                </Tooltip>
-              ))}
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
+              <SegmentedToggle<ViewMode>
+                iconOnly
+                ariaLabel="Appointments layout"
+                value={viewMode}
+                onChange={setViewMode}
+                items={[
+                  {
+                    value: "calendar",
+                    label: "Calendar view",
+                    icon: (
+                      <Calendar className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                    ),
+                  },
+                  {
+                    value: "schedule",
+                    label: "Schedule list",
+                    icon: <List className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />,
+                  },
+                ]}
+              />
+              {viewMode === "calendar" && (
+                <>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-[var(--button-height)] w-[var(--button-height)] shrink-0 cursor-pointer"
+                      disabled={
+                        calendarView === "week" || (calendarView === "day" && currentDateIdx === 0)
+                      }
+                      onClick={() => {
+                        if (calendarView === "day") setCurrentDateIdx((i) => Math.max(0, i - 1));
+                      }}
+                      aria-label="Previous day"
+                    >
+                      <ChevronLeft className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                    </Button>
+                    <span className="max-w-[min(100%,14rem)] truncate px-2 text-center text-xs font-medium text-foreground tabular-nums sm:max-w-[20rem]">
+                      {calendarView === "week" ? weekLabel : dayLabel}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-[var(--button-height)] w-[var(--button-height)] shrink-0 cursor-pointer"
+                      disabled={
+                        calendarView === "week" ||
+                        (calendarView === "day" && currentDateIdx === WEEK_DATES.length - 1)
+                      }
+                      onClick={() => {
+                        if (calendarView === "day") setCurrentDateIdx((i) => Math.min(WEEK_DATES.length - 1, i + 1));
+                      }}
+                      aria-label="Next day"
+                    >
+                      <ChevronRight className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                    </Button>
+                  </div>
+                  <SegmentedToggle<CalendarView>
+                    iconOnly
+                    ariaLabel="Calendar range"
+                    value={calendarView}
+                    onChange={setCalendarView}
+                    items={[
+                      {
+                        value: "day",
+                        label: "Day",
+                        icon: (
+                          <Calendar className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                        ),
+                      },
+                      {
+                        value: "week",
+                        label: "Week",
+                        icon: (
+                          <CalendarRange className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                        ),
+                      },
+                    ]}
+                  />
+                </>
+              )}
             </div>
-          )}
-        </div>
+          }
+        />
 
         {/* ── Main content area ── */}
         <div

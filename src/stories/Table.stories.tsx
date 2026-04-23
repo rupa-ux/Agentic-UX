@@ -19,7 +19,7 @@ const meta: Meta<typeof Table> = {
     docs: {
       description: {
         component:
-          "Static table primitives from `table.v1.tsx`. For **interactive product data grids** (column resize, sort, column settings sheet, optional persistence), use **AppDataTable** — see **UI/AppDataTable** in Storybook.",
+          "Static table primitives from `table.v1.tsx`. **`TableHead`** uses **`--table-label-size` (12px)** for column labels. For **interactive product data grids** (column resize, sort, column settings sheet, optional persistence), use **AppDataTable** — see **UI/AppDataTable** in Storybook.",
       },
     },
   },

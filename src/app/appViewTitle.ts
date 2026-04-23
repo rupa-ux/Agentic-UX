@@ -24,7 +24,7 @@ export function getAppViewTitle(view: AppView): string {
     case "ticketing":
       return "Ticketing";
     case "campaigns":
-      return "Campaigns";
+      return "Manage Automations";
     case "insights":
       return "Insights";
     case "competitors":
@@ -58,6 +58,10 @@ export function getAppViewTitle(view: AppView): string {
       return "Activity Log";
     case "agent-config":
       return "Agent Configuration";
+    case "aeo-product-listing-1":
+      return "Listings";
+    case "aeo-search-ai":
+      return "Search AI";
     default:
       return "Reports";
   }

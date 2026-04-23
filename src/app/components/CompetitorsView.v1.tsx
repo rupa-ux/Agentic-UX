@@ -317,7 +317,7 @@ function CompetitorRow({ business, isSelected, onClick }: CompetitorRowProps) {
         <div className="flex items-center gap-1.5">
           <p className="text-sm font-medium truncate leading-tight">{business.name}</p>
           {business.isMyBusiness && (
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 leading-none shrink-0">
+            <Badge variant="secondary" className="shrink-0">
               You
             </Badge>
           )}
@@ -475,19 +475,16 @@ function SentimentCard({ label, myPct, competitorPct, competitorName, color }: S
       bar: "bg-emerald-500",
       compBar: "bg-emerald-500/30",
       label: "text-emerald-700 dark:text-emerald-400",
-      badge: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400",
     },
     neutral: {
       bar: "bg-slate-400",
       compBar: "bg-slate-400/30",
       label: "text-slate-600 dark:text-slate-400",
-      badge: "bg-slate-50 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400",
     },
     negative: {
       bar: "bg-red-500",
       compBar: "bg-red-500/30",
       label: "text-red-600 dark:text-red-400",
-      badge: "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400",
     },
   };
   const c = colorMap[color];
@@ -702,7 +699,7 @@ export function CompetitorsView() {
             </>
           }
           actions={
-            <Badge variant="outline" className="gap-1.5 text-xs text-muted-foreground">
+            <Badge variant="outline" className="gap-1.5 text-muted-foreground">
               <span className="inline-block size-1.5 shrink-0 rounded-full bg-emerald-500" />
               Live data
             </Badge>
@@ -765,6 +762,7 @@ export function CompetitorsView() {
               tableId="competitors.recentReviews"
               data={RECENT_REVIEWS}
               columns={recentReviewColumns}
+              initialSorting={[{ id: "date", desc: true }]}
               getRowId={(r) => r.id}
               columnSheetTitle="Review columns"
               className="min-w-0 px-0"

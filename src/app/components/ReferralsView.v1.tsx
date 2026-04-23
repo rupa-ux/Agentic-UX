@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import {
   Mail, Smartphone, Share2, Link2, Globe,
@@ -6,17 +6,14 @@ import {
   CheckCircle2, Send, Gift,
 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
-import { Badge } from "@/app/components/ui/badge";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { Progress } from "@/app/components/ui/progress";
 import { L2_FLAT_NAV_KEY_PREFIX } from "@/app/components/L2NavLayout";
 import { AppDataTable } from "@/app/components/ui/AppDataTable";
+import { AppDataTableColumnSettingsTrigger } from "@/app/components/ui/AppDataTableColumnSettingsTrigger";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/app/components/ui/sheet";
-import {
-  Tooltip, TooltipContent, TooltipTrigger, TooltipProvider,
-} from "@/app/components/ui/tooltip";
 
 /* ─── Types ─── */
 type Channel = "email" | "sms" | "facebook" | "link" | "other";
@@ -88,6 +85,18 @@ const SENT_ROWS: SentRow[] = [
   { id: "6", sentTo: "Jennifer Lee",      via: "email",    code: "REF-2024-006", sentOn: "Mar 12, 2024" },
   { id: "7", sentTo: "Robert Martinez",   via: "link",     code: "REF-2024-007", sentOn: "Mar 12, 2024" },
   { id: "8", sentTo: "Amanda Taylor",     via: "facebook", code: "REF-2024-008", sentOn: "Mar 11, 2024" },
+  { id: "9", sentTo: "Chris Patel",       via: "sms",      code: "REF-2024-009", sentOn: "Mar 10, 2024" },
+  { id: "10", sentTo: "Monica Reyes",     via: "email",    code: "REF-2024-010", sentOn: "Mar 10, 2024" },
+  { id: "11", sentTo: "Steven Brooks",    via: "link",     code: "REF-2024-011", sentOn: "Mar 9, 2024" },
+  { id: "12", sentTo: "Hannah Scott",     via: "facebook", code: "REF-2024-012", sentOn: "Mar 9, 2024" },
+  { id: "13", sentTo: "Brian O'Connor",   via: "email",    code: "REF-2024-013", sentOn: "Mar 8, 2024" },
+  { id: "14", sentTo: "Priya Sharma",     via: "sms",      code: "REF-2024-014", sentOn: "Mar 8, 2024" },
+  { id: "15", sentTo: "Ethan Woods",      via: "facebook", code: "REF-2024-015", sentOn: "Mar 7, 2024" },
+  { id: "16", sentTo: "Laura Bennett",    via: "email",    code: "REF-2024-016", sentOn: "Mar 7, 2024" },
+  { id: "17", sentTo: "Marcus Hale",      via: "link",     code: "REF-2024-017", sentOn: "Mar 6, 2024" },
+  { id: "18", sentTo: "Sandra Lewis",     via: "sms",      code: "REF-2024-018", sentOn: "Mar 6, 2024" },
+  { id: "19", sentTo: "Tyler Cross",      via: "email",    code: "REF-2024-019", sentOn: "Mar 5, 2024" },
+  { id: "20", sentTo: "Nina Wallace",     via: "facebook", code: "REF-2024-020", sentOn: "Mar 5, 2024" },
 ];
 
 const SHARED_ROWS: SharedRow[] = [
@@ -97,6 +106,14 @@ const SHARED_ROWS: SharedRow[] = [
   { id: "4", sharedBy: "James Garcia",    via: ["sms"],               code: "REF-2024-004", sharedOn: "Mar 14, 2024" },
   { id: "5", sharedBy: "Megan Thompson",  via: ["facebook", "link"],  code: "REF-2024-005", sharedOn: "Mar 14, 2024" },
   { id: "6", sharedBy: "Kevin Anderson",  via: ["email", "sms"],      code: "REF-2024-006", sharedOn: "Mar 13, 2024" },
+  { id: "7", sharedBy: "Olivia Tran",     via: ["link", "email"],     code: "REF-2024-007", sharedOn: "Mar 12, 2024" },
+  { id: "8", sharedBy: "Daniel Price",    via: ["sms", "facebook"],   code: "REF-2024-008", sharedOn: "Mar 12, 2024" },
+  { id: "9", sharedBy: "Grace Nolan",     via: ["facebook"],          code: "REF-2024-009", sharedOn: "Mar 11, 2024" },
+  { id: "10", sharedBy: "Ryan Cooper",    via: ["email"],             code: "REF-2024-010", sharedOn: "Mar 11, 2024" },
+  { id: "11", sharedBy: "Paula Nguyen",    via: ["sms", "link"],       code: "REF-2024-011", sharedOn: "Mar 10, 2024" },
+  { id: "12", sharedBy: "Felix Morgan",    via: ["facebook", "sms"],   code: "REF-2024-012", sharedOn: "Mar 10, 2024" },
+  { id: "13", sharedBy: "Tanya Ellis",     via: ["email", "facebook"], code: "REF-2024-013", sharedOn: "Mar 9, 2024" },
+  { id: "14", sharedBy: "Jordan Miles",    via: ["link"],              code: "REF-2024-014", sharedOn: "Mar 9, 2024" },
 ];
 
 const LEAD_ROWS: LeadRow[] = [
@@ -105,6 +122,13 @@ const LEAD_ROWS: LeadRow[] = [
   { id: "3", name: "Nicole Davis",     location: "Dallas, TX",      referredBy: "Rachel Brown",   code: "REF-2024-003", createdOn: "Mar 16, 2024", thanksSent: true,  response: "Love the product" },
   { id: "4", name: "Mark Johnson",     location: "San Antonio, TX", referredBy: "James Garcia",   code: "REF-2024-004", createdOn: "Mar 15, 2024", thanksSent: false, response: "" },
   { id: "5", name: "Jessica Williams", location: "Austin, TX",      referredBy: "Megan Thompson", code: "REF-2024-005", createdOn: "Mar 15, 2024", thanksSent: true,  response: "Can't wait to get started" },
+  { id: "6", name: "Chris Patel",      location: "Fort Worth, TX",  referredBy: "Olivia Tran",    code: "REF-2024-007", createdOn: "Mar 14, 2024", thanksSent: false, response: "Asked about pricing tiers" },
+  { id: "7", name: "Monica Reyes",     location: "Plano, TX",       referredBy: "Daniel Price",   code: "REF-2024-008", createdOn: "Mar 14, 2024", thanksSent: true,  response: "" },
+  { id: "8", name: "Steven Brooks",    location: "Irving, TX",      referredBy: "Grace Nolan",    code: "REF-2024-009", createdOn: "Mar 13, 2024", thanksSent: false, response: "" },
+  { id: "9", name: "Hannah Scott",     location: "McKinney, TX",    referredBy: "Ryan Cooper",    code: "REF-2024-010", createdOn: "Mar 13, 2024", thanksSent: true,  response: "Prefers weekday calls" },
+  { id: "10", name: "Brian O'Connor",   location: "Frisco, TX",      referredBy: "Paula Nguyen",   code: "REF-2024-011", createdOn: "Mar 12, 2024", thanksSent: false, response: "" },
+  { id: "11", name: "Priya Sharma",     location: "El Paso, TX",     referredBy: "Felix Morgan",   code: "REF-2024-012", createdOn: "Mar 12, 2024", thanksSent: true,  response: "" },
+  { id: "12", name: "Ethan Woods",      location: "Arlington, TX",   referredBy: "Tanya Ellis",    code: "REF-2024-013", createdOn: "Mar 11, 2024", thanksSent: false, response: "Follow up next quarter" },
 ];
 
 export type ReferralsSection = "sent" | "shared" | "leads";
@@ -124,17 +148,20 @@ const CHANNEL_META: Record<Channel, { label: string; icon: React.ElementType; co
   other:    { label: "Other",    icon: Globe,       color: "text-muted-foreground" },
 };
 
-function ChannelIcon({ channel, className = "" }: { channel: Channel; className?: string }) {
-  const { icon: Icon, color } = CHANNEL_META[channel];
+function channelLabel(ch: Channel) {
+  return CHANNEL_META[ch].label;
+}
+
+function channelLabelsList(channels: Channel[]) {
+  return channels.map((ch) => channelLabel(ch)).join(", ");
+}
+
+/** Plain referral code text (matches table styling; no badge chrome). */
+function ReferralCodeText({ code }: { code: string }) {
   return (
-    <TooltipProvider delayDuration={200}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Icon size={14} className={`${color} ${className}`} strokeWidth={1.6} absoluteStrokeWidth />
-        </TooltipTrigger>
-        <TooltipContent side="top" className="text-xs">{CHANNEL_META[channel].label}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <span className="font-mono text-[14px] tabular-nums text-[#2552ED] dark:text-[#2952E3]">
+      {code}
+    </span>
   );
 }
 
@@ -189,7 +216,7 @@ function LeadDetailSheet({ lead, open, onClose }: { lead: LeadRow | null; open: 
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Referral code</span>
-                <Badge variant="secondary" className="font-mono w-fit">{lead.code}</Badge>
+                <ReferralCodeText code={lead.code} />
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Created on</span>
@@ -234,13 +261,45 @@ export type ReferralsViewProps = {
 export function ReferralsView({ activeSection }: ReferralsViewProps) {
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [columnSheetOpen, setColumnSheetOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<LeadRow | null>(null);
-  const filteredSent   = SENT_ROWS.filter((r) => r.sentTo.toLowerCase().includes(search.toLowerCase()));
-  const filteredShared = SHARED_ROWS.filter((r) => r.sharedBy.toLowerCase().includes(search.toLowerCase()));
-  const filteredLeads  = LEAD_ROWS.filter((r) =>
-    r.name.toLowerCase().includes(search.toLowerCase()) ||
-    r.referredBy.toLowerCase().includes(search.toLowerCase())
-  );
+
+  const columnSheetTitle = useMemo(() => {
+    if (activeSection === "shared") return "Shared columns";
+    if (activeSection === "leads") return "Lead columns";
+    return "Sent columns";
+  }, [activeSection]);
+
+  useEffect(() => {
+    setColumnSheetOpen(false);
+  }, [activeSection]);
+  const searchLc = search.toLowerCase();
+  const filteredSent = SENT_ROWS.filter((r) => {
+    if (!searchLc) return true;
+    return (
+      r.sentTo.toLowerCase().includes(searchLc) ||
+      r.code.toLowerCase().includes(searchLc) ||
+      channelLabel(r.via).toLowerCase().includes(searchLc)
+    );
+  });
+  const filteredShared = SHARED_ROWS.filter((r) => {
+    if (!searchLc) return true;
+    const viaText = channelLabelsList(r.via).toLowerCase();
+    return (
+      r.sharedBy.toLowerCase().includes(searchLc) ||
+      r.code.toLowerCase().includes(searchLc) ||
+      viaText.includes(searchLc)
+    );
+  });
+  const filteredLeads = LEAD_ROWS.filter((r) => {
+    if (!searchLc) return true;
+    return (
+      r.name.toLowerCase().includes(searchLc) ||
+      r.referredBy.toLowerCase().includes(searchLc) ||
+      r.code.toLowerCase().includes(searchLc) ||
+      r.location.toLowerCase().includes(searchLc)
+    );
+  });
 
   const openLead = useCallback((r: LeadRow) => {
     setSelectedLead(r);
@@ -261,26 +320,16 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
         header: "Sent via",
         meta: { settingsLabel: "Sent via" },
         size: 140,
-        cell: (info) => {
-          const ch = info.getValue();
-          return (
-            <div className="flex items-center gap-1.5">
-              <ChannelIcon channel={ch} />
-              <span className="text-muted-foreground">{CHANNEL_META[ch].label}</span>
-            </div>
-          );
-        },
+        cell: (info) => (
+          <span className="text-muted-foreground">{channelLabel(info.getValue())}</span>
+        ),
       }),
       sentColumnHelper.accessor("code", {
         id: "code",
         header: "Referral code",
         meta: { settingsLabel: "Referral code" },
         size: 168,
-        cell: (info) => (
-          <Badge variant="secondary" className="font-mono text-[length:var(--font-size)] tracking-wide">
-            {info.getValue()}
-          </Badge>
-        ),
+        cell: (info) => <ReferralCodeText code={info.getValue()} />,
       }),
       sentColumnHelper.accessor("sentOn", {
         id: "sentOn",
@@ -304,17 +353,14 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
         enableSorting: true,
         cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
-      sharedColumnHelper.accessor("via", {
+      sharedColumnHelper.accessor((row) => [...row.via].sort().join("|"), {
         id: "via",
         header: "Shared via",
         meta: { settingsLabel: "Shared via" },
-        size: 144,
-        cell: (info) => (
-          <div className="flex items-center gap-1.5">
-            {info.getValue().map((ch) => (
-              <ChannelIcon key={ch} channel={ch} />
-            ))}
-          </div>
+        size: 200,
+        sortingFn: "alphanumeric",
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">{channelLabelsList(row.original.via)}</span>
         ),
       }),
       sharedColumnHelper.accessor("code", {
@@ -322,11 +368,7 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
         header: "Referral code",
         meta: { settingsLabel: "Referral code" },
         size: 168,
-        cell: (info) => (
-          <Badge variant="secondary" className="font-mono text-[length:var(--font-size)] tracking-wide">
-            {info.getValue()}
-          </Badge>
-        ),
+        cell: (info) => <ReferralCodeText code={info.getValue()} />,
       }),
       sharedColumnHelper.accessor("sharedOn", {
         id: "sharedOn",
@@ -342,11 +384,12 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
 
   const leadColumns = useMemo(
     () => [
-      leadColumnHelper.display({
+      leadColumnHelper.accessor("name", {
         id: "lead",
         header: "Lead",
         meta: { settingsLabel: "Lead" },
         size: 208,
+        sortingFn: "alphanumeric",
         cell: ({ row }) => {
           const r = row.original;
           return (
@@ -375,11 +418,7 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
         header: "Referral code",
         meta: { settingsLabel: "Referral code" },
         size: 168,
-        cell: (info) => (
-          <Badge variant="secondary" className="font-mono text-[length:var(--font-size)] tracking-wide">
-            {info.getValue()}
-          </Badge>
-        ),
+        cell: (info) => <ReferralCodeText code={info.getValue()} />,
       }),
       leadColumnHelper.accessor("createdOn", {
         id: "createdOn",
@@ -389,11 +428,12 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
         enableSorting: true,
         cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
       }),
-      leadColumnHelper.display({
+      leadColumnHelper.accessor((row) => (row.thanksSent ? 1 : 0), {
         id: "thanks",
         header: "Thanks note",
         meta: { settingsLabel: "Thanks note" },
         size: 128,
+        sortingFn: "basic",
         cell: ({ row }) => {
           const r = row.original;
           return r.thanksSent ? (
@@ -450,9 +490,9 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
         actions={
           <div className="flex items-center gap-2">
             {searchOpen ? (
-              <div className="relative h-8 w-[240px] min-w-0 sm:w-[260px]">
+              <div className="relative h-[var(--button-height)] w-[240px]">
                 <Search
-                  className="pointer-events-none absolute left-2 top-1/2 size-[14px] -translate-y-1/2 text-muted-foreground"
+                  className="pointer-events-none absolute left-2 top-1/2 size-[14px] -translate-y-1/2 text-[#303030] dark:text-[#8b92a5]"
                   strokeWidth={1.6}
                   absoluteStrokeWidth
                   aria-hidden
@@ -472,7 +512,7 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
                   }}
                   autoFocus
                   placeholder="Search referrals"
-                  className="h-full w-full rounded-lg border border-border bg-background py-0 pr-2 pl-8 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="h-full w-full rounded-[8px] border border-[#e5e9f0] bg-white py-0 pr-2 pl-8 text-[14px] text-[#212121] outline-none transition-colors placeholder:text-[#757575] focus:border-[#2552ED] focus:ring-1 focus:ring-[#2552ED] dark:border-[#333a47] dark:bg-[#262b35] dark:text-[#e4e4e4] dark:placeholder:text-[#8b92a5]"
                   aria-label="Search referrals"
                 />
               </div>
@@ -481,14 +521,18 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
                 type="button"
                 variant="outline"
                 size="icon"
-                className="size-8 shrink-0"
                 aria-label="Open search"
+                aria-expanded={false}
                 title="Search referrals"
                 onClick={() => setSearchOpen(true)}
               >
-                <Search className="size-[14px] text-foreground" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                <Search className="h-[14px] w-[14px] text-[#303030] dark:text-[#8b92a5]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
               </Button>
             )}
+            <AppDataTableColumnSettingsTrigger
+              sheetTitle={columnSheetTitle}
+              onClick={() => setColumnSheetOpen(true)}
+            />
           </div>
         }
       />
@@ -508,10 +552,14 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
               tableId="referrals.sent"
               data={filteredSent}
               columns={sentColumns}
+              initialSorting={[{ id: "sentOn", desc: true }]}
               getRowId={(r) => r.id}
               emptyState={referralsEmpty("No referrals match your search.")}
               columnSheetTitle="Sent columns"
               className="min-w-0 px-0"
+              hideColumnsButton
+              columnSheetOpen={columnSheetOpen}
+              onColumnSheetOpenChange={setColumnSheetOpen}
             />
           ) : null}
           {activeSection === "shared" ? (
@@ -519,10 +567,14 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
               tableId="referrals.shared"
               data={filteredShared}
               columns={sharedColumns}
+              initialSorting={[{ id: "sharedOn", desc: true }]}
               getRowId={(r) => r.id}
               emptyState={referralsEmpty("No referrals match your search.")}
               columnSheetTitle="Shared columns"
               className="min-w-0 px-0"
+              hideColumnsButton
+              columnSheetOpen={columnSheetOpen}
+              onColumnSheetOpenChange={setColumnSheetOpen}
             />
           ) : null}
           {activeSection === "leads" ? (
@@ -530,11 +582,15 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
               tableId="referrals.leads"
               data={filteredLeads}
               columns={leadColumns}
+              initialSorting={[{ id: "createdOn", desc: true }]}
               getRowId={(r) => r.id}
               onRowClick={openLead}
               emptyState={referralsEmpty("No leads match your search.")}
               columnSheetTitle="Lead columns"
               className="min-w-0 px-0"
+              hideColumnsButton
+              columnSheetOpen={columnSheetOpen}
+              onColumnSheetOpenChange={setColumnSheetOpen}
             />
           ) : null}
         </div>

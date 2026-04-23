@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useId } from "react";
-import { ChevronDown, Filter, Info, MoreVertical } from "lucide-react";
+import { useState, useId } from "react";
+import { ChevronDown, Clock, Filter, Info, MoreVertical, Palette, Share2 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { ShareModal } from "./ShareModal";
 import { AICustomizePanel } from "./AICustomizePanel";
@@ -7,11 +7,13 @@ import { ScheduleModal } from "./ScheduleModal";
 import { type DraftReport } from "./draftStore";
 import svgPaths from "../../imports/svg-mh0ycv9qll";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
-import { cn } from "@/lib/utils";
+import { Button } from "@/app/components/ui/button";
 import {
-  FLOATING_PANEL_LIST_PADDING_CLASSNAME,
-  FLOATING_PANEL_SURFACE_CLASSNAME,
-} from "@/app/components/ui/floatingPanelSurface";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/app/components/ui/dropdown-menu";
 
 // ─── Generate chart data for Mar 1–28 ───
 function generateChartData(series: { key: string; base: number; variance: number }[]) {
@@ -442,23 +444,11 @@ const chartWidgets: ChartWidgetProps[] = [
 
 // ─── Main Dashboard ───
 export function Dashboard({ aiPanelOpen, onAiPanelChange, editingDraft }: { aiPanelOpen: boolean; onAiPanelChange: (open: boolean) => void; editingDraft?: DraftReport | null }) {
-  const [shareDropdownOpen, setShareDropdownOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [aiEntryMode, setAiEntryMode] = useState<"share" | "schedule">("share");
   const [themeColor, setThemeColor] = useState("#2552ED");
   const [showSummaryPage, setShowSummaryPage] = useState(false);
-  const shareRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (shareRef.current && !shareRef.current.contains(e.target as Node)) {
-        setShareDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
 
   // ─── AI Customize Panel (page-level, replaces dashboard) ───
   if (aiPanelOpen) {
@@ -482,47 +472,40 @@ export function Dashboard({ aiPanelOpen, onAiPanelChange, editingDraft }: { aiPa
           title="Profile performance"
           actions={
         <div className="flex items-center gap-3">
-          <div className="relative" ref={shareRef}>
-            <button
-              onClick={() => setShareDropdownOpen(!shareDropdownOpen)}
-              className="flex items-center gap-1 px-4 py-1.5 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] text-[14px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] tracking-[-0.15px]"
-              style={{ fontWeight: 400 }}
-            >
-              Actions
-              <ChevronDown className="w-4 h-4 text-[#212121] dark:text-[#e4e4e4]" />
-            </button>
-            {shareDropdownOpen && (
-              <div
-                className={cn(
-                  "absolute right-0 top-full z-20 mt-1 flex min-w-[160px] flex-col gap-1",
-                  FLOATING_PANEL_SURFACE_CLASSNAME,
-                  FLOATING_PANEL_LIST_PADDING_CLASSNAME,
-                )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" variant="outline" className="gap-1 text-[14px] font-normal tracking-[-0.15px]">
+                Actions
+                <ChevronDown className="size-4 shrink-0 opacity-70" aria-hidden />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[200px]">
+              <DropdownMenuItem
+                className="text-[13px] font-normal"
+                onSelect={() => setShareModalOpen(true)}
               >
-                <button
-                  onClick={() => { setShareDropdownOpen(false); setShareModalOpen(true); }}
-                  className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-foreground transition-colors duration-150 hover:bg-muted"
-                  style={{ fontWeight: 400 }}
-                >
-                  Share report
-                </button>
-                <button
-                  onClick={() => { setShareDropdownOpen(false); setAiEntryMode("share"); onAiPanelChange(true); }}
-                  className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-foreground transition-colors duration-150 hover:bg-muted"
-                  style={{ fontWeight: 400 }}
-                >
-                  Customize & share
-                </button>
-                <button
-                  onClick={() => { setShareDropdownOpen(false); setScheduleModalOpen(true); }}
-                  className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-foreground transition-colors duration-150 hover:bg-muted"
-                  style={{ fontWeight: 400 }}
-                >
-                  Schedule
-                </button>
-              </div>
-            )}
-          </div>
+                <Share2 className="size-3.5 text-muted-foreground" />
+                Share report
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-[13px] font-normal"
+                onSelect={() => {
+                  setAiEntryMode("share");
+                  onAiPanelChange(true);
+                }}
+              >
+                <Palette className="size-3.5 text-muted-foreground" />
+                Customize & share
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-[13px] font-normal"
+                onSelect={() => setScheduleModalOpen(true)}
+              >
+                <Clock className="size-3.5 text-muted-foreground" />
+                Schedule
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <button className="bg-white dark:bg-[#262b35] p-2 border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]">
             <Filter className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" />
           </button>
