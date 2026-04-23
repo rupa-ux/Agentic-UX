@@ -119,15 +119,9 @@ export function SocialPostPreviewBody({
   post: SocialCalendarPost;
   variant: "compact" | "drawer";
 }) {
-  const maxTextLen = variant === "compact" ? (post.image ? 80 : 260) : Number.POSITIVE_INFINITY;
-  const displayText =
-    variant === "compact" && post.text.length > maxTextLen
-      ? `${post.text.slice(0, maxTextLen)}…`
-      : post.text;
-
   const textClass =
     variant === "compact"
-      ? "text-[13px] leading-snug text-foreground"
+      ? "line-clamp-3 min-w-0 w-full break-words text-xs leading-snug text-foreground"
       : "text-sm leading-relaxed text-foreground";
 
   const imageClass =
@@ -150,7 +144,7 @@ export function SocialPostPreviewBody({
               {socialPostPlatformLabel(post.platform)}
             </span>
           </div>
-          <p className={textClass}>{displayText}</p>
+          <p className={textClass}>{post.text}</p>
           {post.image ? (
             <img src={post.image} alt="" className={imageClass} />
           ) : null}
@@ -177,7 +171,7 @@ export function SocialPostPreviewBody({
       <span className="text-xs text-muted-foreground">{post.time}</span>
       <SocialPostPlatformIcon platform={post.platform} size={16} />
       <p className={textClass} style={{ fontWeight: 400 }}>
-        {displayText}
+        {post.text}
       </p>
       {post.image ? <img src={post.image} alt="Post media" className={imageClass} /> : null}
       {post.aiScheduled?.map((ai, idx) => (
