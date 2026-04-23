@@ -80,6 +80,7 @@ const sidebarSections: SidebarNavSection[] = [
       { label: "Reviews", Icon: FigmaIconReviews, view: "reviews" },
       { label: "Social", Icon: FigmaIconSocial, view: "social" },
       { label: "Referrals", Icon: FigmaIconReferrals, view: "referrals" },
+      { label: "Contacts", Icon: FigmaIconContacts, view: "contacts" },
       { label: "Marketing automations", Icon: FigmaIconCampaigns, view: "campaigns" },
     ],
   },
@@ -190,7 +191,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
     else if (currentView === "reviews") setActiveIcon("Reviews");
     else if (currentView === "social") setActiveIcon("Social");
     else if (currentView === "searchai" || currentView === "conversation-stream") setActiveIcon("Chatbot");
-    else if (currentView === "contacts") setActiveIcon("Settings");
+    else if (currentView === "contacts") setActiveIcon("Contacts");
     else if (currentView === "surveys") setActiveIcon("Surveys");
     else if (currentView === "ticketing") setActiveIcon("Ticketing");
     else if (currentView === "campaigns") setActiveIcon("Campaigns");
@@ -236,6 +237,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
     else if (label === "Reviews") onViewChange("reviews");
     else if (label === "Social") onViewChange("social");
     else if (label === "Referrals") onViewChange("referrals");
+    else if (label === "Contacts") onViewChange("contacts");
     else if (label === "Marketing automations" || label === "Campaigns") onViewChange("campaigns");
     else if (label === "Inbox") onViewChange("inbox");
     else if (label === "Payments") onViewChange("payments");
