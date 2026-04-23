@@ -23,6 +23,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/app/components/ui/dialog";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 
 /* ─── Types ─── */
 type TxStatus = "received" | "requested" | "not_paid" | "refunded" | "cancelled";
@@ -450,18 +451,16 @@ export function PaymentsView() {
     <TooltipProvider>
       <div className="flex flex-col h-full overflow-hidden">
         {/* ── Header ── */}
-        <div className="px-6 pt-5 pb-4 flex items-center justify-between shrink-0">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">Payments</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Manage payment requests, track collections, and process refunds.
-            </p>
-          </div>
-          <Button size="sm" className="cursor-pointer gap-1.5 text-xs">
-            <Plus size={13} strokeWidth={1.6} absoluteStrokeWidth />
-            Request a payment
-          </Button>
-        </div>
+        <MainCanvasViewHeader
+          title="Payments"
+          description="Manage payment requests, track collections, and process refunds."
+          actions={
+            <Button size="sm" className="cursor-pointer gap-1.5 text-xs">
+              <Plus size={13} strokeWidth={1.6} absoluteStrokeWidth />
+              Request a payment
+            </Button>
+          }
+        />
 
         {/* ── Scrollable content ── */}
         <div className="flex-1 overflow-y-auto px-6 pb-6 flex flex-col gap-5 min-h-0">

@@ -1,6 +1,6 @@
 ---
 name: aero-ds
-description: "Aero DS: design intelligence for this repo only—ShareConsolidated (Bird AI) SaaS shell (dashboards, agents, settings, workflows, in-app surfaces). Stack: React, Vite, Tailwind, shadcn-style primitives. Verify in Storybook (Design System/Tokens) and theme.css. For full page builds from Figma or screenshots, follow the Build a Full Page section (shell geometry, typography, spacing, tokens, copy-paste prompts). For floating right drawers, follow Storybook UI/Sheet + FloatingSheetFrame. Not for generic websites, portfolios, or marketing landing systems unless explicitly requested."
+description: "Aero DS: design intelligence for this repo only—ShareConsolidated (Bird AI) SaaS shell (dashboards, agents, settings, workflows, in-app surfaces). Stack: React, Vite, Tailwind, shadcn-style primitives. Verify in Storybook (Design System/Tokens) and theme.css. Main titles: `MainCanvasViewHeader` + `mainViewTitleClasses.ts` (same heading defaults on Dialog/Sheet/Drawer/AlertDialog titles). Modal scrims: `MODAL_OVERLAY_VISUAL_CLASS` in `modalOverlayClasses.ts`. For full page builds from Figma or screenshots, follow Build a Full Page. For floating right drawers, Storybook UI/Sheet + FloatingSheetFrame. Not for generic websites, portfolios, or marketing landing systems unless explicitly requested."
 ---
 # Aero DS - Design Intelligence
 
@@ -25,6 +25,33 @@ Storybook is the **primary visual verification surface** for UI work in this rep
 - **Stories:** When adding or changing user-visible UI under `src/app/`, add or update a story under [`src/stories/`](../../../src/stories/) where practical so states are reviewable in isolation.
 - **Preview globals:** Follow [`.storybook/preview.tsx`](../../../.storybook/preview.tsx) — light/dark theme toolbar, `DESIGN_VERSION` tokens CSS + [`src/styles/index.css`](../../../src/styles/index.css), story `layout` parameters; backgrounds addon stays disabled in favour of CSS variables.
 - **Parity:** Components should look and behave in Storybook the same way they do in the running app (shared CSS entry).
+
+### Keyboard shortcuts help
+
+- **Single source of truth:** [`src/app/shortcuts/shortcuts.ts`](../../../src/app/shortcuts/shortcuts.ts) — `SHORTCUT_REGISTRY`. Each entry defines `scope`, `modalGroup` (`navigation` | `current-view`), keys / `keySequences`, and the strings shown in the modal. All **global** rows appear under the single **Navigation** column in the modal.
+- **UI:** [`src/app/shortcuts/ShortcutsModal.tsx`](../../../src/app/shortcuts/ShortcutsModal.tsx) — Radix `Dialog`; **Navigation** + optional view-specific column (active `scope` label). Row layout is **label left**, **keycaps right**; use semantic Tailwind tokens (`border-border`, `bg-muted`, …).
+- **Verify in Storybook:** **App/Shortcuts/Keyboard shortcuts** — [`src/stories/App/Shortcuts/ShortcutsModal.stories.tsx`](../../../src/stories/App/Shortcuts/ShortcutsModal.stories.tsx).
+
+### Modal overlays (dialogs, sheets, alert dialogs, drawers)
+
+- **Principle:** Blocking scrims should use a **light backdrop blur** plus a **low-opacity semantic tint** on `background`—not a heavy black wash (`bg-black/50`, `bg-black/40`, …). Dark grey veils read as generic marketing modals and bury the product shell; Aero keeps context readable behind the layer.
+- **Shared class:** [`src/app/components/ui/modalOverlayClasses.ts`](../../../src/app/components/ui/modalOverlayClasses.ts) exports **`MODAL_OVERLAY_VISUAL_CLASS`**. Radix **`Dialog`**, **`Sheet`**, **`AlertDialog`**, and Vaul **`Drawer`** overlays in the `*.v1.tsx` primitives import it—do not revert those files to `bg-black/*` without an explicit design exception.
+- **Custom popovers / portaled UI:** For bespoke full-screen or `fixed inset-0` dismiss layers, reuse **`MODAL_OVERLAY_VISUAL_CLASS`** (or the same token recipe: `backdrop-blur-sm` with `bg-background/35` and `dark:bg-background/45`) so new work matches **UI/Dialog**, **UI/Sheet**, and **UI/AlertDialog** in Storybook.
+- **Exceptions:** Immersive surfaces (e.g. full-screen photo viewers) may need a stronger dimmer; call that out in the feature story or flow doc so it does not become the default pattern.
+
+### Main canvas titles (view header + modals)
+
+- **Shared header row:** [`src/app/components/layout/MainCanvasViewHeader.tsx`](../../../src/app/components/layout/MainCanvasViewHeader.tsx) — `title`, optional `description`, optional `actions` (right column). Outer band uses **`MAIN_VIEW_HEADER_BAND_CLASS`** (`px-6 pt-5 pb-4`, `flex`, `justify-between`).
+- **Tokens:** [`src/app/components/layout/mainViewTitleClasses.ts`](../../../src/app/components/layout/mainViewTitleClasses.ts) — **`MAIN_VIEW_PRIMARY_HEADING_CLASS`** (`text-lg font-semibold tracking-tight text-foreground`) and **`MAIN_VIEW_SUBHEADING_CLASS`** (`text-xs` muted subline). The same primary heading is the **default** on Radix **`DialogTitle`**, **`SheetTitle`**, **`DrawerTitle`**, and **`AlertDialogTitle`** in [`dialog.v1.tsx`](../../../src/app/components/ui/dialog.v1.tsx), [`sheet.v1.tsx`](../../../src/app/components/ui/sheet.v1.tsx), [`drawer.v1.tsx`](../../../src/app/components/ui/drawer.v1.tsx), [`alert-dialog.v1.tsx`](../../../src/app/components/ui/alert-dialog.v1.tsx)—override with `className` only when a design doc specifies an exception.
+- **Product views using `MainCanvasViewHeader` today:** Appointments, Payments, Surveys, Tickets (TicketingView), Campaigns, Listings (default + “All sites” branch), and Agents Monitor (title + toolbar row). Add the component for any **new** full-width canvas view instead of hand-rolling `px-6 pt-5 pb-4` + `h1` classes.
+- **Floating sheets:** [`FloatingSheetFrame`](../../../src/app/components/layout/FloatingSheetFrame.tsx) — `title` renders as **`SheetTitle`** (inherits the same default heading class). Keep header padding aligned (`pt-5 pb-4` on the frame header).
+- **L2 vs main title:** When the main canvas already shows **`MainCanvasViewHeader`**, **omit** **`L2NavLayout` `panelTitle`** so the module name is not duplicated in the L2 rail. Use **`headerAction`** for a top-of-L2 CTA row (label + plus chip), e.g. **Book an appointment** on Appointments — same pattern as Inbox **New message**.
+
+### Review platform logos (third‑party marks)
+
+- **Single implementation:** [`src/app/components/reviewPlatformLogos.tsx`](../../../src/app/components/reviewPlatformLogos.tsx) — `ReviewSiteLogo`, `YelpLogo`, `GoogleLogo`, `FacebookLogo`, `TripAdvisorLogo`, and shared `ReviewPlatformSite` type.
+- **Rules:** Use **vector artwork** (SVG paths), not text glyphs, for marks such as Facebook. Outer ring uses **semantic tokens** (`border-border`, `bg-background`, optional `dark:bg-muted/40`) and fixed **5px** inset so every platform reads at the same outer `size` (e.g. `28` in list rows, `40` in list v1 cards).
+- **Consumers:** [`ReviewsView.v2.tsx`](../../../src/app/components/ReviewsView.v2.tsx) (conversation list + detail) and [`ReviewsView.v1.tsx`](../../../src/app/components/ReviewsView.v1.tsx) import from here — do **not** duplicate logo wrappers in those files.
 
 ## Build a Full Page (screenshot or Figma)
 

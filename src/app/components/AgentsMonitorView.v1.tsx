@@ -35,6 +35,7 @@ import {
   FilterPaneTriggerButton,
 } from "@/app/components/FilterPane";
 import { L2_CONTENT_MUTED_BAND } from "@/app/components/L2NavLayout";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 
 /** Selected activity row: blue highlight on the title (agent name) only. */
 const ACTIVITY_ROW_TITLE_SELECTED =
@@ -532,53 +533,53 @@ export function AgentsMonitorView({
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300">
       {/* ─── Greeting + hero (metrics) ─── */}
-      <div className="shrink-0 px-6 pt-6 pb-0 flex flex-col gap-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <h1 className="min-w-0 text-xl text-foreground tracking-tight md:text-2xl" style={{ fontWeight: 400 }}>
-            Monitor
-          </h1>
-          <div className="flex items-center gap-2">
-            {searchExpanded ? (
-              <div className="flex w-[220px] min-w-0 items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 transition-all">
-                <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                <input
-                  autoFocus
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onBlur={() => {
-                    if (!searchQuery) setSearchExpanded(false);
-                  }}
-                  placeholder="Search activities..."
-                  className="min-w-0 flex-1 bg-transparent text-[13px] text-foreground outline-none placeholder:text-muted-foreground"
-                  style={{ fontWeight: 400 }}
-                />
-                <button
+      <div className="flex shrink-0 flex-col gap-6 px-6 pb-0 pt-5">
+        <MainCanvasViewHeader
+          title="Monitor"
+          actions={
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {searchExpanded ? (
+                <div className="flex w-[220px] min-w-0 items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 transition-all">
+                  <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <input
+                    autoFocus
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onBlur={() => {
+                      if (!searchQuery) setSearchExpanded(false);
+                    }}
+                    placeholder="Search activities..."
+                    className="min-w-0 flex-1 bg-transparent text-[13px] text-foreground outline-none placeholder:text-muted-foreground"
+                    style={{ fontWeight: 400 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSearchExpanded(false);
+                    }}
+                    className="shrink-0"
+                  >
+                    <X className="h-3 w-3 text-muted-foreground" />
+                  </button>
+                </div>
+              ) : (
+                <Button
                   type="button"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSearchExpanded(false);
-                  }}
-                  className="shrink-0"
+                  onClick={() => setSearchExpanded(true)}
+                  variant="outline"
+                  size="icon"
                 >
-                  <X className="h-3 w-3 text-muted-foreground" />
-                </button>
-              </div>
-            ) : (
-              <Button
-                type="button"
-                onClick={() => setSearchExpanded(true)}
-                variant="outline"
-                size="icon"
-              >
-                <Search className="h-3.5 w-3.5 text-muted-foreground" />
-              </Button>
-            )}
-            <FilterPaneTriggerButton
-              open={filterOpen}
-              onOpenChange={setFilterOpen}
-            />
-          </div>
-        </div>
+                  <Search className="h-3.5 w-3.5 text-muted-foreground" />
+                </Button>
+              )}
+              <FilterPaneTriggerButton
+                open={filterOpen}
+                onOpenChange={setFilterOpen}
+              />
+            </div>
+          }
+        />
 
         <div className={cn("rounded-xl p-6", L2_CONTENT_MUTED_BAND)}>
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-8">

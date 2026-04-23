@@ -1,0 +1,45 @@
+"use client";
+
+import * as React from "react";
+import {
+  MAIN_VIEW_HEADER_BAND_CLASS,
+  MAIN_VIEW_PRIMARY_HEADING_CLASS,
+  MAIN_VIEW_SUBHEADING_CLASS,
+} from "@/app/components/layout/mainViewTitleClasses";
+import { cn } from "@/app/components/ui/utils";
+
+export interface MainCanvasViewHeaderProps {
+  title: React.ReactNode;
+  description?: React.ReactNode;
+  actions?: React.ReactNode;
+  /** Merged onto the outer band (e.g. `border-b border-border`). */
+  className?: string;
+  /** Default `h1` for full-width main canvas bodies. */
+  titleAs?: "h1" | "h2";
+}
+
+/**
+ * Shared title row for main canvas views — matches Appointments / Payments / Listings chrome
+ * (`px-6 pt-5 pb-4`, title + optional subline + optional right actions).
+ */
+export function MainCanvasViewHeader({
+  title,
+  description,
+  actions,
+  className,
+  titleAs = "h1",
+}: MainCanvasViewHeaderProps) {
+  const TitleTag = titleAs;
+
+  return (
+    <div className={cn(MAIN_VIEW_HEADER_BAND_CLASS, className)}>
+      <div className="min-w-0">
+        <TitleTag className={MAIN_VIEW_PRIMARY_HEADING_CLASS}>{title}</TitleTag>
+        {description != null && description !== false ? (
+          <p className={MAIN_VIEW_SUBHEADING_CLASS}>{description}</p>
+        ) : null}
+      </div>
+      {actions != null ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+    </div>
+  );
+}

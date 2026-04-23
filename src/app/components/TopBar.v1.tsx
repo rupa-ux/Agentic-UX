@@ -1,6 +1,9 @@
 import { Sparkles } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
-import { VersionSwitcher } from "@/app/components/VersionSwitcher";
+import {
+  QuickCreateLauncher,
+  type QuickCreateAction,
+} from "@/app/components/QuickCreateLauncher";
 import { APP_SHELL_RAIL_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
 import type { AppView } from "../App";
 import { getAppViewTitle } from "../appViewTitle";
@@ -13,7 +16,20 @@ interface TopBarProps {
   onToggleMynaChat?: () => void;
 }
 
-export function TopBar({ currentView, onToggleMynaChat }: TopBarProps) {
+export function TopBar({ currentView, onViewChange, onToggleMynaChat }: TopBarProps) {
+  const handleQuickCreate = (action: QuickCreateAction) => {
+    if (action.id === "review-request") onViewChange("reviews");
+    else if (action.id === "new-message") onViewChange("inbox");
+    else if (action.id === "create-post") onViewChange("social");
+    else if (action.id === "custom-agent") onViewChange("agents-builder");
+    else if (action.id === "add-contact") onViewChange("contacts");
+    else if (action.id === "request-payment") onViewChange("payments");
+    else if (action.id === "create-survey") onViewChange("surveys");
+    else if (action.id === "create-ticket") onViewChange("ticketing");
+    else if (action.id === "create-workflow") onViewChange("schedule-builder");
+    else if (action.id === "create-report" || action.id === "create-dashboard") onViewChange("dashboard");
+  };
+
   return (
     <div
       className={`h-[48px] flex items-center justify-between px-4 shrink-0 rounded-tr-lg ${APP_SHELL_RAIL_SURFACE_CLASS}`}
@@ -26,7 +42,7 @@ export function TopBar({ currentView, onToggleMynaChat }: TopBarProps) {
 
       {/* Right: design version (dev) + BirdAI */}
       <div className="flex items-center gap-2">
-        {/* <VersionSwitcher /> */}
+        <QuickCreateLauncher onActionSelect={handleQuickCreate} />
         <Button
           type="button"
           variant="outline"

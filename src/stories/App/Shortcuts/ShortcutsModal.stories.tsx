@@ -19,7 +19,7 @@ const meta: Meta<typeof ShortcutsModal> = {
     docs: {
       description: {
         component:
-          "In-app **keyboard shortcuts** help (`ShortcutsModal`). Open with **?** or **⌘K** / **Ctrl+K**. Scoped shortcuts appear for the current view (e.g. Reviews).",
+          "In-app **keyboard shortcuts** help (`ShortcutsModal`). Open with **?** or **⌘K** / **Ctrl+K**. **Navigation** lists all global shortcuts (open panel + G-then-letter jumps). When the route has scoped shortcuts, a second column shows the view name (e.g. Reviews). Rows: **action left**, **keycaps right**; alternatives use **/**. Data: `SHORTCUT_REGISTRY` (`modalGroup`: `navigation` | `current-view`). Uses Radix **Dialog** — same Aero overlay as **UI/Dialog** (`MODAL_OVERLAY_VISUAL_CLASS`, light blur + semantic tint).",
       },
     },
   },

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {
-  Plus, Search, MoreHorizontal, Download, Copy, Trash2, BarChart2,
+  Search, MoreHorizontal, Download, Copy, Trash2, BarChart2,
   ChevronDown, Users, Send, TrendingUp, Star, Eye,
   CheckCircle2, Clock, XCircle, Edit3,
 } from "lucide-react";
@@ -21,6 +21,7 @@ import {
   Tooltip, TooltipContent, TooltipTrigger, TooltipProvider,
 } from "@/app/components/ui/tooltip";
 import { Progress } from "@/app/components/ui/progress";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 
 /* ─── Types ─── */
 type SurveyType = "nps" | "standard" | "custom";
@@ -523,18 +524,10 @@ export function SurveysView() {
     <TooltipProvider>
       <div className="flex flex-col h-full overflow-hidden">
         {/* ── Header ── */}
-        <div className="px-6 pt-5 pb-4 flex items-center justify-between shrink-0">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">Surveys</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {activeSurveys} active · {totalResponses.toLocaleString()} total responses
-            </p>
-          </div>
-          <Button size="sm" className="cursor-pointer gap-1.5 text-xs">
-            <Plus size={13} strokeWidth={1.6} absoluteStrokeWidth />
-            Create survey
-          </Button>
-        </div>
+        <MainCanvasViewHeader
+          title="Surveys"
+          description={`${activeSurveys} active · ${totalResponses.toLocaleString()} total responses`}
+        />
 
         {/* ── Table card ── */}
         <div className="flex-1 min-h-0 mx-6 mb-6 bg-card border border-border rounded-xl overflow-hidden flex flex-col">

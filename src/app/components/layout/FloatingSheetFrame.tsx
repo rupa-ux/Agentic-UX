@@ -30,7 +30,7 @@ export type FloatingSheetAction = {
 };
 
 export type FloatingSheetFrameProps = {
-  /** Header title — typography aligned with app TopBar page label (16px, -0.31px tracking). */
+  /** Header title — same typography as main canvas page titles (e.g. Monitor) and Quick Create dialog. */
   title: React.ReactNode;
   description?: React.ReactNode;
   /** Scrollable main content only. */
@@ -154,17 +154,12 @@ export function FloatingSheetFrame({
     >
       <header
         className={cn(
-          "relative z-[1] flex shrink-0 flex-col gap-2 bg-background px-6 py-4 pr-14 text-left transition-shadow duration-200 ease-out",
+          "relative z-[1] flex shrink-0 flex-col gap-2 bg-background px-6 pt-5 pb-4 pr-14 text-left transition-shadow duration-200 ease-out",
           bodyHasScrolled && scrollEdges.underHeader && headerEdgeShadowClass,
           classNames?.header,
         )}
       >
-        <SheetTitle
-          className="text-left text-[16px] font-normal tracking-[-0.31px] text-foreground"
-          style={{ fontWeight: 400 }}
-        >
-          {title}
-        </SheetTitle>
+        <SheetTitle className="text-left">{title}</SheetTitle>
         {description ? (
           <SheetDescription className="text-left">{description}</SheetDescription>
         ) : null}

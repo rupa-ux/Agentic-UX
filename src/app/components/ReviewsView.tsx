@@ -7,7 +7,7 @@ import { ReviewsViewConversation } from "./ReviewsView.v2";
 export type ReviewsViewMode = "list" | "conversation";
 
 export function ReviewsView() {
-  const [mode, setMode] = useState<ReviewsViewMode>("conversation");
+  const [mode, setMode] = useState<ReviewsViewMode>("list");
 
   return mode === "list"
     ? <ReviewsViewList viewMode={mode} onViewModeChange={setMode} />

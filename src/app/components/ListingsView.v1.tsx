@@ -25,6 +25,7 @@ import { GoogleSuggestionsPanel } from "./listings/GoogleSuggestionsPanel";
 import { ListingsAllSitesPanel, AccuracyBar, Site, MOCK_SITES } from "./listings/ListingsAllSitesPanel";
 import { ListingsCitationsPanel } from "./listings/ListingsCitationsPanel";
 import { SearchAIRecommendationsPanel } from "./searchai/SearchAIRecommendationsPanel";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 
 /* ─── Types ─── */
 type ListingStatus = "synced" | "error" | "needs_update" | "not_listed" | "pending";
@@ -460,23 +461,22 @@ export function ListingsView({ l2ActiveItem }: { l2ActiveItem?: string }) {
   if (l2ActiveItem === "Search performance/All sites") {
     return (
       <div className="flex flex-col h-full overflow-hidden bg-background">
-        <div className="px-6 pt-5 pb-4 flex items-center justify-between shrink-0 border-b border-border">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">All sites</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Directory coverage and accuracy breakdown.
-            </p>
-          </div>
-          <div className="relative max-w-xs w-64">
-            <Search size={13} strokeWidth={1.6} absoluteStrokeWidth className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-            <Input
-              placeholder="Search sites…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 h-8 text-xs"
-            />
-          </div>
-        </div>
+        <MainCanvasViewHeader
+          className="border-b border-border"
+          title="All sites"
+          description="Directory coverage and accuracy breakdown."
+          actions={
+            <div className="relative max-w-xs w-64">
+              <Search size={13} strokeWidth={1.6} absoluteStrokeWidth className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search sites…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="h-8 pl-8 text-xs"
+              />
+            </div>
+          }
+        />
         <ListingsAllSitesPanel search={search} />
       </div>
     );
@@ -505,24 +505,22 @@ export function ListingsView({ l2ActiveItem }: { l2ActiveItem?: string }) {
     <TooltipProvider>
       <div className="flex flex-col h-full overflow-hidden">
         {/* ── Header ── */}
-        <div className="px-6 pt-5 pb-4 flex items-center justify-between shrink-0">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">Listings</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {LOCATIONS.length} locations · {MOCK_SITES.length} directories · {overallAccuracy}% avg. accuracy
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="cursor-pointer gap-1.5 text-xs">
-              <RefreshCcw size={12} strokeWidth={1.6} absoluteStrokeWidth />
-              Sync all
-            </Button>
-            <Button size="sm" className="cursor-pointer gap-1.5 text-xs">
-              <Plus size={13} strokeWidth={1.6} absoluteStrokeWidth />
-              Add location
-            </Button>
-          </div>
-        </div>
+        <MainCanvasViewHeader
+          title="Listings"
+          description={`${LOCATIONS.length} locations · ${MOCK_SITES.length} directories · ${overallAccuracy}% avg. accuracy`}
+          actions={
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="cursor-pointer gap-1.5 text-xs">
+                <RefreshCcw size={12} strokeWidth={1.6} absoluteStrokeWidth />
+                Sync all
+              </Button>
+              <Button size="sm" className="cursor-pointer gap-1.5 text-xs">
+                <Plus size={13} strokeWidth={1.6} absoluteStrokeWidth />
+                Add location
+              </Button>
+            </div>
+          }
+        />
 
         {/* ── Summary tiles ── */}
         <div className="px-6 pb-4 grid grid-cols-4 gap-3 shrink-0">

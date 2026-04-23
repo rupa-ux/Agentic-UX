@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import {
-  ChevronLeft, ChevronRight, Plus, Search, MoreHorizontal,
+  ChevronLeft, ChevronRight, Search, MoreHorizontal,
   Clock, User, Calendar, List, CheckCircle2, X, Bell,
   MapPin, Phone, Mail,
 } from "lucide-react";
@@ -23,6 +23,7 @@ import {
 import {
   Tooltip, TooltipContent, TooltipTrigger, TooltipProvider,
 } from "@/app/components/ui/tooltip";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 
 /* ─── Types ─── */
 type ApptStatus = "confirmed" | "requested" | "completed" | "cancelled" | "no_show" | "in_progress";
@@ -681,18 +682,10 @@ export function AppointmentsView() {
     <TooltipProvider>
       <div className="flex flex-col h-full overflow-hidden">
         {/* ── Header ── */}
-        <div className="px-6 pt-5 pb-4 flex items-center justify-between shrink-0">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">Appointments</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Schedule, manage, and track patient appointments.
-            </p>
-          </div>
-          <Button size="sm" className="cursor-pointer gap-1.5 text-xs">
-            <Plus size={13} strokeWidth={1.6} absoluteStrokeWidth />
-            Book an appointment
-          </Button>
-        </div>
+        <MainCanvasViewHeader
+          title="Appointments"
+          description="Schedule, manage, and track patient appointments."
+        />
 
         {/* ── View toolbar ── */}
         <div className="px-6 pb-4 flex items-center gap-3 shrink-0">

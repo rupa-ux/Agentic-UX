@@ -4,7 +4,7 @@ import {
   ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Plus, Info, MessageSquare,
 } from "lucide-react";
 import {
-  FigmaIconBirdAI, FigmaIconOverview, FigmaIconInbox, FigmaIconListings,
+  FigmaIconBirdAI, FigmaIconOverview, FigmaIconInbox,
   FigmaIconReviews, FigmaIconReferrals, FigmaIconPayments, FigmaIconAppointments,
   FigmaIconSocial, FigmaIconSurveys, FigmaIconTicketing, FigmaIconContacts,
   FigmaIconCampaigns, FigmaIconCompetitors, FigmaIconInsights, FigmaIconReports,
@@ -78,7 +78,6 @@ const sidebarSections: SidebarNavSection[] = [
     title: "Marketing",
     items: [
       { label: "Reviews", Icon: FigmaIconReviews, view: "reviews" },
-      { label: "Listings", Icon: FigmaIconListings, view: "listings" },
       { label: "Social", Icon: FigmaIconSocial, view: "social" },
       { label: "Referrals", Icon: FigmaIconReferrals, view: "referrals" },
       { label: "Marketing automations", Icon: FigmaIconCampaigns, view: "campaigns" },
@@ -88,6 +87,7 @@ const sidebarSections: SidebarNavSection[] = [
     title: "Operations",
     items: [
       { label: "Inbox", Icon: FigmaIconInbox, view: "inbox" },
+      { label: "Payments", Icon: FigmaIconPayments, view: "payments" },
       { label: "Appointments", Icon: FigmaIconAppointments, view: "appointments" },
       { label: "Chatbot", Icon: MessageSquare, view: "searchai" },
       { label: "Reports", Icon: FigmaIconReports, view: "dashboard" },
@@ -191,14 +191,13 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
     else if (currentView === "social") setActiveIcon("Social");
     else if (currentView === "searchai" || currentView === "conversation-stream") setActiveIcon("Chatbot");
     else if (currentView === "contacts") setActiveIcon("Settings");
-    else if (currentView === "listings") setActiveIcon("Listings");
     else if (currentView === "surveys") setActiveIcon("Surveys");
     else if (currentView === "ticketing") setActiveIcon("Ticketing");
     else if (currentView === "campaigns") setActiveIcon("Campaigns");
     else if (currentView === "insights") setActiveIcon("Insights");
     else if (currentView === "competitors") setActiveIcon("Competitors");
     else if (currentView === "referrals") setActiveIcon("Referrals");
-    else if (currentView === "payments") setActiveIcon("Settings");
+    else if (currentView === "payments") setActiveIcon("Payments");
     else if (currentView === "appointments") setActiveIcon("Appointments");
     else if (currentView === "dashboard" || currentView === "shared-by-me") setActiveIcon("Reports");
     else if (currentView === "agent-config") setActiveIcon("Settings");
@@ -235,11 +234,11 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
     if (label === "Overview") onViewChange("business-overview");
     else if (label === "Agents") onViewChange("agents-monitor");
     else if (label === "Reviews") onViewChange("reviews");
-    else if (label === "Listings") onViewChange("listings");
     else if (label === "Social") onViewChange("social");
     else if (label === "Referrals") onViewChange("referrals");
     else if (label === "Marketing automations" || label === "Campaigns") onViewChange("campaigns");
     else if (label === "Inbox") onViewChange("inbox");
+    else if (label === "Payments") onViewChange("payments");
     else if (label === "Appointments") onViewChange("appointments");
     else if (label === "Chatbot") onViewChange("searchai");
     else if (label === "Reports") onViewChange("dashboard");
@@ -1079,7 +1078,7 @@ export function ListingsL2NavPanel({ activeItem, onActiveItemChange }: ListingsL
    Ticketing L2 Nav Panel – new export
    ═══════════════════════════════════════════ */
 const ticketingConfig = {
-  headerAction: { label: "Create ticket" },
+  headerAction: { label: "New ticket" },
   sections: [
     { label: "Actions", children: ["My tickets", "View all tickets"] },
     { label: "Reports", children: ["Resolution time", "Volume"] },
@@ -1095,6 +1094,7 @@ export function TicketingL2NavPanel() {
    Campaigns L2 Nav Panel – new export
    ═══════════════════════════════════════════ */
 const campaignsConfig = {
+  headerAction: { label: "Create campaign" },
   sections: [
     { label: "Actions", children: ["Manage automations", "Manage campaigns"] },
     { label: "Libraries", children: ["Templates", "Landing pages"] },
@@ -1170,7 +1170,7 @@ export function CompetitorsL2NavPanel() {
    Appointments L2 Nav Panel – uses L2NavLayout
    ═══════════════════════════════════════════ */
 const appointmentsConfig = {
-  panelTitle: "Appointments",
+  headerAction: { label: "Book an appointment" },
   defaultExpandedSections: ["Actions", "Settings"],
   sections: [
     { label: "Actions", children: ["View calendar", "View schedule"] },

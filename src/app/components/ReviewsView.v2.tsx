@@ -26,13 +26,14 @@ import { ReviewBody, formatReviewDateRelative } from "./ReviewsView.v1";
 import { SegmentedToggle } from "@/app/components/ui/segmented-toggle";
 import type { ReviewsViewMode } from "./ReviewsView";
 import svgPaths from "../../imports/svg-k7qrt1366a";
+import { ReviewSiteLogo, type ReviewPlatformSite } from "@/app/components/reviewPlatformLogos";
 import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Review {
   id: number;
-  site: "yelp" | "google" | "facebook" | "tripadvisor";
+  site: ReviewPlatformSite;
   rating: number;
   reviewer: string;
   date: string;
@@ -367,84 +368,6 @@ const mockReviews: Review[] = [
     suggestedReply: "We're very sorry about your delivery experience, Alex. This is not acceptable and we want to make it right for you.",
   },
 ];
-
-// ─── Platform logos ────────────────────────────────────────────────────────────
-
-function YelpLogo({ size = 40 }: { size?: number }) {
-  return (
-    <div
-      className="bg-white flex items-center justify-center p-[5px] rounded-full relative border border-[#eaeaea] dark:border-[#333a47] dark:bg-[#262b35] shrink-0"
-      style={{ width: size, height: size }}
-    >
-      <svg style={{ width: size * 0.57, height: size * 0.69 }} viewBox="0 0 22.8814 27.4352" fill="none">
-        <path d={svgPaths.p53b0d00} fill="#FF1A1A" />
-        <path d={svgPaths.pf0e0dc0} fill="#FF1A1A" />
-        <path d={svgPaths.p27030500} fill="#FF1A1A" />
-        <path d={svgPaths.p3643f600} fill="#FF1A1A" />
-        <path d={svgPaths.p5cc3100} fill="#FF1A1A" />
-      </svg>
-    </div>
-  );
-}
-
-function GoogleLogo({ size = 40 }: { size?: number }) {
-  return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg className="w-full h-full" viewBox="0 0 40 40" fill="none">
-        <circle cx="20" cy="20" fill="white" r="19.5833" stroke="#EAEAEA" strokeWidth="0.833333" />
-        <path d={svgPaths.p27765500} fill="#4285F4" />
-        <path d={svgPaths.p266b3f00} fill="#34A853" />
-        <path d={svgPaths.p39b489f0} fill="#FBBC05" />
-        <path d={svgPaths.p16fc1f80} fill="#EB4335" />
-      </svg>
-    </div>
-  );
-}
-
-function FacebookLogo({ size = 40 }: { size?: number }) {
-  return (
-    <div
-      className="bg-white flex items-center justify-center p-[5px] rounded-full relative border border-[#eaeaea] dark:border-[#333a47] dark:bg-[#262b35] shrink-0"
-      style={{ width: size, height: size }}
-    >
-      <div
-        className="rounded-full bg-[#1877F2] flex items-center justify-center"
-        style={{ width: size * 0.75, height: size * 0.75 }}
-      >
-        <span className="text-white font-bold leading-none translate-y-px font-sans" style={{ fontSize: size * 0.45 }}>
-          f
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function TripAdvisorLogo({ size = 40 }: { size?: number }) {
-  return (
-    <div
-      className="bg-white flex items-center justify-center p-[5px] rounded-full relative border border-[#eaeaea] dark:border-[#333a47] dark:bg-[#262b35] shrink-0"
-      style={{ width: size, height: size }}
-    >
-      <svg style={{ width: size * 0.75, height: size * 0.75 }} viewBox="0 0 32 32" fill="none" aria-hidden>
-        <circle cx="16" cy="16" r="15" fill="#00AF87" />
-        <circle cx="11.5" cy="14" r="3.25" fill="white" />
-        <circle cx="20.5" cy="14" r="3.25" fill="white" />
-        <circle cx="11.5" cy="14" r="1.35" fill="#1a1a1a" />
-        <circle cx="20.5" cy="14" r="1.35" fill="#1a1a1a" />
-        <path d="M10 22c2.2 2.8 4.8 3.8 6 3.8s3.8-1 6-3.8" stroke="#FFCC00" strokeWidth="2.2" strokeLinecap="round" />
-      </svg>
-    </div>
-  );
-}
-
-function ReviewSiteLogo({ site, size = 40 }: { site: Review["site"]; size?: number }) {
-  switch (site) {
-    case "yelp": return <YelpLogo size={size} />;
-    case "google": return <GoogleLogo size={size} />;
-    case "facebook": return <FacebookLogo size={size} />;
-    case "tripadvisor": return <TripAdvisorLogo size={size} />;
-  }
-}
 
 // ─── Star rating ───────────────────────────────────────────────────────────────
 
@@ -1270,20 +1193,11 @@ function ReviewListPanel({
   viewMode?: ReviewsViewMode;
   onViewModeChange?: (mode: ReviewsViewMode) => void;
 }) {
-  const [search, setSearch] = useState("");
-
-  const filtered = reviews.filter((r) =>
-    search
-      ? r.reviewer.toLowerCase().includes(search.toLowerCase()) ||
-        r.text.toLowerCase().includes(search.toLowerCase())
-      : true
-  );
-
   return (
     <div className="flex flex-col h-full min-h-0 bg-white dark:bg-[#1e2229] border-r border-[#e5e9f0] dark:border-[#333a47]">
       {/* Header */}
-      <div className="shrink-0 px-4 pt-4 pb-3 border-b border-[#e5e9f0] dark:border-[#333a47]">
-        <div className="flex items-center justify-between mb-3">
+      <div className="shrink-0 px-4 pt-4 pb-4">
+        <div className="flex items-center justify-between gap-2">
           <div>
             <h2 className="text-[15px] font-medium text-[#212121] dark:text-[#e4e4e4]">All reviews</h2>
             <div className="flex items-center gap-1 text-[11px] text-[#555] dark:text-[#8b92a5] mt-0.5">
@@ -1316,37 +1230,23 @@ function ReviewListPanel({
             </button>
           </div>
         </div>
-        {/* Search */}
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 size-[13px] text-muted-foreground" />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search reviews"
-            className="w-full rounded-md border border-[#e5e9f0] dark:border-[#333a47] bg-white dark:bg-[#262b35] py-1.5 pl-8 pr-3 text-[12px] text-[#212121] dark:text-[#e4e4e4] outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground"
-          />
-        </div>
       </div>
 
       {/* List */}
       <div className="flex-1 overflow-y-auto">
-        {filtered.map((review) => {
+        {reviews.map((review) => {
           const isSelected = review.id === selectedId;
           return (
             <button
               key={review.id}
               type="button"
               onClick={() => onSelect(review.id)}
-              className={`w-full text-left flex items-start gap-3 px-4 py-3 border-b border-[#e5e9f0] dark:border-[#333a47] transition-colors relative ${
+              className={`w-full text-left flex items-start gap-3 px-4 py-3 transition-colors ${
                 isSelected
                   ? "bg-primary/[0.07] dark:bg-primary/10"
                   : "hover:bg-[#f7f8fa] dark:hover:bg-[#262b35]"
               }`}
             >
-              {/* Left accent bar */}
-              {isSelected && <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-primary rounded-r-sm" />}
-
               {/* Platform icon */}
               <div className="shrink-0 mt-0.5">
                 <ReviewSiteLogo site={review.site} size={28} />
@@ -1360,24 +1260,18 @@ function ReviewListPanel({
                   </span>
                   <span className="text-[10px] text-[#8b92a5] shrink-0">{formatReviewDateRelative(review.date)}</span>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <StarRating rating={review.rating} size={10} />
-                  {review.hasConversation && (
-                    <div className="size-[5px] rounded-full bg-primary ml-auto shrink-0" />
-                  )}
                 </div>
                 <p className="text-[11px] text-[#555] dark:text-[#8b92a5] line-clamp-1 mt-0.5">{review.text}</p>
-                <div className="flex items-center gap-2 mt-0.5">
+                <div className="mt-0.5">
                   <span className="text-[10px] text-[#8b92a5]">{review.location}</span>
-                  {review.replyStatus === "post" && (
-                    <span className="text-[9px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">Reply needed</span>
-                  )}
                 </div>
               </div>
             </button>
           );
         })}
-        {filtered.length === 0 && (
+        {reviews.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-2">
             <span className="text-[13px] text-muted-foreground">No reviews found</span>
           </div>

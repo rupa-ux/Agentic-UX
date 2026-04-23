@@ -16,6 +16,14 @@ import { Label } from "@/app/components/ui/label";
 const meta: Meta = {
   title: "UI/Dialog",
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "Centered Radix **Dialog**. The overlay uses **`MODAL_OVERLAY_VISUAL_CLASS`** from `@/app/components/ui/modalOverlayClasses`. **`DialogTitle`** defaults to **`MAIN_VIEW_PRIMARY_HEADING_CLASS`** (same as **Layout/Main canvas view header**). Match that recipe for any custom modal backdrop.",
+      },
+    },
+  },
 };
 
 export default meta;

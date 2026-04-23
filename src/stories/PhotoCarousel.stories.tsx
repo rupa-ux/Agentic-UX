@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, MessageCircle, MoreVertical, Send, Star } from "lucide-react";
-import { formatReviewDateRelative, ReviewBody } from "@/app/components/ReviewsView";
+import { formatReviewDateRelative, ReviewBody } from "@/app/components/ReviewsView.v1";
 import { ManusToolbarIconHit } from "@/app/components/ManusToolbarIconHit";
 import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 

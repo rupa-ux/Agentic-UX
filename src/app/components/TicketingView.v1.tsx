@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {
-  Plus, Search, MoreHorizontal, ChevronDown, Filter,
+  Search, MoreHorizontal, ChevronDown, Filter,
   Mail, Phone, Globe, Star, MessageSquare, Send,
   CheckCircle2, Clock, AlertCircle, XCircle, Minus,
   User, Tag, Paperclip, RefreshCcw, Archive, Flag,
@@ -22,6 +22,7 @@ import {
   Tooltip, TooltipContent, TooltipTrigger, TooltipProvider,
 } from "@/app/components/ui/tooltip";
 import { Checkbox } from "@/app/components/ui/checkbox";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 
 /* ─── Types ─── */
 type TicketStatus   = "new" | "open" | "in_progress" | "resolved" | "closed";
@@ -542,18 +543,10 @@ export function TicketingView() {
     <TooltipProvider>
       <div className="flex flex-col h-full overflow-hidden">
         {/* ── Header ── */}
-        <div className="px-6 pt-5 pb-4 flex items-center justify-between shrink-0">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">Tickets</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {newCount} new · {openCount} open
-            </p>
-          </div>
-          <Button size="sm" className="cursor-pointer gap-1.5 text-xs">
-            <Plus size={13} strokeWidth={1.6} absoluteStrokeWidth />
-            New ticket
-          </Button>
-        </div>
+        <MainCanvasViewHeader
+          title="Tickets"
+          description={`${newCount} new · ${openCount} open`}
+        />
 
         {/* ── Ticket list card ── */}
         <div className="flex-1 min-h-0 mx-6 mb-6 bg-card border border-border rounded-xl overflow-hidden flex flex-col">

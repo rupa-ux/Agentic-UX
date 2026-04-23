@@ -19,6 +19,7 @@ import { Button } from "@/app/components/ui/button";
 import { ManusToolbarIconHit } from "@/app/components/ManusToolbarIconHit";
 import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 import svgPaths from "../../imports/svg-k7qrt1366a";
+import { ReviewSiteLogo, type ReviewPlatformSite } from "@/app/components/reviewPlatformLogos";
 // Real placeholder images — replace with actual CDN URLs in production
 const imgRectangle2429 = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop&auto=format";
 const imgRectangle2430 = "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop&auto=format";
@@ -53,7 +54,7 @@ import type { ReviewsViewMode } from "./ReviewsView";
 // Types
 interface Review {
   id: number;
-  site: "yelp" | "google" | "facebook" | "tripadvisor";
+  site: ReviewPlatformSite;
   rating: number;
   reviewer: string;
   date: string;
@@ -426,85 +427,6 @@ const mockReviews: Review[] = [
   },
 ];
 
-/* ─── Yelp Logo ─── */
-function YelpLogo() {
-  return (
-    <div className="bg-white flex items-center justify-center p-[5px] rounded-full size-[40px] relative border border-[#eaeaea] dark:border-[#333a47] dark:bg-[#262b35]">
-      <div className="h-[27.435px] w-[22.881px]">
-        <svg className="w-full h-full" viewBox="0 0 22.8814 27.4352" fill="none">
-          <path d={svgPaths.p53b0d00} fill="#FF1A1A" />
-          <path d={svgPaths.pf0e0dc0} fill="#FF1A1A" />
-          <path d={svgPaths.p27030500} fill="#FF1A1A" />
-          <path d={svgPaths.p3643f600} fill="#FF1A1A" />
-          <path d={svgPaths.p5cc3100} fill="#FF1A1A" />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Google Logo (full color G) ─── */
-function GoogleLogo() {
-  return (
-    <div className="relative shrink-0 size-[40px]">
-      <svg className="w-full h-full" viewBox="0 0 40 40" fill="none">
-        <circle cx="20" cy="20" fill="white" r="19.5833" stroke="#EAEAEA" strokeWidth="0.833333" />
-        <path d={svgPaths.p27765500} fill="#4285F4" />
-        <path d={svgPaths.p266b3f00} fill="#34A853" />
-        <path d={svgPaths.p39b489f0} fill="#FBBC05" />
-        <path d={svgPaths.p16fc1f80} fill="#EB4335" />
-      </svg>
-    </div>
-  );
-}
-
-/* ─── Facebook mark (demo) ─── */
-function FacebookLogo() {
-  return (
-    <div className="bg-white flex items-center justify-center p-[5px] rounded-full size-[40px] relative border border-[#eaeaea] dark:border-[#333a47] dark:bg-[#262b35]">
-      <div className="size-[30px] rounded-full bg-[#1877F2] flex items-center justify-center">
-        <span className="text-white text-[18px] font-bold leading-none translate-y-px font-sans">
-          f
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Tripadvisor-style mark (demo — simplified owl) ─── */
-function TripAdvisorLogo() {
-  return (
-    <div className="bg-white flex items-center justify-center p-[5px] rounded-full size-[40px] relative border border-[#eaeaea] dark:border-[#333a47] dark:bg-[#262b35]">
-      <svg className="size-[30px] shrink-0" viewBox="0 0 32 32" fill="none" aria-hidden>
-        <circle cx="16" cy="16" r="15" fill="#00AF87" />
-        <circle cx="11.5" cy="14" r="3.25" fill="white" />
-        <circle cx="20.5" cy="14" r="3.25" fill="white" />
-        <circle cx="11.5" cy="14" r="1.35" fill="#1a1a1a" />
-        <circle cx="20.5" cy="14" r="1.35" fill="#1a1a1a" />
-        <path
-          d="M10 22c2.2 2.8 4.8 3.8 6 3.8s3.8-1 6-3.8"
-          stroke="#FFCC00"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-        />
-      </svg>
-    </div>
-  );
-}
-
-function reviewSiteLogo(site: Review["site"]) {
-  switch (site) {
-    case "yelp":
-      return <YelpLogo />;
-    case "google":
-      return <GoogleLogo />;
-    case "facebook":
-      return <FacebookLogo />;
-    case "tripadvisor":
-      return <TripAdvisorLogo />;
-  }
-}
-
 /* ─── Star rating — gold fill + gold outline on empty (review reference) ─── */
 function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
   return (
@@ -849,7 +771,7 @@ function ReviewCard({ review }: { review: Review }) {
       {/* Header: left — logo + name + stars/date/photos/featured; right — employees + location (same meta colours as date) */}
       <div className="flex w-full items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-3">
-          {reviewSiteLogo(review.site)}
+          <ReviewSiteLogo site={review.site} size={40} />
           <div className="flex min-w-0 flex-col gap-1">
             <span className="text-[13px] font-semibold leading-tight text-[#212121] dark:text-[#e4e4e4]">
               {review.reviewer}

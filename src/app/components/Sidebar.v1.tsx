@@ -3,7 +3,7 @@ import {
   ChevronDown, ChevronUp, Settings, User, LogOut, Camera, Moon, Sun, Monitor, ChevronLeft, Share2, Clock, ExternalLink, Keyboard, Plus, Info,
 } from "lucide-react";
 import {
-  FigmaIconBirdAI, FigmaIconOverview, FigmaIconInbox, FigmaIconListings,
+  FigmaIconBirdAI, FigmaIconOverview, FigmaIconInbox,
   FigmaIconReviews, FigmaIconReferrals, FigmaIconPayments, FigmaIconAppointments,
   FigmaIconSocial, FigmaIconSurveys, FigmaIconTicketing, FigmaIconContacts,
   FigmaIconCampaigns, FigmaIconCompetitors, FigmaIconInsights, FigmaIconReports,
@@ -51,7 +51,6 @@ const iconStripItems: { label: string; Icon: React.ElementType }[] = [
   { label: "Agents",       Icon: FigmaIconBirdAI      },
   { label: "Home",         Icon: FigmaIconOverview    },
   { label: "Inbox",        Icon: FigmaIconInbox       },
-  { label: "Listings",     Icon: FigmaIconListings    },
   { label: "Reviews",      Icon: FigmaIconReviews     },
   { label: "Referrals",    Icon: FigmaIconReferrals   },
   { label: "Payments",     Icon: FigmaIconPayments    },
@@ -112,7 +111,6 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
     else if (currentView === "social") setActiveIcon("Social");
     else if (currentView === "searchai") setActiveIcon("Insights");
     else if (currentView === "contacts") setActiveIcon("Contacts");
-    else if (currentView === "listings") setActiveIcon("Listings");
     else if (currentView === "surveys") setActiveIcon("Surveys");
     else if (currentView === "ticketing") setActiveIcon("Ticketing");
     else if (currentView === "campaigns") setActiveIcon("Campaigns");
@@ -176,7 +174,6 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                 else if (label === "Insights") onViewChange("searchai");
                 else if (label === "Contacts") onViewChange("contacts");
                 else if (label === "Agents") onViewChange("agents-monitor");
-                else if (label === "Listings") onViewChange("listings");
                 else if (label === "Surveys") onViewChange("surveys");
                 else if (label === "Ticketing") onViewChange("ticketing");
                 else if (label === "Campaigns") onViewChange("campaigns");
@@ -812,7 +809,7 @@ export function ListingsL2NavPanel({ activeItem, onActiveItemChange }: ListingsL
    Ticketing L2 Nav Panel – new export
    ═══════════════════════════════════════════ */
 const ticketingConfig = {
-  headerAction: { label: "Create ticket" },
+  headerAction: { label: "New ticket" },
   sections: [
     { label: "Actions", children: ["My tickets", "View all tickets"] },
     { label: "Reports", children: ["Resolution time", "Volume"] },
@@ -828,6 +825,7 @@ export function TicketingL2NavPanel() {
    Campaigns L2 Nav Panel – new export
    ═══════════════════════════════════════════ */
 const campaignsConfig = {
+  headerAction: { label: "Create campaign" },
   sections: [
     { label: "Actions", children: ["Manage automations", "Manage campaigns"] },
     { label: "Libraries", children: ["Templates", "Landing pages"] },
@@ -903,7 +901,7 @@ export function CompetitorsL2NavPanel() {
    Appointments L2 Nav Panel – uses L2NavLayout
    ═══════════════════════════════════════════ */
 const appointmentsConfig = {
-  panelTitle: "Appointments",
+  headerAction: { label: "Book an appointment" },
   defaultExpandedSections: ["Actions", "Settings"],
   sections: [
     { label: "Actions", children: ["View calendar", "View schedule"] },

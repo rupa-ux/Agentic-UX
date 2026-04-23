@@ -10,6 +10,9 @@ export type ShortcutScope =
   | "surveys"
   | "default";
 
+/** Column placement in the keyboard shortcuts help modal. */
+export type ShortcutModalGroup = "navigation" | "current-view";
+
 export interface ShortcutDefinition {
   id: string;
   /** Single chord; not used for display when `keySequences` is set. */
@@ -21,6 +24,8 @@ export interface ShortcutDefinition {
   detail?: string;
   /** Shown in modal; global shortcuts always listed */
   scope: ShortcutScope;
+  /** Which column this row appears under in `ShortcutsModal`. */
+  modalGroup: ShortcutModalGroup;
 }
 
 export function shortcutScopeFromView(view: string): ShortcutScope {
@@ -60,6 +65,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "Show keyboard shortcuts",
     detail: "Open this panel from anywhere.",
     scope: "global",
+    modalGroup: "navigation",
   },
   {
     id: "go-ticketing",
@@ -67,6 +73,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "Go to Ticketing",
     detail: "Jump to the ticketing workspace.",
     scope: "global",
+    modalGroup: "navigation",
   },
   {
     id: "go-reviews",
@@ -74,6 +81,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "Go to Reviews",
     detail: "Jump to reviews.",
     scope: "global",
+    modalGroup: "navigation",
   },
   {
     id: "go-monitor",
@@ -81,6 +89,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "Go to BirdAI (Monitor)",
     detail: "Jump to the BirdAI monitor.",
     scope: "global",
+    modalGroup: "navigation",
   },
   {
     id: "go-shared",
@@ -88,6 +97,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "Go to Shared by me",
     detail: "Jump to content you have shared.",
     scope: "global",
+    modalGroup: "navigation",
   },
   {
     id: "go-overview",
@@ -95,6 +105,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "Go to Overview",
     detail: "Jump to business overview.",
     scope: "global",
+    modalGroup: "navigation",
   },
   {
     id: "reviews-search",
@@ -102,6 +113,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "Focus reviews search",
     detail: "Move focus to the search field.",
     scope: "reviews",
+    modalGroup: "current-view",
   },
   {
     id: "reviews-filters",
@@ -109,6 +121,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "Toggle review filters",
     detail: "Show or hide filter controls.",
     scope: "reviews",
+    modalGroup: "current-view",
   },
   {
     id: "reviews-ai",
@@ -116,6 +129,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "Focus AI reply assistant",
     detail: "Move focus to the AI reply assistant.",
     scope: "reviews",
+    modalGroup: "current-view",
   },
   {
     id: "inbox-compose",
@@ -123,6 +137,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "Focus message composer",
     detail: "Move focus to the composer.",
     scope: "inbox",
+    modalGroup: "current-view",
   },
   {
     id: "inbox-search",
@@ -130,6 +145,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "Focus conversation search",
     detail: "Move focus to conversation search.",
     scope: "inbox",
+    modalGroup: "current-view",
   },
   {
     id: "agents-builder",
@@ -137,6 +153,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "Open Agent builder",
     detail: "Open the agent builder.",
     scope: "agents",
+    modalGroup: "current-view",
   },
   {
     id: "agents-home",
@@ -144,6 +161,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "Open Myna monitor",
     detail: "Return to the Myna monitor.",
     scope: "agents",
+    modalGroup: "current-view",
   },
   {
     id: "social-new",
@@ -151,6 +169,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "New post (coming soon)",
     detail: "Reserved for a new post flow.",
     scope: "social",
+    modalGroup: "current-view",
   },
   {
     id: "dashboard-refresh",
@@ -158,6 +177,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "Refresh reports (coming soon)",
     detail: "Reserved for refreshing reports.",
     scope: "dashboard",
+    modalGroup: "current-view",
   },
   {
     id: "ticketing-new",
@@ -165,6 +185,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "New ticket (coming soon)",
     detail: "Reserved for creating a ticket.",
     scope: "ticketing",
+    modalGroup: "current-view",
   },
   {
     id: "surveys-new",
@@ -172,6 +193,7 @@ export const SHORTCUT_REGISTRY: ShortcutDefinition[] = [
     description: "New survey (coming soon)",
     detail: "Reserved for creating a survey.",
     scope: "surveys",
+    modalGroup: "current-view",
   },
 ];
 

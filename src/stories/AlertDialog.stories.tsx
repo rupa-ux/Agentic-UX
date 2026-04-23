@@ -16,6 +16,14 @@ import { Button } from "@/app/components/ui/button";
 const meta: Meta = {
   title: "UI/AlertDialog",
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "Confirmation pattern on Radix **AlertDialog**. Overlay matches **Dialog** / **Sheet**: **`MODAL_OVERLAY_VISUAL_CLASS`** from `@/app/components/ui/modalOverlayClasses` (light blur + semantic tint, not a black veil).",
+      },
+    },
+  },
 };
 
 export default meta;

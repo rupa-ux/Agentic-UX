@@ -3,6 +3,8 @@
 import * as React from "react";
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 
+import { MAIN_VIEW_PRIMARY_HEADING_CLASS } from "@/app/components/layout/mainViewTitleClasses";
+import { MODAL_OVERLAY_VISUAL_CLASS } from "./modalOverlayClasses";
 import { cn } from "./utils";
 import { buttonVariants } from "./button";
 
@@ -36,7 +38,8 @@ function AlertDialogOverlay({
     <AlertDialogPrimitive.Overlay
       data-slot="alert-dialog-overlay"
       className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50",
+        MODAL_OVERLAY_VISUAL_CLASS,
         className,
       )}
       {...props}
@@ -99,7 +102,7 @@ function AlertDialogTitle({
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
-      className={cn("text-lg font-semibold", className)}
+      className={cn(MAIN_VIEW_PRIMARY_HEADING_CLASS, className)}
       {...props}
     />
   );
