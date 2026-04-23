@@ -1,17 +1,16 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { createColumnHelper } from "@tanstack/react-table";
 import {
   Mail, Smartphone, Share2, Link2, Globe,
-  Download, UserPlus, Search, MapPin,
-  CheckCircle2, ArrowUpDown, Send, Gift,
+  Search, MapPin,
+  CheckCircle2, Send, Gift,
 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
-import { Input } from "@/app/components/ui/input";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { Progress } from "@/app/components/ui/progress";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/app/components/ui/tabs";
-import {
-  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
-} from "@/app/components/ui/table";
+import { L2_FLAT_NAV_KEY_PREFIX } from "@/app/components/L2NavLayout";
+import { AppDataTable } from "@/app/components/ui/AppDataTable";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/app/components/ui/sheet";
@@ -41,6 +40,10 @@ interface LeadRow {
   referredBy: string; code: string; createdOn: string;
   thanksSent: boolean; response: string;
 }
+
+const sentColumnHelper = createColumnHelper<SentRow>();
+const sharedColumnHelper = createColumnHelper<SharedRow>();
+const leadColumnHelper = createColumnHelper<LeadRow>();
 
 /* ─── Mock data ─── */
 const STATS: StatCard[] = [
@@ -104,6 +107,14 @@ const LEAD_ROWS: LeadRow[] = [
   { id: "5", name: "Jessica Williams", location: "Austin, TX",      referredBy: "Megan Thompson", code: "REF-2024-005", createdOn: "Mar 15, 2024", thanksSent: true,  response: "Can't wait to get started" },
 ];
 
+export type ReferralsSection = "sent" | "shared" | "leads";
+
+export function referralsL2KeyToSection(l2Key: string): ReferralsSection {
+  if (l2Key === `${L2_FLAT_NAV_KEY_PREFIX}/leads`) return "leads";
+  if (l2Key === `${L2_FLAT_NAV_KEY_PREFIX}/shared`) return "shared";
+  return "sent";
+}
+
 /* ─── Helpers ─── */
 const CHANNEL_META: Record<Channel, { label: string; icon: React.ElementType; color: string }> = {
   email:    { label: "Email",    icon: Mail,        color: "text-blue-500" },
@@ -150,155 +161,6 @@ function StatCard({ card }: { card: StatCard }) {
         })}
       </div>
     </div>
-  );
-}
-
-/* ─── Sent table ─── */
-function SentTable({ rows }: { rows: SentRow[] }) {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow className="hover:bg-transparent">
-          <TableHead className="w-[220px]">
-            <button className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-              Sent to <ArrowUpDown size={12} />
-            </button>
-          </TableHead>
-          <TableHead className="w-[120px] text-xs font-medium text-muted-foreground">Sent via</TableHead>
-          <TableHead className="w-[160px] text-xs font-medium text-muted-foreground">Referral code</TableHead>
-          <TableHead className="text-xs font-medium text-muted-foreground">
-            <button className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-              Sent on <ArrowUpDown size={12} />
-            </button>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((r) => (
-          <TableRow key={r.id} className="group">
-            <TableCell className="font-medium text-[13px] text-foreground py-3">{r.sentTo}</TableCell>
-            <TableCell className="py-3">
-              <div className="flex items-center gap-1.5">
-                <ChannelIcon channel={r.via} />
-                <span className="text-[13px] text-muted-foreground">{CHANNEL_META[r.via].label}</span>
-              </div>
-            </TableCell>
-            <TableCell className="py-3">
-              <Badge variant="secondary" className="font-mono text-[11px] tracking-wide">{r.code}</Badge>
-            </TableCell>
-            <TableCell className="py-3 text-[13px] text-muted-foreground">{r.sentOn}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
-}
-
-/* ─── Shared table ─── */
-function SharedTable({ rows }: { rows: SharedRow[] }) {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow className="hover:bg-transparent">
-          <TableHead className="w-[220px]">
-            <button className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-              Shared by <ArrowUpDown size={12} />
-            </button>
-          </TableHead>
-          <TableHead className="w-[140px] text-xs font-medium text-muted-foreground">Shared via</TableHead>
-          <TableHead className="w-[160px] text-xs font-medium text-muted-foreground">Referral code</TableHead>
-          <TableHead className="text-xs font-medium text-muted-foreground">
-            <button className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-              Shared on <ArrowUpDown size={12} />
-            </button>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((r) => (
-          <TableRow key={r.id} className="group">
-            <TableCell className="font-medium text-[13px] text-foreground py-3">{r.sharedBy}</TableCell>
-            <TableCell className="py-3">
-              <div className="flex items-center gap-1.5">
-                {r.via.map((ch) => <ChannelIcon key={ch} channel={ch} />)}
-              </div>
-            </TableCell>
-            <TableCell className="py-3">
-              <Badge variant="secondary" className="font-mono text-[11px] tracking-wide">{r.code}</Badge>
-            </TableCell>
-            <TableCell className="py-3 text-[13px] text-muted-foreground">{r.sharedOn}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
-}
-
-/* ─── Leads table ─── */
-function LeadsTable({ rows, onViewDetails }: { rows: LeadRow[]; onViewDetails: (r: LeadRow) => void }) {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow className="hover:bg-transparent">
-          <TableHead className="w-[200px] text-xs font-medium text-muted-foreground">Lead</TableHead>
-          <TableHead className="w-[160px] text-xs font-medium text-muted-foreground">Referred by</TableHead>
-          <TableHead className="w-[160px] text-xs font-medium text-muted-foreground">Referral code</TableHead>
-          <TableHead className="w-[140px]">
-            <button className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-              Created on <ArrowUpDown size={12} />
-            </button>
-          </TableHead>
-          <TableHead className="w-[120px] text-xs font-medium text-muted-foreground">Thanks note</TableHead>
-          <TableHead className="text-xs font-medium text-muted-foreground">Response</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((r) => (
-          <TableRow
-            key={r.id}
-            className="group cursor-pointer"
-            onClick={() => onViewDetails(r)}
-          >
-            <TableCell className="py-3">
-              <div className="flex flex-col gap-0.5">
-                <span className="font-medium text-[13px] text-foreground flex items-center gap-1">
-                  {r.name}
-                  <Gift size={11} className="text-[#1E44CC] dark:text-[#2952E3]" strokeWidth={1.6} absoluteStrokeWidth />
-                </span>
-                <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                  <MapPin size={10} strokeWidth={1.6} absoluteStrokeWidth />
-                  {r.location}
-                </span>
-              </div>
-            </TableCell>
-            <TableCell className="py-3 text-[13px] text-muted-foreground">{r.referredBy}</TableCell>
-            <TableCell className="py-3">
-              <Badge variant="secondary" className="font-mono text-[11px] tracking-wide">{r.code}</Badge>
-            </TableCell>
-            <TableCell className="py-3 text-[13px] text-muted-foreground">{r.createdOn}</TableCell>
-            <TableCell className="py-3">
-              {r.thanksSent ? (
-                <span className="flex items-center gap-1 text-[12px] text-green-600 dark:text-green-400 font-medium">
-                  <CheckCircle2 size={13} strokeWidth={1.6} absoluteStrokeWidth />
-                  Sent
-                </span>
-              ) : (
-                <button
-                  className="flex items-center gap-1 text-[12px] text-[#1E44CC] dark:text-[#2952E3] hover:underline font-medium"
-                  onClick={(e) => { e.stopPropagation(); onViewDetails(r); }}
-                >
-                  <Send size={11} strokeWidth={1.6} absoluteStrokeWidth />
-                  Send note
-                </button>
-              )}
-            </TableCell>
-            <TableCell className="py-3 text-[13px] text-muted-foreground max-w-[200px] truncate">
-              {r.response || <span className="text-muted-foreground/40">—</span>}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
   );
 }
 
@@ -361,14 +223,18 @@ function LeadDetailSheet({ lead, open, onClose }: { lead: LeadRow | null; open: 
   );
 }
 
+export type ReferralsViewProps = {
+  /** Driven by shell L2 (`ReferralsL2NavPanel`). */
+  activeSection: ReferralsSection;
+};
+
 /* ═══════════════════════════════════════════
    ReferralsView — main export
    ═══════════════════════════════════════════ */
-export function ReferralsView() {
-  const [tab, setTab] = useState("sent");
+export function ReferralsView({ activeSection }: ReferralsViewProps) {
   const [search, setSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<LeadRow | null>(null);
-
   const filteredSent   = SENT_ROWS.filter((r) => r.sentTo.toLowerCase().includes(search.toLowerCase()));
   const filteredShared = SHARED_ROWS.filter((r) => r.sharedBy.toLowerCase().includes(search.toLowerCase()));
   const filteredLeads  = LEAD_ROWS.filter((r) =>
@@ -376,33 +242,256 @@ export function ReferralsView() {
     r.referredBy.toLowerCase().includes(search.toLowerCase())
   );
 
+  const openLead = useCallback((r: LeadRow) => {
+    setSelectedLead(r);
+  }, []);
+
+  const sentColumns = useMemo(
+    () => [
+      sentColumnHelper.accessor("sentTo", {
+        id: "sentTo",
+        header: "Sent to",
+        meta: { settingsLabel: "Sent to" },
+        size: 220,
+        enableSorting: true,
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
+      }),
+      sentColumnHelper.accessor("via", {
+        id: "via",
+        header: "Sent via",
+        meta: { settingsLabel: "Sent via" },
+        size: 140,
+        cell: (info) => {
+          const ch = info.getValue();
+          return (
+            <div className="flex items-center gap-1.5">
+              <ChannelIcon channel={ch} />
+              <span className="text-muted-foreground">{CHANNEL_META[ch].label}</span>
+            </div>
+          );
+        },
+      }),
+      sentColumnHelper.accessor("code", {
+        id: "code",
+        header: "Referral code",
+        meta: { settingsLabel: "Referral code" },
+        size: 168,
+        cell: (info) => (
+          <Badge variant="secondary" className="font-mono text-[length:var(--font-size)] tracking-wide">
+            {info.getValue()}
+          </Badge>
+        ),
+      }),
+      sentColumnHelper.accessor("sentOn", {
+        id: "sentOn",
+        header: "Sent on",
+        meta: { settingsLabel: "Sent on" },
+        size: 160,
+        enableSorting: true,
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+    ],
+    [],
+  );
+
+  const sharedColumns = useMemo(
+    () => [
+      sharedColumnHelper.accessor("sharedBy", {
+        id: "sharedBy",
+        header: "Shared by",
+        meta: { settingsLabel: "Shared by" },
+        size: 220,
+        enableSorting: true,
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
+      }),
+      sharedColumnHelper.accessor("via", {
+        id: "via",
+        header: "Shared via",
+        meta: { settingsLabel: "Shared via" },
+        size: 144,
+        cell: (info) => (
+          <div className="flex items-center gap-1.5">
+            {info.getValue().map((ch) => (
+              <ChannelIcon key={ch} channel={ch} />
+            ))}
+          </div>
+        ),
+      }),
+      sharedColumnHelper.accessor("code", {
+        id: "code",
+        header: "Referral code",
+        meta: { settingsLabel: "Referral code" },
+        size: 168,
+        cell: (info) => (
+          <Badge variant="secondary" className="font-mono text-[length:var(--font-size)] tracking-wide">
+            {info.getValue()}
+          </Badge>
+        ),
+      }),
+      sharedColumnHelper.accessor("sharedOn", {
+        id: "sharedOn",
+        header: "Shared on",
+        meta: { settingsLabel: "Shared on" },
+        size: 160,
+        enableSorting: true,
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+    ],
+    [],
+  );
+
+  const leadColumns = useMemo(
+    () => [
+      leadColumnHelper.display({
+        id: "lead",
+        header: "Lead",
+        meta: { settingsLabel: "Lead" },
+        size: 208,
+        cell: ({ row }) => {
+          const r = row.original;
+          return (
+            <div className="flex flex-col gap-0.5">
+              <span className="flex items-center gap-1 font-medium text-foreground">
+                {r.name}
+                <Gift size={11} className="text-[#1E44CC] dark:text-[#2952E3]" strokeWidth={1.6} absoluteStrokeWidth />
+              </span>
+              <span className="flex items-center gap-1 text-muted-foreground">
+                <MapPin size={10} strokeWidth={1.6} absoluteStrokeWidth />
+                {r.location}
+              </span>
+            </div>
+          );
+        },
+      }),
+      leadColumnHelper.accessor("referredBy", {
+        id: "referredBy",
+        header: "Referred by",
+        meta: { settingsLabel: "Referred by" },
+        size: 160,
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+      leadColumnHelper.accessor("code", {
+        id: "code",
+        header: "Referral code",
+        meta: { settingsLabel: "Referral code" },
+        size: 168,
+        cell: (info) => (
+          <Badge variant="secondary" className="font-mono text-[length:var(--font-size)] tracking-wide">
+            {info.getValue()}
+          </Badge>
+        ),
+      }),
+      leadColumnHelper.accessor("createdOn", {
+        id: "createdOn",
+        header: "Created on",
+        meta: { settingsLabel: "Created on" },
+        size: 144,
+        enableSorting: true,
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+      leadColumnHelper.display({
+        id: "thanks",
+        header: "Thanks note",
+        meta: { settingsLabel: "Thanks note" },
+        size: 128,
+        cell: ({ row }) => {
+          const r = row.original;
+          return r.thanksSent ? (
+            <span className="flex items-center gap-1 font-medium text-green-600 dark:text-green-400">
+              <CheckCircle2 size={13} strokeWidth={1.6} absoluteStrokeWidth />
+              Sent
+            </span>
+          ) : (
+            <button
+              type="button"
+              className="flex items-center gap-1 font-medium text-[#1E44CC] hover:underline dark:text-[#2952E3]"
+              onClick={(e) => {
+                e.stopPropagation();
+                openLead(r);
+              }}
+            >
+              <Send size={11} strokeWidth={1.6} absoluteStrokeWidth />
+              Send note
+            </button>
+          );
+        },
+      }),
+      leadColumnHelper.accessor("response", {
+        id: "response",
+        header: "Response",
+        meta: { settingsLabel: "Response" },
+        size: 200,
+        cell: (info) => {
+          const v = info.getValue();
+          return (
+            <span className="block max-w-[200px] truncate text-muted-foreground">
+              {v || <span className="text-muted-foreground/40">—</span>}
+            </span>
+          );
+        },
+      }),
+    ],
+    [openLead],
+  );
+
+  const referralsEmpty = (message: string) => (
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <p className="text-sm text-muted-foreground">{message}</p>
+    </div>
+  );
+
+  const referralsSubline = `${STATS[0].count.toLocaleString()} referrals sent · ${STATS[1].count.toLocaleString()} shared · ${STATS[2].count.toLocaleString()} leads`;
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* ─── Top action bar ─── */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
-        <div className="relative w-[260px]">
-          <Search
-            size={14} strokeWidth={1.6} absoluteStrokeWidth
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-          />
-          <Input
-            placeholder="Search referrals…"
-            className="pl-8 h-8 text-sm bg-muted/40 border-transparent focus:border-border focus:bg-background"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5 h-8">
-            <Download size={13} strokeWidth={1.6} absoluteStrokeWidth />
-            Export
-          </Button>
-          <Button size="sm" className="gap-1.5 h-8 bg-[#1E44CC] hover:bg-[#1a3aad] text-white">
-            <UserPlus size={13} strokeWidth={1.6} absoluteStrokeWidth />
-            Invite customers
-          </Button>
-        </div>
-      </div>
+      <MainCanvasViewHeader
+        title="Referrals"
+        description={referralsSubline}
+        actions={
+          <div className="flex items-center gap-2">
+            {searchOpen ? (
+              <div className="relative h-8 w-[240px] min-w-0 sm:w-[260px]">
+                <Search
+                  className="pointer-events-none absolute left-2 top-1/2 size-[14px] -translate-y-1/2 text-muted-foreground"
+                  strokeWidth={1.6}
+                  absoluteStrokeWidth
+                  aria-hidden
+                />
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onBlur={() => {
+                    if (search === "") setSearchOpen(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setSearch("");
+                      setSearchOpen(false);
+                    }
+                  }}
+                  autoFocus
+                  placeholder="Search referrals"
+                  className="h-full w-full rounded-lg border border-border bg-background py-0 pr-2 pl-8 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary"
+                  aria-label="Search referrals"
+                />
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="size-8 shrink-0"
+                aria-label="Open search"
+                title="Search referrals"
+                onClick={() => setSearchOpen(true)}
+              >
+                <Search className="size-[14px] text-foreground" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+              </Button>
+            )}
+          </div>
+        }
+      />
 
       {/* ─── Scrollable content ─── */}
       <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-6">
@@ -412,31 +501,43 @@ export function ReferralsView() {
           {STATS.map((card) => <StatCard key={card.label} card={card} />)}
         </div>
 
-        {/* Tabs + table */}
-        <Tabs value={tab} onValueChange={setTab} className="flex flex-col gap-0">
-          <TabsList className="w-fit h-9 bg-muted/50 rounded-lg mb-4">
-            <TabsTrigger value="sent"   className="text-[13px] px-4">Sent</TabsTrigger>
-            <TabsTrigger value="shared" className="text-[13px] px-4">Shared</TabsTrigger>
-            <TabsTrigger value="leads"  className="text-[13px] px-4">
-              Leads
-              <Badge className="ml-1.5 h-4 px-1.5 text-[10px] bg-[#1E44CC] text-white rounded-full">
-                {LEAD_ROWS.length}
-              </Badge>
-            </TabsTrigger>
-          </TabsList>
-
-          <div className="rounded-xl border border-border overflow-hidden bg-card">
-            <TabsContent value="sent"   className="mt-0 p-0">
-              <SentTable rows={filteredSent} />
-            </TabsContent>
-            <TabsContent value="shared" className="mt-0 p-0">
-              <SharedTable rows={filteredShared} />
-            </TabsContent>
-            <TabsContent value="leads"  className="mt-0 p-0">
-              <LeadsTable rows={filteredLeads} onViewDetails={setSelectedLead} />
-            </TabsContent>
-          </div>
-        </Tabs>
+        {/* Table (section from L2) */}
+        <div className="min-w-0 overflow-hidden">
+          {activeSection === "sent" ? (
+            <AppDataTable<SentRow>
+              tableId="referrals.sent"
+              data={filteredSent}
+              columns={sentColumns}
+              getRowId={(r) => r.id}
+              emptyState={referralsEmpty("No referrals match your search.")}
+              columnSheetTitle="Sent columns"
+              className="min-w-0 px-0"
+            />
+          ) : null}
+          {activeSection === "shared" ? (
+            <AppDataTable<SharedRow>
+              tableId="referrals.shared"
+              data={filteredShared}
+              columns={sharedColumns}
+              getRowId={(r) => r.id}
+              emptyState={referralsEmpty("No referrals match your search.")}
+              columnSheetTitle="Shared columns"
+              className="min-w-0 px-0"
+            />
+          ) : null}
+          {activeSection === "leads" ? (
+            <AppDataTable<LeadRow>
+              tableId="referrals.leads"
+              data={filteredLeads}
+              columns={leadColumns}
+              getRowId={(r) => r.id}
+              onRowClick={openLead}
+              emptyState={referralsEmpty("No leads match your search.")}
+              columnSheetTitle="Lead columns"
+              className="min-w-0 px-0"
+            />
+          ) : null}
+        </div>
       </div>
 
       {/* Lead detail sheet */}

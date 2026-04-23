@@ -15,6 +15,14 @@ const meta: Meta<typeof Table> = {
   title: "UI/Table",
   component: Table,
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "Static table primitives from `table.v1.tsx`. For **interactive product data grids** (column resize, sort, column settings sheet, optional persistence), use **AppDataTable** — see **UI/AppDataTable** in Storybook.",
+      },
+    },
+  },
 };
 
 export default meta;

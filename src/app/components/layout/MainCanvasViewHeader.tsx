@@ -12,7 +12,7 @@ export interface MainCanvasViewHeaderProps {
   title: React.ReactNode;
   description?: React.ReactNode;
   actions?: React.ReactNode;
-  /** Merged onto the outer band (e.g. `border-b border-border`). */
+  /** Merged onto the outer band — avoid `border-b` here; the title row stays open into the body (use inner cards/toolbars for dividers). */
   className?: string;
   /** Default `h1` for full-width main canvas bodies. */
   titleAs?: "h1" | "h2";

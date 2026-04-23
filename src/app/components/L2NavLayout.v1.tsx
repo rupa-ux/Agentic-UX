@@ -1,6 +1,13 @@
 /**
  * L2NavLayout — shared layout primitive for ALL L2 navigation panels.
  *
+ * NAVIGATION “STATE” COLOURS (see Design System → Tokens → Navigation selection):
+ *   • L1 rail / expanded Birdeye nav — selected + hover pill: `bg-app-shell-l1-nav-highlight`; pressed:
+ *     `bg-app-shell-l1-nav-pressed`; selected icon/label: `text-primary` (`Sidebar.v2` `IconStrip`).
+ *   • L2 tree child (neutral selection) — `CHILD_ACTIVE` / `--app-shell-l2-row-active` + `text-foreground`.
+ *   • L2 flat accent rows (tabs, overflow flyout, profile pickers) — `CHILD_FLAT_ACCENT_ACTIVE`: `bg-primary/10` +
+ *     `text-primary` (+ optional `ring-primary/15`).
+ *
  * APP SHELL — L2 COLUMN (required for new products):
  *   The exported `PANEL` class string includes `rounded-tl-lg` (8px top-left) and `border-r` (1px seam vs
  *   main). The outer chrome frame is `APP_SHELL_BELOW_TOPBAR_CARD_CLASS` (`border-app-shell-border` / `--app-shell-border`).
@@ -31,6 +38,8 @@
 import { useState, type ReactNode } from "react";
 import { usePersistedState } from "@/app/hooks/usePersistedState";
 import { ChevronUp, ChevronDown, ExternalLink, Plus } from "lucide-react";
+import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
+import { cn } from "@/app/components/ui/utils";
 
 /* ─────────────────────────────────────────────────────
    Design tokens — edit here to update every L2 panel
@@ -38,12 +47,13 @@ import { ChevronUp, ChevronDown, ExternalLink, Plus } from "lucide-react";
 /** L2 column background only (matches `PANEL`) — use behind main-content lists that mirror L2 selection. */
 export const L2_PANEL_SURFACE = "bg-app-shell-l2-surface";
 
+/** Default column copy is muted; bump to `text-foreground` on section headers, header/footer rows, and `CHILD_ACTIVE`. */
 export const PANEL =
-  `w-[220px] ${L2_PANEL_SURFACE} border-r border-app-shell-border rounded-tl-lg rounded-bl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300`;
+  `w-[220px] ${L2_PANEL_SURFACE} border-r border-app-shell-border rounded-tl-lg rounded-bl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300 text-muted-foreground`;
 
 /** Inbox L2 only — no `border-r`; `InboxView` draws matching left/right list borders (`#eaeaea` / dark `#333a47`) as one seam. */
 export const PANEL_INBOX_L2 =
-  `w-[220px] ${L2_PANEL_SURFACE} rounded-tl-lg rounded-bl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300`;
+  `w-[220px] ${L2_PANEL_SURFACE} rounded-tl-lg rounded-bl-lg flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-300 text-muted-foreground`;
 
 // Shared row geometry — same for headers, children, footer
 export const ROW =
@@ -80,8 +90,8 @@ export const L2_HEADER_PLUS_WRAPPER_GREEN =
 export const L2_HEADER_PLUS_GLYPH_GREEN =
   "size-[13.5px] shrink-0 text-[#1b5e20] dark:text-[#a5d6a7] pointer-events-none";
 
-/** Lucide `Plus` stroke in L2 header circles — slightly heavier than `L1_STRIP_ICON_STROKE_PX` for legibility. */
-export const L2_HEADER_PLUS_STROKE_PX = 2.25;
+/** Lucide `Plus` stroke in L2 header circles — matches L1 rail / product outline icons (`L1_STRIP_ICON_STROKE_PX`). */
+export const L2_HEADER_PLUS_STROKE_PX = L1_STRIP_ICON_STROKE_PX;
 
 /* ─────────────────────────────────────────────────────
    Types
@@ -328,6 +338,11 @@ export function L2NavLayout({
     </>
   );
 
+  const navScrollClass = cn(
+    "min-h-0 flex-1 overflow-y-auto px-[8px] pb-4",
+    footerSlot && "border-b border-app-shell-border",
+  );
+
   return (
     <div className={PANEL} data-no-print={noprint}>
       {stickyNavHeader ? (
@@ -338,10 +353,10 @@ export function L2NavLayout({
             {titleBlock}
             {headerActionBlock}
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto px-[8px] pt-0 pb-4">{navScrollBody}</div>
+          <div className={cn(navScrollClass, "pt-0")}>{navScrollBody}</div>
         </>
       ) : (
-        <div className="min-h-0 flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
+        <div className={cn(navScrollClass, "pt-3")}>
           {titleBlock}
           {headerActionBlock}
           {navScrollBody}
@@ -349,7 +364,7 @@ export function L2NavLayout({
       )}
 
       {footerSlot ? (
-        <div className="shrink-0 border-t border-app-shell-border px-[8px] pt-2 pb-4">
+        <div className="shrink-0 px-[8px] pt-2 pb-4">
           {footerSlot}
         </div>
       ) : null}

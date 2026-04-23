@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { createColumnHelper } from "@tanstack/react-table";
 import {
   Search, MoreHorizontal, Mail, Smartphone, BarChart2, Edit3,
   Copy, Trash2, ChevronDown, Users, Send, MousePointerClick,
@@ -9,9 +10,7 @@ import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { Input } from "@/app/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/app/components/ui/tabs";
-import {
-  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
-} from "@/app/components/ui/table";
+import { AppDataTable } from "@/app/components/ui/AppDataTable";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/app/components/ui/sheet";
@@ -294,11 +293,11 @@ function MediumBadge({ medium }: { medium: CampaignMedium }) {
   if (medium === "both") {
     return (
       <div className="flex items-center gap-1">
-        <Badge variant="outline" className="text-[10px] gap-1 bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800/40 dark:text-slate-400">
+        <Badge variant="outline" className="gap-1 bg-slate-50 text-[length:var(--font-size)] text-slate-600 border-slate-200 dark:bg-slate-800/40 dark:text-slate-400">
           <Mail size={9} strokeWidth={1.6} absoluteStrokeWidth />
           Email
         </Badge>
-        <Badge variant="outline" className="text-[10px] gap-1 bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800/40 dark:text-slate-400">
+        <Badge variant="outline" className="gap-1 bg-slate-50 text-[length:var(--font-size)] text-slate-600 border-slate-200 dark:bg-slate-800/40 dark:text-slate-400">
           <Smartphone size={9} strokeWidth={1.6} absoluteStrokeWidth />
           SMS
         </Badge>
@@ -306,7 +305,7 @@ function MediumBadge({ medium }: { medium: CampaignMedium }) {
     );
   }
   return (
-    <Badge variant="outline" className="text-[10px] gap-1 bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800/40 dark:text-slate-400">
+    <Badge variant="outline" className="gap-1 bg-slate-50 text-[length:var(--font-size)] text-slate-600 border-slate-200 dark:bg-slate-800/40 dark:text-slate-400">
       <Icon size={9} strokeWidth={1.6} absoluteStrokeWidth />
       {cfg.label}
     </Badge>
@@ -533,6 +532,8 @@ function CampaignRowActions({
   );
 }
 
+const campaignColumnHelper = createColumnHelper<Campaign>();
+
 /* ─── Campaign table ─── */
 function CampaignTable({
   campaigns,
@@ -541,123 +542,166 @@ function CampaignTable({
   campaigns: Campaign[];
   onRowClick: (c: Campaign) => void;
 }) {
-  if (campaigns.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <Send size={28} strokeWidth={1.4} absoluteStrokeWidth className="text-muted-foreground mb-3" />
-        <p className="text-sm font-medium text-foreground">No campaigns found</p>
-        <p className="text-xs text-muted-foreground mt-1">Try adjusting your search or filters.</p>
-      </div>
-    );
-  }
+  const emptyState = (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <Send size={28} strokeWidth={1.4} absoluteStrokeWidth className="text-muted-foreground mb-3" />
+      <p className="text-sm font-medium text-foreground">No campaigns found</p>
+      <p className="text-xs text-muted-foreground mt-1">Try adjusting your search or filters.</p>
+    </div>
+  );
+
+  const columns = useMemo(
+    () => [
+      campaignColumnHelper.accessor("name", {
+        id: "name",
+        header: "Campaign name",
+        meta: { settingsLabel: "Campaign name" },
+        size: 280,
+        minSize: 200,
+        enableSorting: true,
+        cell: (info) => {
+          const campaign = info.row.original;
+          return (
+            <div className="flex flex-col gap-1">
+              <p className="font-medium text-foreground">{campaign.name}</p>
+              <MediumBadge medium={campaign.medium} />
+            </div>
+          );
+        },
+      }),
+      campaignColumnHelper.accessor("type", {
+        id: "type",
+        header: "Type",
+        meta: { settingsLabel: "Type" },
+        size: 150,
+        enableSorting: true,
+        cell: (info) => {
+          const typeCfg = TYPE_CONFIG[info.getValue()];
+          return (
+            <Badge variant="outline" className={`text-[length:var(--font-size)] ${typeCfg.className}`}>
+              {typeCfg.label}
+            </Badge>
+          );
+        },
+      }),
+      campaignColumnHelper.accessor("status", {
+        id: "status",
+        header: "Status",
+        meta: { settingsLabel: "Status" },
+        size: 120,
+        enableSorting: true,
+        cell: (info) => {
+          const statusCfg = STATUS_CONFIG[info.getValue()];
+          return (
+            <Badge variant="outline" className={`gap-1 text-[length:var(--font-size)] ${statusCfg.className}`}>
+              <statusCfg.icon size={10} strokeWidth={1.6} absoluteStrokeWidth />
+              {statusCfg.label}
+            </Badge>
+          );
+        },
+      }),
+      campaignColumnHelper.accessor("contacts", {
+        id: "contacts",
+        header: "Contacts",
+        meta: { settingsLabel: "Contacts" },
+        size: 96,
+        enableSorting: true,
+        cell: (info) => {
+          const n = info.getValue();
+          return (
+            <span className="block text-left text-muted-foreground tabular-nums">
+              {n > 0 ? n.toLocaleString() : "—"}
+            </span>
+          );
+        },
+      }),
+      campaignColumnHelper.accessor("opened", {
+        id: "opened",
+        header: "Opened",
+        meta: { settingsLabel: "Opened" },
+        size: 110,
+        enableSorting: true,
+        cell: (info) => {
+          const campaign = info.row.original;
+          return campaign.opened > 0 ? (
+            <div className="flex flex-col items-start gap-0.5">
+              <span className="font-medium text-foreground tabular-nums">{campaign.opened.toLocaleString()}</span>
+              <span className="text-muted-foreground tabular-nums">{campaign.openedPct}%</span>
+            </div>
+          ) : (
+            <span className="block text-left text-muted-foreground">—</span>
+          );
+        },
+      }),
+      campaignColumnHelper.accessor("clicked", {
+        id: "clicked",
+        header: "Clicked",
+        meta: { settingsLabel: "Clicked" },
+        size: 110,
+        enableSorting: true,
+        cell: (info) => {
+          const campaign = info.row.original;
+          return campaign.clicked > 0 ? (
+            <div className="flex flex-col items-start gap-0.5">
+              <span className="font-medium text-foreground tabular-nums">{campaign.clicked.toLocaleString()}</span>
+              <span className="text-muted-foreground tabular-nums">{campaign.clickedPct}%</span>
+            </div>
+          ) : (
+            <span className="block text-left text-muted-foreground">—</span>
+          );
+        },
+      }),
+      campaignColumnHelper.accessor("lastRun", {
+        id: "lastRun",
+        header: "Last run",
+        meta: { settingsLabel: "Last run" },
+        size: 128,
+        enableSorting: true,
+        cell: (info) => (
+          <span className="whitespace-nowrap text-muted-foreground">{info.getValue()}</span>
+        ),
+      }),
+      campaignColumnHelper.accessor("createdBy", {
+        id: "createdBy",
+        header: "Created by",
+        meta: { settingsLabel: "Created by" },
+        size: 140,
+        enableSorting: true,
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+      campaignColumnHelper.display({
+        id: "actions",
+        header: "",
+        meta: { settingsLabel: "Actions" },
+        size: 52,
+        minSize: 48,
+        maxSize: 64,
+        enableResizing: false,
+        enableHiding: false,
+        cell: (info) => (
+          <div className="text-left">
+            <CampaignRowActions
+              campaign={info.row.original}
+              onViewReport={() => onRowClick(info.row.original)}
+            />
+          </div>
+        ),
+      }),
+    ],
+    [onRowClick],
+  );
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow className="hover:bg-transparent">
-          <TableHead className="text-xs font-medium">Campaign name</TableHead>
-          <TableHead className="text-xs font-medium w-[150px]">Type</TableHead>
-          <TableHead className="text-xs font-medium w-[110px]">Status</TableHead>
-          <TableHead className="text-xs font-medium w-[90px] text-right">Contacts</TableHead>
-          <TableHead className="text-xs font-medium w-[110px] text-right">Opened</TableHead>
-          <TableHead className="text-xs font-medium w-[110px] text-right">Clicked</TableHead>
-          <TableHead className="text-xs font-medium w-[120px]">Last run</TableHead>
-          <TableHead className="text-xs font-medium w-[120px]">Created by</TableHead>
-          <TableHead className="text-xs font-medium w-[48px]" />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {campaigns.map((campaign) => {
-          const typeCfg   = TYPE_CONFIG[campaign.type];
-          const statusCfg = STATUS_CONFIG[campaign.status];
-          return (
-            <TableRow
-              key={campaign.id}
-              className="cursor-pointer"
-              onClick={() => onRowClick(campaign)}
-            >
-              {/* Campaign name */}
-              <TableCell className="py-3">
-                <div className="flex flex-col gap-1">
-                  <p className="text-sm font-medium text-foreground">{campaign.name}</p>
-                  <MediumBadge medium={campaign.medium} />
-                </div>
-              </TableCell>
-
-              {/* Type */}
-              <TableCell className="py-3">
-                <Badge variant="outline" className={`text-xs ${typeCfg.className}`}>
-                  {typeCfg.label}
-                </Badge>
-              </TableCell>
-
-              {/* Status */}
-              <TableCell className="py-3">
-                <Badge variant="outline" className={`text-xs gap-1 ${statusCfg.className}`}>
-                  <statusCfg.icon size={10} strokeWidth={1.6} absoluteStrokeWidth />
-                  {statusCfg.label}
-                </Badge>
-              </TableCell>
-
-              {/* Contacts */}
-              <TableCell className="py-3 text-xs text-muted-foreground text-right tabular-nums">
-                {campaign.contacts > 0 ? campaign.contacts.toLocaleString() : "—"}
-              </TableCell>
-
-              {/* Opened */}
-              <TableCell className="py-3 text-right">
-                {campaign.opened > 0 ? (
-                  <div className="flex flex-col items-end">
-                    <span className="text-xs text-foreground tabular-nums">
-                      {campaign.opened.toLocaleString()}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground tabular-nums">
-                      {campaign.openedPct}%
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-xs text-muted-foreground">—</span>
-                )}
-              </TableCell>
-
-              {/* Clicked */}
-              <TableCell className="py-3 text-right">
-                {campaign.clicked > 0 ? (
-                  <div className="flex flex-col items-end">
-                    <span className="text-xs text-foreground tabular-nums">
-                      {campaign.clicked.toLocaleString()}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground tabular-nums">
-                      {campaign.clickedPct}%
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-xs text-muted-foreground">—</span>
-                )}
-              </TableCell>
-
-              {/* Last run */}
-              <TableCell className="py-3 text-xs text-muted-foreground whitespace-nowrap">
-                {campaign.lastRun}
-              </TableCell>
-
-              {/* Created by */}
-              <TableCell className="py-3 text-xs text-muted-foreground">
-                {campaign.createdBy}
-              </TableCell>
-
-              {/* Actions */}
-              <TableCell className="py-3" onClick={(e) => e.stopPropagation()}>
-                <CampaignRowActions
-                  campaign={campaign}
-                  onViewReport={() => onRowClick(campaign)}
-                />
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+    <AppDataTable<Campaign>
+      tableId="campaigns.directory"
+      data={campaigns}
+      columns={columns}
+      onRowClick={onRowClick}
+      getRowId={(row) => row.id}
+      emptyState={emptyState}
+      columnSheetTitle="Campaign columns"
+      className="min-w-0 px-0"
+    />
   );
 }
 
@@ -834,7 +878,7 @@ export function CampaignsView() {
 
           {/* ── Campaigns tab ── */}
           <TabsContent value="campaigns" className="flex-1 min-h-0 mt-4 mx-6 mb-6">
-            <div className="h-full bg-card border border-border rounded-xl overflow-hidden flex flex-col">
+            <div className="flex h-full flex-col overflow-hidden border-0 bg-background">
               <CampaignToolbar
                 search={search}
                 onSearch={setSearch}
@@ -869,7 +913,7 @@ export function CampaignsView() {
 
           {/* ── Automations tab ── */}
           <TabsContent value="automations" className="flex-1 min-h-0 mt-4 mx-6 mb-6">
-            <div className="h-full bg-card border border-border rounded-xl overflow-hidden flex flex-col">
+            <div className="flex h-full flex-col overflow-hidden border-0 bg-background">
               <CampaignToolbar
                 search={search}
                 onSearch={setSearch}

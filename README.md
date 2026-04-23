@@ -11,6 +11,8 @@ Original Figma file: https://www.figma.com/design/khkMRKdBSWf0LF0NqAvoEe/Prototy
 
 **This repository is the single source of truth** for Storybook in **Birdeye v2**: `.storybook/`, stories under `src/stories/`, and the documented UI. Host the canonical copy in **one** org or public GitHub repository so everyone clones the same remote. You do not need a separate “Storybook-only” repo unless your team splits the app and design system later—this repo is already the place to **pull, install, and run** Storybook.
 
+**Agents / Cursor:** For in-app UI, follow the **Aero DS** skill at [`.claude/skills/aero-ds/SKILL.md`](.claude/skills/aero-ds/SKILL.md). Implement **Storybook-first** (especially for **data tables**: `AppDataTable` in [`src/app/components/ui/AppDataTable.tsx`](src/app/components/ui/AppDataTable.tsx), verified under **UI/AppDataTable** in Storybook).
+
 **Canonical remote:** `https://github.com/balajik-cmyk/birdeyev2.git` (HTTPS) or `git@github.com:balajik-cmyk/birdeyev2.git` (SSH, using your usual GitHub host alias if you use one).
 
 **Private forks:** If someone works from a fork under their own account, add the canonical repo as **`upstream`** and pull from it to stay current:

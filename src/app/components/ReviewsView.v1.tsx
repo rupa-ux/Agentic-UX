@@ -15,6 +15,7 @@ import {
   List,
   Columns2,
 } from "lucide-react";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { Button } from "@/app/components/ui/button";
 import { ManusToolbarIconHit } from "@/app/components/ManusToolbarIconHit";
 import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
@@ -947,22 +948,21 @@ export function ReviewsViewList({
     <div className="flex-1 flex min-h-0 overflow-hidden bg-white dark:bg-[#1e2229] transition-colors duration-300">
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 shrink-0">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-[17px] text-[#212121] dark:text-[#e4e4e4]">All reviews</h1>
-            <div className="flex items-center gap-1 text-[12px] text-[#555] dark:text-[#8b92a5]">
+        <MainCanvasViewHeader
+          title="All reviews"
+          description={
+            <span className="inline-flex flex-wrap items-center gap-1">
               <span>{mockReviews.length} reviews</span>
-              <div className="size-[3px] rounded-full bg-[#555] dark:bg-[#8b92a5] mx-0.5" />
+              <span className="mx-0.5 size-[3px] shrink-0 rounded-full bg-muted-foreground/70" aria-hidden />
               <span>4.1</span>
-              <div className="flex items-center">
+              <span className="inline-flex items-center">
                 {[...Array(5)].map((_, i) => {
                   const filled = i < 4;
                   return (
                     <Star
                       key={i}
                       aria-hidden
-                      className={`w-[10px] h-[10px] ${
+                      className={`h-2.5 w-2.5 ${
                         filled ? "fill-[#D4A017] stroke-[#D4A017]" : "fill-none stroke-[#D4A017]"
                       }`}
                       strokeWidth={filled ? 0 : L1_STRIP_ICON_STROKE_PX}
@@ -970,10 +970,10 @@ export function ReviewsViewList({
                     />
                   );
                 })}
-              </div>
-            </div>
-          </div>
-
+              </span>
+            </span>
+          }
+          actions={
           <div className="flex items-center gap-2">
             {searchOpen ? (
               <div className="relative h-[var(--button-height)] w-[240px]">
@@ -1051,7 +1051,8 @@ export function ReviewsViewList({
               onOpenChange={setFilterPanelOpen}
             />
           </div>
-        </div>
+          }
+        />
 
         {/* Reviews feed */}
         <div className="flex-1 overflow-y-auto px-5 pb-6">

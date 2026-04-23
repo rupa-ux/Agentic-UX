@@ -74,6 +74,18 @@ const appShellColors = [
     note: "L1 strip + TopBar (light matches gutter)",
   },
   {
+    name: "App shell L1 nav highlight",
+    token: "--app-shell-l1-nav-highlight",
+    cls: "bg-app-shell-l1-nav-highlight border border-border",
+    note: "L1 rail + expanded row pills — selected + hover (`IconStrip`)",
+  },
+  {
+    name: "App shell L1 nav pressed",
+    token: "--app-shell-l1-nav-pressed",
+    cls: "bg-app-shell-l1-nav-pressed border border-border",
+    note: "L1 nav pills while pointer down",
+  },
+  {
     name: "App shell L2 surface",
     token: "--app-shell-l2-surface",
     cls: "bg-app-shell-l2-surface border border-border",
@@ -108,6 +120,36 @@ const appShellColors = [
     token: "--app-shell-l2-content-muted",
     cls: "bg-app-shell-l2-content-muted border border-border",
     note: "Main-column muted band (`L2_CONTENT_MUTED_BAND`)",
+  },
+];
+
+const navigationSelectionRows: {
+  name: string;
+  token: string;
+  cls: string;
+  sampleTextCls: string;
+  note: string;
+}[] = [
+  {
+    name: "L1 selected / hover wash",
+    token: "--app-shell-l1-nav-highlight",
+    cls: "bg-app-shell-l1-nav-highlight border border-border",
+    sampleTextCls: "text-primary",
+    note: "Collapsed L1 rail + expanded L1 rows — same wash for selected and hover; pressed uses `--app-shell-l1-nav-pressed` (`Sidebar.v2`).",
+  },
+  {
+    name: "L2 neutral selected row",
+    token: "--app-shell-l2-row-active",
+    cls: "bg-app-shell-l2-row-active border border-border",
+    sampleTextCls: "text-foreground",
+    note: "Tree child selection (`CHILD_ACTIVE` in `L2NavLayout.v1.tsx`). Text stays `text-foreground`.",
+  },
+  {
+    name: "Primary-tint selected row",
+    token: "--primary @ 10%",
+    cls: "bg-primary/10 border border-primary/20",
+    sampleTextCls: "text-primary",
+    note: "Accent lists: flat L2 tabs (`CHILD_FLAT_ACCENT_ACTIVE`), overflow menu, profile rows. Text/icon: `text-primary`.",
   },
 ];
 
@@ -171,6 +213,33 @@ export const Colors: Story = {
                 <p className="text-sm text-foreground">{name}</p>
                 <p className="font-mono text-xs text-muted-foreground">{token}</p>
                 {note ? <p className="text-[11px] text-muted-foreground">{note}</p> : null}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <SectionLabel>Navigation selection</SectionLabel>
+        <p className="mb-4 max-w-3xl text-sm text-muted-foreground">
+          Use these three patterns: L1 rail + expanded Birdeye rows use <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[11px]">--app-shell-l1-nav-highlight</code>{" "}
+          (visible blue-grey on the rail; not <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[11px]">--sidebar-accent</code>); L2 tree rows use app-shell L2 active; compact menus use{" "}
+          <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[11px]">primary/10</code>. See{" "}
+          <code className="rounded-md bg-muted px-2 py-0.5 font-mono text-xs">L2NavLayout.v1.tsx</code> and{" "}
+          <code className="rounded-md bg-muted px-2 py-0.5 font-mono text-xs">Sidebar.v2.tsx</code>.
+        </p>
+        <div className="grid grid-cols-3 gap-4">
+          {navigationSelectionRows.map(({ name, token, cls, sampleTextCls, note }) => (
+            <div key={token} className="flex flex-col gap-2">
+              <div
+                className={`flex h-14 w-full items-center rounded-lg px-4 text-sm font-medium ${sampleTextCls} ${cls}`}
+              >
+                Sample
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <p className="text-sm text-foreground">{name}</p>
+                <p className="font-mono text-xs text-muted-foreground">{token}</p>
+                <p className="text-[11px] text-muted-foreground">{note}</p>
               </div>
             </div>
           ))}

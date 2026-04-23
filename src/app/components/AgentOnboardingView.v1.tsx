@@ -4,7 +4,9 @@ import {
   CheckCircle2, ChevronRight, ChevronLeft, Sparkles, Play,
   Star, Zap, ArrowRight, X, Bot,
 } from "lucide-react";
+import { MAIN_VIEW_PRIMARY_HEADING_CLASS } from "@/app/components/layout/mainViewTitleClasses";
 import { Button } from "@/app/components/ui/button";
+import { cn } from "@/app/components/ui/utils";
 import { L2_PANEL_SURFACE } from "@/app/components/L2NavLayout.v1";
 
 /* ═══════════════════════════════════════════
@@ -215,7 +217,7 @@ function WelcomeStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
         </div>
 
         {/* Heading */}
-        <h1 className="text-[24px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.5px] text-center mb-2" style={{ fontWeight: 400 }}>
+        <h1 className={cn(MAIN_VIEW_PRIMARY_HEADING_CLASS, "mb-2 text-center")}>
           Meet your AI agents
         </h1>
         <p className="text-[15px] text-[#888] dark:text-[#8b92a5] text-center mb-8 mx-auto max-w-[366px]" style={{ fontWeight: 300 }}>
@@ -287,7 +289,7 @@ function ChooseStep({
   return (
     <div className="flex-1 flex flex-col items-center overflow-y-auto px-6 py-8">
       <div className="max-w-[640px] w-full">
-        <h1 className="text-[22px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.44px] mb-1" style={{ fontWeight: 400 }}>
+        <h1 className={cn(MAIN_VIEW_PRIMARY_HEADING_CLASS, "mb-1")}>
           What would you like AI to help with?
         </h1>
         <p className="text-[14px] text-[#888] dark:text-[#8b92a5] mb-6" style={{ fontWeight: 300 }}>
@@ -387,7 +389,7 @@ function ContextStep({
   return (
     <div className="flex-1 flex flex-col items-center overflow-y-auto px-6 py-8">
       <div className="max-w-[580px] w-full">
-        <h1 className="text-[22px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.44px] mb-1" style={{ fontWeight: 400 }}>
+        <h1 className={cn(MAIN_VIEW_PRIMARY_HEADING_CLASS, "mb-1")}>
           A few quick questions
         </h1>
         <p className="text-[14px] text-[#888] dark:text-[#8b92a5] mb-6" style={{ fontWeight: 300 }}>
@@ -492,7 +494,7 @@ function RecommendStep({
   return (
     <div className="flex-1 flex flex-col items-center overflow-y-auto px-6 py-8">
       <div className="max-w-[640px] w-full">
-        <h1 className="text-[22px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.44px] mb-1" style={{ fontWeight: 400 }}>
+        <h1 className={cn(MAIN_VIEW_PRIMARY_HEADING_CLASS, "mb-1")}>
           We've prepared these agents for you
         </h1>
         <p className="text-[14px] text-[#888] dark:text-[#8b92a5] mb-6" style={{ fontWeight: 300 }}>
@@ -620,7 +622,7 @@ function TestStep({
   return (
     <div className="flex-1 flex flex-col items-center overflow-y-auto px-6 py-8">
       <div className="max-w-[580px] w-full">
-        <h1 className="text-[22px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.44px] mb-1" style={{ fontWeight: 400 }}>
+        <h1 className={cn(MAIN_VIEW_PRIMARY_HEADING_CLASS, "mb-1")}>
           Test your agents
         </h1>
         <p className="text-[14px] text-[#888] dark:text-[#8b92a5] mb-6" style={{ fontWeight: 300 }}>
@@ -780,7 +782,7 @@ function DoneStep({
           <CheckCircle2 className="w-8 h-8 text-[#4caf50]" />
         </div>
 
-        <h1 className="text-[24px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.5px] mb-2" style={{ fontWeight: 400 }}>
+        <h1 className={cn(MAIN_VIEW_PRIMARY_HEADING_CLASS, "mb-2 text-center")}>
           Your AI team is ready
         </h1>
         <p className="text-[14px] text-[#888] dark:text-[#8b92a5] mb-8" style={{ fontWeight: 300 }}>

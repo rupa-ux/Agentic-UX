@@ -6,6 +6,7 @@ import { AICustomizePanel } from "./AICustomizePanel";
 import { ScheduleModal } from "./ScheduleModal";
 import { type DraftReport } from "./draftStore";
 import svgPaths from "../../imports/svg-mh0ycv9qll";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { cn } from "@/lib/utils";
 import {
   FLOATING_PANEL_LIST_PADDING_CLASSNAME,
@@ -476,9 +477,10 @@ export function Dashboard({ aiPanelOpen, onAiPanelChange, editingDraft }: { aiPa
 
   return (
     <div className="flex-1 bg-white dark:bg-[#13161b] overflow-auto flex flex-col transition-colors duration-300">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-[#13161b] px-8 h-[76px] flex items-center justify-between shrink-0 transition-colors duration-300">
-        <h1 className="text-[#212121] dark:text-[#e4e4e4] tracking-[-0.26px] text-[18px]" style={{ fontWeight: 400 }}>Profile performance</h1>
+      <div className="sticky top-0 z-10 shrink-0 bg-white transition-colors duration-300 dark:bg-[#13161b]">
+        <MainCanvasViewHeader
+          title="Profile performance"
+          actions={
         <div className="flex items-center gap-3">
           <div className="relative" ref={shareRef}>
             <button
@@ -525,6 +527,8 @@ export function Dashboard({ aiPanelOpen, onAiPanelChange, editingDraft }: { aiPa
             <Filter className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" />
           </button>
         </div>
+          }
+        />
       </div>
 
       {/* Content */}

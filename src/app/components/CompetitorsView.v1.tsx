@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { createColumnHelper } from "@tanstack/react-table";
 import {
   BarChart,
   Bar,
@@ -21,16 +22,11 @@ import {
   Building2,
   Globe,
 } from "lucide-react";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/app/components/ui/table";
+import { AppDataTable } from "@/app/components/ui/AppDataTable";
+import { cn } from "@/app/components/ui/utils";
 import {
   Tooltip,
   TooltipContent,
@@ -162,6 +158,8 @@ const SENTIMENT = {
   topCompetitorName: "Austin Smile Center",
 };
 
+const recentReviewColumnHelper = createColumnHelper<RecentReview>();
+
 const RECENT_REVIEWS: RecentReview[] = [
   {
     id: "r1",
@@ -238,7 +236,7 @@ function StarRating({ value }: { value: number }) {
         strokeWidth={1.6}
         absoluteStrokeWidth
       />
-      <span className="text-xs text-foreground tabular-nums">{value.toFixed(1)}</span>
+      <span className="text-foreground tabular-nums">{value.toFixed(1)}</span>
     </span>
   );
 }
@@ -538,7 +536,7 @@ function RatingCell({ rating }: { rating: number }) {
   return (
     <span className="flex items-center gap-1">
       <StarIcons rating={rating} />
-      <span className="text-xs text-muted-foreground tabular-nums ml-0.5">{rating}</span>
+      <span className="ml-0.5 text-muted-foreground tabular-nums">{rating}</span>
     </span>
   );
 }
@@ -547,7 +545,7 @@ function RatingCell({ rating }: { rating: number }) {
 
 function SourceBadge({ source }: { source: ReviewSource }) {
   return (
-    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+    <span className="inline-flex items-center gap-1 text-muted-foreground">
       <Globe className="size-3 shrink-0" strokeWidth={1.6} absoluteStrokeWidth />
       {source}
     </span>
@@ -560,13 +558,22 @@ function SectionCard({
   title,
   children,
   className = "",
+  variant = "default",
 }: {
   title: string;
   children: React.ReactNode;
   className?: string;
+  variant?: "default" | "flat";
 }) {
   return (
-    <div className={`bg-card border border-border rounded-xl p-5 ${className}`}>
+    <div
+      className={cn(
+        variant === "flat"
+          ? "border-0 bg-transparent p-0"
+          : "rounded-xl border border-border bg-card p-5",
+        className,
+      )}
+    >
       <h3 className="text-sm font-medium text-foreground mb-4">{title}</h3>
       {children}
     </div>
@@ -576,6 +583,81 @@ function SectionCard({
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function CompetitorsView() {
+  const recentReviewColumns = useMemo(
+    () => [
+      recentReviewColumnHelper.accessor("reviewer", {
+        id: "reviewer",
+        header: "Reviewer",
+        meta: { settingsLabel: "Reviewer" },
+        size: 140,
+        enableSorting: true,
+        cell: (info) => (
+          <span className="whitespace-nowrap font-medium text-foreground">{info.getValue()}</span>
+        ),
+      }),
+      recentReviewColumnHelper.accessor("business", {
+        id: "business",
+        header: "Business",
+        meta: { settingsLabel: "Business" },
+        size: 200,
+        enableSorting: true,
+        cell: (info) => {
+          const name = info.getValue();
+          return (
+            <span
+              className={[
+                "whitespace-nowrap font-medium",
+                name === "Birdeye Dental Austin" ? "text-primary" : "text-muted-foreground",
+              ].join(" ")}
+            >
+              {name}
+            </span>
+          );
+        },
+      }),
+      recentReviewColumnHelper.accessor("rating", {
+        id: "rating",
+        header: "Rating",
+        meta: { settingsLabel: "Rating" },
+        size: 112,
+        enableSorting: true,
+        cell: (info) => <RatingCell rating={info.getValue()} />,
+      }),
+      recentReviewColumnHelper.accessor("source", {
+        id: "source",
+        header: "Source",
+        meta: { settingsLabel: "Source" },
+        size: 96,
+        cell: (info) => <SourceBadge source={info.getValue()} />,
+      }),
+      recentReviewColumnHelper.accessor("date", {
+        id: "date",
+        header: "Date",
+        meta: { settingsLabel: "Date" },
+        size: 120,
+        enableSorting: true,
+        cell: (info) => (
+          <span className="whitespace-nowrap text-muted-foreground">{info.getValue()}</span>
+        ),
+      }),
+      recentReviewColumnHelper.accessor("snippet", {
+        id: "snippet",
+        header: "Snippet",
+        meta: { settingsLabel: "Snippet" },
+        size: 320,
+        cell: (info) => {
+          const text = info.getValue();
+          return (
+            <p className="max-w-[320px] truncate text-muted-foreground" title={text}>
+              {text}
+            </p>
+          );
+        },
+      }),
+    ],
+    [],
+  );
+
   const [selectedId, setSelectedId] = useState<string>(MY_BUSINESS_ID);
 
   return (
@@ -610,22 +692,24 @@ export function CompetitorsView() {
       </aside>
 
       {/* ── Right panel: Dashboard ──────────────────────────────────── */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="px-6 py-6 flex flex-col gap-6 max-w-5xl">
-
-          {/* Page header */}
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-base font-semibold text-foreground">Competitor Monitoring</h1>
-              <p className="text-[13px] text-muted-foreground mt-0.5">
-                Comparing <span className="text-foreground font-medium">Birdeye Dental Austin</span> against {BUSINESSES.length - 1} competitors
-              </p>
-            </div>
-            <Badge variant="outline" className="text-xs text-muted-foreground gap-1.5 mt-0.5">
-              <span className="size-1.5 rounded-full bg-emerald-500 shrink-0 inline-block" />
+      <main className="flex flex-1 flex-col overflow-y-auto">
+        <MainCanvasViewHeader
+          title="Competitor Monitoring"
+          description={
+            <>
+              Comparing <span className="font-medium text-foreground">Birdeye Dental Austin</span> against{" "}
+              {BUSINESSES.length - 1} competitors
+            </>
+          }
+          actions={
+            <Badge variant="outline" className="gap-1.5 text-xs text-muted-foreground">
+              <span className="inline-block size-1.5 shrink-0 rounded-full bg-emerald-500" />
               Live data
             </Badge>
-          </div>
+          }
+        />
+
+        <div className="flex max-w-5xl flex-col gap-6 px-6 pb-6 pt-2">
 
           {/* 1. Rating comparison */}
           <SectionCard title="Rating comparison">
@@ -676,54 +760,15 @@ export function CompetitorsView() {
           </div>
 
           {/* 4. Recent competitor reviews */}
-          <SectionCard title="Recent competitor reviews">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs text-muted-foreground font-medium">Reviewer</TableHead>
-                  <TableHead className="text-xs text-muted-foreground font-medium">Business</TableHead>
-                  <TableHead className="text-xs text-muted-foreground font-medium">Rating</TableHead>
-                  <TableHead className="text-xs text-muted-foreground font-medium">Source</TableHead>
-                  <TableHead className="text-xs text-muted-foreground font-medium">Date</TableHead>
-                  <TableHead className="text-xs text-muted-foreground font-medium">Snippet</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {RECENT_REVIEWS.map((review) => (
-                  <TableRow key={review.id} className="group">
-                    <TableCell className="text-sm font-medium text-foreground whitespace-nowrap">
-                      {review.reviewer}
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={[
-                          "text-[12px] font-medium whitespace-nowrap",
-                          review.business === "Birdeye Dental Austin"
-                            ? "text-primary"
-                            : "text-muted-foreground",
-                        ].join(" ")}
-                      >
-                        {review.business}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <RatingCell rating={review.rating} />
-                    </TableCell>
-                    <TableCell>
-                      <SourceBadge source={review.source} />
-                    </TableCell>
-                    <TableCell className="text-[12px] text-muted-foreground whitespace-nowrap">
-                      {review.date}
-                    </TableCell>
-                    <TableCell className="max-w-[320px]">
-                      <p className="text-[12px] text-muted-foreground truncate" title={review.snippet}>
-                        {review.snippet}
-                      </p>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <SectionCard title="Recent competitor reviews" variant="flat">
+            <AppDataTable<RecentReview>
+              tableId="competitors.recentReviews"
+              data={RECENT_REVIEWS}
+              columns={recentReviewColumns}
+              getRowId={(r) => r.id}
+              columnSheetTitle="Review columns"
+              className="min-w-0 px-0"
+            />
           </SectionCard>
 
         </div>

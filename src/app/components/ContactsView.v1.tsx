@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { createColumnHelper } from "@tanstack/react-table";
 import {
   ChevronDown,
   ChevronLeft,
@@ -10,6 +11,7 @@ import {
   MoreVertical,
   Pencil,
   Phone,
+  Plus,
   Send,
   Sparkles,
   MapPin,
@@ -36,14 +38,9 @@ import {
   FLOATING_SHEET_FRAME_CONTENT_CLASS,
   FloatingSheetFrame,
 } from "@/app/components/layout/FloatingSheetFrame";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/app/components/ui/table";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
+import { AppDataTable } from "@/app/components/ui/AppDataTable";
+import { AppDataTableColumnSettingsTrigger } from "@/app/components/ui/AppDataTableColumnSettingsTrigger";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,11 +61,15 @@ import {
   BreadcrumbSeparator,
 } from "@/app/components/ui/breadcrumb";
 import { Avatar, AvatarFallback } from "@/app/components/ui/avatar";
+import { TextTabsRow } from "@/app/components/ui/text-tabs";
 import { cn } from "@/app/components/ui/utils";
 
 /* ─── L2 keys (must match `L2NavLayout` standalone labels) ─── */
 export const CONTACTS_L2_KEY_ALL = "standalone/All contacts";
 export const CONTACTS_L2_KEY_LISTS = "standalone/Lists & segments";
+/** Must match `L2NavLayout` section `Settings` + child label. */
+export const CONTACTS_L2_KEY_CUSTOM_FIELDS = "Settings/Custom fields";
+export const CONTACTS_L2_KEY_TAGS = "Settings/Tags";
 
 export type ContactsSheetMode = "none" | "quickView" | "addContact";
 
@@ -144,6 +145,10 @@ const mockContacts: Contact[] = [
 ];
 
 type SavedListRow = { id: string; name: string; contacts: string; description: string; lastUpdated: string };
+
+const savedListColumnHelper = createColumnHelper<SavedListRow>();
+const contactColumnHelper = createColumnHelper<Contact>();
+
 const mockSavedLists: SavedListRow[] = [
   { id: "s1", name: "VIP customers", contacts: "1,204", description: "Top spenders last quarter", lastUpdated: "Apr 02, 2026" },
   { id: "s2", name: "Churn risk", contacts: "88", description: "Declining engagement signals", lastUpdated: "Mar 18, 2026" },
@@ -151,11 +156,44 @@ const mockSavedLists: SavedListRow[] = [
 ];
 
 type AiSegmentRow = { id: string; name: string; contacts: string; description: string };
+
+const aiSegmentColumnHelper = createColumnHelper<AiSegmentRow>();
+
 const mockAiSegments: AiSegmentRow[] = [
   { id: "a1", name: "Likely to book", contacts: "264K", description: "Contacts who opened scheduling content in the last 90 days and have not booked." },
   { id: "a2", name: "High engagement readers", contacts: "210.2K", description: "Opened at least three campaigns in the last 60 days." },
   { id: "a3", name: "Patients with recent appointments", contacts: "0", description: "Had an appointment in the last 30 days — currently no matches in this workspace." },
   { id: "a4", name: "Upcoming appointments", contacts: "0", description: "Scheduled visit in the next 14 days." },
+];
+
+type CustomFieldDefRow = {
+  id: string;
+  name: string;
+  fieldType: string;
+  required: string;
+  lastUpdated: string;
+};
+
+const customFieldColumnHelper = createColumnHelper<CustomFieldDefRow>();
+
+const mockCustomFieldDefinitions: CustomFieldDefRow[] = [
+  { id: "cf1", name: "Notes", fieldType: "Long text", required: "No", lastUpdated: "Apr 02, 2026" },
+  { id: "cf2", name: "Lifetime value", fieldType: "Currency", required: "No", lastUpdated: "Mar 18, 2026" },
+  { id: "cf3", name: "Preferred location", fieldType: "Short text", required: "No", lastUpdated: "Feb 04, 2026" },
+  { id: "cf4", name: "Referral code", fieldType: "Short text", required: "No", lastUpdated: "Jan 12, 2026" },
+  { id: "cf5", name: "Patient chart id", fieldType: "Short text", required: "Yes", lastUpdated: "Dec 08, 2025" },
+];
+
+type WorkspaceTagRow = { id: string; name: string; contacts: string; created: string };
+
+const workspaceTagColumnHelper = createColumnHelper<WorkspaceTagRow>();
+
+const mockWorkspaceTags: WorkspaceTagRow[] = [
+  { id: "t1", name: "High value", contacts: "1,204", created: "Jan 04, 2024" },
+  { id: "t2", name: "Newsletter", contacts: "42.1K", created: "Mar 02, 2024" },
+  { id: "t3", name: "Dental reminders", contacts: "890", created: "Jun 18, 2024" },
+  { id: "t4", name: "Churn risk", contacts: "88", created: "Mar 18, 2026" },
+  { id: "t5", name: "VIP — west region", contacts: "312", created: "Nov 22, 2025" },
 ];
 
 type ActivityEvent = { id: string; icon: "eye" | "send"; label: string; at: string };
@@ -176,7 +214,7 @@ function ScoreChip({ score, level }: { score: number; level: ScoreLevel }) {
   return (
     <span
       className={cn(
-        "inline-flex min-w-8 items-center justify-center rounded-sm px-2 py-1 text-xs font-medium",
+        "inline-flex min-w-8 items-center justify-center rounded-sm px-2 py-1 text-[length:var(--font-size)] font-medium",
         colors[level],
       )}
     >
@@ -605,94 +643,277 @@ function AddContactSheet({
 function ListsSegmentsView() {
   const [topTab, setTopTab] = useState<"saved" | "ai">("ai");
 
+  const aiColumns = useMemo(
+    () => [
+      aiSegmentColumnHelper.accessor("name", {
+        id: "name",
+        header: "Name",
+        meta: { settingsLabel: "Name" },
+        size: 200,
+        cell: (info) => <span className="font-medium">{info.getValue()}</span>,
+      }),
+      aiSegmentColumnHelper.accessor("contacts", {
+        id: "contacts",
+        header: "Contacts",
+        meta: { settingsLabel: "Contacts" },
+        size: 120,
+      }),
+      aiSegmentColumnHelper.accessor("description", {
+        id: "description",
+        header: "Description",
+        meta: { settingsLabel: "Description" },
+        size: 400,
+        cell: (info) => (
+          <span className="max-w-md whitespace-normal text-muted-foreground">{info.getValue()}</span>
+        ),
+      }),
+    ],
+    [],
+  );
+
+  const savedListColumns = useMemo(
+    () => [
+      savedListColumnHelper.accessor("name", {
+        id: "name",
+        header: "Name",
+        meta: { settingsLabel: "Name" },
+        size: 200,
+        cell: (info) => <span className="font-medium">{info.getValue()}</span>,
+      }),
+      savedListColumnHelper.accessor("contacts", {
+        id: "contacts",
+        header: "Contacts",
+        meta: { settingsLabel: "Contacts" },
+        size: 120,
+      }),
+      savedListColumnHelper.accessor("description", {
+        id: "description",
+        header: "Description",
+        meta: { settingsLabel: "Description" },
+        size: 280,
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+      savedListColumnHelper.accessor("lastUpdated", {
+        id: "lastUpdated",
+        header: "Last updated",
+        meta: { settingsLabel: "Last updated" },
+        size: 140,
+        enableSorting: true,
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+    ],
+    [],
+  );
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="flex shrink-0 flex-col gap-2 border-b border-border px-6 py-4">
-        <h1 className="text-xl font-semibold text-foreground">Lists & segments</h1>
-        <p className="text-muted-foreground max-w-3xl text-sm">
-          Create and manage your lists and segments or explore AI-recommended segments to reach the right audience.
-        </p>
-      </div>
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-background">
+      <MainCanvasViewHeader
+        title="Lists & segments"
+        description="Create and manage your lists and segments or explore AI-recommended segments to reach the right audience."
+      />
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 px-6 py-4">
-        <div className="flex flex-wrap items-center gap-2 border-b border-border pb-0">
-          <button
-            type="button"
-            className={cn(
-              "flex items-center gap-2 border-b-2 px-2 pb-2 text-sm font-medium transition-colors",
-              topTab === "saved" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
-            )}
-            onClick={() => setTopTab("saved")}
-          >
-            Saved
-            <Badge variant="secondary" className="font-normal">
-              56
-            </Badge>
-          </button>
-          <button
-            type="button"
-            className={cn(
-              "flex items-center gap-2 border-b-2 px-2 pb-2 text-sm font-medium transition-colors",
-              topTab === "ai" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
-            )}
-            onClick={() => setTopTab("ai")}
-          >
-            AI recommendations
-            <Badge variant="secondary" className="font-normal">
-              19
-            </Badge>
-          </button>
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden px-6 py-4">
+        <TextTabsRow
+          className="shrink-0"
+          ariaLabel="List source"
+          value={topTab}
+          onChange={setTopTab}
+          items={[
+            {
+              id: "saved",
+              label: "Saved",
+              suffix: (
+                <Badge variant="secondary" className="font-normal">
+                  56
+                </Badge>
+              ),
+            },
+            {
+              id: "ai",
+              label: "AI recommendations",
+              suffix: (
+                <Badge variant="secondary" className="font-normal">
+                  19
+                </Badge>
+              ),
+            },
+          ]}
+        />
+
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-auto">
+          {topTab === "ai" ? (
+            <AppDataTable<AiSegmentRow>
+              tableId="contacts.lists.ai"
+              data={mockAiSegments}
+              columns={aiColumns}
+              getRowId={(r) => r.id}
+              columnSheetTitle="Segment columns"
+              className="min-w-0 px-0"
+            />
+          ) : (
+            <AppDataTable<SavedListRow>
+              tableId="contacts.lists.saved"
+              data={mockSavedLists}
+              columns={savedListColumns}
+              getRowId={(r) => r.id}
+              columnSheetTitle="List columns"
+              className="min-w-0 px-0"
+            />
+          )}
         </div>
+      </div>
+    </div>
+  );
+}
 
-        {topTab === "ai" ? (
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2 rounded-lg border border-border bg-accent/20 px-4 py-4 sm:flex-row sm:items-center sm:gap-4">
-              <Sparkles className="size-4 shrink-0 text-primary" aria-hidden />
-              <p className="text-sm text-foreground">19 recommendations generated from your contact profiles.</p>
-            </div>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Contacts</TableHead>
-                  <TableHead>Description</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockAiSegments.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell className="font-medium">{row.name}</TableCell>
-                    <TableCell>{row.contacts}</TableCell>
-                    <TableCell className="text-muted-foreground max-w-md text-sm whitespace-normal">
-                      {row.description}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Contacts</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Last updated</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockSavedLists.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell className="font-medium">{row.name}</TableCell>
-                  <TableCell>{row.contacts}</TableCell>
-                  <TableCell className="text-muted-foreground text-sm">{row.description}</TableCell>
-                  <TableCell className="text-muted-foreground text-sm">{row.lastUpdated}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+function CustomFieldsSettingsView() {
+  const [columnSheetOpen, setColumnSheetOpen] = useState(false);
+
+  const columns = useMemo(
+    () => [
+      customFieldColumnHelper.accessor("name", {
+        id: "name",
+        header: "Field name",
+        meta: { settingsLabel: "Field name" },
+        size: 220,
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
+      }),
+      customFieldColumnHelper.accessor("fieldType", {
+        id: "fieldType",
+        header: "Type",
+        meta: { settingsLabel: "Type" },
+        size: 160,
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+      customFieldColumnHelper.accessor("required", {
+        id: "required",
+        header: "Required",
+        meta: { settingsLabel: "Required" },
+        size: 120,
+        cell: (info) => (
+          <span className={info.getValue() === "Yes" ? "text-foreground" : "text-muted-foreground"}>
+            {info.getValue()}
+          </span>
+        ),
+      }),
+      customFieldColumnHelper.accessor("lastUpdated", {
+        id: "lastUpdated",
+        header: "Last updated",
+        meta: { settingsLabel: "Last updated" },
+        size: 160,
+        enableSorting: true,
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+    ],
+    [],
+  );
+
+  return (
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-background">
+      <MainCanvasViewHeader
+        title="Custom fields"
+        actions={
+          <>
+            <AppDataTableColumnSettingsTrigger
+              sheetTitle="Field columns"
+              onClick={() => setColumnSheetOpen(true)}
+            />
+            <Button
+              type="button"
+              className="gap-2"
+              onClick={() => toast.message("Add field", { description: "Connect your CRM to create fields from this UI." })}
+            >
+              <Plus className="size-4 shrink-0" strokeWidth={2} aria-hidden />
+              Add field
+            </Button>
+          </>
+        }
+      />
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-6 py-4">
+        <div className="min-h-0 flex-1 overflow-auto">
+          <AppDataTable<CustomFieldDefRow>
+            tableId="contacts.settings.customFields"
+            data={mockCustomFieldDefinitions}
+            columns={columns}
+            getRowId={(r) => r.id}
+            columnSheetTitle="Field columns"
+            className="min-w-0 px-0"
+            hideColumnsButton
+            columnSheetOpen={columnSheetOpen}
+            onColumnSheetOpenChange={setColumnSheetOpen}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TagsSettingsView() {
+  const [columnSheetOpen, setColumnSheetOpen] = useState(false);
+
+  const columns = useMemo(
+    () => [
+      workspaceTagColumnHelper.accessor("name", {
+        id: "name",
+        header: "Tag",
+        meta: { settingsLabel: "Tag" },
+        size: 240,
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
+      }),
+      workspaceTagColumnHelper.accessor("contacts", {
+        id: "contacts",
+        header: "Contacts",
+        meta: { settingsLabel: "Contacts" },
+        size: 140,
+        enableSorting: true,
+      }),
+      workspaceTagColumnHelper.accessor("created", {
+        id: "created",
+        header: "Created",
+        meta: { settingsLabel: "Created" },
+        size: 160,
+        enableSorting: true,
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+    ],
+    [],
+  );
+
+  return (
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-background">
+      <MainCanvasViewHeader
+        title="Tags"
+        actions={
+          <>
+            <AppDataTableColumnSettingsTrigger
+              sheetTitle="Tag columns"
+              onClick={() => setColumnSheetOpen(true)}
+            />
+            <Button
+              type="button"
+              className="gap-2"
+              onClick={() => toast.message("Create tag", { description: "Tag creation will sync from your connected directory." })}
+            >
+              <Plus className="size-4 shrink-0" strokeWidth={2} aria-hidden />
+              Create tag
+            </Button>
+          </>
+        }
+      />
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-6 py-4">
+        <div className="min-h-0 flex-1 overflow-auto">
+          <AppDataTable<WorkspaceTagRow>
+            tableId="contacts.settings.tags"
+            data={mockWorkspaceTags}
+            columns={columns}
+            getRowId={(r) => r.id}
+            columnSheetTitle="Tag columns"
+            className="min-w-0 px-0"
+            hideColumnsButton
+            columnSheetOpen={columnSheetOpen}
+            onColumnSheetOpenChange={setColumnSheetOpen}
+          />
+        </div>
       </div>
     </div>
   );
@@ -778,21 +999,12 @@ function ContactDetailsView({
               onGenerate={() => toast.message("Summary generation is a prototype action.")}
             />
 
-            <div className="flex flex-wrap gap-2 border-b border-border">
-              {tabs.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  className={cn(
-                    "flex items-center gap-1 border-b-2 px-2 pb-2 text-sm font-medium transition-colors",
-                    mainTab === t.id ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
-                  )}
-                  onClick={() => setMainTab(t.id)}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
+            <TextTabsRow
+              ariaLabel="Contact detail sections"
+              value={mainTab}
+              onChange={setMainTab}
+              items={tabs.map((t) => ({ id: t.id, label: t.label }))}
+            />
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <div className="relative max-w-sm flex-1">
@@ -846,23 +1058,14 @@ function ContactDetailsView({
 export function ContactsView({ app }: ContactsViewProps) {
   const shell = useContactsShell(app);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortColumn, setSortColumn] = useState<string>("lastActivity");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-  const [selectedRow, setSelectedRow] = useState<number | null>(42);
+  const [selectedRow, setSelectedRow] = useState<number | null>(null);
+  const [directoryColumnSheetOpen, setDirectoryColumnSheetOpen] = useState(false);
 
   const totalContacts = 262_164;
   const pageSize = 15;
   const totalPages = Math.max(1, Math.ceil(totalContacts / pageSize));
 
   const pageRows = useMemo(() => mockContacts, []);
-
-  const handleSort = (column: string) => {
-    if (sortColumn === column) setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
-    else {
-      setSortColumn(column);
-      setSortDirection("asc");
-    }
-  };
 
   const qContact = contactById(shell.quickViewContactId);
   const detailContact = contactById(shell.detailContactId);
@@ -873,6 +1076,106 @@ export function ContactsView({ app }: ContactsViewProps) {
       shell.setSheetMode("quickView");
     },
     [shell],
+  );
+
+  const contactColumns = useMemo(
+    () => [
+      contactColumnHelper.accessor("name", {
+        id: "name",
+        header: "Contact name",
+        meta: { settingsLabel: "Contact name" },
+        size: 220,
+        enableSorting: true,
+        cell: ({ row }) => {
+          const contact = row.original;
+          const isSelected = selectedRow === contact.id;
+          return (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={cn(isSelected ? "font-medium text-primary" : "text-foreground")}>
+                {contact.name}
+              </span>
+              {contact.isLead ? (
+                <Badge variant="secondary" className="font-normal text-[length:var(--font-size)]">
+                  Lead
+                </Badge>
+              ) : null}
+            </div>
+          );
+        },
+      }),
+      contactColumnHelper.display({
+        id: "channels",
+        header: "Channel",
+        meta: { settingsLabel: "Channel" },
+        size: 128,
+        cell: ({ row }) => <ChannelIcons c={row.original} />,
+      }),
+      contactColumnHelper.accessor("score", {
+        id: "score",
+        header: "Experience score",
+        meta: { settingsLabel: "Experience score" },
+        size: 176,
+        minSize: 168,
+        enableSorting: true,
+        cell: (info) => (
+          <ScoreChip score={info.getValue()} level={info.row.original.scoreLevel} />
+        ),
+      }),
+      contactColumnHelper.display({
+        id: "location",
+        header: "Location",
+        meta: { settingsLabel: "Location" },
+        size: 200,
+        cell: ({ row }) => {
+          const c = row.original;
+          return (
+            <span className="text-foreground">
+              {c.location
+                ? c.location
+                : c.locationCount != null
+                  ? `${c.locationCount} locations`
+                  : "—"}
+            </span>
+          );
+        },
+      }),
+      contactColumnHelper.display({
+        id: "actions",
+        header: "",
+        meta: { settingsLabel: "Actions" },
+        size: 56,
+        enableResizing: false,
+        enableHiding: false,
+        cell: ({ row }) => {
+          const contact = row.original;
+          return (
+            <div className="text-left">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button type="button" variant="ghost" size="icon" aria-label="Row actions">
+                    <MoreVertical className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[180px]">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setSelectedRow(contact.id);
+                      shell.setDetailContactId(contact.id);
+                      shell.setSheetMode("none");
+                      shell.setQuickViewContactId(null);
+                    }}
+                  >
+                    View details
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openQuickView(contact.id)}>Quick view</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          );
+        },
+      }),
+    ],
+    [openQuickView, selectedRow, shell],
   );
 
   const onQuickSheetOpenChange = (open: boolean) => {
@@ -904,117 +1207,45 @@ export function ContactsView({ app }: ContactsViewProps) {
       <ContactDetailsView contact={detailContact} onBackToList={backToListFromDetails} />
     ) : shell.l2ActiveItem === CONTACTS_L2_KEY_LISTS ? (
       <ListsSegmentsView />
+    ) : shell.l2ActiveItem === CONTACTS_L2_KEY_CUSTOM_FIELDS ? (
+      <CustomFieldsSettingsView />
+    ) : shell.l2ActiveItem === CONTACTS_L2_KEY_TAGS ? (
+      <TagsSettingsView />
     ) : (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background transition-colors duration-300">
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="flex h-[68px] shrink-0 items-center justify-between border-b border-border px-6 py-4">
-          <h1 className="text-xl font-normal text-foreground">{totalContacts.toLocaleString()} contacts</h1>
-          <Button type="button" variant="outline" size="icon" aria-label="More options">
-            <MoreVertical className="size-4" />
-          </Button>
-        </div>
+        <MainCanvasViewHeader
+          title="Contacts"
+          actions={
+            <>
+              <AppDataTableColumnSettingsTrigger
+                sheetTitle="Contact columns"
+                onClick={() => setDirectoryColumnSheetOpen(true)}
+              />
+              <Button type="button" variant="outline" size="icon" aria-label="More options">
+                <MoreVertical className="size-4" />
+              </Button>
+            </>
+          }
+        />
 
         <div className="min-h-0 flex-1 overflow-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/50 hover:bg-muted/50">
-                <TableHead className="min-w-[200px]">
-                  <button
-                    type="button"
-                    onClick={() => handleSort("name")}
-                    className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs font-medium"
-                  >
-                    Contact name
-                    <ChevronDown
-                      className={cn(
-                        "size-3 transition-transform",
-                        sortColumn === "name" && sortDirection === "desc" && "rotate-180",
-                      )}
-                    />
-                  </button>
-                </TableHead>
-                <TableHead>
-                  <span className="text-muted-foreground text-xs font-medium">Channel</span>
-                </TableHead>
-                <TableHead>
-                  <span className="text-muted-foreground text-xs font-medium">Experience score</span>
-                </TableHead>
-                <TableHead>
-                  <span className="text-muted-foreground text-xs font-medium">Location</span>
-                </TableHead>
-                <TableHead className="w-14" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageRows.map((contact) => {
-                const isSelected = selectedRow === contact.id;
-                return (
-                  <TableRow
-                    key={contact.id}
-                    data-state={isSelected ? "selected" : undefined}
-                    className="cursor-pointer"
-                    onClick={() => {
-                      setSelectedRow(contact.id);
-                      openQuickView(contact.id);
-                    }}
-                  >
-                    <TableCell className="align-middle">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span
-                          className={cn(
-                            "text-sm",
-                            isSelected ? "text-primary font-medium" : "text-foreground",
-                          )}
-                        >
-                          {contact.name}
-                        </span>
-                        {contact.isLead ? (
-                          <Badge variant="secondary" className="font-normal">
-                            Lead
-                          </Badge>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell className="align-middle">
-                      <ChannelIcons c={contact} />
-                    </TableCell>
-                    <TableCell className="align-middle">
-                      <ScoreChip score={contact.score} level={contact.scoreLevel} />
-                    </TableCell>
-                    <TableCell className="text-foreground align-middle text-sm">
-                      {contact.location
-                        ? contact.location
-                        : contact.locationCount != null
-                          ? `${contact.locationCount} locations`
-                          : "—"}
-                    </TableCell>
-                    <TableCell className="text-right align-middle" onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button type="button" variant="ghost" size="icon" aria-label="Row actions">
-                            <MoreVertical className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="min-w-[180px]">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedRow(contact.id);
-                              shell.setDetailContactId(contact.id);
-                              shell.setSheetMode("none");
-                              shell.setQuickViewContactId(null);
-                            }}
-                          >
-                            View details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => openQuickView(contact.id)}>Quick view</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+          <AppDataTable<Contact>
+            tableId="contacts.directory"
+            data={pageRows}
+            columns={contactColumns}
+            getRowId={(c) => String(c.id)}
+            onRowClick={(c) => {
+              setSelectedRow(c.id);
+              openQuickView(c.id);
+            }}
+            isRowSelected={(c) => selectedRow === c.id}
+            columnSheetTitle="Contact columns"
+            className="min-w-0"
+            hideColumnsButton
+            columnSheetOpen={directoryColumnSheetOpen}
+            onColumnSheetOpenChange={setDirectoryColumnSheetOpen}
+          />
         </div>
 
         <div className="bg-background flex shrink-0 items-center justify-between border-t border-border px-6 py-4">

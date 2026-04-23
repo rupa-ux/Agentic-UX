@@ -24,7 +24,9 @@ import {
   History,
 } from "lucide-react";
 import { toast } from "sonner";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { Button } from "@/app/components/ui/button";
+import { TextTabsRow } from "@/app/components/ui/text-tabs";
 
 /* ═══════════════════════════════════════════
    Types
@@ -1002,14 +1004,10 @@ export function AgentDetailView({ agentSlug, onOpenBuilder }: AgentDetailViewPro
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300">
-      {/* Header */}
-      <div className="shrink-0 px-6 pt-5 pb-0">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-[18px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.36px]" style={{ fontWeight: 400 }}>
-            {config.title}
-          </h1>
-
-          {/* Header actions */}
+      <div className="shrink-0">
+        <MainCanvasViewHeader
+          title={config.title}
+          actions={
           <div className="flex items-center gap-2">
             {/* Search */}
             {searchOpen ? (
@@ -1077,46 +1075,20 @@ export function AgentDetailView({ agentSlug, onOpenBuilder }: AgentDetailViewPro
               <Filter className={`w-[14px] h-[14px] ${filterActive ? "text-[#2552ED]" : "text-[#555] dark:text-[#8b92a5]"}`} />
             </Button>
           </div>
-        </div>
+          }
+        />
 
         {/* Tabs */}
-        <div className="flex items-end gap-0 border-b border-[#e5e9f0] dark:border-[#2e3340]">
-          <button
-            onClick={() => setActiveTab("agents")}
-            className="relative px-3 pb-2"
-          >
-            <span
-              className={`text-[14px] tracking-[-0.28px] transition-colors ${
-                activeTab === "agents"
-                  ? "text-[#212121] dark:text-[#e4e4e4]"
-                  : "text-[#555] dark:text-[#8b92a5] hover:text-[#212121] dark:hover:text-[#e4e4e4]"
-              }`}
-              style={{ fontWeight: 400 }}
-            >
-              Agents
-            </span>
-            {activeTab === "agents" && (
-              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#2552ED] rounded-t-full" />
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab("library")}
-            className="relative px-3 pb-2"
-          >
-            <span
-              className={`text-[14px] tracking-[-0.28px] transition-colors ${
-                activeTab === "library"
-                  ? "text-[#212121] dark:text-[#e4e4e4]"
-                  : "text-[#555] dark:text-[#8b92a5] hover:text-[#212121] dark:hover:text-[#e4e4e4]"
-              }`}
-              style={{ fontWeight: 400 }}
-            >
-              Library
-            </span>
-            {activeTab === "library" && (
-              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#2552ED] rounded-t-full" />
-            )}
-          </button>
+        <div className="px-6">
+          <TextTabsRow
+            ariaLabel="Agent workspace"
+            value={activeTab}
+            onChange={setActiveTab}
+            items={[
+              { id: "agents", label: "Agents" },
+              { id: "library", label: "Library" },
+            ]}
+          />
         </div>
       </div>
 

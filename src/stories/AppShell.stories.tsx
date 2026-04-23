@@ -10,7 +10,6 @@ import {
   TicketingL2NavPanel,
   CampaignsL2NavPanel,
   SurveysL2NavPanel,
-  InsightsL2NavPanel,
   CompetitorsL2NavPanel,
   InboxL2NavPanel,
 } from "@/app/components/Sidebar";
@@ -69,7 +68,11 @@ function L2Panel({ view, onViewChange }: { view: AppView; onViewChange: (v: AppV
   if (view === "surveys")     return <SurveysL2NavPanel />;
   if (view === "ticketing")   return <TicketingL2NavPanel />;
   if (view === "campaigns")   return <CampaignsL2NavPanel />;
-  if (view === "insights")    return <InsightsL2NavPanel />;
+  if (view === "insights") {
+    return (
+      <AppShellL2Placeholder caption="Insights is not hosted in this shell — secondary nav is a preview only." />
+    );
+  }
   if (view === "competitors") return <CompetitorsL2NavPanel />;
   if (view === "inbox")       return <InboxL2NavPanel />;
   if (view === "agents-builder") return null;

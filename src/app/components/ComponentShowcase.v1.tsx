@@ -6,6 +6,7 @@ import {
   ArrowLeft, ArrowRight, Loader2, Info, AlertTriangle, CheckCircle2,
   XCircle,
 } from "lucide-react";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { useTheme } from "./useTheme";
 
 /* ══════════════════════════════════════════════════
@@ -92,15 +93,11 @@ export function ComponentShowcase() {
     <div className="flex-1 overflow-y-auto bg-[#f2f4f7] dark:bg-[#13161b] transition-colors duration-300">
       <div className="max-w-[860px] mx-auto px-6 py-8 space-y-4">
 
-        {/* Header */}
-        <div className="mb-2">
-          <h1 className="text-[18px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>
-            Component showcase
-          </h1>
-          <p className="text-[13px] text-[#999] dark:text-[#6b7280] mt-1" style={{ fontWeight: 300 }}>
-            Design system primitives with full light / dark mode parity. All interaction states shown.
-          </p>
-        </div>
+        <MainCanvasViewHeader
+          className="px-0 pt-0"
+          title="Component showcase"
+          description="Design system primitives with full light / dark mode parity. All interaction states shown."
+        />
 
         {/* ── Color Tokens ── */}
         <Section title="Color tokens">

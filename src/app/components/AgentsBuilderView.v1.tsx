@@ -6,6 +6,7 @@ import {
   ArrowRight, Zap, Send, ToggleRight, ToggleLeft,
 } from "lucide-react";
 import { toast } from "sonner";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { Button } from "@/app/components/ui/button";
 import { InlineSelectField } from "@/app/components/ui/inline-select-field";
 import { SegmentedToggle } from "@/app/components/ui/segmented-toggle";
@@ -577,35 +578,33 @@ export function AgentsBuilderView({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300">
-      {/* ─── Top Header ─── */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-[#e5e9f0] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] shrink-0">
-        <div className="flex items-center gap-3">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onBack}
-            className="rounded-[6px] text-[#555] dark:text-[#8b92a5]"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <h1 className="text-[15px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.3px]" style={{ fontWeight: 400 }}>
-            Review response agent replying autonomously
-          </h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" size="icon" className="rounded-[8px] text-[#555] dark:text-[#8b92a5]">
-            <Share2 className="w-4 h-4" />
-          </Button>
-          <Button
-            type="button"
-            onClick={handleSave}
-            className="rounded-[8px] px-5 bg-[#2552ED] hover:bg-[#1E44CC] text-[13px] text-white"
-            style={{ fontWeight: 400 }}
-          >
-            Save
-          </Button>
-        </div>
+      <div className="shrink-0 border-b border-[#e5e9f0] bg-white dark:border-[#2e3340] dark:bg-[#1e2229]">
+        <MainCanvasViewHeader
+          title={
+            <span className="flex min-w-0 items-center gap-3">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={onBack}
+                className="shrink-0 rounded-md text-muted-foreground"
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <span className="truncate">Review response agent replying autonomously</span>
+            </span>
+          }
+          actions={
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="icon" className="rounded-lg text-muted-foreground">
+                <Share2 className="size-4" />
+              </Button>
+              <Button type="button" onClick={handleSave} className="rounded-lg bg-[#2552ED] px-5 text-sm text-white hover:bg-[#1E44CC]">
+                Save
+              </Button>
+            </div>
+          }
+        />
       </div>
 
       {/* ─── Body: 3-panel layout ─── */}

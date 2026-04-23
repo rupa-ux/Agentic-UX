@@ -9,7 +9,7 @@ export type AppShellContentPlaceholderProps = {
 
 /**
  * Main-canvas skeleton used in Storybook App Shell and for routes that do not
- * ship product UI in the shell yet (e.g. Chatbot / `searchai`).
+ * ship product UI in the shell yet (e.g. Chatbot / `searchai`, Insights).
  */
 export function AppShellContentPlaceholder({ view, productLabel }: AppShellContentPlaceholderProps) {
   if (view === "business-overview") {

@@ -5,7 +5,9 @@ import {
   Filter, X, CheckCircle2
 } from "lucide-react";
 import { toast } from "sonner";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { Button } from "@/app/components/ui/button";
+import { TextTabsRow } from "@/app/components/ui/text-tabs";
 import { cn } from "@/lib/utils";
 import {
   FLOATING_PANEL_LIST_PADDING_CLASSNAME,
@@ -515,24 +517,25 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
 
   return (
     <div className="flex-1 bg-white dark:bg-[#13161b] overflow-auto flex flex-col transition-colors duration-300">
-      {/* ─── Header ─── */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-[#13161b] px-8 h-[76px] flex items-center justify-between shrink-0 transition-colors duration-300">
-        <div className="flex items-center gap-3">
-          <Clock className="w-5 h-5 text-[#2552ED]" />
-          <h1 className="text-[#212121] dark:text-[#e4e4e4] tracking-[-0.26px] text-[18px]" style={{ fontWeight: 400 }}>
-            Scheduled deliveries
-          </h1>
-        </div>
-        <button
-          onClick={() => onCreateSchedule?.()}
-          className="flex items-center gap-1.5 px-4 py-1.5 text-[14px] text-white rounded-[8px] transition-all tracking-[-0.15px]"
-          style={{ fontWeight: 400, backgroundColor: "#2552ED" }}
-          onMouseEnter={e => (e.currentTarget.style.filter = "brightness(0.92)")}
-          onMouseLeave={e => (e.currentTarget.style.filter = "none")}
-        >
-          <Plus className="w-4 h-4" />
-          Create schedule
-        </button>
+      <div className="sticky top-0 z-10 shrink-0 bg-white transition-colors duration-300 dark:bg-[#13161b]">
+        <MainCanvasViewHeader
+          title={
+            <span className="inline-flex items-center gap-3">
+              <Clock className="size-5 shrink-0 text-primary" aria-hidden />
+              Scheduled deliveries
+            </span>
+          }
+          actions={
+            <button
+              type="button"
+              onClick={() => onCreateSchedule?.()}
+              className="flex items-center gap-1.5 rounded-lg bg-[#2552ED] px-4 py-1.5 text-sm text-white transition-all tracking-tight hover:brightness-[0.92]"
+            >
+              <Plus className="size-4" aria-hidden />
+              Create schedule
+            </button>
+          }
+        />
       </div>
 
       <div className="px-8 pb-8 flex flex-col gap-5 flex-1">
@@ -591,27 +594,24 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
         </div>
 
         {/* ─── Tabs ─── */}
-        <div className="flex items-center gap-1 border-b border-[#eaeaea] dark:border-[#333a47]">
-          {([
-            { key: "mine" as const, label: "Scheduled by me" },
-            ...(isAdmin ? [{ key: "team" as const, label: "Team schedules" }] : []),
-            { key: "drafts" as const, label: "Drafts" },
-          ]).map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2.5 text-[13px] font-['Inter',sans-serif] border-b-2 transition-colors -mb-px ${
-                activeTab === tab.key
-                  ? "border-[#2552ED] text-[#2552ED] dark:text-[#6b9bff] dark:border-[#6b9bff]"
-                  : "border-transparent text-[#888] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#c0c6d4]"
-              }`}
-              style={{ fontWeight: 400 }}
-            >
-              {tab.label}
-              {tab.key === "drafts" && ` (${mockDrafts.length})`}
-            </button>
-          ))}
-        </div>
+        <TextTabsRow
+          ariaLabel="Schedule scope"
+          value={activeTab}
+          onChange={setActiveTab}
+          items={[
+            { id: "mine", label: "Scheduled by me" },
+            ...(isAdmin ? [{ id: "team" as const, label: "Team schedules" }] : []),
+            {
+              id: "drafts",
+              label: "Drafts",
+              suffix: (
+                <span className="font-normal tabular-nums text-muted-foreground">
+                  ({mockDrafts.length})
+                </span>
+              ),
+            },
+          ]}
+        />
 
         {/* ─── Drafts tab ─── */}
         {activeTab === "drafts" && (

@@ -9,6 +9,7 @@ import {
 import svgPaths from "../../imports/svg-zyxavbn7id";
 import { getDrafts, deleteDraft, subscribeDrafts, type DraftReport } from "./draftStore";
 import { toast } from "sonner";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { Button } from "@/app/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -435,12 +436,10 @@ export function SharedByMe({ onEditDraft, onViewReport }: SharedByMeProps) {
 
   return (
     <div className="flex-1 bg-[#f8f9fa] dark:bg-[#13161b] overflow-auto transition-colors duration-300">
-      {/* Header */}
-      <div className="bg-[#f8f9fa] dark:bg-[#13161b] px-8 pt-5 pb-4 transition-colors duration-300">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-[22px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.26px]" style={{ fontWeight: 400 }}>Shared by me</h1>
-          </div>
+      <MainCanvasViewHeader
+        className="bg-[#f8f9fa] dark:bg-[#13161b]"
+        title="Shared by me"
+        actions={
           <div className="flex items-center gap-[3px]">
             {/* All time */}
             <button className="flex items-center gap-2 px-4 py-2 border border-[#e5e9f0] dark:border-[#333a47] rounded-[10px] bg-white dark:bg-[#262b35] text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors" style={{ fontWeight: 400 }}>
@@ -531,8 +530,8 @@ export function SharedByMe({ onEditDraft, onViewReport }: SharedByMeProps) {
               )}
             </div>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Stat Cards */}
       <div className="px-8 pb-4">

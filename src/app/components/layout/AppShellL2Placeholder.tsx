@@ -7,7 +7,7 @@ export type AppShellL2PlaceholderProps = {
 
 /**
  * L2 column skeleton matching `PANEL` from `L2NavLayout` — used when a product
- * does not use the shell L2 + main split (e.g. Chatbot / `searchai`).
+ * does not use the shell L2 + main split (e.g. Chatbot / `searchai`, Insights).
  */
 export function AppShellL2Placeholder({
   caption = "Chatbot is not wired to this shell — secondary nav is a preview only.",

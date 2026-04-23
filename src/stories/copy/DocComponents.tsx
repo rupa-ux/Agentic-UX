@@ -97,7 +97,8 @@ export function Anatomy({ parts }: { parts: { label: string; text: string; optio
   );
 }
 
-/* ── Data table ──────────────────────────────────────── */
+/* ── Data table (docs helper only) ─────────────────────
+   Product views: use AppDataTable (`@/app/components/ui/AppDataTable`) with TanStack column defs. */
 export function DataTable({ headers, rows }: { headers: string[]; rows: string[][] }) {
   return (
     <div className="rounded-lg border border-border overflow-hidden">

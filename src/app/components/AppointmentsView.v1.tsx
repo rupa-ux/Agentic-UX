@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { createColumnHelper } from "@tanstack/react-table";
 import {
   ChevronLeft, ChevronRight, Search, MoreHorizontal,
   Clock, User, Calendar, List, CheckCircle2, X, Bell,
@@ -8,9 +9,7 @@ import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { Input } from "@/app/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
-import {
-  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
-} from "@/app/components/ui/table";
+import { AppDataTable } from "@/app/components/ui/AppDataTable";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/app/components/ui/sheet";
@@ -24,6 +23,7 @@ import {
   Tooltip, TooltipContent, TooltipTrigger, TooltipProvider,
 } from "@/app/components/ui/tooltip";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
+import { cn } from "@/app/components/ui/utils";
 
 /* ─── Types ─── */
 type ApptStatus = "confirmed" | "requested" | "completed" | "cancelled" | "no_show" | "in_progress";
@@ -49,6 +49,8 @@ interface Appointment {
   location: string;
   notes?: string;
 }
+
+const appointmentColumnHelper = createColumnHelper<Appointment>();
 
 /* ─── Mock data ─── */
 const PROVIDERS: Provider[] = [
@@ -426,89 +428,148 @@ function ScheduleList({
     );
   });
 
-  return (
-    <div className="flex flex-col flex-1 overflow-hidden">
-      {/* Toolbar */}
-      <div className="px-4 py-3 border-b border-border flex items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search size={13} strokeWidth={1.6} absoluteStrokeWidth className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-          <Input
-            placeholder="Search appointments…"
-            value={search}
-            onChange={(e) => onSearch(e.target.value)}
-            className="pl-8 h-8 text-xs"
-          />
-        </div>
-        <span className="text-xs text-muted-foreground ml-auto">{filtered.length} appointments</span>
-      </div>
+  const handleRowClick = useCallback(
+    (a: Appointment) => {
+      onApptClick(a);
+    },
+    [onApptClick],
+  );
 
-      {/* Table */}
-      <div className="flex-1 overflow-y-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="text-xs font-medium w-[160px]">Date & Time</TableHead>
-              <TableHead className="text-xs font-medium w-[160px]">Patient</TableHead>
-              <TableHead className="text-xs font-medium w-[160px]">Provider</TableHead>
-              <TableHead className="text-xs font-medium">Service</TableHead>
-              <TableHead className="text-xs font-medium w-[110px]">Status</TableHead>
-              <TableHead className="text-xs font-medium w-[100px]">Location</TableHead>
-              <TableHead className="text-xs font-medium w-[48px]" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center py-12 text-sm text-muted-foreground">
-                  No appointments match your search.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filtered.map((a) => {
-                const provider = providerById(a.providerId);
-                const statusCfg = STATUS_CONFIG[a.status];
-                const { day, num, month } = fmtDateHeader(a.date);
-                return (
-                  <TableRow
-                    key={a.id}
-                    className="cursor-pointer"
-                    onClick={() => onApptClick(a)}
-                  >
-                    <TableCell className="py-3">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-medium text-foreground">{day}, {month} {num}</span>
-                        <span className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                          <Clock size={9} strokeWidth={1.6} absoluteStrokeWidth />
-                          {fmtTime12(a.startTime)} · {a.duration}m
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-3 text-sm text-foreground">{a.patientName}</TableCell>
-                    <TableCell className="py-3">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="w-2 h-2 rounded-full shrink-0"
-                          style={{ background: provider.color }}
-                        />
-                        <span className="text-xs text-foreground truncate">{provider.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-3 text-xs text-muted-foreground">{a.service}</TableCell>
-                    <TableCell className="py-3">
-                      <Badge variant="outline" className={`text-xs ${statusCfg.className}`}>
-                        {statusCfg.label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="py-3 text-xs text-muted-foreground">{a.location}</TableCell>
-                    <TableCell className="py-3" onClick={(e) => e.stopPropagation()}>
-                      <ApptRowActions appt={a} onAction={() => {}} />
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
+  const scheduleColumns = useMemo(
+    () => [
+      appointmentColumnHelper.accessor("date", {
+        id: "when",
+        header: "Date & Time",
+        meta: { settingsLabel: "Date & time" },
+        size: 168,
+        enableSorting: true,
+        cell: ({ row }) => {
+          const a = row.original;
+          const { day, num, month } = fmtDateHeader(a.date);
+          return (
+            <div className="flex flex-col gap-0.5">
+              <span className="font-medium text-foreground">
+                {day}, {month} {num}
+              </span>
+              <span className="flex items-center gap-1 text-muted-foreground">
+                <Clock size={9} strokeWidth={1.6} absoluteStrokeWidth />
+                {fmtTime12(a.startTime)} · {a.duration}m
+              </span>
+            </div>
+          );
+        },
+      }),
+      appointmentColumnHelper.accessor("patientName", {
+        id: "patient",
+        header: "Patient",
+        meta: { settingsLabel: "Patient" },
+        size: 168,
+        enableSorting: true,
+        cell: (info) => <span className="text-foreground">{info.getValue()}</span>,
+      }),
+      appointmentColumnHelper.accessor((row) => providerById(row.providerId).name, {
+        id: "provider",
+        header: "Provider",
+        meta: { settingsLabel: "Provider" },
+        size: 168,
+        enableSorting: true,
+        cell: ({ row }) => {
+          const a = row.original;
+          const provider = providerById(a.providerId);
+          return (
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: provider.color }} />
+              <span className="truncate text-foreground">{provider.name}</span>
+            </div>
+          );
+        },
+      }),
+      appointmentColumnHelper.accessor("service", {
+        id: "service",
+        header: "Service",
+        meta: { settingsLabel: "Service" },
+        size: 200,
+        enableSorting: true,
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+      appointmentColumnHelper.accessor("status", {
+        id: "status",
+        header: "Status",
+        meta: { settingsLabel: "Status" },
+        size: 120,
+        enableSorting: true,
+        cell: (info) => {
+          const statusCfg = STATUS_CONFIG[info.getValue()];
+          return (
+            <Badge variant="outline" className={`text-[length:var(--font-size)] ${statusCfg.className}`}>
+              {statusCfg.label}
+            </Badge>
+          );
+        },
+      }),
+      appointmentColumnHelper.accessor("location", {
+        id: "location",
+        header: "Location",
+        meta: { settingsLabel: "Location" },
+        size: 112,
+        enableSorting: true,
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+      appointmentColumnHelper.display({
+        id: "actions",
+        header: "",
+        meta: { settingsLabel: "Actions" },
+        size: 52,
+        enableResizing: false,
+        enableHiding: false,
+        cell: ({ row }) => (
+          <div className="text-left">
+            <ApptRowActions appt={row.original} onAction={() => {}} />
+          </div>
+        ),
+      }),
+    ],
+    [],
+  );
+
+  const scheduleEmpty = (
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <p className="text-sm text-muted-foreground">No appointments match your search.</p>
+    </div>
+  );
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="min-h-0 flex-1 overflow-y-auto border-b border-border">
+        <AppDataTable<Appointment>
+          tableId="appointments.schedule"
+          data={filtered}
+          columns={scheduleColumns}
+          getRowId={(a) => a.id}
+          onRowClick={handleRowClick}
+          emptyState={scheduleEmpty}
+          columnSheetTitle="Appointment columns"
+          className="min-h-0 min-w-0"
+          toolbarLeft={
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+              <div className="relative max-w-sm flex-1">
+                <Search
+                  size={13}
+                  strokeWidth={1.6}
+                  absoluteStrokeWidth
+                  className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  placeholder="Search appointments…"
+                  value={search}
+                  onChange={(e) => onSearch(e.target.value)}
+                  className="h-8 pl-8 text-xs"
+                />
+              </div>
+              <span className="ml-auto text-xs text-muted-foreground">{filtered.length} appointments</span>
+            </div>
+          }
+        />
       </div>
     </div>
   );
@@ -774,7 +835,14 @@ export function AppointmentsView() {
         </div>
 
         {/* ── Main content area ── */}
-        <div className="flex-1 min-h-0 mx-6 mb-6 bg-card border border-border rounded-xl overflow-hidden flex flex-col">
+        <div
+          className={cn(
+            "mx-6 mb-6 flex min-h-0 flex-1 flex-col overflow-hidden",
+            viewMode === "calendar"
+              ? "rounded-xl border border-border bg-card"
+              : "border-0 bg-background",
+          )}
+        >
           {viewMode === "calendar" ? (
             calendarView === "week" ? (
               <WeekCalendar

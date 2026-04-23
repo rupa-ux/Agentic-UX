@@ -1,8 +1,10 @@
 import { useState, Fragment, useMemo } from "react";
 import { ChevronDown, ChevronUp, Filter, MoreVertical, Search } from "lucide-react";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { SearchAIRecommendationsPanel } from "@/app/components/searchai/SearchAIRecommendationsPanel";
 import { SEARCH_AI_L2_KEY_RECOMMENDATIONS } from "@/app/components/searchai/searchAIL2Keys";
 import { Button } from "@/app/components/ui/button";
+import { TextTabsRow } from "@/app/components/ui/text-tabs";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Cell, PieChart, Pie,
@@ -350,25 +352,13 @@ function Toggle({ options, active, onChange }: { options: string[]; active: stri
 /* ─── Reusable: Platform Tab Row ─── */
 function PlatformTabs({ activeTab, onTabChange }: { activeTab: string; onTabChange: (t: string) => void }) {
   return (
-    <div className="flex items-start px-4 sm:px-6 border-b border-[#eaeaea] dark:border-[#333a47] overflow-x-auto scrollbar-none">
-      {platformTabs.map(tab => (
-        <button
-          key={tab}
-          onClick={() => onTabChange(tab)}
-          className="flex flex-col items-start gap-1 px-2 pb-0 transition-colors shrink-0"
-        >
-          <span
-            className={`h-[32px] flex items-center justify-center px-2 rounded-[4px] text-[14px] tracking-[-0.28px] whitespace-nowrap ${
-              activeTab === tab ? "text-[#2552ED] dark:text-[#6b9bff]" : "text-[#555] dark:text-[#8b92a5]"
-            }`}
-            style={{ fontWeight: 400 }}
-          >
-            {tab}
-          </span>
-          <div className={`h-[1px] w-full ${activeTab === tab ? "bg-[#2552ED] dark:bg-[#6b9bff]" : "bg-transparent"}`} />
-        </button>
-      ))}
-    </div>
+    <TextTabsRow
+      className="scrollbar-none flex-nowrap overflow-x-auto px-4 sm:px-6"
+      ariaLabel="AI platform"
+      value={activeTab}
+      onChange={onTabChange}
+      items={platformTabs.map((tab) => ({ id: tab, label: tab }))}
+    />
   );
 }
 
@@ -441,19 +431,22 @@ function SearchAIVisibilityDashboard() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden bg-white dark:bg-[#1e2229] transition-colors duration-300">
-      {/* ── Page Header ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between px-4 sm:px-6 py-3 sm:py-4 shrink-0 gap-3">
-        <div className="flex flex-col gap-1 min-w-0">
-          <span className="text-[18px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.36px]" style={{ fontWeight: 400 }}>Visibility</span>
-          <span className="text-[12px] text-[#555] dark:text-[#8b92a5]">See how frequently your brand is mentioned in AI-generated answers compared to competitors</span>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap shrink-0">
-          <DropdownBtn label="Dec 2026" />
-          <Toggle options={["By locations", "By brand"]} active={toggleView} onChange={setToggleView} />
-          <IconBtn><MoreVertical className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" /></IconBtn>
-          <IconBtn><Filter className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" /></IconBtn>
-        </div>
-      </div>
+      <MainCanvasViewHeader
+        title="Visibility"
+        description="See how frequently your brand is mentioned in AI-generated answers compared to competitors"
+        actions={
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <DropdownBtn label="Dec 2026" />
+            <Toggle options={["By locations", "By brand"]} active={toggleView} onChange={setToggleView} />
+            <IconBtn>
+              <MoreVertical className="h-3.5 w-3.5 text-muted-foreground" />
+            </IconBtn>
+            <IconBtn>
+              <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+            </IconBtn>
+          </div>
+        }
+      />
 
       {/* ── Scrollable Content ── */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-6 pb-8 pt-4 sm:pt-6 min-w-0">

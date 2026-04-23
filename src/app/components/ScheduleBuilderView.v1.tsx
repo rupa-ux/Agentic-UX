@@ -7,6 +7,8 @@ import {
   ArrowDown, Maximize2, Settings, Eye, Save,
 } from "lucide-react";
 import { toast } from "sonner";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
+import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
 import { InlineSelectField } from "@/app/components/ui/inline-select-field";
 
@@ -759,43 +761,46 @@ export function ScheduleBuilderView({ onBack }: ScheduleBuilderViewProps) {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300">
-      {/* Header */}
-      <div className="shrink-0 h-[52px] flex items-center justify-between px-4 border-b border-[#eaeaea] dark:border-[#2e3340]">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onBack}
-            className="w-7 h-7 rounded-[6px] border border-[#e5e9f0] dark:border-[#333a47] flex items-center justify-center hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
-          >
-            <ChevronLeft className="w-3.5 h-3.5 text-[#555] dark:text-[#8b92a5]" />
-          </button>
-          <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-[#2552ED]" />
-            <span className="text-[14px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.28px]" style={{ fontWeight: 400 }}>
-              {scheduleConfig.name || "New scheduled agent"}
+      <div className="shrink-0 border-b border-[#eaeaea] dark:border-[#2e3340]">
+        <MainCanvasViewHeader
+          title={
+            <span className="flex min-w-0 flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="size-7 shrink-0 rounded-md"
+                onClick={onBack}
+                aria-label="Back"
+              >
+                <ChevronLeft className="size-3.5 text-muted-foreground" />
+              </Button>
+              <Zap className="size-4 shrink-0 text-primary" aria-hidden />
+              <span className="min-w-0 truncate">{scheduleConfig.name || "New scheduled agent"}</span>
+              <Badge variant="secondary" className="shrink-0 text-[10px] font-normal uppercase tracking-wide">
+                Draft
+              </Badge>
             </span>
-          </div>
-          <span className="text-[10px] text-[#888] dark:text-[#6b7280] bg-[#f0f1f5] dark:bg-[#262b35] px-2 py-0.5 rounded-full uppercase tracking-[0.5px]" style={{ fontWeight: 400 }}>
-            Draft
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => handleSave(false)}
-            className="h-[32px] px-3 border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] text-[12px] text-[#555] dark:text-[#9ba2b0] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors flex items-center gap-1.5"
-            style={{ fontWeight: 400 }}
-          >
-            <Save className="w-3.5 h-3.5" />
-            Save draft
-          </button>
-          <button
-            onClick={() => handleSave(true)}
-            className="h-[32px] px-4 bg-[#2552ED] hover:bg-[#1E44CC] text-white rounded-[8px] text-[12px] transition-colors flex items-center gap-1.5"
-            style={{ fontWeight: 400 }}
-          >
-            <Play className="w-3 h-3" />
-            Activate
-          </button>
-        </div>
+          }
+          actions={
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs"
+                onClick={() => handleSave(false)}
+              >
+                <Save className="size-3.5" />
+                Save draft
+              </Button>
+              <Button type="button" size="sm" className="gap-1.5 bg-[#2552ED] text-xs text-white hover:bg-[#1E44CC]" onClick={() => handleSave(true)}>
+                <Play className="size-3" />
+                Activate
+              </Button>
+            </div>
+          }
+        />
       </div>
 
       {/* Three-panel layout */}

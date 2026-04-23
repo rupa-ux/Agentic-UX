@@ -1,6 +1,6 @@
 ---
 name: aero-ds
-description: "Aero DS: design intelligence for this repo only—ShareConsolidated (Bird AI) SaaS shell (dashboards, agents, settings, workflows, in-app surfaces). Stack: React, Vite, Tailwind, shadcn-style primitives. Verify in Storybook (Design System/Tokens) and theme.css. Main titles: `MainCanvasViewHeader` + `mainViewTitleClasses.ts` (same heading defaults on Dialog/Sheet/Drawer/AlertDialog titles). Modal scrims: `MODAL_OVERLAY_VISUAL_CLASS` in `modalOverlayClasses.ts`. Modal + floating menu surfaces: no perimeter border on Dialog/Sheet/AlertDialog/Drawer content or on `FLOATING_PANEL_SURFACE_CLASSNAME` (Popover, DropdownMenu, Select, profile popover)—shadow for depth. For full page builds from Figma or screenshots, follow Build a Full Page. For floating right drawers, Storybook UI/Sheet + FloatingSheetFrame. Not for generic websites, portfolios, or marketing landing systems unless explicitly requested."
+description: "Aero DS: design intelligence for this repo only—ShareConsolidated (Bird AI) SaaS shell (dashboards, agents, settings, workflows, in-app surfaces). Stack: React, Vite, Tailwind, shadcn-style primitives. Verify in Storybook (Design System/Tokens) and theme.css. Data-heavy grids: use AppDataTable (TanStack Table + table.v1 + column sheet); verify **UI/AppDataTable** in Storybook. Auth/shell loading copy: **BootInsightsLoader** + [`bootInsightsDefaultSlides.ts`](../../../src/app/components/layout/bootInsightsDefaultSlides.ts); post-login [`AppBootShimmer.tsx`](../../../src/app/components/layout/AppBootShimmer.tsx); verify **UI/BootInsightsLoader**. User/agent triggers: *bring this custom loader*, *boot insights loader*. Main canvas header: `MainCanvasViewHeader` + `mainViewTitleClasses.ts` — **no** `border-b` on the header band (title row stays open into the body; use inner cards/toolbars for dividers). Same primary heading tokens on Dialog/Sheet/Drawer/AlertDialog titles. Modal scrims: `MODAL_OVERLAY_VISUAL_CLASS` in `modalOverlayClasses.ts`. Modal + floating menu surfaces: no perimeter border on Dialog/Sheet/AlertDialog/Drawer content or on `FLOATING_PANEL_SURFACE_CLASSNAME` (Popover, DropdownMenu, Select, profile popover)—shadow for depth. For full page builds from Figma or screenshots, follow Build a Full Page. For floating right drawers, Storybook UI/Sheet + FloatingSheetFrame. Not for generic websites, portfolios, or marketing landing systems unless explicitly requested."
 ---
 # Aero DS - Design Intelligence
 
@@ -26,6 +26,45 @@ Storybook is the **primary visual verification surface** for UI work in this rep
 - **Preview globals:** Follow [`.storybook/preview.tsx`](../../../.storybook/preview.tsx) — light/dark theme toolbar, `DESIGN_VERSION` tokens CSS + [`src/styles/index.css`](../../../src/styles/index.css), story `layout` parameters; backgrounds addon stays disabled in favour of CSS variables.
 - **Parity:** Components should look and behave in Storybook the same way they do in the running app (shared CSS entry).
 
+### Data tables (`AppDataTable`)
+
+Use this stack for **sortable, resizable directory-style grids** in product views (campaigns, contacts, listings, payments, and similar).
+
+| Piece | Role |
+| --- | --- |
+| **`@tanstack/react-table`** | Column model: sorting, sizing, visibility, order. |
+| **[`table.v1.tsx`](../../../src/app/components/ui/table.v1.tsx)** (`Table`, `TableHead`, …) | Visual layer only — same Aero tokens as the rest of the shell. |
+| **[`AppDataTable.tsx`](../../../src/app/components/ui/AppDataTable.tsx)** | Wires TanStack to `table.v1`, resize handles, toolbar **Columns** control, and [`ColumnSettingsSheet.tsx`](../../../src/app/components/ui/ColumnSettingsSheet.tsx) (reorder, show/hide, reset). |
+| **[`appDataTableTypes.ts`](../../../src/app/components/ui/appDataTableTypes.ts)** | Persisted slice: `columnOrder`, `columnVisibility`, `columnSizing`. |
+
+**Persistence:** Pass a stable **`tableId`** (e.g. `contacts.directory`). Session state is stored under **`appdt:v1:${tableId}`** via [`usePersistedState`](../../../src/app/hooks/usePersistedState.ts). Set **`persist={false}`** in Storybook-only demos.
+
+**Storybook-first:** Land or update behaviour in **[`src/stories/AppDataTable.stories.tsx`](../../../src/stories/AppDataTable.stories.tsx)** (**UI/AppDataTable**) before shipping new table UX only inside a view. Use the Storybook theme toolbar to check light/dark against **Design System/Tokens**.
+
+**When not to use `AppDataTable`:** Static print/report layouts, token typography tables, or tiny two-row demos can stay on plain `<table>` or static **`UI/Table`** stories.
+
+**Bespoke grids not yet on `AppDataTable`:** Some views still use **native `<table>`** or custom flex grids for **wide matrix layouts**, **legacy section styling**, or **print-style output**. Examples: [`SearchAIView.v1.tsx`](../../../src/app/components/SearchAIView.v1.tsx) (dynamic brand columns + expandable theme rows), [`BirdAIReportsView.v1.tsx`](../../../src/app/components/BirdAIReportsView.v1.tsx), [`AgentConfigView.v1.tsx`](../../../src/app/components/AgentConfigView.v1.tsx), [`ScheduledDeliveriesView.v1.tsx`](../../../src/app/components/ScheduledDeliveriesView.v1.tsx), [`SharedByMe.v1.tsx`](../../../src/app/components/SharedByMe.v1.tsx), [`BusinessOverviewDashboard.v1.tsx`](../../../src/app/components/BusinessOverviewDashboard.v1.tsx). **[`ReportPages.v1.tsx`](../../../src/app/components/ReportPages.v1.tsx)** should generally stay on controlled `<table>` + inline typography for **export / WYSIWYG** parity unless product explicitly wants AppDataTable there.
+
+**Row UX defaults in `AppDataTable`:** Row dividers (`border-b border-border`), optional **`onRowClick`**, **`isRowSelected`** for keyed selection, **`actions`** column id (and `meta.stopRowClick`) so interactive cells do not bubble row clicks.
+
+### Boot insights loader (`BootInsightsLoader`)
+
+Use this pattern when the user wants **meaningful copy during auth delay or post-login shell boot** (metrics-style columns, shortcuts, automation, product positioning) instead of a blank shimmer or spinner-only state.
+
+| Piece | Role |
+| --- | --- |
+| **[`bootInsightTypes.ts`](../../../src/app/components/layout/bootInsightTypes.ts)** | `BootInsightSlide` union: **`metrics`** (up to three columns: `label`, `value`, optional `hint`) and **`message`** (`title`, optional `body`); optional **`tag`** (`shortcut` \| `automation` \| `product` or custom string) for the chip. |
+| **[`bootInsightsDefaultSlides.ts`](../../../src/app/components/layout/bootInsightsDefaultSlides.ts)** | Demo **`bootInsightsDefaultSlides`** preset (reviews, social, shortcuts, auto-admin, product pitch). Swap or extend for other flows without changing the loader. |
+| **[`BootInsightsLoader.tsx`](../../../src/app/components/layout/BootInsightsLoader.tsx)** | Rotating slides with **`motion/react`** crossfade, dot navigation, `role="status"` + **`aria-live="polite"`**, and **`prefers-reduced-motion`** (instant swap / no fade). Props: **`slides`**, **`intervalMs`**, optional controlled **`activeIndex`** / **`onIndexChange`**. |
+| **[`AppBootShimmer.tsx`](../../../src/app/components/layout/AppBootShimmer.tsx)** | Post-login shell placeholder; composes **`BootInsightsLoader`** in the main canvas. Optional prop **`bootInsightsIntervalMs`** (default **560**). [`App.tsx`](../../../src/app/App.tsx) passes **`max(400, floor(POST_LOGIN_BOOT_MS / 2))`** so slide cadence stays tied to the boot window (~two slides per boot). |
+| **[`BirdAILoginPage.tsx`](../../../src/app/components/auth/BirdAILoginPage.tsx)** | Optional full-screen overlay during simulated sign-in / continue delays (**`SHOW_BOOT_INSIGHTS_ON_LOGIN_LOADING`**); scrim uses **`MODAL_OVERLAY_VISUAL_CLASS`**. |
+
+**Agent / user triggers:** When someone says **“bring this custom loader”**, **“boot insights loader”**, or similar, add or reuse **`BootInsightsLoader`**: import **`bootInsightsDefaultSlides`** or pass a custom **`slides`** array; prefer **`AppBootShimmer`** for post-login and the login overlay pattern for in-form delays.
+
+**Storybook:** **[`src/stories/BootInsightsLoader.stories.tsx`](../../../src/stories/BootInsightsLoader.stories.tsx)** — **UI/BootInsightsLoader** (default preset, custom slides, controlled index, **Embedded in App boot shimmer** fullscreen). Check light/dark with the theme toolbar.
+
+---
+
 ### Keyboard shortcuts help
 
 - **Single source of truth:** [`src/app/shortcuts/shortcuts.ts`](../../../src/app/shortcuts/shortcuts.ts) — `SHORTCUT_REGISTRY`. Each entry defines `scope`, `modalGroup` (`navigation` | `current-view`), keys / `keySequences`, and the strings shown in the modal. All **global** rows appear under the single **Navigation** column in the modal.
@@ -50,7 +89,9 @@ Storybook is the **primary visual verification surface** for UI work in this rep
 
 - **Shared header row:** [`src/app/components/layout/MainCanvasViewHeader.tsx`](../../../src/app/components/layout/MainCanvasViewHeader.tsx) — `title`, optional `description`, optional `actions` (right column). Outer band uses **`MAIN_VIEW_HEADER_BAND_CLASS`** (`px-6 pt-5 pb-4`, `flex`, `justify-between`).
 - **Tokens:** [`src/app/components/layout/mainViewTitleClasses.ts`](../../../src/app/components/layout/mainViewTitleClasses.ts) — **`MAIN_VIEW_PRIMARY_HEADING_CLASS`** (`text-lg font-semibold tracking-tight text-foreground`) and **`MAIN_VIEW_SUBHEADING_CLASS`** (`text-xs` muted subline). The same primary heading is the **default** on Radix **`DialogTitle`**, **`SheetTitle`**, **`DrawerTitle`**, and **`AlertDialogTitle`** in [`dialog.v1.tsx`](../../../src/app/components/ui/dialog.v1.tsx), [`sheet.v1.tsx`](../../../src/app/components/ui/sheet.v1.tsx), [`drawer.v1.tsx`](../../../src/app/components/ui/drawer.v1.tsx), [`alert-dialog.v1.tsx`](../../../src/app/components/ui/alert-dialog.v1.tsx)—override with `className` only when a design doc specifies an exception.
-- **Product views using `MainCanvasViewHeader` today:** Appointments, Payments, Surveys, Tickets (TicketingView), Campaigns, Listings (default + “All sites” branch), and Agents Monitor (title + toolbar row). Add the component for any **new** full-width canvas view instead of hand-rolling `px-6 pt-5 pb-4` + `h1` classes.
+- **New / updated full-width canvas views:** Use **`MainCanvasViewHeader`** (or the same three exports from `mainViewTitleClasses.ts` composed manually **only** when layout cannot wrap the shared row). Do **not** hand-roll primary canvas titles with `text-xl`, arbitrary `text-[Npx]`, or one-off `h1` weights for the module name.
+- **No divider under the title band:** Do **not** pass `className` on `MainCanvasViewHeader` that adds **`border-b`** / **`border-b border-border`**. The title row is visually open into the scrollable body; horizontal rules belong on **inner** surfaces (data cards, sticky table toolbars, tabs), not on the shared canvas header strip.
+- **Product views using `MainCanvasViewHeader` (non-exhaustive):** Appointments, Payments, Referrals, Surveys, Ticketing, Campaigns, Listings (default + All sites), Agents Monitor, Reviews (list), Competitors (main column), Contacts (directory + lists), Business overview, Dashboard shell, Shared by me, Scheduled deliveries, Search AI (visibility + recommendations panel), Inbox (canvas title), Schedule builder, BirdAI reports, Journeys placeholder, Agent detail, Agents builder, Agent library, listings citations / Google suggestions, and similar. Add the component for any **new** full-width canvas view instead of hand-rolling `px-6 pt-5 pb-4` + bespoke `h1` classes.
 - **Floating sheets:** [`FloatingSheetFrame`](../../../src/app/components/layout/FloatingSheetFrame.tsx) — `title` renders as **`SheetTitle`** (inherits the same default heading class). Keep header padding aligned (`pt-5 pb-4` on the frame header).
 - **L2 vs main title:** When the main canvas already shows **`MainCanvasViewHeader`**, **omit** **`L2NavLayout` `panelTitle`** so the module name is not duplicated in the L2 rail. Use **`headerAction`** for a top-of-L2 CTA row (label + plus chip), e.g. **Book an appointment** on Appointments — same pattern as Inbox **New message**.
 

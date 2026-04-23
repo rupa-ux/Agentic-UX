@@ -31,6 +31,7 @@ import {
 } from "@/app/components/ui/tooltip";
 import {
   L2NavLayout,
+  L2_FLAT_NAV_KEY_PREFIX,
   PANEL,
   PANEL_INBOX_L2,
   ROW,
@@ -327,8 +328,13 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
     if (!railMetrics.overflowMode && overflowNavOpen) setOverflowNavOpen(false);
   }, [railMetrics.overflowMode, overflowNavOpen]);
 
-  const navActiveBg = "bg-[#d4dae3] dark:bg-[#282e3a]";
-  const navHoverBg = "hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845]";
+  /**
+   * L1 rail + expanded nav pills — `bg-app-shell-l1-nav-highlight` (darker blue-grey on the rail; not near-white).
+   * Pressed: `bg-app-shell-l1-nav-pressed`. Menus: `bg-primary/10` (Design Tokens → Navigation selection).
+   */
+  const navActiveBg = "bg-app-shell-l1-nav-highlight";
+  const navHoverBg =
+    "hover:bg-app-shell-l1-nav-highlight active:bg-app-shell-l1-nav-pressed";
 
   const renderRailButton = (item: SidebarNavItem) => {
     const isActive = item.label === activeIcon;
@@ -341,16 +347,16 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
         className={`
           group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0
           transition-all duration-200 ease-out outline-none
-          focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail
+          focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail
           ${isActive ? `${navActiveBg} shadow-none` : `bg-transparent ${navHoverBg} hover:scale-110 active:scale-95`}
         `}
       >
         <item.Icon
           size={iconSize}
-          className={`transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] ${
+          className={`transition-all duration-200 ${
             isActive
-              ? "text-[#1E44CC] dark:text-[#2952E3]"
-              : "text-[#505050] dark:text-[#9ba2b0] group-hover:scale-110"
+              ? "text-primary"
+              : "text-muted-foreground group-hover:scale-110"
           } ${item.label === "Agents" && isActive ? "group-hover:animate-[agents-shimmer_3s_ease-in-out_infinite]" : ""}`}
         />
       </button>
@@ -375,25 +381,25 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
         className={`
           group relative w-full h-[32px] flex items-center rounded-[10px] shrink-0 outline-none
           transition-colors duration-200 ease-out
-          focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1
+          focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1
           ${isActive ? navActiveBg : `bg-transparent ${navHoverBg}`}
         `}
       >
         <span className="flex w-[32px] h-[32px] items-center justify-center shrink-0">
           <item.Icon
             size={iconSize}
-            className={`transition-colors duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] ${
+            className={`transition-colors duration-200 ${
               isActive
-                ? "text-[#1E44CC] dark:text-[#2952E3]"
-                : "text-[#505050] dark:text-[#9ba2b0]"
+                ? "text-primary"
+                : "text-muted-foreground"
             }`}
           />
         </span>
         <span
           className={`ml-3 text-[13px] whitespace-nowrap ${
             isActive
-              ? "text-[#1E44CC] dark:text-[#2952E3]"
-              : "text-[#303030] dark:text-[#c0c6d4]"
+              ? "text-primary"
+              : "text-foreground"
           }`}
         >
           {item.label}
@@ -411,7 +417,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
   const renderPanelSection = (section: SidebarNavSection, index: number) => (
     <div key={section.title ?? `top-${index}`} className="flex flex-col">
       {section.title && (
-        <div className="px-2 pt-3 pb-1 text-[10px] uppercase tracking-[0.6px] text-[#8b92a5] dark:text-[#6b7280]">
+        <div className="px-2 pt-3 pb-1 text-[10px] uppercase tracking-[0.6px] text-muted-foreground">
           {section.title}
         </div>
       )}
@@ -475,7 +481,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                         className={`
                           group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0
                           transition-all duration-200 ease-out outline-none
-                          focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail
+                          focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail
                           bg-transparent ${navHoverBg} hover:scale-110 active:scale-95
                         `}
                       >
@@ -483,7 +489,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                           size={iconSize}
                           strokeWidth={L1_STRIP_ICON_STROKE_PX}
                           absoluteStrokeWidth
-                          className="text-[#505050] dark:text-[#9ba2b0] transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-hover:scale-110"
+                          className="text-muted-foreground transition-all duration-200 group-hover:scale-110"
                         />
                       </button>
                     );
@@ -512,8 +518,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                             }}
                             className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150 ${
                               activeIcon === item.label
-                                ? "bg-[#e8effe] text-[#2552ED] dark:bg-[#1e2d5e] dark:text-[#6b9bff]"
-                                : "text-[#212121] hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
+                                ? "bg-primary/10 text-primary"
+                                : "text-foreground hover:bg-accent dark:hover:bg-white/[0.06]"
                             }`}
                           >
                             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-transparent">
@@ -521,8 +527,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                                 size={iconSize}
                                 className={
                                   activeIcon === item.label
-                                    ? "text-[#2552ED] dark:text-[#6b9bff]"
-                                    : "text-[#505050] dark:text-[#9ba2b0]"
+                                    ? "text-primary"
+                                    : "text-muted-foreground"
                                 }
                               />
                             </span>
@@ -550,14 +556,14 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
             <button
               type="button"
               aria-label="Settings"
-              className="group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail"
+              className={`group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent ${navHoverBg} hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail`}
             >
               <Settings
                 width={L1_STRIP_ICON_SIZE}
                 height={L1_STRIP_ICON_SIZE}
                 strokeWidth={L1_STRIP_ICON_STROKE_PX}
                 absoluteStrokeWidth
-                className="text-[#505050] dark:text-[#9ba2b0] transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] group-hover:scale-110"
+                className="text-muted-foreground transition-all duration-200 group-hover:scale-110"
               />
             </button>
           );
@@ -626,8 +632,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                           />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4] truncate" style={{ fontWeight: 400 }}>John Doe</p>
-                          <p className="text-[11px] text-[#999] dark:text-[#777] truncate">john.doe@acmecorp.com</p>
+                          <p className="text-[13px] text-foreground truncate" style={{ fontWeight: 400 }}>John Doe</p>
+                          <p className="text-[11px] text-muted-foreground truncate">john.doe@acmecorp.com</p>
                         </div>
                       </div>
                     </div>
@@ -640,7 +646,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                           setProfileOpen(false);
                           setShowAppearance(false);
                         }}
-                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
+                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-foreground transition-colors duration-150 hover:bg-accent dark:hover:bg-white/[0.06]"
                       >
                         My profile
                       </button>
@@ -653,8 +659,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                         }}
                         className={`w-full rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150 ${
                           currentView === "shared-by-me"
-                            ? "bg-[#e8effe] text-[#2552ED] dark:bg-[#1e2d5e] dark:text-[#6b9bff]"
-                            : "text-[#212121] hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
+                            ? "bg-primary/10 text-primary"
+                            : "text-foreground hover:bg-accent dark:hover:bg-white/[0.06]"
                         }`}
                       >
                         Shared by me
@@ -668,15 +674,15 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                         }}
                         className={`w-full rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150 ${
                           currentView === "scheduled-deliveries"
-                            ? "bg-[#e8effe] text-[#2552ED] dark:bg-[#1e2d5e] dark:text-[#6b9bff]"
-                            : "text-[#212121] hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
+                            ? "bg-primary/10 text-primary"
+                            : "text-foreground hover:bg-accent dark:hover:bg-white/[0.06]"
                         }`}
                       >
                         Scheduled deliveries
                       </button>
                       <button
                         type="button"
-                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
+                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-foreground transition-colors duration-150 hover:bg-accent dark:hover:bg-white/[0.06]"
                       >
                         Settings
                       </button>
@@ -688,13 +694,13 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                             setProfileOpen(false);
                             setShowAppearance(false);
                           }}
-                          className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
+                          className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-foreground transition-colors duration-150 hover:bg-accent dark:hover:bg-white/[0.06]"
                         >
                           Keyboard shortcuts
                         </button>
                       )}
-                      <div className="w-full rounded-lg px-3 py-2 text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06] flex items-center justify-between gap-3">
-                        <span className="text-[#212121] dark:text-[#e4e4e4]">Expand sidebar on hover</span>
+                      <div className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground transition-colors duration-150 hover:bg-accent dark:hover:bg-white/[0.06]">
+                        <span>Expand sidebar on hover</span>
                         <Switch
                           checked={hoverExpandEnabled}
                           onCheckedChange={setHoverExpandEnabled}
@@ -704,7 +710,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                       <button
                         type="button"
                         onClick={() => setShowAppearance(true)}
-                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-[#212121] transition-colors duration-150 hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
+                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-foreground transition-colors duration-150 hover:bg-accent dark:hover:bg-white/[0.06]"
                       >
                         Switch appearance
                       </button>
@@ -731,15 +737,15 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                         variant="outline"
                         size="icon"
                         onClick={() => setShowAppearance(false)}
-                        className="shrink-0 border-2 border-[#2552ED] transition-colors hover:bg-[#e8effe] dark:hover:bg-[#1e2d5e]"
+                        className="shrink-0 border-2 border-primary transition-colors hover:bg-primary/10"
                       >
-                        <ChevronLeft className="h-4 w-4 text-[#2552ED]" />
+                        <ChevronLeft className="h-4 w-4 text-primary" />
                       </Button>
-                      <span className="text-[14px] text-[#212121] dark:text-[#e4e4e4] flex-1" style={{ fontWeight: 400 }}>
+                      <span className="flex-1 text-[14px] text-foreground" style={{ fontWeight: 400 }}>
                         Switch appearance
                       </span>
                       <Moon
-                        className="w-5 h-5 text-[#555] dark:text-[#ccc] transition-transform duration-500"
+                        className="h-5 w-5 text-muted-foreground transition-transform duration-500"
                         style={{ transform: isDark ? "rotate(-30deg)" : "rotate(0deg)" }}
                       />
                     </div>
@@ -757,14 +763,14 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                             onClick={() => setPreference(value)}
                             className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-[13px] transition-colors duration-150 ${
                               isSelected
-                                ? "bg-[#e8effe] text-[#2552ED] dark:bg-[#1e2d5e] dark:text-[#6b9bff]"
-                                : "text-[#212121] hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]"
+                                ? "bg-primary/10 text-primary"
+                                : "text-foreground hover:bg-accent dark:hover:bg-white/[0.06]"
                             }`}
                           >
                             <span className="flex items-center gap-3">
                               <Icon
-                                className={`w-4 h-4 transition-transform duration-500 ${
-                                  isSelected ? "text-[#2552ED]" : "text-[#555] dark:text-[#8b92a5]"
+                                className={`h-4 w-4 transition-transform duration-500 ${
+                                  isSelected ? "text-primary" : "text-muted-foreground"
                                 }`}
                                 style={{
                                   transform: value === "dark" && isDark ? "rotate(-30deg)" : "rotate(0deg)",
@@ -774,14 +780,14 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                             </span>
                             {/* Radio indicator */}
                             <span
-                              className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center transition-colors ${
+                              className={`flex h-[18px] w-[18px] items-center justify-center rounded-full border-2 transition-colors ${
                                 isSelected
-                                  ? "border-[#2552ED]"
-                                  : "border-[#ccc] dark:border-[#4d5568]"
+                                  ? "border-primary"
+                                  : "border-muted-foreground/40 dark:border-[#4d5568]"
                               }`}
                             >
                               {isSelected && (
-                                <span className="w-[10px] h-[10px] rounded-full bg-[#2552ED]" />
+                                <span className="h-[10px] w-[10px] rounded-full bg-primary" />
                               )}
                             </span>
                           </button>
@@ -814,7 +820,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
           <svg width="17.55" height="16.875" viewBox="0 0 19.5 18.75" fill="none" className="shrink-0">
             <path clipRule="evenodd" d={svgPaths.p23fcc000} fill="#2552ED" fillRule="evenodd" />
           </svg>
-          <span className="text-[15px] font-medium text-[#212121] dark:text-[#e4e4e4] whitespace-nowrap">
+          <span className="text-[15px] font-medium text-foreground whitespace-nowrap">
             Birdeye
           </span>
         </div>
@@ -830,24 +836,24 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
             <button
               type="button"
               aria-label="Settings"
-              className="group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent hover:bg-[#d4dae3] dark:hover:bg-[#282e3a] active:bg-[#c8d0dc] dark:active:bg-[#313845] hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#1E44CC]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail"
+              className={`group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent ${navHoverBg} hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail`}
             >
               <Settings
                 width={L1_STRIP_ICON_SIZE}
                 height={L1_STRIP_ICON_SIZE}
                 strokeWidth={L1_STRIP_ICON_STROKE_PX}
                 absoluteStrokeWidth
-                className="text-[#505050] dark:text-[#9ba2b0] group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] transition-colors"
+                className="text-muted-foreground transition-colors"
               />
             </button>
-            <span className="text-[13px] font-normal leading-none text-[#212121] dark:text-[#e4e4e4] whitespace-nowrap">
+            <span className="text-[13px] font-normal leading-none text-foreground whitespace-nowrap">
               Settings
             </span>
           </div>
 
           <div className="grid w-full grid-cols-[32px_minmax(0,1fr)] items-center gap-2">
             <MonitorNotificationsTrigger />
-            <span className="min-w-0 truncate text-[13px] font-normal leading-none text-[#212121] dark:text-[#e4e4e4]">
+            <span className="min-w-0 truncate text-[13px] font-normal leading-none text-foreground">
               Notifications
             </span>
           </div>
@@ -866,7 +872,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
             >
               <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" />
             </Button>
-            <span className="min-w-0 truncate text-[13px] font-normal leading-none text-[#212121] dark:text-[#e4e4e4]">
+            <span className="min-w-0 truncate text-[13px] font-normal leading-none text-foreground">
               John Doe
             </span>
           </div>
@@ -1119,6 +1125,72 @@ const reviewsConfig = {
 
 export function ReviewsL2NavPanel() {
   return <L2NavLayout {...reviewsConfig} storageKey="nav:l2:reviews" data-no-print />;
+}
+
+/** Default L2 selection when opening Referrals (matches `flatNavItems` key `sent`). */
+export const REFERRALS_L2_DEFAULT_ACTIVE_KEY = `${L2_FLAT_NAV_KEY_PREFIX}/sent`;
+
+export type ReferralsL2NavPanelProps = {
+  activeItem: string;
+  onActiveItemChange: (key: string) => void;
+  onSendReferralRequest: () => void;
+};
+
+export function ReferralsL2NavPanel({
+  activeItem,
+  onActiveItemChange,
+  onSendReferralRequest,
+}: ReferralsL2NavPanelProps) {
+  return (
+    <L2NavLayout
+      headerAction={{ label: "Send a referral request", onClick: onSendReferralRequest }}
+      flatNavItems={[
+        { label: "Sent", key: "sent" },
+        { label: "Shared", key: "shared" },
+        { label: "Leads", key: "leads" },
+      ]}
+      flatNavAccentKeys={["sent", "shared", "leads"]}
+      sections={[]}
+      defaultActive={REFERRALS_L2_DEFAULT_ACTIVE_KEY}
+      activeItem={activeItem}
+      onActiveItemChange={onActiveItemChange}
+      data-no-print
+    />
+  );
+}
+
+/** Default L2 selection when opening Payments (transaction status scope). */
+export const PAYMENTS_L2_DEFAULT_ACTIVE_KEY = `${L2_FLAT_NAV_KEY_PREFIX}/all`;
+
+export type PaymentsL2NavPanelProps = {
+  activeItem: string;
+  onActiveItemChange: (key: string) => void;
+  onRequestPayment: () => void;
+};
+
+export function PaymentsL2NavPanel({
+  activeItem,
+  onActiveItemChange,
+  onRequestPayment,
+}: PaymentsL2NavPanelProps) {
+  return (
+    <L2NavLayout
+      headerAction={{ label: "Request a payment", onClick: onRequestPayment }}
+      flatNavItems={[
+        { label: "All", key: "all" },
+        { label: "Received", key: "received" },
+        { label: "Requested", key: "requested" },
+        { label: "Not paid", key: "not_paid" },
+        { label: "Refunded", key: "refunded" },
+        { label: "Cancelled", key: "cancelled" },
+      ]}
+      sections={[]}
+      defaultActive={PAYMENTS_L2_DEFAULT_ACTIVE_KEY}
+      activeItem={activeItem}
+      onActiveItemChange={onActiveItemChange}
+      data-no-print
+    />
+  );
 }
 
 /* ═══════════════════════════════════════════

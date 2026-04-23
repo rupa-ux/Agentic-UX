@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { createColumnHelper } from "@tanstack/react-table";
 import {
   Search, ChevronDown, MoreHorizontal, ExternalLink, RefreshCcw,
   CheckCircle2, AlertCircle, XCircle, Minus, Plus,
@@ -8,9 +9,8 @@ import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { Input } from "@/app/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/app/components/ui/tabs";
-import {
-  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
-} from "@/app/components/ui/table";
+import { AppDataTable } from "@/app/components/ui/AppDataTable";
+import { AppDataTableColumnSettingsTrigger } from "@/app/components/ui/AppDataTableColumnSettingsTrigger";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/app/components/ui/sheet";
@@ -22,7 +22,7 @@ import {
   Tooltip, TooltipContent, TooltipTrigger, TooltipProvider,
 } from "@/app/components/ui/tooltip";
 import { GoogleSuggestionsPanel } from "./listings/GoogleSuggestionsPanel";
-import { ListingsAllSitesPanel, AccuracyBar, Site, MOCK_SITES } from "./listings/ListingsAllSitesPanel";
+import { ListingsAllSitesPanel, AccuracyBar, MOCK_SITES } from "./listings/ListingsAllSitesPanel";
 import { ListingsCitationsPanel } from "./listings/ListingsCitationsPanel";
 import { SearchAIRecommendationsPanel } from "./searchai/SearchAIRecommendationsPanel";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
@@ -47,6 +47,28 @@ interface Location {
   phone: string;
   sites: SitePresence[];
 }
+
+function listingSummaryStatus(loc: Location): ListingStatus {
+  if (loc.sites.some((s) => s.status === "error")) return "error";
+  if (loc.sites.some((s) => s.status === "needs_update")) return "needs_update";
+  if (loc.sites.every((s) => s.status === "synced")) return "synced";
+  return "needs_update";
+}
+
+function listingAvgAccuracy(loc: Location): number {
+  const listed = loc.sites.filter((s) => s.accuracy !== null);
+  if (!listed.length) return 0;
+  return Math.round(listed.reduce((sum, s) => sum + (s.accuracy ?? 0), 0) / listed.length);
+}
+
+function listingIssueCount(loc: Location) {
+  return loc.sites.filter((s) => s.status === "error" || s.status === "needs_update").length;
+}
+
+const locationColumnHelper = createColumnHelper<Location>();
+
+/** Babel/react-docgen cannot parse `AppDataTable<Location>` in JSX; use a bound alias. */
+const LocationsAppDataTable = AppDataTable<Location>;
 
 /* ─── Mock data ─── */
 const LOCATIONS: Location[] = [
@@ -142,7 +164,7 @@ const STATUS_CFG: Record<ListingStatus, { label: string; icon: React.ElementType
 function StatusBadge({ status }: { status: ListingStatus }) {
   const cfg = STATUS_CFG[status];
   return (
-    <Badge variant="outline" className={`text-[10px] gap-1 ${cfg.className}`}>
+    <Badge variant="outline" className={`gap-1 text-[length:var(--font-size)] ${cfg.className}`}>
       <cfg.icon size={9} strokeWidth={1.6} absoluteStrokeWidth />
       {cfg.label}
     </Badge>
@@ -250,200 +272,162 @@ function LocationsTab({ search }: { search: string }) {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const filtered = LOCATIONS.filter((l) =>
-    [l.name, l.city, l.address, l.phone].some((f) => f.toLowerCase().includes(search.toLowerCase()))
+    [l.name, l.city, l.address, l.phone].some((f) => f.toLowerCase().includes(search.toLowerCase())),
   );
 
-  const getSummaryStatus = (loc: Location): ListingStatus => {
-    if (loc.sites.some((s) => s.status === "error"))        return "error";
-    if (loc.sites.some((s) => s.status === "needs_update")) return "needs_update";
-    if (loc.sites.every((s) => s.status === "synced"))      return "synced";
-    return "needs_update";
-  };
+  const openLocation = useCallback((loc: Location) => {
+    setSelectedLocation(loc);
+    setSheetOpen(true);
+  }, []);
 
-  const getAvgAccuracy = (loc: Location): number => {
-    const listed = loc.sites.filter((s) => s.accuracy !== null);
-    if (!listed.length) return 0;
-    return Math.round(listed.reduce((sum, s) => sum + (s.accuracy ?? 0), 0) / listed.length);
-  };
+  const locationColumns = useMemo(
+    () => [
+      locationColumnHelper.accessor("name", {
+        id: "location",
+        header: "Location",
+        meta: { settingsLabel: "Location" },
+        size: 240,
+        enableSorting: true,
+        cell: ({ row }) => {
+          const loc = row.original;
+          return (
+            <div>
+              <p className="font-medium text-foreground">{loc.name}</p>
+              <p className="mt-0.5 flex items-center gap-1 text-muted-foreground">
+                <MapPin size={10} strokeWidth={1.6} absoluteStrokeWidth />
+                {loc.address}, {loc.city}, {loc.state}
+              </p>
+            </div>
+          );
+        },
+      }),
+      locationColumnHelper.display({
+        id: "overallStatus",
+        header: "Overall status",
+        meta: { settingsLabel: "Overall status" },
+        size: 128,
+        cell: ({ row }) => <StatusBadge status={listingSummaryStatus(row.original)} />,
+      }),
+      locationColumnHelper.accessor((row) => listingAvgAccuracy(row), {
+        id: "avgAccuracy",
+        header: "Avg. accuracy",
+        meta: { settingsLabel: "Avg. accuracy" },
+        size: 144,
+        enableSorting: true,
+        cell: (info) => <AccuracyBar value={info.getValue()} />,
+      }),
+      locationColumnHelper.accessor(
+        (row) => row.sites.filter((s) => s.status === "synced").length,
+        {
+          id: "synced",
+          header: "Synced",
+          meta: { settingsLabel: "Synced" },
+          size: 96,
+          enableSorting: true,
+          cell: ({ row }) => {
+            const loc = row.original;
+            const syncedSites = loc.sites.filter((s) => s.status === "synced").length;
+            return (
+              <span className="block text-left text-muted-foreground tabular-nums">
+                {syncedSites}/{loc.sites.length}
+              </span>
+            );
+          },
+        },
+      ),
+      locationColumnHelper.accessor((row) => listingIssueCount(row), {
+        id: "issues",
+        header: "Issues",
+        meta: { settingsLabel: "Issues" },
+        size: 96,
+        enableSorting: true,
+        cell: (info) => {
+          const issues = info.getValue();
+          return issues > 0 ? (
+            <span className="block text-left font-medium text-red-600 tabular-nums dark:text-red-400">
+              {issues}
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-emerald-500">
+              <CheckCircle2 size={13} strokeWidth={1.6} absoluteStrokeWidth />
+            </span>
+          );
+        },
+      }),
+      locationColumnHelper.display({
+        id: "actions",
+        header: "",
+        meta: { settingsLabel: "Actions" },
+        size: 52,
+        enableResizing: false,
+        enableHiding: false,
+        cell: () => (
+          <div className="text-left">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 cursor-pointer text-muted-foreground hover:text-foreground"
+                >
+                  <MoreHorizontal size={15} strokeWidth={1.6} absoluteStrokeWidth />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem className="cursor-pointer text-xs">
+                  <Globe size={12} strokeWidth={1.6} absoluteStrokeWidth className="mr-2" />
+                  View on map
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer text-xs">
+                  <RefreshCcw size={12} strokeWidth={1.6} absoluteStrokeWidth className="mr-2" />
+                  Sync now
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer text-xs">Edit profile</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ),
+      }),
+    ],
+    [],
+  );
 
-  const getIssueCount = (loc: Location) =>
-    loc.sites.filter((s) => s.status === "error" || s.status === "needs_update").length;
+  const locationsEmpty = (
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <p className="text-sm text-muted-foreground">No locations match your search.</p>
+    </div>
+  );
 
   return (
     <>
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="text-xs font-medium">Location</TableHead>
-            <TableHead className="text-xs font-medium w-[110px]">Overall status</TableHead>
-            <TableHead className="text-xs font-medium w-[130px]">Avg. accuracy</TableHead>
-            <TableHead className="text-xs font-medium w-[90px] text-center">Synced</TableHead>
-            <TableHead className="text-xs font-medium w-[90px] text-center">Issues</TableHead>
-            <TableHead className="text-xs font-medium w-[48px]" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filtered.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center py-12 text-sm text-muted-foreground">
-                No locations match your search.
-              </TableCell>
-            </TableRow>
-          ) : (
-            filtered.map((loc) => {
-              const summaryStatus = getSummaryStatus(loc);
-              const avgAcc = getAvgAccuracy(loc);
-              const issues = getIssueCount(loc);
-              const syncedSites = loc.sites.filter((s) => s.status === "synced").length;
-              return (
-                <TableRow
-                  key={loc.id}
-                  className="cursor-pointer"
-                  onClick={() => { setSelectedLocation(loc); setSheetOpen(true); }}
-                >
-                  <TableCell className="py-3">
-                    <p className="text-sm font-medium text-foreground">{loc.name}</p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                      <MapPin size={10} strokeWidth={1.6} absoluteStrokeWidth />
-                      {loc.address}, {loc.city}, {loc.state}
-                    </p>
-                  </TableCell>
-                  <TableCell className="py-3">
-                    <StatusBadge status={summaryStatus} />
-                  </TableCell>
-                  <TableCell className="py-3">
-                    <AccuracyBar value={avgAcc} />
-                  </TableCell>
-                  <TableCell className="py-3 text-center">
-                    <span className="text-xs text-muted-foreground tabular-nums">{syncedSites}/{loc.sites.length}</span>
-                  </TableCell>
-                  <TableCell className="py-3 text-center">
-                    {issues > 0 ? (
-                      <span className="text-xs font-medium text-red-600 dark:text-red-400 tabular-nums">{issues}</span>
-                    ) : (
-                      <CheckCircle2 size={13} strokeWidth={1.6} absoluteStrokeWidth className="text-emerald-500 mx-auto" />
-                    )}
-                  </TableCell>
-                  <TableCell className="py-3" onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground cursor-pointer">
-                          <MoreHorizontal size={15} strokeWidth={1.6} absoluteStrokeWidth />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40">
-                        <DropdownMenuItem className="text-xs cursor-pointer">
-                          <Globe size={12} strokeWidth={1.6} absoluteStrokeWidth className="mr-2" />
-                          View on map
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-xs cursor-pointer">
-                          <RefreshCcw size={12} strokeWidth={1.6} absoluteStrokeWidth className="mr-2" />
-                          Sync now
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-xs cursor-pointer">
-                          Edit profile
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              );
-            })
-          )}
-        </TableBody>
-      </Table>
+      <LocationsAppDataTable
+        tableId="listings.locations"
+        data={filtered}
+        columns={locationColumns}
+        getRowId={(l) => l.id}
+        onRowClick={openLocation}
+        emptyState={locationsEmpty}
+        columnSheetTitle="Location columns"
+        className="min-w-0"
+      />
 
       <LocationDetailSheet
         location={selectedLocation}
         open={sheetOpen}
-        onClose={() => { setSheetOpen(false); setSelectedLocation(null); }}
+        onClose={() => {
+          setSheetOpen(false);
+          setSelectedLocation(null);
+        }}
       />
     </>
-  );
-}
-
-/* ─── Sites tab ─── */
-function SitesTab({ search }: { search: string }) {
-  const filtered = SITES.filter((s) =>
-    [s.name, s.category].some((f) => f.toLowerCase().includes(search.toLowerCase()))
-  );
-
-  const coveragePct = (s: Site) => Math.round((s.locationsListed / s.locationsTotal) * 100);
-
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow className="hover:bg-transparent">
-          <TableHead className="text-xs font-medium">Directory</TableHead>
-          <TableHead className="text-xs font-medium w-[100px]">Category</TableHead>
-          <TableHead className="text-xs font-medium w-[150px]">Coverage</TableHead>
-          <TableHead className="text-xs font-medium w-[140px]">Avg. accuracy</TableHead>
-          <TableHead className="text-xs font-medium w-[120px]">Last synced</TableHead>
-          <TableHead className="text-xs font-medium w-[48px]" />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {filtered.map((site) => {
-          const pct = coveragePct(site);
-          return (
-            <TableRow key={site.id} className="cursor-default">
-              <TableCell className="py-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                    <Globe size={13} strokeWidth={1.6} absoluteStrokeWidth className="text-muted-foreground" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">{site.name}</span>
-                </div>
-              </TableCell>
-              <TableCell className="py-3">
-                <span className="text-xs text-muted-foreground">{site.category}</span>
-              </TableCell>
-              <TableCell className="py-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${pct === 100 ? "bg-emerald-500" : pct >= 66 ? "bg-amber-400" : "bg-red-400"}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <span className="text-xs text-muted-foreground">{site.locationsListed}/{site.locationsTotal}</span>
-                </div>
-              </TableCell>
-              <TableCell className="py-3">
-                <AccuracyBar value={site.avgAccuracy} />
-              </TableCell>
-              <TableCell className="py-3 text-xs text-muted-foreground">{site.lastSynced}</TableCell>
-              <TableCell className="py-3" onClick={(e) => e.stopPropagation()}>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground cursor-pointer">
-                      <MoreHorizontal size={15} strokeWidth={1.6} absoluteStrokeWidth />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-36">
-                    <DropdownMenuItem className="text-xs cursor-pointer">
-                      <RefreshCcw size={12} strokeWidth={1.6} absoluteStrokeWidth className="mr-2" />
-                      Sync now
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-xs cursor-pointer">
-                      <ExternalLink size={12} strokeWidth={1.6} absoluteStrokeWidth className="mr-2" />
-                      View directory
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
   );
 }
 
 /* ─── Main view ─── */
 export function ListingsView({ l2ActiveItem }: { l2ActiveItem?: string }) {
   const [search, setSearch] = useState("");
+  const [allSitesColumnSheetOpen, setAllSitesColumnSheetOpen] = useState(false);
 
   if (l2ActiveItem === "Actions/Recommendations") {
     return <SearchAIRecommendationsPanel />;
@@ -462,22 +446,31 @@ export function ListingsView({ l2ActiveItem }: { l2ActiveItem?: string }) {
     return (
       <div className="flex flex-col h-full overflow-hidden bg-background">
         <MainCanvasViewHeader
-          className="border-b border-border"
           title="All sites"
           description="Directory coverage and accuracy breakdown."
           actions={
-            <div className="relative max-w-xs w-64">
-              <Search size={13} strokeWidth={1.6} absoluteStrokeWidth className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search sites…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="h-8 pl-8 text-xs"
+            <div className="flex min-w-0 items-center gap-2">
+              <AppDataTableColumnSettingsTrigger
+                sheetTitle="Directory columns"
+                onClick={() => setAllSitesColumnSheetOpen(true)}
               />
+              <div className="relative max-w-xs w-64 min-w-0">
+                <Search size={13} strokeWidth={1.6} absoluteStrokeWidth className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search sites…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="h-8 pl-8 text-xs"
+                />
+              </div>
             </div>
           }
         />
-        <ListingsAllSitesPanel search={search} />
+        <ListingsAllSitesPanel
+          search={search}
+          columnSheetOpen={allSitesColumnSheetOpen}
+          onColumnSheetOpenChange={setAllSitesColumnSheetOpen}
+        />
       </div>
     );
   }
@@ -538,10 +531,10 @@ export function ListingsView({ l2ActiveItem }: { l2ActiveItem?: string }) {
         </div>
 
         {/* ── Main table card ── */}
-        <div className="flex-1 min-h-0 mx-6 mb-6 bg-card border border-border rounded-xl overflow-hidden flex flex-col">
+        <div className="mx-6 mb-6 flex min-h-0 flex-1 flex-col overflow-hidden border-0 bg-background">
           <Tabs defaultValue="locations" className="flex flex-col flex-1 min-h-0">
             {/* Tab bar + search */}
-            <div className="px-4 py-3 border-b border-border flex items-center gap-4 shrink-0">
+            <div className="flex shrink-0 items-center gap-4 px-4 py-3">
               <TabsList className="h-8">
                 <TabsTrigger value="locations" className="text-xs h-6 px-3">
                   <Building2 size={11} strokeWidth={1.6} absoluteStrokeWidth className="mr-1.5" />

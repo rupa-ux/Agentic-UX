@@ -6,6 +6,14 @@ const meta: Meta<typeof Tabs> = {
   title: "UI/Tabs",
   component: Tabs,
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "Radix pill tabs: inactive triggers use `text-muted-foreground`, active use `text-primary` on the raised segment. For borderless text-only rows in main content, see **UI/TextTabs**.",
+      },
+    },
+  },
 };
 
 export default meta;

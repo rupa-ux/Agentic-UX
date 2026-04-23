@@ -1,12 +1,16 @@
 import {
   IconStrip, L2NavPanel, ReviewsL2NavPanel, SocialL2NavPanel,
   ContactsL2NavPanel, ListingsL2NavPanel, TicketingL2NavPanel,
-  CampaignsL2NavPanel, SurveysL2NavPanel, InsightsL2NavPanel, CompetitorsL2NavPanel,
+  CampaignsL2NavPanel, SurveysL2NavPanel, CompetitorsL2NavPanel,
   AppointmentsL2NavPanel, InboxL2NavPanel, MynaConversationsL2NavPanel,
+  ReferralsL2NavPanel,
+  REFERRALS_L2_DEFAULT_ACTIVE_KEY,
+  PaymentsL2NavPanel,
+  PAYMENTS_L2_DEFAULT_ACTIVE_KEY,
 } from "./components/Sidebar";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { usePersistedState } from "./hooks/usePersistedState";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
 import { MonitorNotificationsProvider } from "./context/MonitorNotificationsContext";
 import { TopBar } from "./components/TopBar";
 import { Dashboard } from "./components/Dashboard";
@@ -29,8 +33,8 @@ import {
 } from "./components/ContactsView";
 import { ScheduledDeliveriesView } from "./components/ScheduledDeliveriesView";
 import { ScheduleBuilderView } from "./components/ScheduleBuilderView";
-import { ReferralsView } from "./components/ReferralsView";
-import { PaymentsView } from "./components/PaymentsView";
+import { ReferralsView, referralsL2KeyToSection } from "./components/ReferralsView";
+import { PaymentsView, paymentsL2KeyToStatusFilter } from "./components/PaymentsView";
 import { AppointmentsView } from "./components/AppointmentsView";
 import { SurveysView } from "./components/SurveysView";
 import { TicketingView } from "./components/TicketingView";
@@ -59,7 +63,6 @@ import { ConversationStream } from "./components/ConversationStream";
 import { AgentActivityView } from "./components/AgentActivityView";
 import { AgentConfigView } from "./components/AgentConfigView";
 import { BirdAILoginPage } from "./components/auth/BirdAILoginPage";
-import { AppBootShimmer } from "./components/layout/AppBootShimmer";
 
 const AUTH_STORAGE_KEY = "birdai_demo_authenticated";
 const LOGIN_TAB_TITLE_INDEX_KEY = "auth:login_tab_title_index";
@@ -113,12 +116,8 @@ export type AppView =
   | "agent-activity"
   | "agent-config";
 
-/** Brief shell shimmer after login so the first paint mirrors real app loading. */
-const POST_LOGIN_BOOT_MS = 1200;
-
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => readDemoAuthenticated());
-  const [postLoginBoot, setPostLoginBoot] = useState(false);
 
   const signIn = useCallback(() => {
     try {
@@ -129,14 +128,7 @@ export default function App() {
       /* ignore */
     }
     setIsAuthenticated(true);
-    setPostLoginBoot(true);
   }, []);
-
-  useEffect(() => {
-    if (!postLoginBoot) return;
-    const t = window.setTimeout(() => setPostLoginBoot(false), POST_LOGIN_BOOT_MS);
-    return () => window.clearTimeout(t);
-  }, [postLoginBoot]);
 
   const signOut = useCallback(() => {
     try {
@@ -166,6 +158,14 @@ export default function App() {
   );
 
   const [contactsL2Active, setContactsL2Active] = usePersistedState("nav:l2:contacts", CONTACTS_L2_KEY_ALL);
+  const [referralsL2Active, setReferralsL2Active] = usePersistedState(
+    "nav:l2:referrals",
+    REFERRALS_L2_DEFAULT_ACTIVE_KEY,
+  );
+  const [paymentsL2Active, setPaymentsL2Active] = usePersistedState(
+    "nav:l2:payments",
+    PAYMENTS_L2_DEFAULT_ACTIVE_KEY,
+  );
   const [contactsSheetMode, setContactsSheetMode] = useState<ContactsSheetMode>("none");
   const [contactsDetailId, setContactsDetailId] = useState<number | null>(null);
   const [contactsQuickViewId, setContactsQuickViewId] = useState<number | null>(null);
@@ -180,6 +180,14 @@ export default function App() {
   const handleContactsAddContact = useCallback(() => {
     setContactsSheetMode("addContact");
     setContactsQuickViewId(null);
+  }, []);
+
+  const handleSendReferralRequest = useCallback(() => {
+    toast.message("Send a referral request (prototype)");
+  }, []);
+
+  const handleRequestPayment = useCallback(() => {
+    toast.message("Request a payment (prototype)");
   }, []);
 
   const contactsApp = useMemo<ContactsAppBridge>(
@@ -334,15 +342,6 @@ export default function App() {
     );
   }
 
-  if (postLoginBoot) {
-    return (
-      <>
-        <Toaster position="top-center" richColors />
-        <AppBootShimmer />
-      </>
-    );
-  }
-
   const hasOwnL2Panel = (v: AppView) =>
     v === "business-overview" ||
     v === "inbox" ||
@@ -464,13 +463,29 @@ export default function App() {
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "campaigns" && (
             <CampaignsL2NavPanel />
           )}
-          {/* Insights L2 nav panel */}
+          {/* Insights — shell L2 is preview only; product is not hosted here (same pattern as Chatbot). */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "insights" && (
-            <InsightsL2NavPanel />
+            <AppShellL2Placeholder caption="Insights is not hosted in this shell — secondary nav is a preview only." />
           )}
           {/* Competitors L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "competitors" && (
             <CompetitorsL2NavPanel />
+          )}
+          {/* Referrals L2 nav panel */}
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "referrals" && (
+            <ReferralsL2NavPanel
+              activeItem={referralsL2Active}
+              onActiveItemChange={setReferralsL2Active}
+              onSendReferralRequest={handleSendReferralRequest}
+            />
+          )}
+          {/* Payments L2 nav panel */}
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "payments" && (
+            <PaymentsL2NavPanel
+              activeItem={paymentsL2Active}
+              onActiveItemChange={setPaymentsL2Active}
+              onRequestPayment={handleRequestPayment}
+            />
           )}
           {/* Appointments L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "appointments" && (
@@ -525,17 +540,13 @@ export default function App() {
             ) : currentView === "campaigns" ? (
               <CampaignsView />
             ) : currentView === "insights" ? (
-              <Dashboard
-                aiPanelOpen={aiPanelOpen}
-                onAiPanelChange={handleAiPanelChange}
-                editingDraft={editingDraft}
-              />
+              <AppShellContentPlaceholder view="insights" />
             ) : currentView === "competitors" ? (
               <CompetitorsView />
             ) : currentView === "referrals" ? (
-              <ReferralsView />
+              <ReferralsView activeSection={referralsL2KeyToSection(referralsL2Active)} />
             ) : currentView === "payments" ? (
-              <PaymentsView />
+              <PaymentsView statusFilter={paymentsL2KeyToStatusFilter(paymentsL2Active)} />
             ) : currentView === "appointments" ? (
               <AppointmentsView />
             ) : currentView === "conversation-stream" ? (

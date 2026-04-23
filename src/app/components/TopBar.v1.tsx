@@ -7,7 +7,6 @@ import {
 import { APP_SHELL_RAIL_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
 import type { AppView } from "../App";
 import { getAppViewTitle } from "../appViewTitle";
-import { MYNA_CHAT_HEADER_TITLE } from "../myna/mynaChatChrome";
 
 interface TopBarProps {
   currentView: AppView;
@@ -42,16 +41,35 @@ export function TopBar({ currentView, onViewChange, onToggleMynaChat }: TopBarPr
 
       {/* Right: design version (dev) + BirdAI */}
       <div className="flex items-center gap-2">
-        <QuickCreateLauncher onActionSelect={handleQuickCreate} />
+        <QuickCreateLauncher layout="appGrid" onActionSelect={handleQuickCreate} />
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
           onClick={onToggleMynaChat}
-          className="ml-1 h-[30px] min-h-[30px] gap-1 rounded-lg border-[#e5e9f0] bg-app-shell-l2-surface px-2 py-0 text-[12px] leading-none dark:border-[#333a47] dark:bg-[#252a3a]"
+          className="group ml-1 h-[30px] min-h-[30px] gap-1 rounded-lg border-0 bg-app-shell-l2-surface px-2 py-0 text-[12px] leading-none hover:bg-app-shell-l2-surface hover:text-inherit dark:bg-[#252a3a] dark:hover:bg-[#252a3a]"
         >
-          <Sparkles className="h-3.5 w-3.5 shrink-0 text-[#9970D7]" />
-          <span className="bg-gradient-to-r from-[#9970D7] to-[#2552ED] bg-clip-text text-transparent leading-none">
-            {MYNA_CHAT_HEADER_TITLE}
+          <svg aria-hidden className="absolute h-0 w-0 overflow-hidden">
+            <defs>
+              <linearGradient id="ask-birdai-cta-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#9970D7" />
+                <stop offset="55%" stopColor="#7f87e8" />
+                <stop offset="100%" stopColor="#2552ED" />
+                <animateTransform
+                  attributeName="gradientTransform"
+                  type="translate"
+                  values="-1 0;1 0;-1 0"
+                  dur="2.2s"
+                  repeatCount="indefinite"
+                />
+              </linearGradient>
+            </defs>
+          </svg>
+          <Sparkles
+            className="h-3.5 w-3.5 shrink-0 group-hover:animate-[myna-cta-icon-tilt_360ms_ease-out_1] motion-reduce:group-hover:animate-none"
+            style={{ stroke: "url(#ask-birdai-cta-gradient)" }}
+          />
+          <span className="bg-gradient-to-r from-[#9970D7] via-[#7f87e8] to-[#2552ED] bg-[length:220%_100%] bg-clip-text text-transparent leading-none animate-[l2-nav-shimmer_2.2s_linear_infinite] motion-reduce:animate-none">
+            Ask BirdAI
           </span>
         </Button>
       </div>

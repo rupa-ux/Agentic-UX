@@ -4,11 +4,21 @@ import {
   APP_SHELL_GUTTER_SURFACE_CLASS,
   APP_SHELL_RAIL_SURFACE_CLASS,
 } from "./appShellClasses";
+import { BootInsightsLoader } from "./BootInsightsLoader";
+import { bootInsightsDefaultSlides } from "./bootInsightsDefaultSlides";
+
+export interface AppBootShimmerProps {
+  /**
+   * Milliseconds between boot insight slides. Default ~560ms shows roughly two slides
+   * during the 1200ms post-login boot window in `App.tsx`.
+   */
+  bootInsightsIntervalMs?: number;
+}
 
 /**
- * Minimal post-login shell placeholder — light chrome outline + soft content block.
+ * Minimal post-login shell placeholder — light chrome outline + rotating boot insights in the canvas.
  */
-export function AppBootShimmer() {
+export function AppBootShimmer({ bootInsightsIntervalMs = 560 }: AppBootShimmerProps) {
   return (
     <div
       className={`flex h-screen w-screen overflow-hidden ${APP_SHELL_GUTTER_SURFACE_CLASS}`}
@@ -60,7 +70,11 @@ export function AppBootShimmer() {
             <div className={`${APP_MAIN_CONTENT_SHELL_CLASS} min-h-0`}>
               <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-6">
                 <div className="mb-4 h-5 w-44 max-w-[60%] rounded-md bg-black/[0.07] dark:bg-white/[0.08]" />
-                <div className="min-h-0 flex-1 rounded-lg bg-black/[0.04] animate-pulse dark:bg-white/[0.05]" />
+                <BootInsightsLoader
+                  slides={bootInsightsDefaultSlides}
+                  intervalMs={bootInsightsIntervalMs}
+                  className="min-h-0 flex-1 bg-background/80 dark:bg-background/40"
+                />
               </div>
             </div>
           </div>

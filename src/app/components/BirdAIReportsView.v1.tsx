@@ -11,7 +11,9 @@ import {
 } from "recharts";
 import { ReportActionsButton, buildReportContext } from "./report-actions/ReportActionsButton";
 import type { ReportActionId } from "./report-actions/types";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { Button } from "@/app/components/ui/button";
+import { TextTabsRow } from "@/app/components/ui/text-tabs";
 import { cn } from "@/lib/utils";
 import {
   FLOATING_PANEL_LIST_PADDING_CLASSNAME,
@@ -373,17 +375,17 @@ function ExecutiveImpactPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-[#f0f1f5] dark:border-[#2e3340]">
-              <th className="text-left text-[11px] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>Agent</th>
-              <th className="text-right text-[11px] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>Tasks</th>
-              <th className="text-right text-[11px] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>Success rate</th>
+              <th className="text-left text-[length:var(--font-size)] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>Agent</th>
+              <th className="text-left text-[length:var(--font-size)] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>Tasks</th>
+              <th className="text-left text-[length:var(--font-size)] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>Success rate</th>
             </tr>
           </thead>
           <tbody>
             {topAgents.map(a => (
               <tr key={a.name} className="border-b border-[#f8f9fa] dark:border-[#262b35] last:border-0">
-                <td className="py-2.5 text-[13px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{a.name}</td>
-                <td className="py-2.5 text-[13px] text-[#888] dark:text-[#6b7280] text-right tabular-nums" style={{ fontWeight: 300 }}>{a.tasks}</td>
-                <td className="py-2.5 text-[13px] text-[#4caf50] text-right tabular-nums" style={{ fontWeight: 400 }}>{a.rate}</td>
+                <td className="py-2.5 text-[length:var(--font-size)] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{a.name}</td>
+                <td className="py-2.5 text-[length:var(--font-size)] text-[#888] dark:text-[#6b7280] text-left tabular-nums" style={{ fontWeight: 300 }}>{a.tasks}</td>
+                <td className="py-2.5 text-[length:var(--font-size)] text-[#4caf50] text-left tabular-nums" style={{ fontWeight: 400 }}>{a.rate}</td>
               </tr>
             ))}
           </tbody>
@@ -421,18 +423,18 @@ function AgentPerformancePage() {
           <thead>
             <tr className="border-b border-[#f0f1f5] dark:border-[#2e3340]">
               {["Agent", "Success", "Volume", "Failures", "Avg time"].map(h => (
-                <th key={h} className={`${h === "Agent" ? "text-left" : "text-right"} text-[11px] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase`} style={{ fontWeight: 400 }}>{h}</th>
+                <th key={h} className="text-left text-[length:var(--font-size)] text-[#999] dark:text-[#6b7280] pb-2 tracking-[0.5px] uppercase" style={{ fontWeight: 400 }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {agentPerfTable.map(row => (
               <tr key={row.agent} className="border-b border-[#f8f9fa] dark:border-[#262b35] last:border-0">
-                <td className="py-2.5 text-[13px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{row.agent}</td>
-                <td className="py-2.5 text-[13px] text-[#4caf50] text-right tabular-nums" style={{ fontWeight: 400 }}>{row.success}</td>
-                <td className="py-2.5 text-[13px] text-[#888] dark:text-[#6b7280] text-right tabular-nums" style={{ fontWeight: 300 }}>{row.volume}</td>
-                <td className="py-2.5 text-[13px] text-[#ef5350] text-right tabular-nums" style={{ fontWeight: 300 }}>{row.failures}</td>
-                <td className="py-2.5 text-[13px] text-[#888] dark:text-[#6b7280] text-right tabular-nums" style={{ fontWeight: 300 }}>{row.avgTime}</td>
+                <td className="py-2.5 text-[length:var(--font-size)] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{row.agent}</td>
+                <td className="py-2.5 text-[length:var(--font-size)] text-[#4caf50] text-left tabular-nums" style={{ fontWeight: 400 }}>{row.success}</td>
+                <td className="py-2.5 text-[length:var(--font-size)] text-[#888] dark:text-[#6b7280] text-left tabular-nums" style={{ fontWeight: 300 }}>{row.volume}</td>
+                <td className="py-2.5 text-[length:var(--font-size)] text-[#ef5350] text-left tabular-nums" style={{ fontWeight: 300 }}>{row.failures}</td>
+                <td className="py-2.5 text-[length:var(--font-size)] text-[#888] dark:text-[#6b7280] text-left tabular-nums" style={{ fontWeight: 300 }}>{row.avgTime}</td>
               </tr>
             ))}
           </tbody>
@@ -592,60 +594,41 @@ export function BirdAIReportsView() {
   }, [activeTab]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-white dark:bg-[#13161b] transition-colors duration-300">
-      <div className="px-6 py-6 space-y-5">
-
-        {/* ─── Page Header ─── */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-[20px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.4px]" style={{ fontWeight: 400 }}>
-              {reportTabNames[activeTab]}
-            </h1>
-            <p className="text-[13px] text-[#888] dark:text-[#6b7280] mt-0.5" style={{ fontWeight: 300 }}>
-              {reportDescriptions[activeTab]}
-            </p>
-          </div>
-          <div className="flex items-center gap-2.5">
+    <div className="flex-1 overflow-y-auto bg-white transition-colors duration-300 dark:bg-[#13161b]">
+      <MainCanvasViewHeader
+        title={reportTabNames[activeTab]}
+        description={reportDescriptions[activeTab]}
+        actions={
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <DateFilterDropdown value={dateFilter} onChange={setDateFilter} />
-
-            {/* Actions dropdown — replaces Export + Schedule */}
-            <ReportActionsButton
-              context={reportContext}
-              actions={BIRDAI_REPORT_ACTIONS}
-            />
-
-            {/* Filter button — same icon & pattern as ReviewsView */}
+            <ReportActionsButton context={reportContext} actions={BIRDAI_REPORT_ACTIONS} />
             <Button
               onClick={() => setFilterPanelOpen(!filterPanelOpen)}
               variant="outline"
               size="icon"
-              className={filterPanelOpen
-                ? "bg-[#e8effe] dark:bg-[#1e2d5e] border-[#2552ED] dark:border-[#2552ED]"
-                : ""
+              className={
+                filterPanelOpen
+                  ? "border-primary bg-primary/10 dark:bg-primary/20"
+                  : ""
               }
             >
-              <Filter className={`w-[14px] h-[14px] ${filterPanelOpen ? "text-[#2552ED]" : "text-[#555] dark:text-[#8b92a5]"}`} />
+              <Filter
+                className={`size-3.5 ${filterPanelOpen ? "text-primary" : "text-muted-foreground"}`}
+              />
             </Button>
           </div>
-        </div>
+        }
+      />
+
+      <div className="space-y-5 px-6 pb-6 pt-2">
 
         {/* ─── Report Tabs ─── */}
-        <div className="flex items-center gap-1 border-b border-[#f0f1f5] dark:border-[#2e3340]">
-          {reportTabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-2.5 text-[13px] tracking-[-0.26px] transition-colors border-b-2 -mb-px ${
-                activeTab === tab.id
-                  ? "text-[#2552ED] dark:text-[#6b9bff] border-[#2552ED] dark:border-[#6b9bff]"
-                  : "text-[#888] dark:text-[#6b7280] border-transparent hover:text-[#212121] dark:hover:text-[#e4e4e4]"
-              }`}
-              style={{ fontWeight: 400 }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <TextTabsRow
+          ariaLabel="Report sections"
+          value={activeTab}
+          onChange={setActiveTab}
+          items={reportTabs.map((tab) => ({ id: tab.id, label: tab.label }))}
+        />
 
         {/* ─── Product Outcomes Sub-tabs ─── */}
         {activeTab === "product-outcomes" && (

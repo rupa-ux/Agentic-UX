@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Filter, MoreHorizontal } from "lucide-react";
+import { MAIN_VIEW_PRIMARY_HEADING_CLASS } from "@/app/components/layout/mainViewTitleClasses";
 import { Button } from "@/app/components/ui/button";
+import { cn } from "@/app/components/ui/utils";
 import { SocialPostPreviewSheet } from "@/app/components/social/SocialPostPreviewSheet";
 import {
   type SocialCalendarPost,
@@ -226,13 +228,13 @@ export function SocialView() {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white transition-colors duration-300 dark:bg-[#13161b]">
       {/* ─── Header ─── */}
-      <div className="flex shrink-0 items-center justify-between px-6 py-4">
+      <div className="flex shrink-0 items-center justify-between px-6 pt-5 pb-4">
         {/* Left: month nav */}
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon">
             <ChevronLeft className="h-[14px] w-[14px] text-[#303030] dark:text-[#c0c6d4]" strokeWidth={1.6} absoluteStrokeWidth />
           </Button>
-          <span className="mx-1 text-[17px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>
+          <span className={cn(MAIN_VIEW_PRIMARY_HEADING_CLASS, "mx-1")} aria-live="polite">
             {currentMonth}
           </span>
           <Button variant="ghost" size="icon">

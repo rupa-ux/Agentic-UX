@@ -13,6 +13,14 @@ import { MockGooglePage } from "./MockGooglePage";
 import { MockFacebookPage } from "./MockFacebookPage";
 import { MockMicrosoftPage } from "./MockMicrosoftPage";
 import { MockSutterPage } from "./MockSutterPage";
+import { BootInsightsLoader } from "@/app/components/layout/BootInsightsLoader";
+import { bootInsightsDefaultSlides } from "@/app/components/layout/bootInsightsDefaultSlides";
+import { MODAL_OVERLAY_VISUAL_CLASS } from "@/app/components/ui/modalOverlayClasses";
+
+/** Set true to show full-screen boot insights during email/social loading (hidden for now). */
+const SHOW_BOOT_INSIGHTS_ON_LOGIN_LOADING = false;
+
+const LOGIN_BOOT_INSIGHT_INTERVAL_MS = 750;
 
 export type BirdAILoginView =
   | "main"
@@ -360,6 +368,19 @@ export function BirdAILoginPage({ onAuthenticated }: BirdAILoginPageProps) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {SHOW_BOOT_INSIGHTS_ON_LOGIN_LOADING && loadingState !== "none" ? (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6" aria-busy="true">
+          <div className={`absolute inset-0 ${MODAL_OVERLAY_VISUAL_CLASS}`} aria-hidden />
+          <div className="relative z-[1] flex h-[min(420px,72vh)] w-full max-w-md min-h-0 flex-col">
+            <BootInsightsLoader
+              slides={bootInsightsDefaultSlides}
+              intervalMs={LOGIN_BOOT_INSIGHT_INTERVAL_MS}
+              className="h-full min-h-0 shadow-lg"
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

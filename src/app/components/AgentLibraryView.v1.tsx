@@ -1,6 +1,7 @@
 /** AgentLibraryView v1 — Jasper-style agent store with themed hero banners and card grid. */
 
 import { useMemo } from "react";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { agentThemes, BADGE_COLORS, type AgentCard, type AgentTheme, type BadgeType } from "@/app/data/agentLibrary";
 
 /* ─── Badge pill ─── */
@@ -102,16 +103,11 @@ export function AgentLibraryView({ activeTheme, onAgentClick }: AgentLibraryView
   return (
     <div className="h-full min-h-0 overflow-hidden rounded-tl-lg bg-white dark:bg-[#1e2229]">
       <div className="h-full min-h-0 overflow-y-auto">
-        <div className="px-6 py-8 flex flex-col gap-8">
-          {/* Page header */}
-          <div>
-            <h1 className="text-2xl text-foreground" style={{ fontWeight: 300 }}>
-              Agent Library
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1" style={{ fontWeight: 400 }}>
-              Deploy pre-built AI agents organized by business outcome
-            </p>
-          </div>
+        <div className="flex flex-col gap-8 px-6 pb-8 pt-2">
+          <MainCanvasViewHeader
+            title="Agent Library"
+            description="Deploy pre-built AI agents organized by business outcome"
+          />
 
           {/* Themes */}
           {themes.map((theme) => (

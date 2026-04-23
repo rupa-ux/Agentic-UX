@@ -1,15 +1,14 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { createColumnHelper } from "@tanstack/react-table";
 import {
-  DollarSign, Download, Search, MoreHorizontal, ChevronDown,
-  TrendingUp, CreditCard, ArrowDownToLine, Receipt, Info,
-  CheckCircle2, X, RotateCcw, FileText, Plus,
+  DollarSign, Download, Search, MoreHorizontal,
+  TrendingUp, ArrowDownToLine, Receipt, Info,
+  CheckCircle2, X, RotateCcw, FileText,
 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { Input } from "@/app/components/ui/input";
-import {
-  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
-} from "@/app/components/ui/table";
+import { AppDataTable } from "@/app/components/ui/AppDataTable";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/app/components/ui/sheet";
@@ -24,9 +23,21 @@ import {
 } from "@/app/components/ui/dialog";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
+import { L2_FLAT_NAV_KEY_PREFIX } from "@/app/components/L2NavLayout";
 
 /* ─── Types ─── */
-type TxStatus = "received" | "requested" | "not_paid" | "refunded" | "cancelled";
+export type TxStatus = "received" | "requested" | "not_paid" | "refunded" | "cancelled";
+
+export type PaymentsStatusFilter = TxStatus | "all";
+
+export function paymentsL2KeyToStatusFilter(l2Key: string): PaymentsStatusFilter {
+  if (l2Key === `${L2_FLAT_NAV_KEY_PREFIX}/received`) return "received";
+  if (l2Key === `${L2_FLAT_NAV_KEY_PREFIX}/requested`) return "requested";
+  if (l2Key === `${L2_FLAT_NAV_KEY_PREFIX}/not_paid`) return "not_paid";
+  if (l2Key === `${L2_FLAT_NAV_KEY_PREFIX}/refunded`) return "refunded";
+  if (l2Key === `${L2_FLAT_NAV_KEY_PREFIX}/cancelled`) return "cancelled";
+  return "all";
+}
 
 interface Transaction {
   id: string;
@@ -103,7 +114,7 @@ const STATUS_CONFIG: Record<TxStatus, { label: string; className: string }> = {
 function StatusBadge({ status }: { status: TxStatus }) {
   const cfg = STATUS_CONFIG[status];
   return (
-    <Badge variant="outline" className={`text-xs font-medium ${cfg.className}`}>
+    <Badge variant="outline" className={`text-[length:var(--font-size)] font-medium ${cfg.className}`}>
       {cfg.label}
     </Badge>
   );
@@ -226,6 +237,7 @@ function TxActions({
   const canRefund   = tx.status === "received";
 
   return (
+    <div className="text-left">
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
@@ -273,6 +285,7 @@ function TxActions({
         )}
       </DropdownMenuContent>
     </DropdownMenu>
+    </div>
   );
 }
 
@@ -407,10 +420,16 @@ function InvoiceSheet({
   );
 }
 
+export type PaymentsViewProps = {
+  /** Transaction status scope from shell L2 (`PaymentsL2NavPanel`). */
+  statusFilter: PaymentsStatusFilter;
+};
+
+const paymentColumnHelper = createColumnHelper<Transaction>();
+
 /* ─── Main view ─── */
-export function PaymentsView() {
+export function PaymentsView({ statusFilter }: PaymentsViewProps) {
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<TxStatus | "all">("all");
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
   const [modalType, setModalType] = useState<ModalType>(null);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
@@ -424,28 +443,93 @@ export function PaymentsView() {
     return matchesSearch && matchesStatus;
   });
 
-  const handleAction = (type: ModalType, tx: Transaction) => {
+  const handleAction = useCallback((type: ModalType, tx: Transaction) => {
     setSelectedTx(tx);
     if (type === "invoice") {
       setInvoiceOpen(true);
     } else {
       setModalType(type);
     }
-  };
+  }, []);
 
   const handleConfirm = () => {
     setModalType(null);
     setSelectedTx(null);
   };
 
-  const STATUS_FILTER_OPTIONS: { label: string; value: TxStatus | "all" }[] = [
-    { label: "All",       value: "all" },
-    { label: "Received",  value: "received" },
-    { label: "Requested", value: "requested" },
-    { label: "Not paid",  value: "not_paid" },
-    { label: "Refunded",  value: "refunded" },
-    { label: "Cancelled", value: "cancelled" },
-  ];
+  const paymentColumns = useMemo(
+    () => [
+      paymentColumnHelper.accessor("contactName", {
+        id: "contact",
+        header: "Contact",
+        meta: { settingsLabel: "Contact" },
+        size: 220,
+        enableSorting: true,
+        cell: ({ row }) => (
+          <div className="flex flex-col gap-0.5">
+            <span className="font-medium text-foreground">{row.original.contactName}</span>
+            <span className="text-muted-foreground">{row.original.businessName}</span>
+          </div>
+        ),
+      }),
+      paymentColumnHelper.accessor("amount", {
+        id: "amount",
+        header: "Amount",
+        meta: { settingsLabel: "Amount" },
+        size: 120,
+        enableSorting: true,
+        cell: (info) => (
+          <span className="block text-left font-medium text-foreground tabular-nums">
+            {fmtAmount(info.getValue())}
+          </span>
+        ),
+      }),
+      paymentColumnHelper.accessor("status", {
+        id: "status",
+        header: "Status",
+        meta: { settingsLabel: "Status" },
+        size: 120,
+        enableSorting: true,
+        cell: (info) => <StatusBadge status={info.getValue()} />,
+      }),
+      paymentColumnHelper.accessor("date", {
+        id: "date",
+        header: "Date",
+        meta: { settingsLabel: "Date" },
+        size: 130,
+        enableSorting: true,
+        cell: (info) => (
+          <span className="whitespace-nowrap text-muted-foreground">{info.getValue()}</span>
+        ),
+      }),
+      paymentColumnHelper.accessor("description", {
+        id: "description",
+        header: "Description",
+        meta: { settingsLabel: "Description" },
+        size: 220,
+        enableSorting: true,
+        cell: (info) => (
+          <span className="max-w-[220px] truncate text-muted-foreground">{info.getValue()}</span>
+        ),
+      }),
+      paymentColumnHelper.display({
+        id: "actions",
+        header: "",
+        meta: { settingsLabel: "Actions" },
+        size: 52,
+        enableResizing: false,
+        enableHiding: false,
+        cell: ({ row }) => <TxActions tx={row.original} onAction={handleAction} />,
+      }),
+    ],
+    [handleAction],
+  );
+
+  const paymentsEmpty = (
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <p className="text-sm text-muted-foreground">No transactions match your search.</p>
+    </div>
+  );
 
   return (
     <TooltipProvider>
@@ -454,12 +538,6 @@ export function PaymentsView() {
         <MainCanvasViewHeader
           title="Payments"
           description="Manage payment requests, track collections, and process refunds."
-          actions={
-            <Button size="sm" className="cursor-pointer gap-1.5 text-xs">
-              <Plus size={13} strokeWidth={1.6} absoluteStrokeWidth />
-              Request a payment
-            </Button>
-          }
         />
 
         {/* ── Scrollable content ── */}
@@ -474,115 +552,48 @@ export function PaymentsView() {
           </div>
 
           {/* Transaction table */}
-          <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col">
-            {/* Table toolbar */}
-            <div className="px-4 py-3 flex items-center gap-3 border-b border-border">
-              <div className="relative flex-1 max-w-xs">
-                <Search
-                  size={13}
-                  strokeWidth={1.6}
-                  absoluteStrokeWidth
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                />
-                <Input
-                  placeholder="Search transactions…"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8 h-8 text-xs"
-                />
-              </div>
-
-              {/* Status filter */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 cursor-pointer">
-                    {STATUS_FILTER_OPTIONS.find((o) => o.value === statusFilter)?.label ?? "All"}
-                    <ChevronDown size={12} strokeWidth={1.6} absoluteStrokeWidth />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-36">
-                  {STATUS_FILTER_OPTIONS.map((opt) => (
-                    <DropdownMenuItem
-                      key={opt.value}
-                      className="text-xs cursor-pointer"
-                      onClick={() => setStatusFilter(opt.value)}
-                    >
-                      {opt.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <div className="ml-auto flex items-center gap-2">
-                <p className="text-xs text-muted-foreground">
-                  {filtered.length} transaction{filtered.length !== 1 ? "s" : ""}
-                </p>
-                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 cursor-pointer">
-                  <Download size={12} strokeWidth={1.6} absoluteStrokeWidth />
-                  Export
-                </Button>
-              </div>
-            </div>
-
-            {/* Table */}
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="text-xs font-medium w-[220px]">Contact</TableHead>
-                    <TableHead className="text-xs font-medium w-[120px]">Amount</TableHead>
-                    <TableHead className="text-xs font-medium w-[120px]">Status</TableHead>
-                    <TableHead className="text-xs font-medium w-[130px]">Date</TableHead>
-                    <TableHead className="text-xs font-medium">Description</TableHead>
-                    <TableHead className="text-xs font-medium w-[48px]" />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-12 text-sm text-muted-foreground">
-                        No transactions match your search.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filtered.map((tx) => (
-                      <TableRow
-                        key={tx.id}
-                        className="cursor-pointer"
-                        onClick={() => {
-                          setSelectedTx(tx);
-                          setInvoiceOpen(true);
-                        }}
-                      >
-                        <TableCell className="py-3">
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium text-foreground">{tx.contactName}</span>
-                            <span className="text-xs text-muted-foreground">{tx.businessName}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-3 text-sm font-medium text-foreground tabular-nums">
-                          {fmtAmount(tx.amount)}
-                        </TableCell>
-                        <TableCell className="py-3">
-                          <StatusBadge status={tx.status} />
-                        </TableCell>
-                        <TableCell className="py-3 text-xs text-muted-foreground whitespace-nowrap">
-                          {tx.date}
-                        </TableCell>
-                        <TableCell className="py-3 text-xs text-muted-foreground max-w-[200px] truncate">
-                          {tx.description}
-                        </TableCell>
-                        <TableCell
-                          className="py-3"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <TxActions tx={tx} onAction={handleAction} />
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+          <div className="flex flex-col overflow-hidden border-0 bg-background">
+            <div className="overflow-x-auto border-b border-border">
+              <AppDataTable<Transaction>
+                tableId="payments.ledger"
+                data={filtered}
+                columns={paymentColumns}
+                onRowClick={(tx) => {
+                  setSelectedTx(tx);
+                  setInvoiceOpen(true);
+                }}
+                getRowId={(row) => row.id}
+                emptyState={paymentsEmpty}
+                columnSheetTitle="Payment columns"
+                className="min-w-0 px-0"
+                toolbarLeft={
+                  <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                    <div className="relative max-w-xs flex-1">
+                      <Search
+                        size={13}
+                        strokeWidth={1.6}
+                        absoluteStrokeWidth
+                        className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground"
+                      />
+                      <Input
+                        placeholder="Search transactions…"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="h-8 pl-8 text-xs"
+                      />
+                    </div>
+                    <div className="ml-auto flex items-center gap-2">
+                      <p className="text-xs text-muted-foreground">
+                        {filtered.length} transaction{filtered.length !== 1 ? "s" : ""}
+                      </p>
+                      <Button variant="outline" size="sm" className="h-8 cursor-pointer gap-1.5 text-xs">
+                        <Download size={12} strokeWidth={1.6} absoluteStrokeWidth />
+                        Export
+                      </Button>
+                    </div>
+                  </div>
+                }
+              />
             </div>
 
             {/* Pagination stub */}

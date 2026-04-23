@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { createColumnHelper } from "@tanstack/react-table";
 import {
   Search, MoreHorizontal, Download, Copy, Trash2, BarChart2,
   ChevronDown, Users, Send, TrendingUp, Star, Eye,
@@ -7,9 +8,7 @@ import {
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { Input } from "@/app/components/ui/input";
-import {
-  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
-} from "@/app/components/ui/table";
+import { AppDataTable } from "@/app/components/ui/AppDataTable";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/app/components/ui/sheet";
@@ -492,6 +491,8 @@ function SurveyRowActions({ onViewReports }: { onViewReports: () => void }) {
   );
 }
 
+const surveyColumnHelper = createColumnHelper<Survey>();
+
 /* ─── Main view ─── */
 export function SurveysView() {
   const [search, setSearch] = useState("");
@@ -505,10 +506,10 @@ export function SurveysView() {
     return matchesSearch && matchesStatus;
   });
 
-  const openReports = (survey: Survey) => {
+  const openReports = useCallback((survey: Survey) => {
     setSelectedSurvey(survey);
     setSheetOpen(true);
-  };
+  }, []);
 
   const STATUS_OPTS: { label: string; value: SurveyStatus | "all" }[] = [
     { label: "All status", value: "all" },
@@ -520,6 +521,166 @@ export function SurveysView() {
   const activeSurveys = SURVEYS.filter((s) => s.status === "active").length;
   const totalResponses = SURVEYS.reduce((sum, s) => sum + s.responses, 0);
 
+  const surveyColumns = useMemo(
+    () => [
+      surveyColumnHelper.accessor("name", {
+        id: "name",
+        header: "Survey name",
+        meta: { settingsLabel: "Survey name" },
+        size: 220,
+        enableSorting: true,
+        cell: (info) => (
+          <p className="font-medium text-foreground">{info.getValue()}</p>
+        ),
+      }),
+      surveyColumnHelper.accessor("type", {
+        id: "type",
+        header: "Type",
+        meta: { settingsLabel: "Type" },
+        size: 96,
+        enableSorting: true,
+        cell: (info) => {
+          const typeCfg = TYPE_CONFIG[info.getValue()];
+          return (
+            <Badge variant="outline" className={`text-[length:var(--font-size)] ${typeCfg.className}`}>
+              {typeCfg.label}
+            </Badge>
+          );
+        },
+      }),
+      surveyColumnHelper.accessor("status", {
+        id: "status",
+        header: "Status",
+        meta: { settingsLabel: "Status" },
+        size: 96,
+        enableSorting: true,
+        cell: (info) => {
+          const statusCfg = STATUS_CONFIG[info.getValue()];
+          return (
+            <Badge variant="outline" className={`gap-1 text-[length:var(--font-size)] ${statusCfg.className}`}>
+              <statusCfg.icon size={10} strokeWidth={1.6} absoluteStrokeWidth />
+              {statusCfg.label}
+            </Badge>
+          );
+        },
+      }),
+      surveyColumnHelper.accessor("sent", {
+        id: "sent",
+        header: "Sent",
+        meta: { settingsLabel: "Sent" },
+        size: 88,
+        enableSorting: true,
+        cell: (info) => {
+          const n = info.getValue();
+          return (
+            <span className="block text-left text-muted-foreground tabular-nums">
+              {n ? n.toLocaleString() : "—"}
+            </span>
+          );
+        },
+      }),
+      surveyColumnHelper.accessor("responses", {
+        id: "responses",
+        header: "Responses",
+        meta: { settingsLabel: "Responses" },
+        size: 104,
+        enableSorting: true,
+        cell: (info) => {
+          const n = info.getValue();
+          return (
+            <span className="block text-left text-muted-foreground tabular-nums">
+              {n ? n.toLocaleString() : "—"}
+            </span>
+          );
+        },
+      }),
+      surveyColumnHelper.accessor("completionRate", {
+        id: "completion",
+        header: "Completion",
+        meta: { settingsLabel: "Completion" },
+        size: 120,
+        enableSorting: true,
+        cell: (info) => {
+          const survey = info.row.original;
+          return survey.completionRate > 0 ? (
+            <div className="flex items-center justify-start gap-2">
+              <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-primary"
+                  style={{ width: `${survey.completionRate}%` }}
+                />
+              </div>
+              <span className="text-muted-foreground tabular-nums">{survey.completionRate}%</span>
+            </div>
+          ) : (
+            <span className="block text-left text-muted-foreground">—</span>
+          );
+        },
+      }),
+      surveyColumnHelper.accessor("npsScore", {
+        id: "nps",
+        header: () => (
+          <Tooltip>
+            <TooltipTrigger className="cursor-default">NPS score</TooltipTrigger>
+            <TooltipContent className="text-xs">Net Promoter Score (NPS surveys only)</TooltipContent>
+          </Tooltip>
+        ),
+        meta: { settingsLabel: "NPS score" },
+        size: 96,
+        enableSorting: true,
+        cell: (info) => {
+          const score = info.getValue();
+          return score !== null ? (
+            <span className={`block text-left font-semibold ${NPS_COLOR_CLASS(score)}`}>
+              {score > 0 ? "+" : ""}
+              {score}
+            </span>
+          ) : (
+            <span className="block text-left text-muted-foreground">—</span>
+          );
+        },
+      }),
+      surveyColumnHelper.accessor("lastUpdated", {
+        id: "lastUpdated",
+        header: "Last updated",
+        meta: { settingsLabel: "Last updated" },
+        size: 128,
+        enableSorting: true,
+        cell: (info) => (
+          <span className="whitespace-nowrap text-muted-foreground">{info.getValue()}</span>
+        ),
+      }),
+      surveyColumnHelper.accessor("owner", {
+        id: "owner",
+        header: "Owner",
+        meta: { settingsLabel: "Owner" },
+        size: 128,
+        enableSorting: true,
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+      surveyColumnHelper.display({
+        id: "actions",
+        header: "",
+        meta: { settingsLabel: "Actions" },
+        size: 52,
+        enableResizing: false,
+        enableHiding: false,
+        cell: ({ row }) => (
+          <div className="text-left">
+            <SurveyRowActions onViewReports={() => openReports(row.original)} />
+          </div>
+        ),
+      }),
+    ],
+    [openReports],
+  );
+
+  const surveysEmpty = (
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <p className="text-sm text-muted-foreground">No surveys match your search.</p>
+    </div>
+  );
+
   return (
     <TooltipProvider>
       <div className="flex flex-col h-full overflow-hidden">
@@ -530,139 +691,64 @@ export function SurveysView() {
         />
 
         {/* ── Table card ── */}
-        <div className="flex-1 min-h-0 mx-6 mb-6 bg-card border border-border rounded-xl overflow-hidden flex flex-col">
-          {/* Toolbar */}
-          <div className="px-4 py-3 border-b border-border flex items-center gap-3">
-            <div className="relative flex-1 max-w-xs">
-              <Search size={13} strokeWidth={1.6} absoluteStrokeWidth className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-              <Input
-                placeholder="Search surveys…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-8 h-8 text-xs"
-              />
-            </div>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 cursor-pointer">
-                  {STATUS_OPTS.find((o) => o.value === statusFilter)?.label}
-                  <ChevronDown size={12} strokeWidth={1.6} absoluteStrokeWidth />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-36">
-                {STATUS_OPTS.map((opt) => (
-                  <DropdownMenuItem key={opt.value} className="text-xs cursor-pointer" onClick={() => setStatusFilter(opt.value)}>
-                    {opt.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <div className="ml-auto flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">{filtered.length} survey{filtered.length !== 1 ? "s" : ""}</span>
-              <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 cursor-pointer">
-                <Download size={12} strokeWidth={1.6} absoluteStrokeWidth />
-                Export
-              </Button>
-            </div>
-          </div>
-
-          {/* Table */}
-          <div className="flex-1 overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="text-xs font-medium">Survey name</TableHead>
-                  <TableHead className="text-xs font-medium w-[90px]">Type</TableHead>
-                  <TableHead className="text-xs font-medium w-[90px]">Status</TableHead>
-                  <TableHead className="text-xs font-medium w-[80px] text-right">Sent</TableHead>
-                  <TableHead className="text-xs font-medium w-[100px] text-right">Responses</TableHead>
-                  <TableHead className="text-xs font-medium w-[110px] text-right">Completion</TableHead>
-                  <TableHead className="text-xs font-medium w-[90px] text-right">
-                    <Tooltip>
-                      <TooltipTrigger className="cursor-default">NPS score</TooltipTrigger>
-                      <TooltipContent className="text-xs">Net Promoter Score (NPS surveys only)</TooltipContent>
-                    </Tooltip>
-                  </TableHead>
-                  <TableHead className="text-xs font-medium w-[120px]">Last updated</TableHead>
-                  <TableHead className="text-xs font-medium w-[120px]">Owner</TableHead>
-                  <TableHead className="text-xs font-medium w-[48px]" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={10} className="text-center py-12 text-sm text-muted-foreground">
-                      No surveys match your search.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filtered.map((survey) => {
-                    const typeCfg   = TYPE_CONFIG[survey.type];
-                    const statusCfg = STATUS_CONFIG[survey.status];
-                    return (
-                      <TableRow
-                        key={survey.id}
-                        className="cursor-pointer"
-                        onClick={() => openReports(survey)}
-                      >
-                        <TableCell className="py-3">
-                          <p className="text-sm font-medium text-foreground">{survey.name}</p>
-                        </TableCell>
-                        <TableCell className="py-3">
-                          <Badge variant="outline" className={`text-xs ${typeCfg.className}`}>
-                            {typeCfg.label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="py-3">
-                          <Badge variant="outline" className={`text-xs gap-1 ${statusCfg.className}`}>
-                            <statusCfg.icon size={10} strokeWidth={1.6} absoluteStrokeWidth />
-                            {statusCfg.label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="py-3 text-xs text-muted-foreground text-right tabular-nums">
-                          {survey.sent ? survey.sent.toLocaleString() : "—"}
-                        </TableCell>
-                        <TableCell className="py-3 text-xs text-muted-foreground text-right tabular-nums">
-                          {survey.responses ? survey.responses.toLocaleString() : "—"}
-                        </TableCell>
-                        <TableCell className="py-3 text-right">
-                          {survey.completionRate > 0 ? (
-                            <div className="flex items-center justify-end gap-2">
-                              <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div className="h-full bg-primary rounded-full" style={{ width: `${survey.completionRate}%` }} />
-                              </div>
-                              <span className="text-xs text-muted-foreground tabular-nums">{survey.completionRate}%</span>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-3 text-right">
-                          {survey.npsScore !== null ? (
-                            <span className={`text-sm font-semibold ${NPS_COLOR_CLASS(survey.npsScore)}`}>
-                              {survey.npsScore > 0 ? "+" : ""}{survey.npsScore}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-3 text-xs text-muted-foreground whitespace-nowrap">
-                          {survey.lastUpdated}
-                        </TableCell>
-                        <TableCell className="py-3 text-xs text-muted-foreground">
-                          {survey.owner}
-                        </TableCell>
-                        <TableCell className="py-3" onClick={(e) => e.stopPropagation()}>
-                          <SurveyRowActions onViewReports={() => openReports(survey)} />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
+        <div className="mx-6 mb-6 flex min-h-0 flex-1 flex-col overflow-hidden bg-background">
+          <div className="min-h-0 flex-1 overflow-y-auto border-b border-border">
+            <AppDataTable<Survey>
+              tableId="surveys.directory"
+              data={filtered}
+              columns={surveyColumns}
+              onRowClick={openReports}
+              getRowId={(row) => row.id}
+              emptyState={surveysEmpty}
+              columnSheetTitle="Survey columns"
+              className="min-h-0 min-w-0 px-0"
+              toolbarLeft={
+                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                  <div className="relative max-w-xs flex-1">
+                    <Search
+                      size={13}
+                      strokeWidth={1.6}
+                      absoluteStrokeWidth
+                      className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <Input
+                      placeholder="Search surveys…"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="h-8 pl-8 text-xs"
+                    />
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 cursor-pointer gap-1.5 text-xs">
+                        {STATUS_OPTS.find((o) => o.value === statusFilter)?.label}
+                        <ChevronDown size={12} strokeWidth={1.6} absoluteStrokeWidth />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-36">
+                      {STATUS_OPTS.map((opt) => (
+                        <DropdownMenuItem
+                          key={opt.value}
+                          className="cursor-pointer text-xs"
+                          onClick={() => setStatusFilter(opt.value)}
+                        >
+                          {opt.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <div className="ml-auto flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {filtered.length} survey{filtered.length !== 1 ? "s" : ""}
+                    </span>
+                    <Button variant="outline" size="sm" className="h-8 cursor-pointer gap-1.5 text-xs">
+                      <Download size={12} strokeWidth={1.6} absoluteStrokeWidth />
+                      Export
+                    </Button>
+                  </div>
+                </div>
+              }
+            />
           </div>
 
           {/* Footer */}

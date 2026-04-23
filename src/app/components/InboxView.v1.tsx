@@ -1076,8 +1076,11 @@ export function InboxView() {
     return () => el.removeEventListener("scroll", onScroll);
   }, [selectedId, detailLoading]);
 
+  const unreadCount = conversations.filter((c) => c.unread).length;
+
   return (
-    <div className="flex-1 flex min-h-0 overflow-hidden bg-[#f8f9fa] dark:bg-[#13161b] transition-colors duration-300 ">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[#f8f9fa] transition-colors duration-300 dark:bg-[#13161b]">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
       {/* ═══ CENTER-LEFT: Conversation list (resizable) ═══ */}
       <div
         ref={listContainerRef}
@@ -1153,14 +1156,10 @@ export function InboxView() {
                 ))}
               </div>
             </div>
-
-            <div className="flex gap-2">
+            <div className="flex items-start gap-2">
               <div className="w-2 shrink-0" aria-hidden />
-              <p
-                className="min-w-0 text-[12px] text-[#999] dark:text-[#6b7280]"
-                style={{ fontWeight: 400 }}
-              >
-                {`19.2K total messages • ${conversations.filter((c) => c.unread).length} unread`}
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                19.2K total messages · {unreadCount} unread
               </p>
             </div>
           </div>
@@ -1263,6 +1262,7 @@ export function InboxView() {
 
         {/* Composer */}
         <Composer textareaRef={composeTextareaRef} />
+      </div>
       </div>
     </div>
   );

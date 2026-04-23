@@ -12,6 +12,10 @@ import {
   FloatingSheetFrame,
 } from "@/app/components/layout/FloatingSheetFrame";
 import {
+  MAIN_VIEW_PRIMARY_HEADING_CLASS,
+  MAIN_VIEW_SUBHEADING_CLASS,
+} from "@/app/components/layout/mainViewTitleClasses";
+import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/app/components/ui/select";
 import { Input } from "@/app/components/ui/input";
@@ -423,14 +427,14 @@ export function ConversationStream() {
   return (
     <div className="flex h-full flex-col overflow-hidden bg-app-shell-main">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+      <div className="flex shrink-0 items-center justify-between px-6 pt-5 pb-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <PhoneCall className="size-4" />
           </div>
-          <div>
-            <h1 className="text-sm font-semibold text-foreground">Call Recording</h1>
-            <p className="text-xs text-muted-foreground">
+          <div className="min-w-0">
+            <h1 className={MAIN_VIEW_PRIMARY_HEADING_CLASS}>Call Recording</h1>
+            <p className={MAIN_VIEW_SUBHEADING_CLASS}>
               Customer Support · Order #58421 · Shoe Size Dispute
             </p>
           </div>

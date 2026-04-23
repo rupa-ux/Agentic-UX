@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { Share2, ChevronDown, Maximize2, Info, Star } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 
 // ─── Chart series (neutral at rest; brand blue reserved for hover/focus on links) ───
 /** Uses CSS variable so the stroke adapts to light/dark mode automatically. */
@@ -171,20 +172,17 @@ export default function BusinessOverviewDashboard() {
   return (
     <div className="h-full min-h-0 overflow-hidden rounded-tl-lg bg-white dark:bg-[#1e2229]">
       <div className="h-full min-h-0 overflow-y-auto">
-      <div className="px-6 py-8 flex flex-col gap-5">
+      <div className="flex flex-col gap-5 px-6 pb-8 pt-2">
 
-        {/* 1. Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl text-foreground" style={{ fontWeight: 300 }}>Welcome, Balaji</h1>
-            <p className="text-sm text-muted-foreground mt-1" style={{ fontWeight: 400 }}>
-              Here are the things which need your attention.
-            </p>
-          </div>
-          <Button variant="outline" size="icon">
-            <Share2 className="w-4 h-4 text-muted-foreground" />
-          </Button>
-        </div>
+        <MainCanvasViewHeader
+          title="Welcome, Balaji"
+          description="Here are the things which need your attention."
+          actions={
+            <Button variant="outline" size="icon" aria-label="Share">
+              <Share2 className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          }
+        />
 
         {/* 2. Attention Cards Row */}
         <div className="border border-border rounded-lg overflow-hidden grid grid-cols-2 divide-x divide-border">

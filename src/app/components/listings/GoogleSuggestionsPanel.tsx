@@ -1,6 +1,10 @@
-import { Search, MoreVertical, CheckCircle2, XCircle, ChevronDown, Info } from "lucide-react";
+import { useMemo, useState } from "react";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Search, MoreVertical, CheckCircle2, XCircle, Info } from "lucide-react";
+import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { Button } from "@/app/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/app/components/ui/table";
+import { AppDataTable } from "@/app/components/ui/AppDataTable";
+import { AppDataTableColumnSettingsTrigger } from "@/app/components/ui/AppDataTableColumnSettingsTrigger";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/app/components/ui/tooltip";
 import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 
@@ -12,6 +16,8 @@ export type GoogleSuggestion = {
   suggestion: string;
   createdOn: string;
 };
+
+const suggestionColumnHelper = createColumnHelper<GoogleSuggestion>();
 
 const MOCK_SUGGESTIONS: GoogleSuggestion[] = [
   {
@@ -65,31 +71,104 @@ const MOCK_SUGGESTIONS: GoogleSuggestion[] = [
 ];
 
 export function GoogleSuggestionsPanel() {
+  const [columnSheetOpen, setColumnSheetOpen] = useState(false);
+
+  const columns = useMemo(
+    () => [
+      suggestionColumnHelper.accessor("location", {
+        id: "location",
+        header: "Location",
+        meta: { settingsLabel: "Location" },
+        size: 220,
+        enableSorting: true,
+        cell: (info) => <span className="text-foreground">{info.getValue()}</span>,
+      }),
+      suggestionColumnHelper.accessor("field", {
+        id: "field",
+        header: "Field",
+        meta: { settingsLabel: "Field" },
+        size: 168,
+        enableSorting: true,
+        cell: (info) => <span className="text-foreground">{info.getValue()}</span>,
+      }),
+      suggestionColumnHelper.accessor("birdeyeData", {
+        id: "birdeyeData",
+        header: "Birdeye data",
+        meta: { settingsLabel: "Birdeye data" },
+        size: 256,
+        cell: (info) => (
+          <p className="leading-relaxed whitespace-pre-wrap text-foreground">{info.getValue()}</p>
+        ),
+      }),
+      suggestionColumnHelper.accessor("suggestion", {
+        id: "suggestion",
+        header: "Suggestion",
+        meta: { settingsLabel: "Suggestion" },
+        size: 256,
+        cell: (info) => (
+          <p className="leading-relaxed whitespace-pre-wrap text-foreground">{info.getValue()}</p>
+        ),
+      }),
+      suggestionColumnHelper.accessor("createdOn", {
+        id: "createdOn",
+        header: "Created on",
+        meta: { settingsLabel: "Created on" },
+        size: 144,
+        enableSorting: true,
+        cell: (info) => <span className="text-foreground">{info.getValue()}</span>,
+      }),
+      suggestionColumnHelper.display({
+        id: "actions",
+        header: "",
+        meta: { settingsLabel: "Actions" },
+        size: 52,
+        enableResizing: false,
+        enableHiding: false,
+        cell: () => (
+          <div className="text-left">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+              <MoreVertical size={16} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
+            </Button>
+          </div>
+        ),
+      }),
+    ],
+    [],
+  );
+
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-background">
-      <div className="flex shrink-0 items-start justify-between border-b border-border px-6 py-5">
-        <div className="flex items-center gap-2">
-          <h1 className="text-lg font-semibold tracking-tight text-foreground">Google suggestions</h1>
-          <TooltipProvider delayDuration={200}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info size={14} className="text-muted-foreground mt-0.5 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Suggestions from Google users for your business profiles.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" className="shrink-0">
-            <Search size={16} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
-          </Button>
-          <Button variant="outline" size="icon" className="shrink-0">
-            <MoreVertical size={16} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
-          </Button>
-        </div>
-      </div>
+      <MainCanvasViewHeader
+        title={
+          <span className="inline-flex items-center gap-2">
+            Google suggestions
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info size={14} className="mt-0.5 cursor-help text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Suggestions from Google users for your business profiles.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </span>
+        }
+        actions={
+          <div className="flex items-center gap-2">
+            <AppDataTableColumnSettingsTrigger
+              sheetTitle="Suggestion columns"
+              onClick={() => setColumnSheetOpen(true)}
+            />
+            <Button variant="outline" size="icon" className="shrink-0">
+              <Search size={16} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
+            </Button>
+            <Button variant="outline" size="icon" className="shrink-0">
+              <MoreVertical size={16} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
+            </Button>
+          </div>
+        }
+      />
 
       <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-6 pb-8 pt-6">
         <div className="mx-auto flex w-full flex-col gap-6">
@@ -119,64 +198,18 @@ export function GoogleSuggestionsPanel() {
             </div>
           </div>
 
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="text-xs font-medium w-[220px]">
-                    <div className="flex items-center gap-1">
-                      Location
-                      <ChevronDown size={14} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
-                    </div>
-                  </TableHead>
-                  <TableHead className="text-xs font-medium w-[160px]">
-                    <div className="flex items-center gap-1">
-                      Field
-                      <ChevronDown size={14} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
-                    </div>
-                  </TableHead>
-                  <TableHead className="text-xs font-medium w-[240px]">Birdeye data</TableHead>
-                  <TableHead className="text-xs font-medium w-[240px]">Suggestion</TableHead>
-                  <TableHead className="text-xs font-medium w-[140px]">
-                    <div className="flex items-center gap-1">
-                      Created on
-                      <ChevronDown size={14} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
-                    </div>
-                  </TableHead>
-                  <TableHead className="w-[48px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {MOCK_SUGGESTIONS.map((sugg) => (
-                  <TableRow key={sugg.id} className="group">
-                    <TableCell className="py-4 align-top">
-                      <span className="text-sm text-foreground">{sugg.location}</span>
-                    </TableCell>
-                    <TableCell className="py-4 align-top">
-                      <span className="text-sm text-foreground">{sugg.field}</span>
-                    </TableCell>
-                    <TableCell className="py-4 align-top">
-                      <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-                        {sugg.birdeyeData}
-                      </p>
-                    </TableCell>
-                    <TableCell className="py-4 align-top">
-                      <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-                        {sugg.suggestion}
-                      </p>
-                    </TableCell>
-                    <TableCell className="py-4 align-top">
-                      <span className="text-sm text-foreground">{sugg.createdOn}</span>
-                    </TableCell>
-                    <TableCell className="py-4 align-top text-right">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-                        <MoreVertical size={16} strokeWidth={L1_STRIP_ICON_STROKE_PX} absoluteStrokeWidth />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <div className="min-w-0 overflow-hidden">
+            <AppDataTable<GoogleSuggestion>
+              tableId="listings.googleSuggestions"
+              data={MOCK_SUGGESTIONS}
+              columns={columns}
+              getRowId={(r) => r.id}
+              columnSheetTitle="Suggestion columns"
+              className="min-w-0 px-0"
+              hideColumnsButton
+              columnSheetOpen={columnSheetOpen}
+              onColumnSheetOpenChange={setColumnSheetOpen}
+            />
           </div>
         </div>
       </div>

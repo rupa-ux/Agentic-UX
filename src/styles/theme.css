@@ -14,6 +14,27 @@
   50% { opacity: 0.6; }
 }
 
+@keyframes myna-cta-icon-tilt {
+  0% {
+    transform: rotate(0deg);
+  }
+  45% {
+    transform: rotate(12deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes myna-cta-text-sweep {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
 /** Brief L2 nav row shimmer (e.g. BirdAI → Reports handoff to reporting module) */
 @keyframes l2-nav-shimmer {
   0% {
@@ -171,14 +192,21 @@
   --app-shell-gutter: #e0e5eb;
   /** L1 rail + TopBar band (light matches gutter; dark slightly lifted from gutter). */
   --app-shell-rail: #e0e5eb;
+  /**
+   * L1 icon rail + expanded Birdeye nav row pills — selected + hover wash.
+   * Lighter than `#d4dae3` but still reads clearly on `--app-shell-rail` (`#e0e5eb`).
+   */
+  --app-shell-l1-nav-highlight: #dbe1e9;
+  /** L1 nav pills — `:active` while pointer is down (slightly deeper than highlight). */
+  --app-shell-l1-nav-pressed: #d0d6e0;
   /** L2 navigation column surface (`L2NavLayout` / `L2_PANEL_SURFACE`). */
   --app-shell-l2-surface: #f0f1f5;
   /** Main column below TopBar (`APP_MAIN_CONTENT_SHELL_CLASS`). */
   --app-shell-main: var(--background);
   /** L2 nav row hover wash (`L2NavLayout` `HOVER`). */
-  --app-shell-l2-row-hover: #e4e6ea;
+  --app-shell-l2-row-hover: #eaecef;
   /** L2 selected child / neutral active row (`CHILD_ACTIVE`, `L2_ROW_SELECTED_BG`). */
-  --app-shell-l2-row-active: #e2e4ea;
+  --app-shell-l2-row-active: #e6e8ee;
   /** Main-column muted band aligned with L2 greys (`L2_CONTENT_MUTED_BAND`). */
   --app-shell-l2-content-muted: #f2f3f6;
 
@@ -233,10 +261,12 @@
   --app-shell-border: oklch(0.42 0.012 264.53);
   --app-shell-gutter: #13161b;
   --app-shell-rail: #181b22;
+  --app-shell-l1-nav-highlight: #2e3444;
+  --app-shell-l1-nav-pressed: #363c4c;
   --app-shell-l2-surface: #1e2229;
   --app-shell-main: #1e2229;
-  --app-shell-l2-row-hover: #2e3340;
-  --app-shell-l2-row-active: #454d5c;
+  --app-shell-l2-row-hover: #333848;
+  --app-shell-l2-row-active: #4a5160;
   --app-shell-l2-content-muted: #252b34;
 }
 
@@ -282,6 +312,8 @@
   --color-app-shell-border: var(--app-shell-border);
   --color-app-shell-gutter: var(--app-shell-gutter);
   --color-app-shell-rail: var(--app-shell-rail);
+  --color-app-shell-l1-nav-highlight: var(--app-shell-l1-nav-highlight);
+  --color-app-shell-l1-nav-pressed: var(--app-shell-l1-nav-pressed);
   --color-app-shell-l2-surface: var(--app-shell-l2-surface);
   --color-app-shell-main: var(--app-shell-main);
   --color-app-shell-l2-row-hover: var(--app-shell-l2-row-hover);
