@@ -1,17 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
-import {
-  Calendar,
-  CalendarRange,
-  ChevronLeft,
-  ChevronRight,
-  Filter,
-  List,
-  MoreHorizontal,
-  Pencil,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import { MAIN_VIEW_PRIMARY_HEADING_CLASS } from "@/app/components/layout/mainViewTitleClasses";
 import { Button } from "@/app/components/ui/button";
-import { SegmentedToggle } from "@/app/components/ui/segmented-toggle";
 import { cn } from "@/app/components/ui/utils";
 import { SocialPostPreviewSheet } from "@/app/components/social/SocialPostPreviewSheet";
 import {
@@ -30,8 +20,6 @@ const imgRectangle4669 = "https://images.unsplash.com/photo-1504674900247-0877df
 const imgBitmapCopy1 = "https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=400&h=300&fit=crop&auto=format";
 const imgDentalOffice = "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=400&h=300&fit=crop&auto=format";
 const imgSmile = "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=400&h=300&fit=crop&auto=format";
-
-type ViewMode = "list" | "week" | "month";
 
 /* ─── Mock copy (Aspen Dental–style practice social) ─── */
 const POST_TEXT =
@@ -207,16 +195,6 @@ const postsData: Record<number, SocialCalendarPost[]> = {
   21: [{ id: "s21-1", time: "5:50 PM", platform: "instagram", text: "Thank you for 2,000 local followers—we’re honored to care for this community’s smiles.", image: imgDentalOffice }],
 };
 
-const WEEK_DAYS = [
-  { label: "Sun", date: 1 },
-  { label: "Mon", date: 2 },
-  { label: "Tue", date: 3 },
-  { label: "Wed", date: 4, isToday: true },
-  { label: "Thu", date: 5 },
-  { label: "Fri", date: 6 },
-  { label: "Sat", date: 7 },
-];
-
 const MONTH_WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
 /** April 1, 2024 is Monday → one leading empty cell when week starts Sunday */
@@ -231,184 +209,11 @@ function buildApril2024MonthCells(): (number | null)[] {
   return cells;
 }
 
-/** Shared shell for list / week / month so layout, border, and typography stay aligned. */
+/** Shared shell for the month calendar: layout, border, and height chain. */
 function SocialCalendarSurface({ children }: { children: ReactNode }) {
   return (
     <div className="mx-6 mb-6 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm">
       {children}
-    </div>
-  );
-}
-
-function flattenPostsChronological(): { day: number; post: SocialCalendarPost }[] {
-  const days = Object.keys(postsData)
-    .map(Number)
-    .sort((a, b) => a - b);
-  const out: { day: number; post: SocialCalendarPost }[] = [];
-  for (const day of days) {
-    for (const post of postsData[day] ?? []) {
-      out.push({ day, post });
-    }
-  }
-  return out;
-}
-
-function PostCardComponent({
-  post,
-  onOpenPreview,
-}: {
-  post: SocialCalendarPost;
-  onOpenPreview: () => void;
-}) {
-  return (
-    <div className="w-full rounded-lg border border-border bg-background p-4 shadow-sm transition-colors">
-      <div className="flex flex-col gap-2">
-        <button
-          type="button"
-          aria-label="Open post preview"
-          onClick={onOpenPreview}
-          className="flex w-full cursor-pointer flex-col gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-        >
-          <SocialPostPreviewBody post={post} variant="compact" />
-        </button>
-
-        <div className="mt-auto flex shrink-0 items-center justify-between gap-2 border-t border-border pt-2">
-          <div className="flex shrink-0 items-center gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
-              aria-label="Edit post"
-            >
-              <Pencil className="h-[14px] w-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
-              aria-label="Schedule"
-            >
-              <Calendar className="h-[14px] w-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
-            </Button>
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
-            aria-label="More options"
-          >
-            <MoreHorizontal className="h-[14px] w-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SocialWeekGrid({
-  onOpenPreview,
-}: {
-  onOpenPreview: (post: SocialCalendarPost) => void;
-}) {
-  return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden text-[13px] leading-normal">
-      <div className="flex shrink-0 border-b border-border bg-background">
-        {WEEK_DAYS.map((day) => (
-          <div
-            key={day.date}
-            className={cn(
-              "flex min-w-0 flex-1 items-center justify-center py-3",
-              day.isToday && "bg-muted/20",
-            )}
-          >
-            {day.isToday ? (
-              <div className="flex items-center gap-2">
-                <span className="text-[13px] font-medium text-primary">{day.label}</span>
-                <span className="flex size-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                  {day.date}
-                </span>
-              </div>
-            ) : (
-              <span className="text-[13px] text-muted-foreground">
-                {day.label} {day.date}
-              </span>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <div className="flex min-h-0 min-w-0 flex-1 divide-x divide-border overflow-y-auto">
-        {WEEK_DAYS.map((day) => {
-          const posts = postsData[day.date] || [];
-          return (
-            <div
-              key={day.date}
-              className={cn(
-                "flex min-h-0 min-w-0 flex-1 flex-col gap-2 bg-background p-3",
-                day.isToday && "bg-muted/10",
-              )}
-            >
-              {posts.map((post) => (
-                <PostCardComponent key={post.id} post={post} onOpenPreview={() => onOpenPreview(post)} />
-              ))}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function SocialListView({
-  rows,
-  onOpenPreview,
-}: {
-  rows: { day: number; post: SocialCalendarPost }[];
-  onOpenPreview: (post: SocialCalendarPost) => void;
-}) {
-  const grouped = useMemo(() => {
-    const map: { day: number; posts: SocialCalendarPost[] }[] = [];
-    let currentDay: number | null = null;
-    let bucket: SocialCalendarPost[] = [];
-    for (const { day, post } of rows) {
-      if (currentDay !== day) {
-        if (currentDay !== null) map.push({ day: currentDay, posts: bucket });
-        currentDay = day;
-        bucket = [];
-      }
-      bucket.push(post);
-    }
-    if (currentDay !== null) map.push({ day: currentDay, posts: bucket });
-    return map;
-  }, [rows]);
-
-  return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden text-[13px] leading-normal">
-      <div className="flex shrink-0 border-b border-border bg-background px-4 py-2">
-        <span className="text-xs font-medium text-muted-foreground">April 2024 · all scheduled posts</span>
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto bg-background px-4 py-4">
-        <div className="mx-auto flex max-w-2xl flex-col gap-4">
-          {grouped.map(({ day, posts }) => (
-            <section key={day} aria-labelledby={`social-list-day-${day}`}>
-              <h2
-                id={`social-list-day-${day}`}
-                className="sticky top-0 z-[1] -mx-1 mb-2 border-b border-border bg-background px-1 py-2 font-semibold text-foreground"
-              >
-                April {day}
-              </h2>
-              <div className="flex flex-col gap-4">
-                {posts.map((post) => (
-                  <PostCardComponent key={post.id} post={post} onOpenPreview={() => onOpenPreview(post)} />
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
@@ -522,11 +327,8 @@ function SocialMonthGrid({
    Social View – Main export
    ═══════════════════════════════════════════ */
 export function SocialView() {
-  const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [currentMonth] = useState("April 2024");
   const [previewPost, setPreviewPost] = useState<SocialCalendarPost | null>(null);
-
-  const listRows = useMemo(() => flattenPostsChronological(), []);
 
   const openPreview = (post: SocialCalendarPost) => setPreviewPost(post);
 
@@ -553,43 +355,8 @@ export function SocialView() {
           </Button>
         </div>
 
-        {/* Right: view toggle + filter */}
+        {/* Right: filter */}
         <div className="flex items-center gap-2">
-          <SegmentedToggle<ViewMode>
-            iconOnly
-            ariaLabel="Social calendar layout"
-            value={viewMode}
-            onChange={setViewMode}
-            items={[
-              {
-                value: "list",
-                label: "List view",
-                icon: (
-                  <List className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
-                ),
-              },
-              {
-                value: "week",
-                label: "Week view",
-                icon: (
-                  <CalendarRange
-                    className="size-[14px]"
-                    strokeWidth={1.6}
-                    absoluteStrokeWidth
-                    aria-hidden
-                  />
-                ),
-              },
-              {
-                value: "month",
-                label: "Month view",
-                icon: (
-                  <Calendar className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
-                ),
-              },
-            ]}
-          />
-
           <Button variant="outline" size="icon">
             <Filter className="h-[14px] w-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
           </Button>
@@ -598,13 +365,7 @@ export function SocialView() {
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <SocialCalendarSurface>
-          {viewMode === "list" ? (
-            <SocialListView rows={listRows} onOpenPreview={openPreview} />
-          ) : viewMode === "week" ? (
-            <SocialWeekGrid onOpenPreview={openPreview} />
-          ) : (
-            <SocialMonthGrid onOpenPreview={openPreview} />
-          )}
+          <SocialMonthGrid onOpenPreview={openPreview} />
         </SocialCalendarSurface>
       </div>
 
