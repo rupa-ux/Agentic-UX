@@ -227,12 +227,28 @@ export default function App() {
     }
   }, [currentView]);
 
-  const handleViewChange = useCallback((view: AppView, _slug?: string) => {
+  const [searchAIL2Active, setSearchAIL2Active] = usePersistedState("nav:l2:searchai", SEARCH_AI_L2_DEFAULT_ACTIVE);
+  const handleSearchAIL2Change = useCallback((key: string) => {
+    setSearchAIL2Active(key);
+  }, []);
+
+  useEffect(() => {
+    if (currentView !== "searchai") {
+      setSearchAIL2Active(SEARCH_AI_L2_DEFAULT_ACTIVE);
+    }
+  }, [currentView]);
+
+  const [socialL2Active, setSocialL2Active] = usePersistedState("nav:l2:social", "Publish/Calendar");
+  const handleSocialL2Change = useCallback((key: string) => {
+    setSocialL2Active(key);
+  }, []);
+
+  const handleViewChange = useCallback((view: AppView, slug?: string) => {
     if (view !== currentView) {
       setMynaChatExpanded(false);
     }
-    if (_slug?.startsWith("l2:")) {
-      setJourneysL2ActiveKey(_slug.slice(3));
+    if (slug?.startsWith("l2:")) {
+      setJourneysL2ActiveKey(slug.slice(3));
       setCurrentView(view);
       return;
     }
@@ -449,9 +465,9 @@ export default function App() {
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "reviews" && (
             <ReviewsL2NavPanel />
           )}
-          {/* Social L2 nav panel */}
-          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "social" && (
-            <SocialL2NavPanel />
+          {/* Social L2 nav panel — hidden on Create post (full-width composer) */}
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "social" && socialL2Active !== "Create post" && (
+            <SocialL2NavPanel activeItem={socialL2Active} onActiveItemChange={handleSocialL2Change} />
           )}
           {/* Chatbot (`searchai`) — shell L2 is preview only; product is not hosted here */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "searchai" && (
@@ -547,7 +563,7 @@ export default function App() {
             ) : currentView === "reviews" ? (
               <ReviewsView />
             ) : currentView === "social" ? (
-              <SocialView />
+              <SocialView activeItem={socialL2Active} onActiveItemChange={handleSocialL2Change} />
             ) : currentView === "searchai" ? (
               <AppShellContentPlaceholder view="searchai" />
             ) : birdAiShellShowsMainPlaceholder(currentView) ? (

@@ -1230,9 +1230,8 @@ export function PaymentsL2NavPanel({
    Social L2 Nav Panel – uses L2NavLayout
    ═══════════════════════════════════════════ */
 const socialConfig = {
-  headerAction: { label: "Create post" },
   sections: [
-    { label: "Publish", children: ["View calendar", "View drafts", "Approve posts", "Fix failed posts", "Fix rejected posts"] },
+    { label: "Publish", children: ["Calendar", "View drafts", "Approve posts", "Fix failed posts", "Fix rejected posts", "Expired posts"] },
     { label: "Engage", children: ["View all engagements", "Assigned to me", "Approve replies", "Fix rejected replies", "View spam"] },
     { label: "Reports", children: ["All channels", "Post performance", "Response trends", "Best time to post"] },
     { label: "Competitors", children: ["Benchmarking", "Posts"] },
@@ -1242,8 +1241,21 @@ const socialConfig = {
   ],
 };
 
-export function SocialL2NavPanel() {
-  return <L2NavLayout {...socialConfig} storageKey="nav:l2:social" data-no-print />;
+export type SocialL2NavPanelProps = {
+  activeItem: string;
+  onActiveItemChange: (key: string) => void;
+};
+
+export function SocialL2NavPanel({ activeItem, onActiveItemChange }: SocialL2NavPanelProps) {
+  return (
+    <L2NavLayout
+      {...socialConfig}
+      headerAction={{ label: "Create post", onClick: () => onActiveItemChange("Create post") }}
+      activeItem={activeItem}
+      onActiveItemChange={onActiveItemChange}
+      data-no-print
+    />
+  );
 }
 
 /* ═══════════════════════════════════════════
