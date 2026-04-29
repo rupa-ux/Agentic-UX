@@ -46,7 +46,7 @@ export function MonitorNotificationsTrigger() {
             strokeWidth={L1_STRIP_ICON_STROKE_PX}
             className={cn(
               "transition-all duration-200",
-              "text-[#505050] dark:text-[#9ba2b0]",
+              "text-[#505050] dark:text-muted-foreground",
               "group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3]",
               "group-data-[state=open]:text-[#1E44CC] dark:group-data-[state=open]:text-[#2952E3] group-hover:scale-110",
             )}

@@ -57,7 +57,7 @@ const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
           data-disabled={disabled || undefined}
           onKeyDown={handleKeyDown}
           className={cn(
-            "relative rounded-xl border border-[#e5e9f0] dark:border-[#333a47] bg-white dark:bg-[#262b35] transition-all duration-200",
+            "relative rounded-xl border border-[#e5e9f0] dark:border-border bg-white dark:bg-muted transition-all duration-200",
             "focus-within:border-[#c4d5e9] dark:focus-within:border-[#5580e0] focus-within:shadow-[0_0_0_2px_rgba(25,118,210,0.08)] dark:focus-within:shadow-[0_0_0_2px_rgba(37,82,237,0.2)]",
             "hover:border-[#d0d5dc] dark:hover:border-[#3d4555]",
             disabled && "pointer-events-none opacity-50",
@@ -110,7 +110,7 @@ const PromptInputTextarea = React.forwardRef<
         disabled={disabled}
         rows={1}
         className={cn(
-          "w-full resize-none bg-transparent text-[13px] text-[#212121] dark:text-[#e4e4e4] placeholder:text-[#a3a3a3] dark:placeholder:text-[#4d5568] outline-none leading-[20px]",
+          "w-full resize-none bg-transparent text-[13px] text-[#212121] dark:text-foreground placeholder:text-[#a3a3a3] dark:placeholder:text-muted-foreground outline-none leading-[20px]",
           className
         )}
         style={{ minHeight: "20px" }}
@@ -162,7 +162,7 @@ const PromptInputAction = React.forwardRef<
       title={tooltip}
       className={cn(
         "p-1.5 rounded-lg transition-colors",
-        "hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] text-[#888] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#9ba2b0]",
+        "hover:bg-[#f5f5f5] dark:hover:bg-muted text-[#888] dark:text-muted-foreground hover:text-[#555] dark:hover:text-[#9ba2b0]",
         "disabled:pointer-events-none disabled:opacity-40",
         className
       )}

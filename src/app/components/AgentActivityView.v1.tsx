@@ -40,21 +40,21 @@ export function AgentActivityView({ onConfigure }: AgentActivityViewProps) {
   return (
     <div className="flex flex-col min-h-0 overflow-hidden flex-1">
       {/* Agent header */}
-      <div className="flex shrink-0 items-center justify-between border-b border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] px-6 py-3 transition-colors">
+      <div className="flex shrink-0 items-center justify-between border-b border-[#eaeaea] dark:border-border bg-white dark:bg-background px-6 py-3 transition-colors">
         <div className="flex items-center gap-3">
           <div className="flex size-9 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-950/40">
             <Sparkles className="size-4 text-violet-600 dark:text-violet-400" />
           </div>
           <div>
-            <p className="text-[14px] font-semibold text-[#212121] dark:text-[#e4e4e4]">Review Response Agent</p>
-            <p className="text-[11px] text-[#999] dark:text-[#6b7280]">Automatically drafts and sends review replies across all channels</p>
+            <p className="text-[14px] font-semibold text-[#212121] dark:text-foreground">Review Response Agent</p>
+            <p className="text-[11px] text-[#999] dark:text-muted-foreground">Automatically drafts and sends review replies across all channels</p>
           </div>
           <span className="ml-2 rounded-md border-0 bg-emerald-50 px-2 py-0.5 text-[12px] font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
             ● Active
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg border border-[#eaeaea] dark:border-[#333a47] bg-[#fafafa] dark:bg-[#1a1d23] p-0.5">
+          <div className="flex items-center gap-1 rounded-lg border border-[#eaeaea] dark:border-border bg-[#fafafa] dark:bg-app-shell-rail p-0.5">
             {(["manual", "hybrid", "auto"] as const).map((m) => (
               <button
                 key={m}
@@ -63,8 +63,8 @@ export function AgentActivityView({ onConfigure }: AgentActivityViewProps) {
                 className={cn(
                   "cursor-pointer rounded-md px-3 py-1.5 text-[11px] font-medium capitalize transition-colors",
                   autonomy === m
-                    ? "bg-white dark:bg-[#262b35] text-[#212121] dark:text-[#e4e4e4] shadow-sm"
-                    : "text-[#666] dark:text-[#9ba2b0] hover:text-[#212121] dark:hover:text-[#e4e4e4]",
+                    ? "bg-white dark:bg-muted text-[#212121] dark:text-foreground shadow-sm"
+                    : "text-[#666] dark:text-muted-foreground hover:text-[#212121] dark:hover:text-[#e4e4e4]",
                 )}
               >
                 {m === "manual" ? "Human in loop" : m === "hybrid" ? "Hybrid" : "Full auto"}
@@ -81,12 +81,12 @@ export function AgentActivityView({ onConfigure }: AgentActivityViewProps) {
       </div>
 
       {/* Metrics row */}
-      <div className="grid shrink-0 grid-cols-6 divide-x divide-[#f0f1f5] dark:divide-[#1e2229] border-b border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] transition-colors">
+      <div className="grid shrink-0 grid-cols-6 divide-x divide-[#f0f1f5] dark:divide-border border-b border-[#eaeaea] dark:border-border bg-white dark:bg-background transition-colors">
         {METRICS.map((m) => (
           <div key={m.label} className="flex flex-col gap-1 px-5 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-[#999] dark:text-[#6b7280]">{m.label}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-[#999] dark:text-muted-foreground">{m.label}</p>
             <div className="flex items-end justify-between gap-2">
-              <p className="text-[20px] font-semibold tabular-nums text-[#212121] dark:text-[#e4e4e4]">{m.value}</p>
+              <p className="text-[20px] font-semibold tabular-nums text-[#212121] dark:text-foreground">{m.value}</p>
               <Sparkline data={m.spark} />
             </div>
             <p className={cn("text-[11px] font-medium", m.up === true ? "text-emerald-600" : m.up === false ? "text-red-500" : "text-[#999]")}>
@@ -97,7 +97,7 @@ export function AgentActivityView({ onConfigure }: AgentActivityViewProps) {
       </div>
 
       {/* Activity table */}
-      <div className="min-h-0 flex-1 overflow-hidden bg-[#f5f6f8] dark:bg-[#13161b] transition-colors">
+      <div className="min-h-0 flex-1 overflow-hidden bg-[#f5f6f8] dark:bg-app-shell-gutter transition-colors">
         <AgentActivityTable
           rows={ACTIVITY_ROWS}
           selectedId={selectedRow?.id ?? null}

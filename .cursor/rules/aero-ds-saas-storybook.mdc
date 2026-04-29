@@ -12,7 +12,8 @@ This workspace is **one SaaS product** (ShareConsolidated / Bird AI shell): dash
 
 ## Sources of truth
 
-- **Colours and semantics:** [`src/tokens/theme.css`](src/tokens/theme.css) plus versioned [`src/themes/`](src/themes/) `tokens.css` (see `DESIGN_VERSION`) — use Tailwind semantic classes (`bg-primary`, `text-muted-foreground`, `border-border`, chart/sidebar tokens).
+- **Colours and semantics:** [`src/styles/theme.css`](src/styles/theme.css). Use Tailwind semantic classes (`bg-primary`, `text-muted-foreground`, `border-border`, chart/sidebar tokens).
+- **Dark Mode Rhythm:** strictly follow the 6-level Blue-Grey scale in dark mode. **Never use hardcoded hex values** (e.g. `dark:bg-[#...]`)—map to `bg-background`, `bg-muted`, etc. per the `aero-ds` skill guidelines.
 - **Visual check:** Storybook **Design System/Tokens** ([`src/stories/DesignTokens.stories.tsx`](src/stories/DesignTokens.stories.tsx)). Run `npm run storybook` (port 6006) when validating token or layout changes.
 - **Preview:** [`.storybook/preview.tsx`](.storybook/preview.tsx) — theme toolbar, `DESIGN_VERSION` tokens + app styles; keep stories consistent with the Vite app.
 - **Spacing:** [spacing-grid.mdc](./spacing-grid.mdc) — especially for `src/stories/` and layout wrappers.

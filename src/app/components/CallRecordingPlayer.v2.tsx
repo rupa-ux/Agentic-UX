@@ -280,21 +280,21 @@ function WaveformSection({
                 <div
                   className={cn(
                     "absolute bottom-full mb-2 z-50 w-52 rounded-lg border border-border p-3 shadow-lg",
-                    "bg-white dark:bg-[#1e2229] text-[#212121] dark:text-[#e4e4e4]",
+                    "bg-white dark:bg-background text-[#212121] dark:text-foreground",
                   )}
                   style={{ left: pct > 65 ? "auto" : 0, right: pct > 65 ? 0 : "auto" }}
                 >
                   <div className="flex items-center gap-1.5 mb-1">
                     <span className={cn("size-1.5 rounded-full shrink-0", s.dot)} />
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-[#999] dark:text-[#6b7280]">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-[#999] dark:text-muted-foreground">
                       {m.type}
                     </span>
-                    <span className="ml-auto text-[11px] tabular-nums text-[#999] dark:text-[#6b7280]">
+                    <span className="ml-auto text-[11px] tabular-nums text-[#999] dark:text-muted-foreground">
                       {fmt(m.timestampSec)}
                     </span>
                   </div>
                   <p className="text-[12px] font-medium leading-snug">{m.label}</p>
-                  <p className="mt-0.5 text-[11px] leading-snug text-[#666] dark:text-[#9ba2b0]">{m.detail}</p>
+                  <p className="mt-0.5 text-[11px] leading-snug text-[#666] dark:text-muted-foreground">{m.detail}</p>
                   <button
                     onClick={() => onSeek(m.timestampSec)}
                     className={cn(
@@ -337,7 +337,7 @@ function WaveformSection({
                 "flex-1 rounded-full transition-colors duration-75",
                 played
                   ? "bg-[#2552ED] dark:bg-[#4f7ef8]"
-                  : "bg-[#dde1e9] dark:bg-[#2e3340]",
+                  : "bg-[#dde1e9] dark:bg-muted",
               )}
               style={{ height: `${h * 100}%`, minHeight: 2 }}
             />
@@ -352,8 +352,8 @@ function WaveformSection({
 
       {/* Time labels */}
       <div className="mt-1 flex justify-between">
-        <span className="text-[11px] tabular-nums text-[#999] dark:text-[#6b7280]">{fmt(currentTime)}</span>
-        <span className="text-[11px] tabular-nums text-[#999] dark:text-[#6b7280]">{fmt(record.durationSec)}</span>
+        <span className="text-[11px] tabular-nums text-[#999] dark:text-muted-foreground">{fmt(currentTime)}</span>
+        <span className="text-[11px] tabular-nums text-[#999] dark:text-muted-foreground">{fmt(record.durationSec)}</span>
       </div>
     </div>
   );
@@ -398,7 +398,7 @@ function PlayControls({
         type="button"
         onClick={() => onSkip(-15)}
         aria-label="Back 15 seconds"
-        className="flex size-7 cursor-pointer items-center justify-center rounded-md text-[#555] dark:text-[#8b92a5] transition-colors hover:bg-[#f0f1f5] dark:hover:bg-[#2e3340]"
+        className="flex size-7 cursor-pointer items-center justify-center rounded-md text-[#555] dark:text-muted-foreground transition-colors hover:bg-[#f0f1f5] dark:hover:bg-muted"
       >
         <SkipBack className="size-4" />
       </button>
@@ -408,7 +408,7 @@ function PlayControls({
         type="button"
         onClick={() => onSkip(15)}
         aria-label="Forward 15 seconds"
-        className="flex size-7 cursor-pointer items-center justify-center rounded-md text-[#555] dark:text-[#8b92a5] transition-colors hover:bg-[#f0f1f5] dark:hover:bg-[#2e3340]"
+        className="flex size-7 cursor-pointer items-center justify-center rounded-md text-[#555] dark:text-muted-foreground transition-colors hover:bg-[#f0f1f5] dark:hover:bg-muted"
       >
         <SkipForward className="size-4" />
       </button>
@@ -424,7 +424,7 @@ function PlayControls({
               "cursor-pointer rounded-md px-2 py-1 text-[11px] font-medium transition-colors duration-150",
               speed === opt.value
                 ? "bg-[#2552ED] text-white"
-                : "text-[#555] dark:text-[#8b92a5] hover:bg-[#f0f1f5] dark:hover:bg-[#2e3340]",
+                : "text-[#555] dark:text-muted-foreground hover:bg-[#f0f1f5] dark:hover:bg-muted",
             )}
           >
             {opt.label}
@@ -437,7 +437,7 @@ function PlayControls({
         type="button"
         onClick={onToggleMute}
         aria-label={muted ? "Unmute" : "Mute"}
-        className="flex size-7 cursor-pointer items-center justify-center rounded-md text-[#555] dark:text-[#8b92a5] transition-colors hover:bg-[#f0f1f5] dark:hover:bg-[#2e3340]"
+        className="flex size-7 cursor-pointer items-center justify-center rounded-md text-[#555] dark:text-muted-foreground transition-colors hover:bg-[#f0f1f5] dark:hover:bg-muted"
       >
         {muted ? <VolumeX className="size-3.5" /> : <Volume2 className="size-3.5" />}
       </button>
@@ -445,7 +445,7 @@ function PlayControls({
       <div className="ml-auto flex items-center gap-2">
         {/* Language */}
         <div className="flex items-center gap-1">
-          <Globe className="size-3.5 shrink-0 text-[#999] dark:text-[#6b7280]" />
+          <Globe className="size-3.5 shrink-0 text-[#999] dark:text-muted-foreground" />
           <Select value={language} onValueChange={(v) => onLanguageChange(v as Language)}>
             <SelectTrigger size="sm" className="h-7 w-24 text-[12px]">
               <SelectValue />
@@ -462,7 +462,7 @@ function PlayControls({
         <button
           type="button"
           onClick={onCreateTicket}
-          className="flex cursor-pointer items-center gap-1.5 rounded-md border border-[#e5e9f0] bg-white px-2.5 py-1 text-[12px] text-[#212121] transition-colors hover:bg-[#f5f5f5] dark:border-[#333a47] dark:bg-[#262b35] dark:text-[#e4e4e4] dark:hover:bg-[#2e3340]"
+          className="flex cursor-pointer items-center gap-1.5 rounded-md border border-[#e5e9f0] bg-white px-2.5 py-1 text-[12px] text-[#212121] transition-colors hover:bg-[#f5f5f5] dark:border-border dark:bg-muted dark:text-foreground dark:hover:bg-muted"
         >
           <TicketIcon className="size-3" />
           Ticket
@@ -478,29 +478,29 @@ function CallSummary({ record }: { record: CallRecord }) {
   const [checked, setChecked]   = useState<Record<string, boolean>>({});
 
   return (
-    <div className="mx-5 mb-4 rounded-xl border border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] overflow-hidden">
+    <div className="mx-5 mb-4 rounded-xl border border-[#eaeaea] dark:border-border bg-white dark:bg-background overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded((x) => !x)}
         className="flex w-full cursor-pointer items-center gap-2 px-4 py-3 text-left transition-colors hover:bg-[#fafafa] dark:hover:bg-[#252a3a]"
       >
         <Sparkles className="size-3.5 shrink-0 text-[#2552ED]" />
-        <span className="flex-1 text-[13px] font-semibold text-[#212121] dark:text-[#e4e4e4]">AI Summary</span>
+        <span className="flex-1 text-[13px] font-semibold text-[#212121] dark:text-foreground">AI Summary</span>
         {expanded
-          ? <ChevronUp   className="size-3.5 text-[#999] dark:text-[#6b7280]" />
-          : <ChevronDown className="size-3.5 text-[#999] dark:text-[#6b7280]" />
+          ? <ChevronUp   className="size-3.5 text-[#999] dark:text-muted-foreground" />
+          : <ChevronDown className="size-3.5 text-[#999] dark:text-muted-foreground" />
         }
       </button>
 
       {expanded && (
-        <div className="border-t border-[#eaeaea] dark:border-[#2e3340] px-4 py-3">
+        <div className="border-t border-[#eaeaea] dark:border-border px-4 py-3">
           <p className="text-[13px] leading-relaxed text-[#444] dark:text-[#b0b7c3]">
             {record.summary}
           </p>
 
           {record.actionItems.length > 0 && (
             <div className="mt-3">
-              <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#999] dark:text-[#6b7280]">
+              <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#999] dark:text-muted-foreground">
                 Action items
               </p>
               <div className="flex flex-col gap-1.5">
@@ -552,8 +552,8 @@ function TranscriptBubble({
           className={cn(
             "max-w-[420px] px-4 py-3 rounded-2xl text-[14px] leading-relaxed transition-all duration-200",
             isAgent
-              ? "bg-[#e3f0ff] dark:bg-[#1e3a5f] text-[#212121] dark:text-[#e4e4e4] rounded-br-md"
-              : "bg-white dark:bg-[#262b35] text-[#212121] dark:text-[#e4e4e4] rounded-bl-md border border-[#eaeaea] dark:border-[#333a47]",
+              ? "bg-[#e3f0ff] dark:bg-[#1e3a5f] text-[#212121] dark:text-foreground rounded-br-md"
+              : "bg-white dark:bg-muted text-[#212121] dark:text-foreground rounded-bl-md border border-[#eaeaea] dark:border-border",
             isActive && "ring-2 ring-[#2552ED]/40 ring-offset-1",
           )}
           style={{ fontWeight: 400 }}
@@ -567,7 +567,7 @@ function TranscriptBubble({
             type="button"
             onClick={() => onSeek(msg.timestampSec)}
             className={cn(
-              "absolute -top-2.5 cursor-pointer rounded-full border border-[#e5e9f0] bg-white px-2 py-0.5 text-[10px] font-medium text-[#555] shadow-sm transition-colors hover:bg-[#f0f4ff] hover:text-[#2552ED] dark:border-[#333a47] dark:bg-[#262b35] dark:text-[#9ba2b0] dark:hover:bg-[#252a3a] dark:hover:text-[#6b9bff]",
+              "absolute -top-2.5 cursor-pointer rounded-full border border-[#e5e9f0] bg-white px-2 py-0.5 text-[10px] font-medium text-[#555] shadow-sm transition-colors hover:bg-[#f0f4ff] hover:text-[#2552ED] dark:border-border dark:bg-muted dark:text-muted-foreground dark:hover:bg-[#252a3a] dark:hover:text-[#6b9bff]",
               isAgent ? "right-2" : "left-2",
             )}
           >
@@ -685,21 +685,21 @@ export function CallRecordingPlayer({ record }: CallRecordingPlayerProps) {
   return (
     <>
       {/* ── Sticky player chrome ── */}
-      <div className="sticky top-0 z-10 border-b border-[#eaeaea] dark:border-[#2e3340] bg-[#f5f6f8] dark:bg-[#13161b] transition-colors duration-300">
+      <div className="sticky top-0 z-10 border-b border-[#eaeaea] dark:border-border bg-[#f5f6f8] dark:bg-app-shell-gutter transition-colors duration-300">
 
         {/* Call meta strip */}
         <div className="flex items-center gap-2 px-5 pt-4 pb-2">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[13px] font-semibold text-[#212121] dark:text-[#e4e4e4]">
+              <span className="text-[13px] font-semibold text-[#212121] dark:text-foreground">
                 {record.dateLabel}
               </span>
               <span className="text-[#ccc] dark:text-[#444]">·</span>
-              <span className="text-[12px] text-[#666] dark:text-[#9ba2b0]">
+              <span className="text-[12px] text-[#666] dark:text-muted-foreground">
                 {fmt(record.durationSec)}
               </span>
               <span className="text-[#ccc] dark:text-[#444]">·</span>
-              <span className="text-[12px] text-[#666] dark:text-[#9ba2b0]">
+              <span className="text-[12px] text-[#666] dark:text-muted-foreground">
                 Agent: {record.agentName}
               </span>
               <span
@@ -710,7 +710,7 @@ export function CallRecordingPlayer({ record }: CallRecordingPlayerProps) {
               >
                 {outcome.label}
               </span>
-              <span className="rounded-full border border-[#e5e9f0] bg-[#f5f6f8] px-2 py-0.5 text-[11px] text-[#666] dark:border-[#333a47] dark:bg-[#1e2229] dark:text-[#9ba2b0]">
+              <span className="rounded-full border border-[#e5e9f0] bg-[#f5f6f8] px-2 py-0.5 text-[11px] text-[#666] dark:border-border dark:bg-background dark:text-muted-foreground">
                 {record.topic}
               </span>
             </div>
@@ -751,7 +751,7 @@ export function CallRecordingPlayer({ record }: CallRecordingPlayerProps) {
       <div ref={transcriptRef} className="px-6">
         <div className="mb-4 flex items-center justify-center">
           <span
-            className="relative z-10 bg-[#f5f6f8] px-3 text-[12px] text-[#999] dark:bg-[#13161b] dark:text-[#6b7280]"
+            className="relative z-10 bg-[#f5f6f8] px-3 text-[12px] text-[#999] dark:bg-app-shell-gutter dark:text-muted-foreground"
             style={{ fontWeight: 400 }}
           >
             {record.dateLabel} · Call Recording · {fmt(record.durationSec)}

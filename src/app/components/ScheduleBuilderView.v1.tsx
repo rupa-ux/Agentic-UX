@@ -199,7 +199,7 @@ function AiChatPanel({ onApply }: { onApply: (text: string) => void }) {
               className={`max-w-[90%] px-3 py-2.5 rounded-[10px] text-[12px] ${
                 msg.role === "user"
                   ? "bg-[#2552ED] text-white rounded-br-[3px]"
-                  : "bg-[#f0f1f5] dark:bg-[#262b35] text-[#212121] dark:text-[#e4e4e4] rounded-bl-[3px]"
+                  : "bg-[#f0f1f5] dark:bg-muted text-[#212121] dark:text-foreground rounded-bl-[3px]"
               }`}
               style={{ fontWeight: 300, lineHeight: "18px", whiteSpace: "pre-wrap" }}
               dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight:400">$1</strong>').replace(/\n/g, '<br/>') }}
@@ -208,7 +208,7 @@ function AiChatPanel({ onApply }: { onApply: (text: string) => void }) {
         ))}
         {isThinking && (
           <div className="flex justify-start">
-            <div className="bg-[#f0f1f5] dark:bg-[#262b35] px-3 py-2.5 rounded-[10px] rounded-bl-[3px] flex items-center gap-1.5">
+            <div className="bg-[#f0f1f5] dark:bg-muted px-3 py-2.5 rounded-[10px] rounded-bl-[3px] flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-[#2552ED] animate-bounce" style={{ animationDelay: "0ms" }} />
               <div className="w-1.5 h-1.5 rounded-full bg-[#2552ED] animate-bounce" style={{ animationDelay: "150ms" }} />
               <div className="w-1.5 h-1.5 rounded-full bg-[#2552ED] animate-bounce" style={{ animationDelay: "300ms" }} />
@@ -219,14 +219,14 @@ function AiChatPanel({ onApply }: { onApply: (text: string) => void }) {
       </div>
 
       {/* Input */}
-      <div className="p-3 border-t border-[#e5e9f0] dark:border-[#2e3340] shrink-0">
-        <div className="flex items-center gap-2 bg-[#f8f9fb] dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] px-3 h-[38px]">
+      <div className="p-3 border-t border-[#e5e9f0] dark:border-border shrink-0">
+        <div className="flex items-center gap-2 bg-[#f8f9fb] dark:bg-muted border border-[#e5e9f0] dark:border-border rounded-[8px] px-3 h-[38px]">
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && handleSend()}
             placeholder="Describe your schedule..."
-            className="flex-1 bg-transparent text-[12px] text-[#212121] dark:text-[#e4e4e4] placeholder:text-[#bbb] dark:placeholder:text-[#4d5568] outline-none"
+            className="flex-1 bg-transparent text-[12px] text-[#212121] dark:text-foreground placeholder:text-[#bbb] dark:placeholder:text-muted-foreground outline-none"
             style={{ fontWeight: 300 }}
           />
           <button
@@ -265,7 +265,7 @@ function ManualToolbox() {
     <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
       {/* Triggers */}
       <div>
-        <button onClick={() => setTriggerExpanded(!triggerExpanded)} className="flex items-center justify-between w-full px-2 py-1.5 text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px]" style={{ fontWeight: 400 }}>
+        <button onClick={() => setTriggerExpanded(!triggerExpanded)} className="flex items-center justify-between w-full px-2 py-1.5 text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px]" style={{ fontWeight: 400 }}>
           <span>Triggers</span>
           {triggerExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
@@ -274,39 +274,39 @@ function ManualToolbox() {
             <div className="w-7 h-7 rounded-[6px] bg-[#f0f1f5] dark:bg-[#2a3040] flex items-center justify-center shrink-0">
               <t.icon className="w-3.5 h-3.5 text-[#2552ED]" />
             </div>
-            <span className="text-[12px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{t.label}</span>
+            <span className="text-[12px] text-[#212121] dark:text-foreground" style={{ fontWeight: 400 }}>{t.label}</span>
           </div>
         ))}
       </div>
 
       {/* Tasks */}
       <div>
-        <button onClick={() => setTasksExpanded(!tasksExpanded)} className="flex items-center justify-between w-full px-2 py-1.5 text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px]" style={{ fontWeight: 400 }}>
+        <button onClick={() => setTasksExpanded(!tasksExpanded)} className="flex items-center justify-between w-full px-2 py-1.5 text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px]" style={{ fontWeight: 400 }}>
           <span>Tasks</span>
           {tasksExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
         {tasksExpanded && tasks.map(t => (
           <div key={t.label} className="flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-[#f0f1f5] dark:hover:bg-[#262b35] cursor-grab transition-colors">
             <div className="w-7 h-7 rounded-[6px] bg-[#f0f1f5] dark:bg-[#2a3040] flex items-center justify-center shrink-0">
-              <t.icon className="w-3.5 h-3.5 text-[#555] dark:text-[#9ba2b0]" />
+              <t.icon className="w-3.5 h-3.5 text-[#555] dark:text-muted-foreground" />
             </div>
-            <span className="text-[12px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{t.label}</span>
+            <span className="text-[12px] text-[#212121] dark:text-foreground" style={{ fontWeight: 400 }}>{t.label}</span>
           </div>
         ))}
       </div>
 
       {/* Product modules */}
       <div>
-        <button onClick={() => setModulesExpanded(!modulesExpanded)} className="flex items-center justify-between w-full px-2 py-1.5 text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px]" style={{ fontWeight: 400 }}>
+        <button onClick={() => setModulesExpanded(!modulesExpanded)} className="flex items-center justify-between w-full px-2 py-1.5 text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px]" style={{ fontWeight: 400 }}>
           <span>Products</span>
           {modulesExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
         {modulesExpanded && modules.map(m => (
           <div key={m.label} className="flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-[#f0f1f5] dark:hover:bg-[#262b35] cursor-grab transition-colors">
             <div className="w-7 h-7 rounded-[6px] bg-[#f0f1f5] dark:bg-[#2a3040] flex items-center justify-center shrink-0">
-              <m.icon className="w-3.5 h-3.5 text-[#555] dark:text-[#9ba2b0]" />
+              <m.icon className="w-3.5 h-3.5 text-[#555] dark:text-muted-foreground" />
             </div>
-            <span className="text-[12px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{m.label}</span>
+            <span className="text-[12px] text-[#212121] dark:text-foreground" style={{ fontWeight: 400 }}>{m.label}</span>
           </div>
         ))}
       </div>
@@ -359,10 +359,10 @@ function WorkflowCanvas({
                 onClick={() => onSelectStep(step.id)}
                 className={`relative w-[340px] border rounded-[12px] px-5 py-4 text-left transition-all ${
                   isActive
-                    ? "border-[#2552ED] bg-white dark:bg-[#1e2229] shadow-[0_0_0_2px_rgba(37,82,237,0.15)]"
+                    ? "border-[#2552ED] bg-white dark:bg-background shadow-[0_0_0_2px_rgba(37,82,237,0.15)]"
                     : step.enabled
-                    ? "border-[#e5e9f0] dark:border-[#333a47] bg-white dark:bg-[#1e2229] hover:border-[#c0c6d4] dark:hover:border-[#4d5568]"
-                    : "border-[#e5e9f0] dark:border-[#333a47] bg-[#fafbfc] dark:bg-[#1a1d24] opacity-50"
+                    ? "border-[#e5e9f0] dark:border-border bg-white dark:bg-background hover:border-[#c0c6d4] dark:hover:border-[#4d5568]"
+                    : "border-[#e5e9f0] dark:border-border bg-[#fafbfc] dark:bg-app-shell-rail opacity-50"
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -375,7 +375,7 @@ function WorkflowCanvas({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px]" style={{ fontWeight: 400 }}>
+                        <span className="text-[10px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px]" style={{ fontWeight: 400 }}>
                           Step {i + 1}
                         </span>
                         {step.completed && (
@@ -389,7 +389,7 @@ function WorkflowCanvas({
                         className={`w-7 h-4 rounded-full relative transition-colors ${
                           step.enabled
                             ? "bg-[#2552ED]"
-                            : "bg-[#d0d5dd] dark:bg-[#4d5568]"
+                            : "bg-[#d0d5dd] dark:bg-app-shell-l2-row-active"
                         }`}
                       >
                         <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-all ${
@@ -397,10 +397,10 @@ function WorkflowCanvas({
                         }`} />
                       </button>
                     </div>
-                    <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4] mt-1" style={{ fontWeight: 400 }}>
+                    <p className="text-[13px] text-[#212121] dark:text-foreground mt-1" style={{ fontWeight: 400 }}>
                       {step.label}
                     </p>
-                    <p className="text-[11px] text-[#888] dark:text-[#6b7280] mt-0.5" style={{ fontWeight: 300 }}>
+                    <p className="text-[11px] text-[#888] dark:text-muted-foreground mt-0.5" style={{ fontWeight: 300 }}>
                       {step.description}
                     </p>
                   </div>
@@ -410,7 +410,7 @@ function WorkflowCanvas({
               {/* Connector */}
               {!isLast && (
                 <div className="flex flex-col items-center py-1">
-                  <div className="w-px h-6 bg-[#d0d5dd] dark:bg-[#333a47]" />
+                  <div className="w-px h-6 bg-[#d0d5dd] dark:bg-muted" />
                   <ArrowDown className="w-3 h-3 text-[#d0d5dd] dark:text-[#333a47] -mt-1" />
                 </div>
               )}
@@ -429,36 +429,36 @@ function TriggerConfig({ config, onChange }: { config: ScheduleConfig; onChange:
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Schedule name</label>
+        <label className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Schedule name</label>
         <input
           value={config.name}
           onChange={e => onChange({ ...config, name: e.target.value })}
-          className="w-full px-3 py-2 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] text-[12px] text-[#212121] dark:text-[#e4e4e4] outline-none focus:border-[#2552ED]"
+          className="w-full px-3 py-2 bg-white dark:bg-muted border border-[#e5e9f0] dark:border-border rounded-[8px] text-[12px] text-[#212121] dark:text-foreground outline-none focus:border-[#2552ED]"
           style={{ fontWeight: 400 }}
         />
       </div>
       <div>
-        <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Frequency</label>
+        <label className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Frequency</label>
         <InlineSelectField value={config.frequency.charAt(0).toUpperCase() + config.frequency.slice(1)} options={["Daily", "Weekly", "Monthly"]} onChange={v => onChange({ ...config, frequency: v.toLowerCase() as Frequency })} />
       </div>
       {config.frequency === "weekly" && (
         <div>
-          <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Day of week</label>
+          <label className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Day of week</label>
           <InlineSelectField value={config.dayOfWeek} options={["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]} onChange={v => onChange({ ...config, dayOfWeek: v })} />
         </div>
       )}
       {config.frequency === "monthly" && (
         <div>
-          <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Day of month</label>
+          <label className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Day of month</label>
           <InlineSelectField value={config.dayOfMonth} options={["1st", "5th", "10th", "15th", "20th", "25th", "Last day"]} onChange={v => onChange({ ...config, dayOfMonth: v })} />
         </div>
       )}
       <div>
-        <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Time</label>
+        <label className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Time</label>
         <InlineSelectField value={config.time} options={["6:00 AM", "7:00 AM", "7:30 AM", "8:00 AM", "9:00 AM", "10:00 AM", "12:00 PM", "2:00 PM", "5:00 PM"]} onChange={v => onChange({ ...config, time: v })} />
       </div>
       <div>
-        <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Timezone</label>
+        <label className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Timezone</label>
         <InlineSelectField value={config.timezone} options={timezones} onChange={v => onChange({ ...config, timezone: v })} />
       </div>
     </div>
@@ -477,7 +477,7 @@ function ReportSelector({ modules, onToggle }: { modules: ReportModule[]; onTogg
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px]" style={{ fontWeight: 400 }}>Select reports</span>
+        <span className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px]" style={{ fontWeight: 400 }}>Select reports</span>
         <span className="text-[11px] text-[#2552ED] dark:text-[#6b9bff]" style={{ fontWeight: 400 }}>{selectedCount} selected</span>
       </div>
       <div className="space-y-1">
@@ -485,22 +485,22 @@ function ReportSelector({ modules, onToggle }: { modules: ReportModule[]; onTogg
           const isExpanded = expandedModules[mod.id];
           const modSelectedCount = mod.reports.filter(r => r.selected).length;
           return (
-            <div key={mod.id} className="border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] overflow-hidden">
+            <div key={mod.id} className="border border-[#e5e9f0] dark:border-border rounded-[8px] overflow-hidden">
               <button
                 onClick={() => setExpandedModules(p => ({ ...p, [mod.id]: !p[mod.id] }))}
                 className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-[#f8f9fb] dark:hover:bg-[#232830] transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <mod.icon className="w-3.5 h-3.5 text-[#555] dark:text-[#9ba2b0]" />
-                  <span className="text-[12px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{mod.module}</span>
+                  <mod.icon className="w-3.5 h-3.5 text-[#555] dark:text-muted-foreground" />
+                  <span className="text-[12px] text-[#212121] dark:text-foreground" style={{ fontWeight: 400 }}>{mod.module}</span>
                   {modSelectedCount > 0 && (
                     <span className="text-[10px] text-[#2552ED] dark:text-[#6b9bff] bg-[#e8effe] dark:bg-[#1e2d5e] px-1.5 py-0.5 rounded-full">{modSelectedCount}</span>
                   )}
                 </div>
-                {isExpanded ? <ChevronUp className="w-3 h-3 text-[#888] dark:text-[#6b7280]" /> : <ChevronDown className="w-3 h-3 text-[#888] dark:text-[#6b7280]" />}
+                {isExpanded ? <ChevronUp className="w-3 h-3 text-[#888] dark:text-muted-foreground" /> : <ChevronDown className="w-3 h-3 text-[#888] dark:text-muted-foreground" />}
               </button>
               {isExpanded && (
-                <div className="border-t border-[#e5e9f0] dark:border-[#333a47] px-3 py-1.5 space-y-0.5">
+                <div className="border-t border-[#e5e9f0] dark:border-border px-3 py-1.5 space-y-0.5">
                   {mod.reports.map(report => (
                     <button
                       key={report.id}
@@ -512,7 +512,7 @@ function ReportSelector({ modules, onToggle }: { modules: ReportModule[]; onTogg
                       }`}>
                         {report.selected && <Check className="w-2.5 h-2.5 text-white" />}
                       </div>
-                      <span className={`text-[12px] ${report.selected ? "text-[#212121] dark:text-[#e4e4e4]" : "text-[#555] dark:text-[#9ba2b0]"}`} style={{ fontWeight: report.selected ? 400 : 300 }}>
+                      <span className={`text-[12px] ${report.selected ? "text-[#212121] dark:text-foreground" : "text-[#555] dark:text-muted-foreground"}`} style={{ fontWeight: report.selected ? 400 : 300 }}>
                         {report.label}
                       </span>
                     </button>
@@ -531,36 +531,36 @@ function CustomizeConfig({ config, onChange }: { config: CustomizationConfig; on
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Theme</label>
+        <label className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Theme</label>
         <InlineSelectField value={config.theme} options={themes} onChange={v => onChange({ ...config, theme: v })} />
       </div>
       <div>
-        <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Layout</label>
+        <label className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Layout</label>
         <InlineSelectField value={config.layout} options={layouts} onChange={v => onChange({ ...config, layout: v })} />
       </div>
       <div>
-        <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Font</label>
+        <label className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Font</label>
         <InlineSelectField value={config.font} options={fonts} onChange={v => onChange({ ...config, font: v })} />
       </div>
       <div>
-        <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Spacing</label>
+        <label className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Spacing</label>
         <InlineSelectField value={config.spacing} options={spacings} onChange={v => onChange({ ...config, spacing: v })} />
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-[12px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>Page cover</span>
-        <button onClick={() => onChange({ ...config, pageCover: !config.pageCover })} className={`w-8 h-[18px] rounded-full relative transition-colors ${config.pageCover ? "bg-[#2552ED]" : "bg-[#d0d5dd] dark:bg-[#4d5568]"}`}>
+        <span className="text-[12px] text-[#212121] dark:text-foreground" style={{ fontWeight: 400 }}>Page cover</span>
+        <button onClick={() => onChange({ ...config, pageCover: !config.pageCover })} className={`w-8 h-[18px] rounded-full relative transition-colors ${config.pageCover ? "bg-[#2552ED]" : "bg-[#d0d5dd] dark:bg-app-shell-l2-row-active"}`}>
           <span className={`absolute top-[2px] w-[14px] h-[14px] rounded-full bg-white shadow-sm transition-all ${config.pageCover ? "left-[15px]" : "left-[2px]"}`} />
         </button>
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-[12px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>Page numbers</span>
-        <button onClick={() => onChange({ ...config, pageNumbers: !config.pageNumbers })} className={`w-8 h-[18px] rounded-full relative transition-colors ${config.pageNumbers ? "bg-[#2552ED]" : "bg-[#d0d5dd] dark:bg-[#4d5568]"}`}>
+        <span className="text-[12px] text-[#212121] dark:text-foreground" style={{ fontWeight: 400 }}>Page numbers</span>
+        <button onClick={() => onChange({ ...config, pageNumbers: !config.pageNumbers })} className={`w-8 h-[18px] rounded-full relative transition-colors ${config.pageNumbers ? "bg-[#2552ED]" : "bg-[#d0d5dd] dark:bg-app-shell-l2-row-active"}`}>
           <span className={`absolute top-[2px] w-[14px] h-[14px] rounded-full bg-white shadow-sm transition-all ${config.pageNumbers ? "left-[15px]" : "left-[2px]"}`} />
         </button>
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-[12px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>Generated date</span>
-        <button onClick={() => onChange({ ...config, generatedDate: !config.generatedDate })} className={`w-8 h-[18px] rounded-full relative transition-colors ${config.generatedDate ? "bg-[#2552ED]" : "bg-[#d0d5dd] dark:bg-[#4d5568]"}`}>
+        <span className="text-[12px] text-[#212121] dark:text-foreground" style={{ fontWeight: 400 }}>Generated date</span>
+        <button onClick={() => onChange({ ...config, generatedDate: !config.generatedDate })} className={`w-8 h-[18px] rounded-full relative transition-colors ${config.generatedDate ? "bg-[#2552ED]" : "bg-[#d0d5dd] dark:bg-app-shell-l2-row-active"}`}>
           <span className={`absolute top-[2px] w-[14px] h-[14px] rounded-full bg-white shadow-sm transition-all ${config.generatedDate ? "left-[15px]" : "left-[2px]"}`} />
         </button>
       </div>
@@ -573,15 +573,15 @@ function SummaryConfig() {
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Summary type</label>
+        <label className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Summary type</label>
         <InlineSelectField value={summaryType} options={["Executive", "Detailed", "Key metrics only", "Custom"]} onChange={setSummaryType} />
       </div>
-      <div className="bg-[#f8f9fb] dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] p-3">
+      <div className="bg-[#f8f9fb] dark:bg-muted border border-[#e5e9f0] dark:border-border rounded-[8px] p-3">
         <div className="flex items-center gap-1.5 mb-2">
           <Sparkles className="w-3 h-3 text-[#9970D7]" />
           <span className="text-[11px] text-[#9970D7]" style={{ fontWeight: 400 }}>AI-generated preview</span>
         </div>
-        <p className="text-[11px] text-[#555] dark:text-[#9ba2b0]" style={{ fontWeight: 300, lineHeight: "16px" }}>
+        <p className="text-[11px] text-[#555] dark:text-muted-foreground" style={{ fontWeight: 300, lineHeight: "16px" }}>
           This week's performance overview highlights a 12% increase in review volume, with an average rating of 4.3 stars across all locations. Social engagement rose 8%, driven by Instagram stories. Ticket resolution maintained a 95% SLA compliance rate.
         </p>
       </div>
@@ -606,7 +606,7 @@ function DeliveryConfig({ config, onChange }: { config: DeliveryConfig; onChange
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Output format</label>
+        <label className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Output format</label>
         <div className="flex gap-2">
           {(["PDF", "XLS", "PPT", "PNG"] as OutputFormat[]).map(fmt => (
             <button
@@ -615,7 +615,7 @@ function DeliveryConfig({ config, onChange }: { config: DeliveryConfig; onChange
               className={`px-3 py-1.5 rounded-[8px] border text-[12px] transition-all ${
                 config.format === fmt
                   ? "border-[#2552ED] bg-[#e8effe] dark:bg-[#1e2d5e] text-[#2552ED] dark:text-[#6b9bff]"
-                  : "border-[#e5e9f0] dark:border-[#333a47] text-[#555] dark:text-[#9ba2b0] hover:border-[#c0c6d4] dark:hover:border-[#4d5568]"
+                  : "border-[#e5e9f0] dark:border-border text-[#555] dark:text-muted-foreground hover:border-[#c0c6d4] dark:hover:border-[#4d5568]"
               }`}
               style={{ fontWeight: 400 }}
             >
@@ -625,12 +625,12 @@ function DeliveryConfig({ config, onChange }: { config: DeliveryConfig; onChange
         </div>
       </div>
       <div>
-        <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Recipients</label>
+        <label className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Recipients</label>
         <div className="flex flex-wrap gap-1.5 mb-2">
           {config.recipients.map(r => (
-            <span key={r} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] bg-[#f0f1f5] dark:bg-[#262b35] text-[#212121] dark:text-[#e4e4e4] border border-[#e5e9f0] dark:border-[#333a47]" style={{ fontWeight: 300 }}>
+            <span key={r} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] bg-[#f0f1f5] dark:bg-muted text-[#212121] dark:text-foreground border border-[#e5e9f0] dark:border-border" style={{ fontWeight: 300 }}>
               {r}
-              <button onClick={() => removeRecipient(r)} className="text-[#888] dark:text-[#6b7280] hover:text-[#c62828]">
+              <button onClick={() => removeRecipient(r)} className="text-[#888] dark:text-muted-foreground hover:text-[#c62828]">
                 <X className="w-2.5 h-2.5" />
               </button>
             </span>
@@ -642,30 +642,30 @@ function DeliveryConfig({ config, onChange }: { config: DeliveryConfig; onChange
             onChange={e => setRecipientInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && addRecipient()}
             placeholder="Add email address"
-            className="flex-1 px-3 py-2 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] text-[12px] text-[#212121] dark:text-[#e4e4e4] placeholder:text-[#bbb] dark:placeholder:text-[#4d5568] outline-none focus:border-[#2552ED]"
+            className="flex-1 px-3 py-2 bg-white dark:bg-muted border border-[#e5e9f0] dark:border-border rounded-[8px] text-[12px] text-[#212121] dark:text-foreground placeholder:text-[#bbb] dark:placeholder:text-muted-foreground outline-none focus:border-[#2552ED]"
             style={{ fontWeight: 300 }}
           />
-          <button onClick={addRecipient} className="px-2.5 py-2 bg-[#f0f1f5] dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] hover:bg-[#e4e6ea] dark:hover:bg-[#2e3340] transition-colors">
-            <Plus className="w-3.5 h-3.5 text-[#555] dark:text-[#9ba2b0]" />
+          <button onClick={addRecipient} className="px-2.5 py-2 bg-[#f0f1f5] dark:bg-muted border border-[#e5e9f0] dark:border-border rounded-[8px] hover:bg-[#e4e6ea] dark:hover:bg-muted transition-colors">
+            <Plus className="w-3.5 h-3.5 text-[#555] dark:text-muted-foreground" />
           </button>
         </div>
       </div>
       <div>
-        <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Subject</label>
+        <label className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Subject</label>
         <input
           value={config.subject}
           onChange={e => onChange({ ...config, subject: e.target.value })}
-          className="w-full px-3 py-2 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] text-[12px] text-[#212121] dark:text-[#e4e4e4] outline-none focus:border-[#2552ED]"
+          className="w-full px-3 py-2 bg-white dark:bg-muted border border-[#e5e9f0] dark:border-border rounded-[8px] text-[12px] text-[#212121] dark:text-foreground outline-none focus:border-[#2552ED]"
           style={{ fontWeight: 400 }}
         />
       </div>
       <div>
-        <label className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Email body</label>
+        <label className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px] mb-1.5 block" style={{ fontWeight: 400 }}>Email body</label>
         <textarea
           value={config.body}
           onChange={e => onChange({ ...config, body: e.target.value })}
           rows={4}
-          className="w-full px-3 py-2 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] text-[12px] text-[#212121] dark:text-[#e4e4e4] outline-none focus:border-[#2552ED] resize-none"
+          className="w-full px-3 py-2 bg-white dark:bg-muted border border-[#e5e9f0] dark:border-border rounded-[8px] text-[12px] text-[#212121] dark:text-foreground outline-none focus:border-[#2552ED] resize-none"
           style={{ fontWeight: 300 }}
         />
       </div>
@@ -760,8 +760,8 @@ export function ScheduleBuilderView({ onBack }: ScheduleBuilderViewProps) {
   const currentStep = dynamicSteps.find(s => s.id === activeStep);
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#13161b] transition-colors duration-300">
-      <div className="shrink-0 border-b border-[#eaeaea] dark:border-[#2e3340]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-app-shell-gutter transition-colors duration-300">
+      <div className="shrink-0 border-b border-[#eaeaea] dark:border-border">
         <MainCanvasViewHeader
           title={
             <span className="flex min-w-0 flex-wrap items-center gap-2">
@@ -806,16 +806,16 @@ export function ScheduleBuilderView({ onBack }: ScheduleBuilderViewProps) {
       {/* Three-panel layout */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Left Panel */}
-        <div className="w-[260px] border-r border-[#e5e9f0] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] flex flex-col shrink-0 overflow-hidden">
+        <div className="w-[260px] border-r border-[#e5e9f0] dark:border-border bg-white dark:bg-background flex flex-col shrink-0 overflow-hidden">
           {/* Mode toggle */}
           <div className="px-4 pt-4 pb-3 shrink-0">
-            <div className="inline-flex bg-[#f0f1f5] dark:bg-[#262b35] rounded-full p-[2px]">
+            <div className="inline-flex bg-[#f0f1f5] dark:bg-muted rounded-full p-[2px]">
               <button
                 onClick={() => setMode("ai")}
                 className={`flex items-center justify-center gap-1 px-3 py-[5px] rounded-full text-[12px] transition-all duration-200 ${
                   mode === "ai"
-                    ? "bg-white dark:bg-[#333a47] shadow-[0_1px_3px_rgba(0,0,0,0.08)] text-[#212121] dark:text-[#e4e4e4]"
-                    : "text-[#888] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#c0c6d4]"
+                    ? "bg-white dark:bg-muted shadow-[0_1px_3px_rgba(0,0,0,0.08)] text-[#212121] dark:text-foreground"
+                    : "text-[#888] dark:text-muted-foreground hover:text-[#555] dark:hover:text-[#c0c6d4]"
                 }`}
                 style={{ fontWeight: 400 }}
               >
@@ -826,8 +826,8 @@ export function ScheduleBuilderView({ onBack }: ScheduleBuilderViewProps) {
                 onClick={() => setMode("manual")}
                 className={`flex items-center justify-center px-3 py-[5px] rounded-full text-[12px] transition-all duration-200 ${
                   mode === "manual"
-                    ? "bg-white dark:bg-[#333a47] shadow-[0_1px_3px_rgba(0,0,0,0.08)] text-[#212121] dark:text-[#e4e4e4]"
-                    : "text-[#888] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#c0c6d4]"
+                    ? "bg-white dark:bg-muted shadow-[0_1px_3px_rgba(0,0,0,0.08)] text-[#212121] dark:text-foreground"
+                    : "text-[#888] dark:text-muted-foreground hover:text-[#555] dark:hover:text-[#c0c6d4]"
                 }`}
                 style={{ fontWeight: 400 }}
               >
@@ -845,18 +845,18 @@ export function ScheduleBuilderView({ onBack }: ScheduleBuilderViewProps) {
         </div>
 
         {/* Center – Workflow Canvas */}
-        <div className="flex-1 bg-[#fafbfc] dark:bg-[#13161b] overflow-hidden flex flex-col">
+        <div className="flex-1 bg-[#fafbfc] dark:bg-app-shell-gutter overflow-hidden flex flex-col">
           {/* Canvas header */}
-          <div className="shrink-0 flex items-center justify-between px-5 py-2.5 border-b border-[#eaeaea] dark:border-[#2e3340]">
-            <span className="text-[11px] text-[#888] dark:text-[#6b7280] uppercase tracking-[0.5px]" style={{ fontWeight: 400 }}>
+          <div className="shrink-0 flex items-center justify-between px-5 py-2.5 border-b border-[#eaeaea] dark:border-border">
+            <span className="text-[11px] text-[#888] dark:text-muted-foreground uppercase tracking-[0.5px]" style={{ fontWeight: 400 }}>
               Workflow
             </span>
             <div className="flex items-center gap-1.5">
               <Button type="button" variant="outline" size="icon" className="rounded-[6px]" title="Preview">
-                <Eye className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280]" />
+                <Eye className="w-3.5 h-3.5 text-[#888] dark:text-muted-foreground" />
               </Button>
               <Button type="button" variant="outline" size="icon" className="rounded-[6px]" title="Full screen">
-                <Maximize2 className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280]" />
+                <Maximize2 className="w-3.5 h-3.5 text-[#888] dark:text-muted-foreground" />
               </Button>
             </div>
           </div>
@@ -869,8 +869,8 @@ export function ScheduleBuilderView({ onBack }: ScheduleBuilderViewProps) {
         </div>
 
         {/* Right Panel – Configuration */}
-        <div className="w-[300px] border-l border-[#e5e9f0] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] flex flex-col shrink-0 overflow-hidden">
-          <div className="shrink-0 px-4 py-3 border-b border-[#eaeaea] dark:border-[#2e3340] flex items-center justify-between">
+        <div className="w-[300px] border-l border-[#e5e9f0] dark:border-border bg-white dark:bg-background flex flex-col shrink-0 overflow-hidden">
+          <div className="shrink-0 px-4 py-3 border-b border-[#eaeaea] dark:border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               {currentStep && (
                 <>
@@ -881,12 +881,12 @@ export function ScheduleBuilderView({ onBack }: ScheduleBuilderViewProps) {
                   {currentStep.type === "delivery" && <Send className="w-3.5 h-3.5 text-[#2e7d32]" />}
                 </>
               )}
-              <span className="text-[13px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>
+              <span className="text-[13px] text-[#212121] dark:text-foreground" style={{ fontWeight: 400 }}>
                 {currentStep?.label || "Select a step"}
               </span>
             </div>
             {activeStep && (
-              <button onClick={() => setActiveStep(null)} className="text-[#888] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#e4e4e4]">
+              <button onClick={() => setActiveStep(null)} className="text-[#888] dark:text-muted-foreground hover:text-[#555] dark:hover:text-[#e4e4e4]">
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
@@ -895,7 +895,7 @@ export function ScheduleBuilderView({ onBack }: ScheduleBuilderViewProps) {
             {!activeStep && (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <Settings className="w-8 h-8 text-[#d0d5dd] dark:text-[#333a47] mb-3" />
-                <p className="text-[13px] text-[#888] dark:text-[#6b7280]" style={{ fontWeight: 400 }}>
+                <p className="text-[13px] text-[#888] dark:text-muted-foreground" style={{ fontWeight: 400 }}>
                   Select a workflow step to configure
                 </p>
               </div>

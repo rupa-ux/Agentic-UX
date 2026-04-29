@@ -326,7 +326,7 @@ function FilterDropdown({ label, options, value, onChange }: {
         className={`flex items-center gap-1 px-3 py-[6px] rounded-[8px] border text-[12px] font-['Inter',sans-serif] transition-colors ${
           value !== "All"
             ? "border-[#2552ED] dark:border-[#5580e0] bg-[#e8effe] dark:bg-[#1e2d5e] text-[#2552ED] dark:text-[#6b9bff]"
-            : "border-[#e5e9f0] dark:border-[#333a47] bg-white dark:bg-[#262b35] text-[#555] dark:text-[#9ba2b0] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
+            : "border-[#e5e9f0] dark:border-border bg-white dark:bg-muted text-[#555] dark:text-muted-foreground hover:bg-[#f5f5f5] dark:hover:bg-muted"
         }`}
         style={{ fontWeight: 400 }}
       >
@@ -334,7 +334,7 @@ function FilterDropdown({ label, options, value, onChange }: {
         <ChevronDown className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div className="absolute left-0 top-full mt-1 bg-white dark:bg-[#22262f] border border-[#eceef2] dark:border-[#333a47] rounded-lg shadow-[0_6px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.3)] z-30 py-1 min-w-[140px]">
+        <div className="absolute left-0 top-full mt-1 bg-white dark:bg-background border border-[#eceef2] dark:border-border rounded-lg shadow-[0_6px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.3)] z-30 py-1 min-w-[140px]">
           {["All", ...options].map(opt => (
             <button
               key={opt}
@@ -342,7 +342,7 @@ function FilterDropdown({ label, options, value, onChange }: {
               className={`w-full text-left px-3 py-2 text-[12px] font-['Inter',sans-serif] transition-colors ${
                 value === opt
                   ? "bg-[#e8effe] dark:bg-[#1e2d5e] text-[#2552ED] dark:text-[#6b9bff]"
-                  : "text-[#333] dark:text-[#e4e4e4] hover:bg-[#f8f9fb] dark:hover:bg-[#2e3340]"
+                  : "text-[#333] dark:text-foreground hover:bg-[#f8f9fb] dark:hover:bg-muted"
               }`}
             >
               {opt}
@@ -387,7 +387,7 @@ function RowActionMenu({ schedule, onAction }: {
         variant="ghost"
         size="icon"
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
-        className="rounded-lg text-[#888] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
+        className="rounded-lg text-[#888] dark:text-muted-foreground hover:text-[#555] dark:hover:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-muted"
       >
         <MoreHorizontal className="w-[14px] h-[14px]" />
       </Button>
@@ -516,8 +516,8 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
   const owners = [...new Set(allSchedules.map(s => s.owner))];
 
   return (
-    <div className="flex-1 bg-white dark:bg-[#13161b] overflow-auto flex flex-col transition-colors duration-300">
-      <div className="sticky top-0 z-10 shrink-0 bg-white transition-colors duration-300 dark:bg-[#13161b]">
+    <div className="flex-1 bg-white dark:bg-app-shell-gutter overflow-auto flex flex-col transition-colors duration-300">
+      <div className="sticky top-0 z-10 shrink-0 bg-white transition-colors duration-300 dark:bg-app-shell-gutter">
         <MainCanvasViewHeader
           title={
             <span className="inline-flex items-center gap-3">
@@ -549,7 +549,7 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
           ].map(card => (
             <div
               key={card.label}
-              className="bg-white dark:bg-[#1e2229] rounded-[8px] border border-[#e5e9f0] dark:border-[#333a47] px-5 py-4 flex items-center gap-4 transition-colors duration-300"
+              className="bg-white dark:bg-background rounded-[8px] border border-[#e5e9f0] dark:border-border px-5 py-4 flex items-center gap-4 transition-colors duration-300"
             >
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
@@ -562,10 +562,10 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
                 `}</style>
               </div>
               <div>
-                <p className="text-[22px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.3px]" style={{ fontWeight: 400 }}>
+                <p className="text-[22px] text-[#212121] dark:text-foreground tracking-[-0.3px]" style={{ fontWeight: 400 }}>
                   {card.value}
                 </p>
-                <p className="text-[12px] text-[#888] dark:text-[#6b7280]" style={{ fontWeight: 400 }}>
+                <p className="text-[12px] text-[#888] dark:text-muted-foreground" style={{ fontWeight: 400 }}>
                   {card.label}
                 </p>
               </div>
@@ -617,28 +617,28 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
         {activeTab === "drafts" && (
           <div className="flex flex-col gap-3">
             {mockDrafts.length === 0 ? (
-              <div className="bg-white dark:bg-[#1e2229] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] px-6 py-12 flex flex-col items-center justify-center gap-3">
+              <div className="bg-white dark:bg-background border border-[#e5e9f0] dark:border-border rounded-[8px] px-6 py-12 flex flex-col items-center justify-center gap-3">
                 <FileText className="w-10 h-10 text-[#ccc] dark:text-[#3d4555]" />
-                <p className="text-[14px] text-[#888] dark:text-[#6b7280]" style={{ fontWeight: 400 }}>No draft schedules</p>
-                <p className="text-[12px] text-[#bbb] dark:text-[#4d5568]">Draft schedules will appear here</p>
+                <p className="text-[14px] text-[#888] dark:text-muted-foreground" style={{ fontWeight: 400 }}>No draft schedules</p>
+                <p className="text-[12px] text-[#bbb] dark:text-muted-foreground">Draft schedules will appear here</p>
               </div>
             ) : (
               mockDrafts.map(draft => (
                 <div
                   key={draft.id}
-                  className="bg-white dark:bg-[#1e2229] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] px-5 py-4 flex items-center justify-between hover:bg-[#fafbfc] dark:hover:bg-[#232830] transition-colors cursor-pointer group"
+                  className="bg-white dark:bg-background border border-[#e5e9f0] dark:border-border rounded-[8px] px-5 py-4 flex items-center justify-between hover:bg-[#fafbfc] dark:hover:bg-[#232830] transition-colors cursor-pointer group"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-8 h-8 rounded-lg bg-[#f5f5f5] dark:bg-[#2a3040] flex items-center justify-center shrink-0">
-                      <FileText className="w-4 h-4 text-[#888] dark:text-[#6b7280]" />
+                      <FileText className="w-4 h-4 text-[#888] dark:text-muted-foreground" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4] truncate" style={{ fontWeight: 400 }}>{draft.name}</p>
-                      <p className="text-[11px] text-[#999] dark:text-[#6b7280] truncate">{draft.description}</p>
+                      <p className="text-[13px] text-[#212121] dark:text-foreground truncate" style={{ fontWeight: 400 }}>{draft.name}</p>
+                      <p className="text-[11px] text-[#999] dark:text-muted-foreground truncate">{draft.description}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-[11px] text-[#bbb] dark:text-[#4d5568] font-['Inter',sans-serif]">Updated {draft.updatedAt}</span>
+                    <span className="text-[11px] text-[#bbb] dark:text-muted-foreground font-['Inter',sans-serif]">Updated {draft.updatedAt}</span>
                     <button
                       onClick={() => toast.success(`Editing draft "${draft.name}"...`)}
                       className="px-3 py-1 text-[12px] text-[#2552ED] dark:text-[#6b9bff] rounded-lg border border-[#2552ED] dark:border-[#5580e0] opacity-0 group-hover:opacity-100 transition-opacity font-['Inter',sans-serif]"
@@ -655,21 +655,21 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
 
         {/* ─── Schedule table ─── */}
         {activeTab !== "drafts" && (
-          <div className="bg-white dark:bg-[#1e2229] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] overflow-hidden transition-colors duration-300">
+          <div className="bg-white dark:bg-background border border-[#e5e9f0] dark:border-border rounded-[8px] overflow-hidden transition-colors duration-300">
             {/* Search bar */}
-            <div className="px-5 py-3 border-b border-[#eaeaea] dark:border-[#333a47]">
-              <div className="flex items-center gap-2 bg-[#f8f9fb] dark:bg-[#262b35] border border-[#eceef2] dark:border-[#333a47] rounded-lg px-3 h-[36px] max-w-[400px]">
-                <Search className="w-3.5 h-3.5 text-[#b0b0b0] dark:text-[#4d5568] shrink-0" />
+            <div className="px-5 py-3 border-b border-[#eaeaea] dark:border-border">
+              <div className="flex items-center gap-2 bg-[#f8f9fb] dark:bg-muted border border-[#eceef2] dark:border-border rounded-lg px-3 h-[36px] max-w-[400px]">
+                <Search className="w-3.5 h-3.5 text-[#b0b0b0] dark:text-muted-foreground shrink-0" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   placeholder="Search schedules, owners, recipients..."
-                  className="w-full text-[12px] text-[#333] dark:text-[#e4e4e4] placeholder:text-[#bbb] dark:placeholder:text-[#4d5568] bg-transparent outline-none font-['Inter',sans-serif]"
+                  className="w-full text-[12px] text-[#333] dark:text-foreground placeholder:text-[#bbb] dark:placeholder:text-muted-foreground bg-transparent outline-none font-['Inter',sans-serif]"
                 />
                 {searchQuery && (
                   <button onClick={() => setSearchQuery("")} className="shrink-0">
-                    <X className="w-3 h-3 text-[#999] dark:text-[#6b7280]" />
+                    <X className="w-3 h-3 text-[#999] dark:text-muted-foreground" />
                   </button>
                 )}
               </div>
@@ -679,7 +679,7 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
             <div className="overflow-x-auto">
               <table className="w-full min-w-[900px]">
                 <thead>
-                  <tr className="border-b border-[#eaeaea] dark:border-[#333a47]">
+                  <tr className="border-b border-[#eaeaea] dark:border-border">
                     {[
                       { key: "name", label: "Name", width: "w-[24%]" },
                       { key: "reports", label: "Reports", width: "w-[14%]" },
@@ -694,7 +694,7 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
                     ].map(col => (
                       <th
                         key={col.key}
-                        className={`${col.width} text-left px-4 py-3 text-[length:var(--table-label-size)] text-[#888] dark:text-[#6b7280] font-['Inter',sans-serif] uppercase tracking-[0.5px]`}
+                        className={`${col.width} text-left px-4 py-3 text-[length:var(--table-label-size)] text-[#888] dark:text-muted-foreground font-['Inter',sans-serif] uppercase tracking-[0.5px]`}
                         style={{ fontWeight: 400 }}
                       >
                         {col.key !== "actions" ? (
@@ -718,7 +718,7 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
                       <td colSpan={10} className="px-4 py-16 text-center">
                         <div className="flex flex-col items-center gap-3">
                           <Clock className="w-10 h-10 text-[#ccc] dark:text-[#3d4555]" />
-                          <p className="text-[14px] text-[#888] dark:text-[#6b7280]" style={{ fontWeight: 400 }}>
+                          <p className="text-[14px] text-[#888] dark:text-muted-foreground" style={{ fontWeight: 400 }}>
                             {searchQuery ? "No schedules match your search" : "No scheduled deliveries yet"}
                           </p>
                           {!searchQuery && (
@@ -741,17 +741,17 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
                       >
                         {/* Name */}
                         <td className="px-4 py-3">
-                          <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4] truncate" style={{ fontWeight: 400 }}>
+                          <p className="text-[13px] text-[#212121] dark:text-foreground truncate" style={{ fontWeight: 400 }}>
                             {schedule.name}
                           </p>
-                          <p className="text-[11px] text-[#999] dark:text-[#6b7280] truncate mt-0.5">
+                          <p className="text-[11px] text-[#999] dark:text-muted-foreground truncate mt-0.5">
                             {schedule.description}
                           </p>
                         </td>
 
                         {/* Reports */}
                         <td className="px-4 py-3">
-                          <p className="text-[12px] text-[#555] dark:text-[#9ba2b0]" style={{ fontWeight: 400 }}>
+                          <p className="text-[12px] text-[#555] dark:text-muted-foreground" style={{ fontWeight: 400 }}>
                             {schedule.reports.length} {schedule.reports.length === 1 ? "report" : "reports"}
                           </p>
                         </td>
@@ -759,7 +759,7 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
                         {/* Owner (admin/team only) */}
                         {(isAdmin || activeTab === "team") && (
                           <td className="px-4 py-3">
-                            <p className="text-[12px] text-[#555] dark:text-[#9ba2b0] truncate" style={{ fontWeight: 400 }}>
+                            <p className="text-[12px] text-[#555] dark:text-muted-foreground truncate" style={{ fontWeight: 400 }}>
                               {schedule.owner}
                             </p>
                           </td>
@@ -767,35 +767,35 @@ export function ScheduledDeliveriesView({ onCreateSchedule }: { onCreateSchedule
 
                         {/* Recipients */}
                         <td className="px-4 py-3">
-                          <p className="text-[12px] text-[#555] dark:text-[#9ba2b0]" style={{ fontWeight: 400 }}>
+                          <p className="text-[12px] text-[#555] dark:text-muted-foreground" style={{ fontWeight: 400 }}>
                             {schedule.recipients.length} {schedule.recipients.length === 1 ? "person" : "people"}
                           </p>
                         </td>
 
                         {/* Frequency */}
                         <td className="px-4 py-3">
-                          <p className="text-[12px] text-[#555] dark:text-[#9ba2b0]" style={{ fontWeight: 400 }}>
+                          <p className="text-[12px] text-[#555] dark:text-muted-foreground" style={{ fontWeight: 400 }}>
                             {freqLabel(schedule.frequency)}
                           </p>
                         </td>
 
                         {/* Next run */}
                         <td className="px-4 py-3">
-                          <p className="text-[12px] text-[#555] dark:text-[#9ba2b0] whitespace-nowrap" style={{ fontWeight: 400 }}>
+                          <p className="text-[12px] text-[#555] dark:text-muted-foreground whitespace-nowrap" style={{ fontWeight: 400 }}>
                             {schedule.nextRun}
                           </p>
                         </td>
 
                         {/* Last sent */}
                         <td className="px-4 py-3">
-                          <p className="text-[12px] text-[#555] dark:text-[#9ba2b0] whitespace-nowrap" style={{ fontWeight: 400 }}>
+                          <p className="text-[12px] text-[#555] dark:text-muted-foreground whitespace-nowrap" style={{ fontWeight: 400 }}>
                             {schedule.lastSent || "—"}
                           </p>
                         </td>
 
                         {/* Format */}
                         <td className="px-4 py-3">
-                          <span className="text-[11px] text-[#555] dark:text-[#9ba2b0] px-2 py-0.5 rounded bg-[#f5f5f5] dark:bg-[#2a3040] font-['Inter',sans-serif]">
+                          <span className="text-[11px] text-[#555] dark:text-muted-foreground px-2 py-0.5 rounded bg-[#f5f5f5] dark:bg-[#2a3040] font-['Inter',sans-serif]">
                             {schedule.format}
                           </span>
                         </td>

@@ -222,7 +222,7 @@ export function QuickCreateLauncher({
           )}
         >
           <Plus
-            className="pointer-events-none h-3.5 w-3.5 shrink-0 text-[#212121] dark:text-[#e4e4e4]"
+            className="pointer-events-none h-3.5 w-3.5 shrink-0 text-[#212121] dark:text-foreground"
             strokeWidth={L1_STRIP_ICON_STROKE_PX}
             absoluteStrokeWidth
             aria-hidden

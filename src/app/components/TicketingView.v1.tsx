@@ -924,7 +924,7 @@ export function TicketingView() {
               {searchOpen ? (
                 <div className="relative h-[var(--button-height)] w-[min(100%,240px)] min-w-[200px] shrink">
                   <Search
-                    className="pointer-events-none absolute top-1/2 left-2 size-[14px] -translate-y-1/2 text-[#303030] dark:text-[#8b92a5]"
+                    className="pointer-events-none absolute top-1/2 left-2 size-[14px] -translate-y-1/2 text-[#303030] dark:text-muted-foreground"
                     strokeWidth={1.6}
                     absoluteStrokeWidth
                     aria-hidden
@@ -944,7 +944,7 @@ export function TicketingView() {
                     }}
                     autoFocus
                     placeholder="Search tickets"
-                    className="h-full w-full rounded-[8px] border border-[#e5e9f0] bg-white py-0 pr-2 pl-8 text-[14px] text-[#212121] outline-none transition-colors placeholder:text-[#757575] focus:border-[#2552ED] focus:ring-1 focus:ring-[#2552ED] dark:border-[#333a47] dark:bg-[#262b35] dark:text-[#e4e4e4] dark:placeholder:text-[#8b92a5]"
+                    className="h-full w-full rounded-[8px] border border-[#e5e9f0] bg-white py-0 pr-2 pl-8 text-[14px] text-[#212121] outline-none transition-colors placeholder:text-[#757575] focus:border-[#2552ED] focus:ring-1 focus:ring-[#2552ED] dark:border-border dark:bg-muted dark:text-foreground dark:placeholder:text-[#8b92a5]"
                     aria-label="Search tickets"
                   />
                 </div>
@@ -957,7 +957,7 @@ export function TicketingView() {
                   title="Search tickets"
                   onClick={() => setSearchOpen(true)}
                 >
-                  <Search className="size-[14px] text-[#303030] dark:text-[#8b92a5]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                  <Search className="size-[14px] text-[#303030] dark:text-muted-foreground" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
                 </Button>
               )}
 
@@ -1018,7 +1018,7 @@ export function TicketingView() {
                 onClick={() => setColumnSheetOpen(true)}
               />
               <Button type="button" variant="outline" size="icon" aria-label="More options" title="More options">
-                <MoreHorizontal className="size-[14px] text-[#303030] dark:text-[#8b92a5]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                <MoreHorizontal className="size-[14px] text-[#303030] dark:text-muted-foreground" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
               </Button>
             </div>
           }

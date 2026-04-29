@@ -80,9 +80,9 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
 
   /* ── Page footer ── */
   const PageFooter = ({ pageNum, label }: { pageNum?: number; label?: string }) => (
-    <div className="flex justify-between items-center px-2.5 py-1 border-t border-[#f0f0f0] dark:border-[#333a47] mt-auto shrink-0">
-      <span className="font-['Inter',sans-serif] text-[4px] text-[#bbb] dark:text-[#6b7280]">Profile performance report</span>
-      <span className="font-['Inter',sans-serif] text-[4px] text-[#bbb] dark:text-[#6b7280]">{label || `Page ${pageNum}`}</span>
+    <div className="flex justify-between items-center px-2.5 py-1 border-t border-[#f0f0f0] dark:border-border mt-auto shrink-0">
+      <span className="font-['Inter',sans-serif] text-[4px] text-[#bbb] dark:text-muted-foreground">Profile performance report</span>
+      <span className="font-['Inter',sans-serif] text-[4px] text-[#bbb] dark:text-muted-foreground">{label || `Page ${pageNum}`}</span>
     </div>
   );
 
@@ -93,7 +93,7 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
 
       {/* ════ Modal — 25% smaller than typical large (~920px × 68vh) ════ */}
       <div
-        className={`relative flex bg-white dark:bg-[#1e2229] rounded-2xl overflow-hidden transition-colors duration-300 ${
+        className={`relative flex bg-white dark:bg-background rounded-2xl overflow-hidden transition-colors duration-300 ${
           hidePreview ? "max-w-[380px] w-[380px]" : "max-w-[920px] w-[88vw]"
         }`}
         style={{
@@ -107,7 +107,7 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
           {/* Header */}
           <div className="flex items-center justify-between px-5 pt-4 pb-0 shrink-0">
             <h2
-              className="font-['Inter',sans-serif] text-[15px] text-[#111] dark:text-[#e4e4e4] tracking-[-0.3px]"
+              className="font-['Inter',sans-serif] text-[15px] text-[#111] dark:text-foreground tracking-[-0.3px]"
               style={{ fontWeight: 400 }}
             >
               Share
@@ -117,7 +117,7 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="rounded-lg text-[#aaa] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#e4e4e4]"
+              className="rounded-lg text-[#aaa] dark:text-muted-foreground hover:text-[#555] dark:hover:text-[#e4e4e4]"
             >
               <X className="w-[14px] h-[14px]" />
             </Button>
@@ -134,7 +134,7 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
                   className={`px-3 py-[5px] rounded-lg text-[12px] capitalize transition-all ${
                     isActive
                       ? "bg-[#e8effe] dark:bg-[#1e2d5e] text-[#2552ED] dark:text-[#6b9bff]"
-                      : "text-[#888] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#c0c6d4] hover:bg-[#f9fafb] dark:hover:bg-[#2e3340]"
+                      : "text-[#888] dark:text-muted-foreground hover:text-[#555] dark:hover:text-[#c0c6d4] hover:bg-[#f9fafb] dark:hover:bg-muted"
                   }`}
                   style={{ fontWeight: 400 }}
                 >
@@ -145,7 +145,7 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
           </div>
 
           {/* Separator */}
-          <div className="h-px bg-[#f0f0f0] dark:bg-[#333a47] mx-5 shrink-0" />
+          <div className="h-px bg-[#f0f0f0] dark:bg-muted mx-5 shrink-0" />
 
           {/* Content area */}
           <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4">
@@ -154,9 +154,9 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
               <div className="flex flex-col gap-4">
                 {/* Share link */}
                 <div>
-                  <label className="block text-[11px] text-[#888] dark:text-[#6b7280] mb-1.5" style={{ fontWeight: 400 }}>Share link</label>
-                  <div className="flex items-center gap-2 bg-[#f8f9fb] dark:bg-[#262b35] border border-[#eceef2] dark:border-[#333a47] rounded-lg px-3 min-h-[38px] py-1">
-                    <Link2 className="w-3.5 h-3.5 text-[#b0b0b0] dark:text-[#4d5568] shrink-0" />
+                  <label className="block text-[11px] text-[#888] dark:text-muted-foreground mb-1.5" style={{ fontWeight: 400 }}>Share link</label>
+                  <div className="flex items-center gap-2 bg-[#f8f9fb] dark:bg-muted border border-[#eceef2] dark:border-border rounded-lg px-3 min-h-[38px] py-1">
+                    <Link2 className="w-3.5 h-3.5 text-[#b0b0b0] dark:text-muted-foreground shrink-0" />
                     <span className="flex-1 text-[12px] text-[#2552ED] dark:text-[#6b9bff] truncate select-all font-['Inter',sans-serif]">
                       share.birdeye.com/view/cc6fe16f
                     </span>
@@ -167,7 +167,7 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
                       className={`shrink-0 gap-1 px-2.5 text-[11px] font-normal ${
                         justCopied
                           ? "border-transparent bg-[#d4edda] dark:bg-[#1a3328] text-[#28a745] dark:text-[#6fcf73] hover:bg-[#d4edda] dark:hover:bg-[#1a3328]"
-                          : "bg-white dark:bg-[#262b35] shadow-sm"
+                          : "bg-white dark:bg-muted shadow-sm"
                       }`}
                     >
                       {justCopied ? (
@@ -181,25 +181,25 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
 
                 {/* Who can access */}
                 <div>
-                  <label className="block text-[11px] text-[#888] dark:text-[#6b7280] mb-1.5" style={{ fontWeight: 400 }}>Who can access?</label>
+                  <label className="block text-[11px] text-[#888] dark:text-muted-foreground mb-1.5" style={{ fontWeight: 400 }}>Who can access?</label>
                   <div className="relative">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setAccessOpen(!accessOpen)}
-                      className="w-full justify-between rounded-lg border-[#eceef2] bg-white px-3 font-normal hover:border-[#d0d5dd] dark:border-[#333a47] dark:bg-[#1e2229] dark:hover:border-[#3d4555]"
+                      className="w-full justify-between rounded-lg border-[#eceef2] bg-white px-3 font-normal hover:border-[#d0d5dd] dark:border-border dark:bg-background dark:hover:border-[#3d4555]"
                     >
-                      <span className="text-[12px] text-[#333] dark:text-[#e4e4e4] font-['Inter',sans-serif]">{access}</span>
-                      <ChevronDown className={`w-4 h-4 text-[#aaa] dark:text-[#6b7280] transition-transform ${accessOpen ? "rotate-180" : ""}`} />
+                      <span className="text-[12px] text-[#333] dark:text-foreground font-['Inter',sans-serif]">{access}</span>
+                      <ChevronDown className={`w-4 h-4 text-[#aaa] dark:text-muted-foreground transition-transform ${accessOpen ? "rotate-180" : ""}`} />
                     </Button>
                     {accessOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#22262f] border border-[#eceef2] dark:border-[#333a47] rounded-lg shadow-[0_6px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.3)] z-30 py-1 overflow-hidden">
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-background border border-[#eceef2] dark:border-border rounded-lg shadow-[0_6px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.3)] z-30 py-1 overflow-hidden">
                         {["Only invited users", "Anyone with the link", "Public"].map(opt => (
                           <button
                             key={opt}
                             onClick={() => { setAccess(opt); setAccessOpen(false); }}
                             className={`w-full text-left px-3 py-2 text-[12px] font-['Inter',sans-serif] transition-colors ${
-                              access === opt ? "bg-[#e8effe] dark:bg-[#1e2d5e] text-[#2552ED] dark:text-[#6b9bff]" : "text-[#333] dark:text-[#e4e4e4] hover:bg-[#f8f9fb] dark:hover:bg-[#2e3340]"
+                              access === opt ? "bg-[#e8effe] dark:bg-[#1e2d5e] text-[#2552ED] dark:text-[#6b9bff]" : "text-[#333] dark:text-foreground hover:bg-[#f8f9fb] dark:hover:bg-muted"
                             }`}
                           >
                             {opt}
@@ -212,14 +212,14 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
 
                 {/* Invite users */}
                 <div>
-                  <label className="block text-[11px] text-[#888] dark:text-[#6b7280] mb-1.5" style={{ fontWeight: 400 }}>Invite people</label>
-                  <div className="flex items-center bg-white dark:bg-[#1e2229] border border-[#eceef2] dark:border-[#333a47] rounded-lg px-3 h-[36px] focus-within:border-[#7BA3F5] dark:focus-within:border-[#5580e0] focus-within:shadow-[0_0_0_3px_rgba(37,82,237,0.08)] dark:focus-within:shadow-[0_0_0_3px_rgba(37,82,237,0.2)] transition-all">
+                  <label className="block text-[11px] text-[#888] dark:text-muted-foreground mb-1.5" style={{ fontWeight: 400 }}>Invite people</label>
+                  <div className="flex items-center bg-white dark:bg-background border border-[#eceef2] dark:border-border rounded-lg px-3 h-[36px] focus-within:border-[#7BA3F5] dark:focus-within:border-[#5580e0] focus-within:shadow-[0_0_0_3px_rgba(37,82,237,0.08)] dark:focus-within:shadow-[0_0_0_3px_rgba(37,82,237,0.2)] transition-all">
                     <input
                       type="text"
                       value={inviteSearch}
                       onChange={e => setInviteSearch(e.target.value)}
                       placeholder="Search users or teams..."
-                      className="w-full text-[12px] text-[#333] dark:text-[#e4e4e4] placeholder:text-[#bbb] dark:placeholder:text-[#4d5568] bg-transparent outline-none font-['Inter',sans-serif]"
+                      className="w-full text-[12px] text-[#333] dark:text-foreground placeholder:text-[#bbb] dark:placeholder:text-muted-foreground bg-transparent outline-none font-['Inter',sans-serif]"
                     />
                   </div>
                 </div>
@@ -237,7 +237,7 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
                   <button
                     key={f.label}
                     onClick={() => toast.success(`Exporting as ${f.label}...`)}
-                    className="flex items-center gap-3 px-2.5 py-2.5 rounded-lg hover:bg-[#f8f9fb] dark:hover:bg-[#2e3340] transition-colors group"
+                    className="flex items-center gap-3 px-2.5 py-2.5 rounded-lg hover:bg-[#f8f9fb] dark:hover:bg-muted transition-colors group"
                   >
                     <div
                       className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
@@ -246,8 +246,8 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
                       <img src={f.icon} alt={f.label} className="w-[18px] h-[18px] object-contain" />
                     </div>
                     <div className="flex-1 text-left">
-                      <p className="text-[12px] text-[#333] dark:text-[#e4e4e4] font-['Inter',sans-serif]" style={{ fontWeight: 400 }}>{f.label}</p>
-                      <p className="text-[10px] text-[#aaa] dark:text-[#6b7280] font-['Inter',sans-serif]">{f.sub}</p>
+                      <p className="text-[12px] text-[#333] dark:text-foreground font-['Inter',sans-serif]" style={{ fontWeight: 400 }}>{f.label}</p>
+                      <p className="text-[10px] text-[#aaa] dark:text-muted-foreground font-['Inter',sans-serif]">{f.sub}</p>
                     </div>
                     <svg className="w-[9px] h-[11px] text-[#d0d0d0] dark:text-[#3d4555] group-hover:text-[#999] dark:group-hover:text-[#8b92a5] transition-colors" viewBox="0 0 10 11.3333" fill="none">
                       <path d={exportSvgPaths.p1f1737a0} fill="currentColor" />
@@ -260,27 +260,27 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
             {activeTab === "email" && (
               <div className="flex flex-col gap-3.5">
                 <div>
-                  <label className="block text-[11px] text-[#888] dark:text-[#6b7280] mb-1.5" style={{ fontWeight: 400 }}>Recipients</label>
+                  <label className="block text-[11px] text-[#888] dark:text-muted-foreground mb-1.5" style={{ fontWeight: 400 }}>Recipients</label>
                   <input
                     type="text"
                     placeholder="Enter email addresses"
-                    className="w-full h-[36px] px-3 text-[12px] text-[#333] dark:text-[#e4e4e4] placeholder:text-[#bbb] dark:placeholder:text-[#4d5568] border border-[#eceef2] dark:border-[#333a47] rounded-lg bg-white dark:bg-[#1e2229] outline-none font-['Inter',sans-serif] focus:border-[#7BA3F5] dark:focus:border-[#5580e0] focus:shadow-[0_0_0_3px_rgba(37,82,237,0.08)] dark:focus:shadow-[0_0_0_3px_rgba(37,82,237,0.2)] transition-all"
+                    className="w-full h-[36px] px-3 text-[12px] text-[#333] dark:text-foreground placeholder:text-[#bbb] dark:placeholder:text-muted-foreground border border-[#eceef2] dark:border-border rounded-lg bg-white dark:bg-background outline-none font-['Inter',sans-serif] focus:border-[#7BA3F5] dark:focus:border-[#5580e0] focus:shadow-[0_0_0_3px_rgba(37,82,237,0.08)] dark:focus:shadow-[0_0_0_3px_rgba(37,82,237,0.2)] transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-[#888] dark:text-[#6b7280] mb-1.5" style={{ fontWeight: 400 }}>Subject</label>
+                  <label className="block text-[11px] text-[#888] dark:text-muted-foreground mb-1.5" style={{ fontWeight: 400 }}>Subject</label>
                   <input
                     type="text"
                     defaultValue="Profile performance report"
-                    className="w-full h-[36px] px-3 text-[12px] text-[#333] dark:text-[#e4e4e4] border border-[#eceef2] dark:border-[#333a47] rounded-lg bg-white dark:bg-[#1e2229] outline-none font-['Inter',sans-serif] focus:border-[#7BA3F5] dark:focus:border-[#5580e0] focus:shadow-[0_0_0_3px_rgba(37,82,237,0.08)] dark:focus:shadow-[0_0_0_3px_rgba(37,82,237,0.2)] transition-all"
+                    className="w-full h-[36px] px-3 text-[12px] text-[#333] dark:text-foreground border border-[#eceef2] dark:border-border rounded-lg bg-white dark:bg-background outline-none font-['Inter',sans-serif] focus:border-[#7BA3F5] dark:focus:border-[#5580e0] focus:shadow-[0_0_0_3px_rgba(37,82,237,0.08)] dark:focus:shadow-[0_0_0_3px_rgba(37,82,237,0.2)] transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-[#888] dark:text-[#6b7280] mb-1.5" style={{ fontWeight: 400 }}>Message (optional)</label>
+                  <label className="block text-[11px] text-[#888] dark:text-muted-foreground mb-1.5" style={{ fontWeight: 400 }}>Message (optional)</label>
                   <textarea
                     placeholder="Add a message..."
                     rows={3}
-                    className="w-full px-3 py-2 text-[12px] text-[#333] dark:text-[#e4e4e4] placeholder:text-[#bbb] dark:placeholder:text-[#4d5568] border border-[#eceef2] dark:border-[#333a47] rounded-lg bg-white dark:bg-[#1e2229] outline-none resize-none font-['Inter',sans-serif] focus:border-[#7BA3F5] dark:focus:border-[#5580e0] focus:shadow-[0_0_0_3px_rgba(37,82,237,0.08)] dark:focus:shadow-[0_0_0_3px_rgba(37,82,237,0.2)] transition-all"
+                    className="w-full px-3 py-2 text-[12px] text-[#333] dark:text-foreground placeholder:text-[#bbb] dark:placeholder:text-muted-foreground border border-[#eceef2] dark:border-border rounded-lg bg-white dark:bg-background outline-none resize-none font-['Inter',sans-serif] focus:border-[#7BA3F5] dark:focus:border-[#5580e0] focus:shadow-[0_0_0_3px_rgba(37,82,237,0.08)] dark:focus:shadow-[0_0_0_3px_rgba(37,82,237,0.2)] transition-all"
                   />
                 </div>
               </div>
@@ -288,7 +288,7 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
           </div>
 
           {/* Footer bar */}
-          <div className={`flex items-center gap-2 px-5 py-3 border-t border-[#f0f0f0] dark:border-[#333a47] shrink-0 ${hidePreview ? "justify-end" : "justify-between"}`}>
+          <div className={`flex items-center gap-2 px-5 py-3 border-t border-[#f0f0f0] dark:border-border shrink-0 ${hidePreview ? "justify-end" : "justify-between"}`}>
             {!hidePreview && (
               <button
                 onClick={onCustomize}
@@ -312,7 +312,7 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
                 type="button"
                 variant="ghost"
                 onClick={onClose}
-                className="px-3 text-[12px] text-[#666] dark:text-[#9ba2b0] rounded-lg font-['Inter',sans-serif] font-normal"
+                className="px-3 text-[12px] text-[#666] dark:text-muted-foreground rounded-lg font-['Inter',sans-serif] font-normal"
               >
                 Cancel
               </Button>
@@ -332,14 +332,14 @@ export function ShareModal({ open, onClose, onCustomize, themeColor, showSummary
 
         {/* ═══ RIGHT PANEL — 55% · Light grey preview canvas matching AICustomizePanel ═══ */}
         {!hidePreview && (
-          <div className="w-[55%] bg-[#f2f4f7] dark:bg-[#13161b] border-l border-[#ebebeb] dark:border-[#333a47] flex flex-col min-h-0 overflow-hidden transition-colors duration-300">
+          <div className="w-[55%] bg-[#f2f4f7] dark:bg-app-shell-gutter border-l border-[#ebebeb] dark:border-border flex flex-col min-h-0 overflow-hidden transition-colors duration-300">
 
             {/* Preview header */}
             <div className="flex items-center justify-between px-4 h-[38px] shrink-0">
-              <span className="text-[10px] text-[#b0b0b0] dark:text-[#6b7280] uppercase tracking-[0.5px] font-['Inter',sans-serif]" style={{ fontWeight: 400 }}>
+              <span className="text-[10px] text-[#b0b0b0] dark:text-muted-foreground uppercase tracking-[0.5px] font-['Inter',sans-serif]" style={{ fontWeight: 400 }}>
                 Preview
               </span>
-              <span className="text-[10px] text-[#ccc] dark:text-[#4d5568] font-['Inter',sans-serif]">
+              <span className="text-[10px] text-[#ccc] dark:text-muted-foreground font-['Inter',sans-serif]">
                 {totalPages} pages
               </span>
             </div>

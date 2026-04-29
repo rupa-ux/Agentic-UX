@@ -131,7 +131,7 @@ function LegendDot({ color, label }: { color: string; label: string }) {
           <circle cx="6" cy="6" fill={color} r="6" />
         </svg>
       </div>
-      <p className="text-[11px] text-[#8a8a8a] dark:text-[#8b92a5] whitespace-nowrap" style={{ fontWeight: 400 }}>{label}</p>
+      <p className="text-[11px] text-[#8a8a8a] dark:text-muted-foreground whitespace-nowrap" style={{ fontWeight: 400 }}>{label}</p>
     </div>
   );
 }
@@ -441,8 +441,8 @@ export function Dashboard({ aiPanelOpen, onAiPanelChange, editingDraft }: { aiPa
   }
 
   return (
-    <div className="flex-1 bg-white dark:bg-[#13161b] overflow-auto flex flex-col transition-colors duration-300">
-      <div className="sticky top-0 z-10 shrink-0 bg-white transition-colors duration-300 dark:bg-[#13161b]">
+    <div className="flex-1 bg-white dark:bg-app-shell-gutter overflow-auto flex flex-col transition-colors duration-300">
+      <div className="sticky top-0 z-10 shrink-0 bg-white transition-colors duration-300 dark:bg-app-shell-gutter">
         <MainCanvasViewHeader
           className="!px-8"
           title="Profile performance"

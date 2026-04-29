@@ -199,10 +199,10 @@ export function ResizableRightChatPanel({
       <div
         ref={innerRef}
         className={[
-          "flex h-full min-h-0 w-full flex-col bg-white dark:bg-[#1a1d24]",
+          "flex h-full min-h-0 w-full flex-col bg-white dark:bg-app-shell-rail",
           workspaceExpanded
             ? ""
-            : "rounded-tl-lg border-l border-t border-[#e5e9f0] dark:border-[#333a47]",
+            : "rounded-tl-lg border-l border-t border-[#e5e9f0] dark:border-border",
         ].join(" ")}
         style={{ transform: closedTransform("right") }}
       >

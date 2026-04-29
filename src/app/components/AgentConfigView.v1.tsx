@@ -30,8 +30,8 @@ function SectionWrap({
     <div id={id} data-section={id} className="scroll-mt-4 py-8 first:pt-4">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-[16px] font-semibold text-[#212121] dark:text-[#e4e4e4]">{title}</h2>
-          {desc && <p className="mt-0.5 text-[13px] text-[#666] dark:text-[#9ba2b0]">{desc}</p>}
+          <h2 className="text-[16px] font-semibold text-[#212121] dark:text-foreground">{title}</h2>
+          {desc && <p className="mt-0.5 text-[13px] text-[#666] dark:text-muted-foreground">{desc}</p>}
         </div>
         {action}
       </div>
@@ -41,7 +41,7 @@ function SectionWrap({
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#999] dark:text-[#6b7280]">{children}</p>;
+  return <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#999] dark:text-muted-foreground">{children}</p>;
 }
 
 /* ─── Section: Overview ──────────────────────────────────────────────── */
@@ -60,15 +60,15 @@ function SecOverview() {
         <button
           key={label}
           type="button"
-          className="flex cursor-pointer flex-col gap-3 rounded-xl border border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] p-4 text-left transition-colors hover:border-[#2552ED]/40 hover:bg-[#f8f9ff] dark:hover:bg-[#1e2a4a]"
+          className="flex cursor-pointer flex-col gap-3 rounded-xl border border-[#eaeaea] dark:border-border bg-white dark:bg-background p-4 text-left transition-colors hover:border-[#2552ED]/40 hover:bg-[#f8f9ff] dark:hover:bg-[#1e2a4a]"
         >
           <div className="flex size-8 items-center justify-center rounded-lg bg-[#f0f4ff] dark:bg-[#1e2a4a]">
             <Icon className="size-4 text-[#2552ED]" />
           </div>
           <div>
-            <p className="text-[12px] text-[#999] dark:text-[#6b7280]">{label}</p>
-            <p className="text-[14px] font-semibold text-[#212121] dark:text-[#e4e4e4]">{value}</p>
-            <p className="mt-0.5 text-[11px] text-[#999] dark:text-[#6b7280]">{sub}</p>
+            <p className="text-[12px] text-[#999] dark:text-muted-foreground">{label}</p>
+            <p className="text-[14px] font-semibold text-[#212121] dark:text-foreground">{value}</p>
+            <p className="mt-0.5 text-[11px] text-[#999] dark:text-muted-foreground">{sub}</p>
           </div>
         </button>
       ))}
@@ -80,21 +80,21 @@ function SecOverview() {
 function ToneSlider({ axis, onChange }: { axis: ToneAxis; onChange: (id: string, v: number) => void }) {
   return (
     <div className="flex items-center gap-4">
-      <span className="w-20 shrink-0 text-right text-[12px] text-[#555] dark:text-[#9ba2b0]">{axis.left}</span>
+      <span className="w-20 shrink-0 text-right text-[12px] text-[#555] dark:text-muted-foreground">{axis.left}</span>
       <div className="relative flex-1">
         <input
           type="range"
           min={0} max={100}
           value={axis.value}
           onChange={(e) => onChange(axis.id, Number(e.target.value))}
-          className="h-1 w-full cursor-pointer appearance-none rounded-full bg-[#e0e4ea] dark:bg-[#2e3340] accent-[#2552ED] [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#2552ED] [&::-webkit-slider-thumb]:shadow-sm"
+          className="h-1 w-full cursor-pointer appearance-none rounded-full bg-[#e0e4ea] dark:bg-muted accent-[#2552ED] [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#2552ED] [&::-webkit-slider-thumb]:shadow-sm"
         />
         <div
           className="pointer-events-none absolute top-0 h-1 rounded-l-full bg-[#2552ED]"
           style={{ width: `${axis.value}%` }}
         />
       </div>
-      <span className="w-20 shrink-0 text-[12px] text-[#555] dark:text-[#9ba2b0]">{axis.right}</span>
+      <span className="w-20 shrink-0 text-[12px] text-[#555] dark:text-muted-foreground">{axis.right}</span>
       <span className="w-8 shrink-0 text-right font-mono text-[11px] text-[#999]">{axis.value}</span>
     </div>
   );
@@ -110,7 +110,7 @@ function SecVoice() {
       {/* Tone sliders */}
       <div>
         <SectionLabel>Tone axes</SectionLabel>
-        <div className="flex flex-col gap-4 rounded-xl border border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] px-5 py-4">
+        <div className="flex flex-col gap-4 rounded-xl border border-[#eaeaea] dark:border-border bg-white dark:bg-background px-5 py-4">
           {axes.map((a) => <ToneSlider key={a.id} axis={a} onChange={handleChange} />)}
         </div>
       </div>
@@ -130,7 +130,7 @@ function SecVoice() {
                   {ex.kind === "do" ? "Do this" : "Not this"}
                 </span>
               </div>
-              <p className="mb-2 text-[11px] italic text-[#666] dark:text-[#9ba2b0]">Scenario: {ex.scenario}</p>
+              <p className="mb-2 text-[11px] italic text-[#666] dark:text-muted-foreground">Scenario: {ex.scenario}</p>
               <p className="text-[12px] leading-snug text-[#333] dark:text-[#ccc]">"{ex.response}"</p>
             </div>
           ))}
@@ -141,22 +141,22 @@ function SecVoice() {
       {/* Scenario playbook */}
       <div>
         <SectionLabel>Scenario playbook</SectionLabel>
-        <div className="overflow-hidden rounded-xl border border-[#eaeaea] dark:border-[#2e3340]">
+        <div className="overflow-hidden rounded-xl border border-[#eaeaea] dark:border-border">
           <table className="w-full">
-            <thead className="bg-[#fafafa] dark:bg-[#1a1d23]">
+            <thead className="bg-[#fafafa] dark:bg-app-shell-rail">
               <tr>
                 {["Scenario","How to respond","Matches","Last edited"].map((h) => (
                   <th key={h} className="px-4 py-2.5 text-left text-[length:var(--table-label-size)] font-semibold uppercase tracking-wide text-[#999]">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f0f1f5] dark:divide-[#1e2229]">
+            <tbody className="divide-y divide-[#f0f1f5] dark:divide-border">
               {TRAINING_ROWS.map((r) => (
-                <tr key={r.id} className="bg-white dark:bg-[#1e2229] hover:bg-[#fafafa] dark:hover:bg-[#1a1d23] transition-colors">
-                  <td className="px-4 py-3 text-[12px] font-medium text-[#212121] dark:text-[#e4e4e4]">{r.scenario}</td>
-                  <td className="px-4 py-3 text-[12px] text-[#555] dark:text-[#9ba2b0]">{r.response}</td>
-                  <td className="px-4 py-3 font-mono text-[12px] text-[#555] dark:text-[#9ba2b0]">{r.matches}</td>
-                  <td className="px-4 py-3 text-[11px] text-[#999] dark:text-[#6b7280]">{r.last}</td>
+                <tr key={r.id} className="bg-white dark:bg-background hover:bg-[#fafafa] dark:hover:bg-[#1a1d23] transition-colors">
+                  <td className="px-4 py-3 text-[12px] font-medium text-[#212121] dark:text-foreground">{r.scenario}</td>
+                  <td className="px-4 py-3 text-[12px] text-[#555] dark:text-muted-foreground">{r.response}</td>
+                  <td className="px-4 py-3 font-mono text-[12px] text-[#555] dark:text-muted-foreground">{r.matches}</td>
+                  <td className="px-4 py-3 text-[11px] text-[#999] dark:text-muted-foreground">{r.last}</td>
                 </tr>
               ))}
             </tbody>
@@ -187,14 +187,14 @@ const KIND_BADGE: Record<PolicyRule["kind"], { label: string; cls: string }> = {
 function RuleCard({ rule, onToggle }: { rule: PolicyRule; onToggle: (id: string) => void }) {
   const badge = KIND_BADGE[rule.kind];
   return (
-    <div className={cn("flex gap-4 rounded-xl border p-4 transition-all", rule.active ? "border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229]" : "border-dashed border-[#e0e4ea] dark:border-[#2e3340] bg-[#fafafa] dark:bg-[#1a1d23] opacity-60")}>
+    <div className={cn("flex gap-4 rounded-xl border p-4 transition-all", rule.active ? "border-[#eaeaea] dark:border-border bg-white dark:bg-background" : "border-dashed border-[#e0e4ea] dark:border-border bg-[#fafafa] dark:bg-app-shell-rail opacity-60")}>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className={cn("rounded-md border-0 px-2 py-0.5 text-[12px] font-medium", badge.cls)}>{badge.label}</span>
-          <span className="text-[13px] font-medium text-[#212121] dark:text-[#e4e4e4]">{rule.title}</span>
+          <span className="text-[13px] font-medium text-[#212121] dark:text-foreground">{rule.title}</span>
         </div>
-        <p className="text-[12px] leading-snug text-[#666] dark:text-[#9ba2b0] mb-2">{rule.desc}</p>
-        <code className="rounded bg-[#f5f6f8] dark:bg-[#13161b] px-2 py-0.5 font-mono text-[10px] text-[#555] dark:text-[#9ba2b0]">{rule.trigger}</code>
+        <p className="text-[12px] leading-snug text-[#666] dark:text-muted-foreground mb-2">{rule.desc}</p>
+        <code className="rounded bg-[#f5f6f8] dark:bg-app-shell-gutter px-2 py-0.5 font-mono text-[10px] text-[#555] dark:text-muted-foreground">{rule.trigger}</code>
       </div>
       <div className="flex shrink-0 flex-col items-end gap-2">
         <button
@@ -248,7 +248,7 @@ function SecAutonomy() {
       {/* Visual confidence scale */}
       <div>
         <SectionLabel>Confidence floor — {(floor / 100).toFixed(2)}</SectionLabel>
-        <div className="rounded-xl border border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] px-6 py-5">
+        <div className="rounded-xl border border-[#eaeaea] dark:border-border bg-white dark:bg-background px-6 py-5">
           {/* Gradient bar */}
           <div className="relative mb-3 h-3 rounded-full overflow-hidden" style={{ background: "linear-gradient(to right, #ef4444 0%, #f59e0b 30%, #10b981 70%)" }}>
             <div
@@ -274,16 +274,16 @@ function SecAutonomy() {
         <SectionLabel>Confidence buckets</SectionLabel>
         <div className="grid grid-cols-3 gap-3">
           {AUTONOMY_BUCKETS.map((b, i) => (
-            <div key={b.level} className="rounded-xl border border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] p-4">
+            <div key={b.level} className="rounded-xl border border-[#eaeaea] dark:border-border bg-white dark:bg-background p-4">
               <div className={cn("mb-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white", bucketColors[i])}>
                 {b.level === "auto" && <Zap className="size-3" />}
                 {b.level === "review" && <AlertTriangle className="size-3" />}
                 {b.level === "escalate" && <ChevronRight className="size-3" />}
                 {b.label}
               </div>
-              <p className="mb-1 font-mono text-[13px] font-semibold text-[#212121] dark:text-[#e4e4e4]">{b.pct}</p>
-              <p className="mb-2 text-[11px] text-[#999] dark:text-[#6b7280]">Threshold: {b.threshold}</p>
-              <p className="text-[11px] leading-snug text-[#666] dark:text-[#9ba2b0]">{b.desc}</p>
+              <p className="mb-1 font-mono text-[13px] font-semibold text-[#212121] dark:text-foreground">{b.pct}</p>
+              <p className="mb-2 text-[11px] text-[#999] dark:text-muted-foreground">Threshold: {b.threshold}</p>
+              <p className="text-[11px] leading-snug text-[#666] dark:text-muted-foreground">{b.desc}</p>
             </div>
           ))}
         </div>
@@ -294,7 +294,7 @@ function SecAutonomy() {
         <SectionLabel>Routing settings</SectionLabel>
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-medium text-[#444] dark:text-[#9ba2b0]">Review queue routes to</label>
+            <label className="text-[12px] font-medium text-[#444] dark:text-muted-foreground">Review queue routes to</label>
             <Select defaultValue="inbox">
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -305,7 +305,7 @@ function SecAutonomy() {
             </Select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-medium text-[#444] dark:text-[#9ba2b0]">SLA for human review</label>
+            <label className="text-[12px] font-medium text-[#444] dark:text-muted-foreground">SLA for human review</label>
             <Select defaultValue="4h">
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -334,25 +334,25 @@ const KN_TYPE_COLORS: Record<string, string> = {
 function SecKnowledge() {
   return (
     <div>
-      <div className="overflow-hidden rounded-xl border border-[#eaeaea] dark:border-[#2e3340]">
+      <div className="overflow-hidden rounded-xl border border-[#eaeaea] dark:border-border">
         <table className="w-full">
-          <thead className="bg-[#fafafa] dark:bg-[#1a1d23]">
+          <thead className="bg-[#fafafa] dark:bg-app-shell-rail">
             <tr>
               {["Source","Type","Size","Retrievals","Last refreshed",""].map((h) => (
                 <th key={h} className="px-4 py-3 text-left text-[length:var(--table-label-size)] font-semibold uppercase tracking-wide text-[#999]">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#f0f1f5] dark:divide-[#1e2229]">
+          <tbody className="divide-y divide-[#f0f1f5] dark:divide-border">
             {KNOWLEDGE_SOURCES.map((src) => (
-              <tr key={src.id} className="bg-white dark:bg-[#1e2229] hover:bg-[#fafafa] dark:hover:bg-[#1a1d23] transition-colors">
-                <td className="px-4 py-3 text-[13px] font-medium text-[#212121] dark:text-[#e4e4e4]">{src.name}</td>
+              <tr key={src.id} className="bg-white dark:bg-background hover:bg-[#fafafa] dark:hover:bg-[#1a1d23] transition-colors">
+                <td className="px-4 py-3 text-[13px] font-medium text-[#212121] dark:text-foreground">{src.name}</td>
                 <td className="px-4 py-3">
                   <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium capitalize", KN_TYPE_COLORS[src.type])}>{src.type}</span>
                 </td>
-                <td className="px-4 py-3 text-[12px] text-[#555] dark:text-[#9ba2b0]">{src.items}</td>
-                <td className="px-4 py-3 font-mono text-[12px] text-[#555] dark:text-[#9ba2b0]">{src.used.toLocaleString()}</td>
-                <td className="px-4 py-3 text-[11px] text-[#999] dark:text-[#6b7280]">{src.last}</td>
+                <td className="px-4 py-3 text-[12px] text-[#555] dark:text-muted-foreground">{src.items}</td>
+                <td className="px-4 py-3 font-mono text-[12px] text-[#555] dark:text-muted-foreground">{src.used.toLocaleString()}</td>
+                <td className="px-4 py-3 text-[11px] text-[#999] dark:text-muted-foreground">{src.last}</td>
                 <td className="px-4 py-3">
                   <Button variant="ghost" size="icon" className="size-6"><MoreHorizontal className="size-3.5" /></Button>
                 </td>
@@ -370,27 +370,27 @@ function SecKnowledge() {
 function SecLocations() {
   const [rows, setRows] = useState(LOCATION_ROWS);
   return (
-    <div className="overflow-hidden rounded-xl border border-[#eaeaea] dark:border-[#2e3340]">
+    <div className="overflow-hidden rounded-xl border border-[#eaeaea] dark:border-border">
       <table className="w-full">
-        <thead className="bg-[#fafafa] dark:bg-[#1a1d23]">
+        <thead className="bg-[#fafafa] dark:bg-app-shell-rail">
           <tr>
             {["Location","Autonomy","Floor","Always escalate",""].map((h) => (
               <th key={h} className="px-4 py-3 text-left text-[length:var(--table-label-size)] font-semibold uppercase tracking-wide text-[#999]">{h}</th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#f0f1f5] dark:divide-[#1e2229]">
+        <tbody className="divide-y divide-[#f0f1f5] dark:divide-border">
           {rows.map((loc) => (
-            <tr key={loc.id} className={cn("transition-colors", loc.override ? "bg-[#f0f4ff] dark:bg-[#1e2a4a]" : "bg-white dark:bg-[#1e2229] hover:bg-[#fafafa] dark:hover:bg-[#1a1d23]")}>
+            <tr key={loc.id} className={cn("transition-colors", loc.override ? "bg-[#f0f4ff] dark:bg-[#1e2a4a]" : "bg-white dark:bg-background hover:bg-[#fafafa] dark:hover:bg-[#1a1d23]")}>
               <td className="px-4 py-3">
                 <div className="flex items-center gap-2">
                   {loc.override && <span className="size-1.5 shrink-0 rounded-full bg-[#2552ED]" />}
-                  <span className="text-[13px] font-medium text-[#212121] dark:text-[#e4e4e4]">{loc.name}</span>
+                  <span className="text-[13px] font-medium text-[#212121] dark:text-foreground">{loc.name}</span>
                 </div>
               </td>
-              <td className="px-4 py-3 text-[12px] text-[#555] dark:text-[#9ba2b0]">{loc.autonomy}</td>
-              <td className="px-4 py-3 font-mono text-[12px] text-[#555] dark:text-[#9ba2b0]">{loc.floor}</td>
-              <td className="px-4 py-3 text-[12px] text-[#555] dark:text-[#9ba2b0]">{loc.escalate}</td>
+              <td className="px-4 py-3 text-[12px] text-[#555] dark:text-muted-foreground">{loc.autonomy}</td>
+              <td className="px-4 py-3 font-mono text-[12px] text-[#555] dark:text-muted-foreground">{loc.floor}</td>
+              <td className="px-4 py-3 text-[12px] text-[#555] dark:text-muted-foreground">{loc.escalate}</td>
               <td className="px-4 py-3">
                 <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]">Edit</Button>
               </td>
@@ -413,7 +413,7 @@ function SecIntegrations() {
   return (
     <div className="grid grid-cols-3 gap-3">
       {INTEGRATIONS.map((ig) => (
-        <div key={ig.id} className="flex flex-col gap-3 rounded-xl border border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] p-4">
+        <div key={ig.id} className="flex flex-col gap-3 rounded-xl border border-[#eaeaea] dark:border-border bg-white dark:bg-background p-4">
           <div className="flex items-start justify-between">
             <div className="flex size-9 items-center justify-center rounded-full text-[13px] font-bold text-white" style={{ backgroundColor: ig.color }}>
               {ig.abbr}
@@ -425,8 +425,8 @@ function SecIntegrations() {
             </span>
           </div>
           <div>
-            <p className="text-[13px] font-semibold text-[#212121] dark:text-[#e4e4e4]">{ig.name}</p>
-            <p className="text-[11px] text-[#999] dark:text-[#6b7280]">{ig.desc}</p>
+            <p className="text-[13px] font-semibold text-[#212121] dark:text-foreground">{ig.name}</p>
+            <p className="text-[11px] text-[#999] dark:text-muted-foreground">{ig.desc}</p>
           </div>
           {ig.state === "available" && (
             <Button variant="outline" size="sm" className="gap-1.5"><ExternalLink className="size-3" /> Connect</Button>
@@ -448,32 +448,32 @@ const PERM_LABEL: Record<string, string> = { admin:"Admin", edit:"Can edit & app
 function SecTeam() {
   return (
     <div>
-      <div className="overflow-hidden rounded-xl border border-[#eaeaea] dark:border-[#2e3340]">
+      <div className="overflow-hidden rounded-xl border border-[#eaeaea] dark:border-border">
         <table className="w-full">
-          <thead className="bg-[#fafafa] dark:bg-[#1a1d23]">
+          <thead className="bg-[#fafafa] dark:bg-app-shell-rail">
             <tr>
               {["Member","Role","Permission","Approvals / wk",""].map((h) => (
                 <th key={h} className="px-4 py-3 text-left text-[length:var(--table-label-size)] font-semibold uppercase tracking-wide text-[#999]">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#f0f1f5] dark:divide-[#1e2229]">
+          <tbody className="divide-y divide-[#f0f1f5] dark:divide-border">
             {TEAM_MEMBERS.map((m) => (
-              <tr key={m.id} className="bg-white dark:bg-[#1e2229] hover:bg-[#fafafa] dark:hover:bg-[#1a1d23] transition-colors">
+              <tr key={m.id} className="bg-white dark:bg-background hover:bg-[#fafafa] dark:hover:bg-[#1a1d23] transition-colors">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2.5">
                     <div className="flex size-7 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white" style={{ backgroundColor: m.hue }}>{m.initials}</div>
                     <div>
-                      <p className="text-[13px] font-medium text-[#212121] dark:text-[#e4e4e4]">{m.name}</p>
+                      <p className="text-[13px] font-medium text-[#212121] dark:text-foreground">{m.name}</p>
                       <p className="text-[11px] text-[#999]">{m.email}</p>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-[12px] text-[#555] dark:text-[#9ba2b0]">{m.role}</td>
+                <td className="px-4 py-3 text-[12px] text-[#555] dark:text-muted-foreground">{m.role}</td>
                 <td className="px-4 py-3">
                   <span className={cn("rounded-md border-0 px-2 py-0.5 text-[12px] font-medium", PERM_STYLE[m.perm])}>{PERM_LABEL[m.perm]}</span>
                 </td>
-                <td className="px-4 py-3 font-mono text-[12px] text-[#555] dark:text-[#9ba2b0]">{m.approvals > 0 ? m.approvals : "—"}</td>
+                <td className="px-4 py-3 font-mono text-[12px] text-[#555] dark:text-muted-foreground">{m.approvals > 0 ? m.approvals : "—"}</td>
                 <td className="px-4 py-3"><Button variant="ghost" size="icon" className="size-6"><MoreHorizontal className="size-3.5" /></Button></td>
               </tr>
             ))}
@@ -491,7 +491,7 @@ function FixtureItem({ fixture, active, onSelect }: { fixture: TestFixture; acti
     <button
       type="button"
       onClick={onSelect}
-      className={cn("w-full rounded-xl border p-3 text-left transition-colors cursor-pointer", active ? "border-[#2552ED] bg-[#f0f4ff] dark:bg-[#1e2a4a]" : "border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] hover:border-[#2552ED]/40")}
+      className={cn("w-full rounded-xl border p-3 text-left transition-colors cursor-pointer", active ? "border-[#2552ED] bg-[#f0f4ff] dark:bg-[#1e2a4a]" : "border-[#eaeaea] dark:border-border bg-white dark:bg-background hover:border-[#2552ED]/40")}
     >
       <div className="mb-1 flex items-center gap-2">
         <span className="text-[12px] tracking-[-1px]">{Array.from({length:5},(_,i)=><span key={i} className={i<fixture.rating?"text-amber-400":"text-[#ddd] dark:text-[#444]"}>★</span>)}</span>
@@ -499,7 +499,7 @@ function FixtureItem({ fixture, active, onSelect }: { fixture: TestFixture; acti
         <span className="text-[11px] text-[#999]">·</span>
         <span className="text-[11px] text-[#999]">{fixture.who}</span>
       </div>
-      <p className="line-clamp-2 text-[12px] leading-snug text-[#444] dark:text-[#9ba2b0]">{fixture.text}</p>
+      <p className="line-clamp-2 text-[12px] leading-snug text-[#444] dark:text-muted-foreground">{fixture.text}</p>
     </button>
   );
 }
@@ -523,11 +523,11 @@ function SecSandbox() {
       {/* Agent output */}
       <div className="flex flex-col gap-3">
         <SectionLabel>Agent output</SectionLabel>
-        <div className="flex-1 rounded-xl border border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] p-4">
+        <div className="flex-1 rounded-xl border border-[#eaeaea] dark:border-border bg-white dark:bg-background p-4">
           {/* Confidence */}
           <div className="mb-3 flex items-center gap-2">
             <Sparkles className="size-3.5 text-violet-500" />
-            <span className="text-[11px] text-[#666] dark:text-[#9ba2b0]">BirdAI ·</span>
+            <span className="text-[11px] text-[#666] dark:text-muted-foreground">BirdAI ·</span>
             <span className={cn("text-[11px] font-semibold tabular-nums", confColor)}>
               {conf > 0 ? `confidence ${conf.toFixed(2)}` : "Escalated — no draft"}
             </span>
@@ -547,7 +547,7 @@ function SecSandbox() {
             <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#999]">Trace</p>
             <div className="flex flex-col gap-1">
               {fixture.traces.map((t, i) => (
-                <div key={i} className="flex items-center gap-1.5 text-[11px] text-[#555] dark:text-[#9ba2b0]">
+                <div key={i} className="flex items-center gap-1.5 text-[11px] text-[#555] dark:text-muted-foreground">
                   <span className="text-[#bbb]">→</span>
                   {t}
                 </div>
@@ -604,12 +604,12 @@ export function AgentConfigView() {
   const groups = ["Setup", "Scope", "Launch"] as const;
 
   return (
-    <div className="flex min-h-0 flex-1 overflow-hidden bg-[#f5f6f8] dark:bg-[#13161b] transition-colors duration-300">
+    <div className="flex min-h-0 flex-1 overflow-hidden bg-[#f5f6f8] dark:bg-app-shell-gutter transition-colors duration-300">
       {/* Left ConfigNav */}
-      <nav className="flex w-[220px] shrink-0 flex-col overflow-y-auto border-r border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] px-3 py-4">
+      <nav className="flex w-[220px] shrink-0 flex-col overflow-y-auto border-r border-[#eaeaea] dark:border-border bg-white dark:bg-background px-3 py-4">
         {groups.map((group) => (
           <div key={group} className="mb-4">
-            <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-[#999] dark:text-[#6b7280]">{group}</p>
+            <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-[#999] dark:text-muted-foreground">{group}</p>
             {NAV_SECTIONS.filter((s) => s.group === group).map((s) => {
               const isActive = active === s.id;
               return (
@@ -621,7 +621,7 @@ export function AgentConfigView() {
                     "flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors",
                     isActive
                       ? "bg-[#f0f4ff] dark:bg-[#1e2a4a] text-[#2552ED] font-medium"
-                      : "text-[#555] dark:text-[#9ba2b0] hover:bg-[#f5f6f8] dark:hover:bg-[#1a1d23]",
+                      : "text-[#555] dark:text-muted-foreground hover:bg-[#f5f6f8] dark:hover:bg-[#1a1d23]",
                   )}
                 >
                   <s.icon className="size-3.5 shrink-0" />
@@ -636,14 +636,14 @@ export function AgentConfigView() {
       {/* Content */}
       <div ref={containerRef} className="min-h-0 flex-1 overflow-y-auto px-8 pb-16">
         {/* Agent header */}
-        <div className="sticky top-0 z-10 -mx-8 mb-2 flex items-center justify-between border-b border-[#eaeaea] dark:border-[#2e3340] bg-[#f5f6f8] dark:bg-[#13161b] px-8 py-3 transition-colors">
+        <div className="sticky top-0 z-10 -mx-8 mb-2 flex items-center justify-between border-b border-[#eaeaea] dark:border-border bg-[#f5f6f8] dark:bg-app-shell-gutter px-8 py-3 transition-colors">
           <div className="flex items-center gap-3">
             <div className="flex size-8 items-center justify-center rounded-lg bg-[#f0f4ff] dark:bg-[#1e2a4a]">
               <Sparkles className="size-4 text-[#2552ED]" />
             </div>
             <div>
-              <p className="text-[14px] font-semibold text-[#212121] dark:text-[#e4e4e4]">Review Response Agent</p>
-              <p className="text-[11px] text-[#999] dark:text-[#6b7280]">Configuration · All locations</p>
+              <p className="text-[14px] font-semibold text-[#212121] dark:text-foreground">Review Response Agent</p>
+              <p className="text-[11px] text-[#999] dark:text-muted-foreground">Configuration · All locations</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
