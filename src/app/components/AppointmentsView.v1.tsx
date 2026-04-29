@@ -11,7 +11,7 @@ import { Input } from "@/app/components/ui/input";
 import { AppDataTable } from "@/app/components/ui/AppDataTable";
 import { SegmentedToggle } from "@/app/components/ui/segmented-toggle";
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
+  Sheet, SheetContent,
 } from "@/app/components/ui/sheet";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -19,6 +19,10 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/app/components/ui/dialog";
+import {
+  FloatingSheetFrame,
+  FLOATING_SHEET_FRAME_CONTENT_CLASS,
+} from "@/app/components/layout/FloatingSheetFrame";
 import { TooltipProvider } from "@/app/components/ui/tooltip";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { cn } from "@/app/components/ui/utils";
@@ -93,6 +97,14 @@ const STATUS_CONFIG: Record<ApptStatus, { label: string; className: string; dotC
   cancelled:   { label: "Cancelled",   className: "bg-red-50    text-red-600    dark:bg-red-950/40    dark:text-red-400",    dotColor: "#ef4444" },
   no_show:     { label: "No show",     className: "bg-amber-50  text-amber-700  dark:bg-amber-950/40  dark:text-amber-400",  dotColor: "#f59e0b" },
   in_progress: { label: "In progress", className: "bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400", dotColor: "#8b5cf6" },
+};
+const STATUS_TEXT_CLASS: Record<ApptStatus, string> = {
+  confirmed: "text-emerald-700 dark:text-emerald-400",
+  requested: "text-blue-700 dark:text-blue-400",
+  completed: "text-slate-600 dark:text-slate-400",
+  cancelled: "text-red-600 dark:text-red-400",
+  no_show: "text-amber-700 dark:text-amber-400",
+  in_progress: "text-purple-700 dark:text-purple-400",
 };
 
 /* ─── Helpers ─── */
@@ -617,96 +629,117 @@ function ApptDetailSheet({
   if (!appt) return null;
   const provider = providerById(appt.providerId);
   const statusCfg = STATUS_CONFIG[appt.status];
+  const statusTextClass = STATUS_TEXT_CLASS[appt.status];
   const { day, num, month } = fmtDateHeader(appt.date);
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full max-w-md overflow-y-auto">
-        <SheetHeader className="mb-6">
-          <SheetTitle className="text-base">Appointment detail</SheetTitle>
-          <SheetDescription className="sr-only">
-            Appointment for {appt.patientName}
-          </SheetDescription>
-        </SheetHeader>
-
-        {/* Status banner */}
-        <div
-          className="rounded-lg px-4 py-3 mb-6 flex items-center justify-between"
-          style={{ background: `${provider.color}14`, borderLeft: `3px solid ${provider.color}` }}
+      <SheetContent
+        side="right"
+        inset="floating"
+        floatingSize="md"
+        className={FLOATING_SHEET_FRAME_CONTENT_CLASS}
+      >
+        <FloatingSheetFrame
+          title="Appointment detail"
+          description={`Appointment for ${appt.patientName}`}
+          classNames={{
+            body: "px-0 py-0",
+            footer: "justify-start",
+          }}
+          footer={(
+            <div className="flex w-full flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                className="h-9 rounded-md px-3.5 text-[13px] shadow-sm cursor-pointer gap-2"
+              >
+                <Bell size={12} strokeWidth={1.6} absoluteStrokeWidth />
+                Send reminder
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 rounded-md px-3 text-[13px] cursor-pointer gap-2"
+              >
+                <Calendar size={12} strokeWidth={1.6} absoluteStrokeWidth />
+                Reschedule
+              </Button>
+              {(appt.status === "confirmed" || appt.status === "requested") && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 rounded-md px-3 text-[13px] text-destructive border-destructive/30 hover:bg-destructive/10 cursor-pointer gap-2"
+                >
+                  <X size={12} strokeWidth={1.6} absoluteStrokeWidth />
+                  Cancel
+                </Button>
+              )}
+            </div>
+          )}
         >
-          <div>
-            <p className="text-sm font-semibold text-foreground">{appt.service}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{provider.name}</p>
-          </div>
-          <Badge variant="outline" className={statusCfg.className}>
-            {statusCfg.label}
-          </Badge>
-        </div>
+          <div className="flex flex-col gap-6 px-6 py-4">
+            {/* Status banner */}
+            <div
+              className="flex items-center justify-between rounded-lg px-4 py-3"
+              style={{ background: `${provider.color}14`, borderLeft: `3px solid ${provider.color}` }}
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-foreground">{appt.service}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{provider.name}</p>
+              </div>
+              <span className={`shrink-0 text-sm font-medium ${statusTextClass}`}>
+                {statusCfg.label}
+              </span>
+            </div>
 
-        {/* Patient info */}
-        <div className="mb-6">
-          <p className="text-xs text-muted-foreground font-medium mb-3">Patient</p>
-          <div className="flex flex-col gap-2 text-sm">
-            <div className="flex items-center gap-2.5">
-              <User size={14} strokeWidth={1.6} absoluteStrokeWidth className="text-muted-foreground shrink-0" />
-              <span className="text-foreground font-medium">{appt.patientName}</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <Phone size={14} strokeWidth={1.6} absoluteStrokeWidth className="text-muted-foreground shrink-0" />
-              <span className="text-muted-foreground">{appt.patientPhone}</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <Mail size={14} strokeWidth={1.6} absoluteStrokeWidth className="text-muted-foreground shrink-0" />
-              <span className="text-muted-foreground">{appt.patientEmail}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Appointment info */}
-        <div className="mb-6">
-          <p className="text-xs text-muted-foreground font-medium mb-3">Details</p>
-          <div className="flex flex-col gap-3 text-sm">
-            {[
-              { icon: Calendar, label: "Date", value: `${DAY_FULL[parseDate(appt.date).getDay() === 0 ? 6 : parseDate(appt.date).getDay() - 1]}, ${month} ${num}` },
-              { icon: Clock, label: "Time", value: `${fmtTime12(appt.startTime)} – ${fmtTime12(appt.endTime)} (${appt.duration} min)` },
-              { icon: MapPin, label: "Location", value: appt.location },
-            ].map(({ icon: Icon, label, value }) => (
-              <div key={label} className="flex items-start gap-2.5">
-                <Icon size={14} strokeWidth={1.6} absoluteStrokeWidth className="text-muted-foreground shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-[11px] text-muted-foreground">{label}</p>
-                  <p className="text-foreground">{value}</p>
+            {/* Patient info */}
+            <section className="flex flex-col gap-3">
+              <p className="text-xs font-medium text-muted-foreground">Patient</p>
+              <div className="flex flex-col gap-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <User size={14} strokeWidth={1.6} absoluteStrokeWidth className="shrink-0 text-muted-foreground" />
+                  <span className="font-medium text-foreground">{appt.patientName}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Phone size={14} strokeWidth={1.6} absoluteStrokeWidth className="shrink-0 text-muted-foreground" />
+                  <span className="text-muted-foreground">{appt.patientPhone}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail size={14} strokeWidth={1.6} absoluteStrokeWidth className="shrink-0 text-muted-foreground" />
+                  <span className="text-muted-foreground">{appt.patientEmail}</span>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+            </section>
 
-        {/* Notes */}
-        {appt.notes && (
-          <div className="mb-6">
-            <p className="text-xs text-muted-foreground font-medium mb-2">Notes</p>
-            <p className="text-sm text-foreground bg-muted/40 rounded-lg px-3 py-2">{appt.notes}</p>
-          </div>
-        )}
+            {/* Appointment info */}
+            <section className="flex flex-col gap-3">
+              <p className="text-xs font-medium text-muted-foreground">Details</p>
+              <div className="flex flex-col gap-3 text-sm">
+                {[
+                  { icon: Calendar, label: "Date", value: `${DAY_FULL[parseDate(appt.date).getDay() === 0 ? 6 : parseDate(appt.date).getDay() - 1]}, ${month} ${num}` },
+                  { icon: Clock, label: "Time", value: `${fmtTime12(appt.startTime)} – ${fmtTime12(appt.endTime)} (${appt.duration} min)` },
+                  { icon: MapPin, label: "Location", value: appt.location },
+                ].map(({ icon: Icon, label, value }) => (
+                  <div key={label} className="flex items-start gap-2">
+                    <Icon size={14} strokeWidth={1.6} absoluteStrokeWidth className="mt-0.5 shrink-0 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">{label}</p>
+                      <p className="text-foreground">{value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
 
-        {/* Actions */}
-        <div className="flex flex-wrap gap-2">
-          <Button size="sm" className="cursor-pointer gap-1.5 text-xs">
-            <Bell size={12} strokeWidth={1.6} absoluteStrokeWidth />
-            Send reminder
-          </Button>
-          <Button variant="outline" size="sm" className="cursor-pointer gap-1.5 text-xs">
-            <Calendar size={12} strokeWidth={1.6} absoluteStrokeWidth />
-            Reschedule
-          </Button>
-          {(appt.status === "confirmed" || appt.status === "requested") && (
-            <Button variant="outline" size="sm" className="cursor-pointer gap-1.5 text-xs text-destructive border-destructive/30 hover:bg-destructive/10">
-              <X size={12} strokeWidth={1.6} absoluteStrokeWidth />
-              Cancel
-            </Button>
-          )}
-        </div>
+            {/* Notes */}
+            {appt.notes && (
+              <section className="flex flex-col gap-2">
+                <p className="text-xs font-medium text-muted-foreground">Notes</p>
+                <p className="rounded-lg bg-muted/40 px-3 py-2 text-sm text-foreground">{appt.notes}</p>
+              </section>
+            )}
+          </div>
+        </FloatingSheetFrame>
       </SheetContent>
     </Sheet>
   );

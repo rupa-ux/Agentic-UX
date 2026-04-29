@@ -12,7 +12,7 @@ const meta: Meta<typeof AppointmentsView> = {
           "Appointments product view. Migrated from `UI-web-2.0/src/app/pages/appointments/`. " +
           "Layout and range toggles sit in `MainCanvasViewHeader` actions (icon-only segmented controls, like Reviews). " +
           "Two modes: Calendar (day/week grid with time-positioned appointment cards per provider) " +
-          "and Schedule (sortable list table). Clicking any appointment opens a detail Sheet. " +
+          "and Schedule (sortable list table). Clicking any appointment opens a floating inset detail Sheet (md width) using the shared FloatingSheetFrame pattern. " +
           "All data is mocked for prototype use.",
       },
     },
