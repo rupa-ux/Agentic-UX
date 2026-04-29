@@ -170,7 +170,7 @@ const insightRows = [
 // ─── Main Component ───
 export default function BusinessOverviewDashboard() {
   return (
-    <div className="h-full min-h-0 overflow-hidden rounded-tl-lg bg-white dark:bg-[#1e2229]">
+    <div className="h-full min-h-0 overflow-hidden rounded-tl-lg bg-white dark:bg-background">
       <div className="h-full min-h-0 overflow-y-auto">
       <div className="flex flex-col gap-5 px-6 pb-8 pt-2">
 

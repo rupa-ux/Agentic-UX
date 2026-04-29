@@ -75,7 +75,7 @@ export function SlidingSidePanel({
       <div
         ref={innerRef}
         className={[
-          "flex h-full min-h-0 flex-col bg-white dark:bg-[#1e2229]",
+          "flex h-full min-h-0 flex-col bg-white dark:bg-background",
           innerClassName ?? "",
         ].join(" ")}
         style={{

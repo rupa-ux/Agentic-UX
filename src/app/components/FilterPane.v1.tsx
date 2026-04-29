@@ -60,7 +60,7 @@ export function FilterPane({
       open={open}
       widthPx={panelWidthPx}
       innerClassName={cn(
-        "min-h-0 border-t border-[#e5e9f0] dark:border-[#333a47]",
+        "min-h-0 border-t border-[#e5e9f0] dark:border-border",
         dock === "left"
           ? "rounded-tr-lg border-r"
           : "rounded-tl-lg border-l",
@@ -100,7 +100,7 @@ export function FilterPaneTriggerButton({
         size={14}
         weight={open ? "fill" : "regular"}
         className={
-          open ? "text-[#1E44CC]" : "text-[#555] dark:text-[#8b92a5]"
+          open ? "text-[#1E44CC]" : "text-[#555] dark:text-muted-foreground"
         }
       />
     </Button>

@@ -145,7 +145,7 @@ export function SidebarSectioned({
           size={iconSize}
           strokeWidth={L1_STRIP_ICON_STROKE_PX}
           className={`transition-colors duration-200 ${
-            isActive ? "text-[#2552ED] dark:text-[#6b9bff]" : "text-[#505050] dark:text-[#9ba2b0] group-hover:text-[#2552ED]"
+            isActive ? "text-[#2552ED] dark:text-[#6b9bff]" : "text-[#505050] dark:text-muted-foreground group-hover:text-[#2552ED]"
           }`}
         />
         {item.badge?.kind === "dot" && (
@@ -183,12 +183,12 @@ export function SidebarSectioned({
             size={iconSize}
             strokeWidth={L1_STRIP_ICON_STROKE_PX}
             className={`${
-              isActive ? "text-[#2552ED] dark:text-[#6b9bff]" : "text-[#505050] dark:text-[#9ba2b0]"
+              isActive ? "text-[#2552ED] dark:text-[#6b9bff]" : "text-[#505050] dark:text-muted-foreground"
             }`}
           />
         </span>
         <span className={`ml-3 flex-1 text-left text-[13px] whitespace-nowrap ${
-          isActive ? "text-[#2552ED] dark:text-[#6b9bff] font-medium" : "text-[#303030] dark:text-[#c0c6d4]"
+          isActive ? "text-[#2552ED] dark:text-[#6b9bff] font-medium" : "text-[#303030] dark:text-muted-foreground"
         }`}>
           {item.label}
         </span>
@@ -243,7 +243,7 @@ export function SidebarSectioned({
           onMouseEnter={onEnter}
           onMouseLeave={onLeave}
           aria-hidden={!expanded}
-          className={`absolute top-2 bottom-2 left-2 w-[272px] flex flex-col rounded-xl border border-white/45 bg-white/70 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_18px_60px_rgba(17,24,39,0.14)] dark:border-white/10 dark:bg-[#151922]/72 z-30 transition-[opacity,transform] duration-200 ease-out ${
+          className={`absolute top-2 bottom-2 left-2 w-[272px] flex flex-col rounded-xl border border-white/45 bg-white/70 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_18px_60px_rgba(17,24,39,0.14)] dark:border-white/10 dark:bg-app-shell-rail/72 z-30 transition-[opacity,transform] duration-200 ease-out ${
             expanded
               ? "opacity-100 translate-x-0 pointer-events-auto"
               : "opacity-0 -translate-x-2 pointer-events-none"
@@ -254,11 +254,11 @@ export function SidebarSectioned({
             <svg width="17.55" height="16.875" viewBox="0 0 19.5 18.75" fill="none" className="shrink-0">
               <path clipRule="evenodd" d={svgPaths.p23fcc000} fill="#2552ED" fillRule="evenodd" />
             </svg>
-            <span className="text-[15px] font-medium text-[#212121] dark:text-[#e4e4e4] flex-1">Birdeye</span>
+            <span className="text-[15px] font-medium text-[#212121] dark:text-foreground flex-1">Birdeye</span>
             <button
               type="button"
               aria-label="Collapse sidebar"
-              className="flex w-[24px] h-[24px] items-center justify-center rounded-md text-[#8b92a5] dark:text-[#6b7280] hover:bg-white/55 dark:hover:bg-white/10"
+              className="flex w-[24px] h-[24px] items-center justify-center rounded-md text-[#8b92a5] dark:text-muted-foreground hover:bg-white/55 dark:hover:bg-white/10"
               onClick={() => setExpanded(false)}
             >
               <ChevronLeft className="size-[14px]" />
@@ -270,7 +270,7 @@ export function SidebarSectioned({
             {sections.map((sec, i) => (
               <div key={sec.title ?? `top-${i}`} className="flex flex-col">
                 {sec.title && (
-                  <div className="px-2 pt-3 pb-1 text-[10px] uppercase tracking-[0.6px] text-[#9298a8] dark:text-[#6b7280]">
+                  <div className="px-2 pt-3 pb-1 text-[10px] uppercase tracking-[0.6px] text-[#9298a8] dark:text-muted-foreground">
                     {sec.title}
                   </div>
                 )}

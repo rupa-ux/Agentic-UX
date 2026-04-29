@@ -40,21 +40,21 @@ function FilterRow({
         <div className="flex-1 min-w-0">
           <button
             onClick={() => setOpen(!open)}
-            className="w-full flex items-center justify-between px-2.5 py-2 bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-lg text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:border-[#c0c6d0] dark:hover:border-[#444b5a] transition-colors"
+            className="w-full flex items-center justify-between px-2.5 py-2 bg-white dark:bg-muted border border-[#e5e9f0] dark:border-border rounded-lg text-[13px] text-[#212121] dark:text-foreground hover:border-[#c0c6d0] dark:hover:border-[#444b5a] transition-colors"
             style={{ fontWeight: 400 }}
           >
             <span className="truncate text-left">
               {filter.value || filter.label}
             </span>
             {open ? (
-              <ChevronUp className="w-3 h-3 text-[#999] dark:text-[#6b7280] shrink-0 ml-1" />
+              <ChevronUp className="w-3 h-3 text-[#999] dark:text-muted-foreground shrink-0 ml-1" />
             ) : (
-              <ChevronDown className="w-3 h-3 text-[#999] dark:text-[#6b7280] shrink-0 ml-1" />
+              <ChevronDown className="w-3 h-3 text-[#999] dark:text-muted-foreground shrink-0 ml-1" />
             )}
           </button>
 
           {open && filter.options && (
-            <div className="absolute top-full right-0 mt-1 min-w-full bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-lg shadow-sm overflow-hidden z-20 origin-top-right">
+            <div className="absolute top-full right-0 mt-1 min-w-full bg-white dark:bg-muted border border-[#e5e9f0] dark:border-border rounded-lg shadow-sm overflow-hidden z-20 origin-top-right">
               {filter.options.map((option) => (
                 <button
                   key={option}
@@ -62,10 +62,10 @@ function FilterRow({
                     onValueChange(filter.id, option);
                     setOpen(false);
                   }}
-                  className={`w-full text-left px-2.5 py-2 text-[13px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors ${
+                  className={`w-full text-left px-2.5 py-2 text-[13px] hover:bg-[#f5f5f5] dark:hover:bg-muted transition-colors ${
                     filter.value === option
                       ? "text-[#2552ED] bg-[#f0f3ff] dark:bg-[#1e2d5e]"
-                      : "text-[#212121] dark:text-[#e4e4e4]"
+                      : "text-[#212121] dark:text-foreground"
                   }`}
                   style={{ fontWeight: 400 }}
                 >
@@ -146,15 +146,15 @@ export function FilterPanel({
       <button
         onClick={onToggleCollapse}
         className={cn(
-          "h-full w-10 bg-white dark:bg-[#1e2229] flex flex-col items-center justify-start pt-4 shrink-0 transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#262b35]",
+          "h-full w-10 bg-white dark:bg-background flex flex-col items-center justify-start pt-4 shrink-0 transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#262b35]",
           edge === "left"
-            ? "border-r border-[#e5e9f0] dark:border-[#333a47]"
-            : "border-l border-[#e5e9f0] dark:border-[#333a47]",
+            ? "border-r border-[#e5e9f0] dark:border-border"
+            : "border-l border-[#e5e9f0] dark:border-border",
         )}
         title="Expand filters"
       >
         <span
-          className="text-[11px] text-[#555] dark:text-[#8b92a5] mt-0"
+          className="text-[11px] text-[#555] dark:text-muted-foreground mt-0"
           style={{
             writingMode: "vertical-rl",
             textOrientation: "mixed",
@@ -170,26 +170,26 @@ export function FilterPanel({
   return (
     <div
       className={cn(
-        "bg-white dark:bg-[#1e2229] flex flex-col h-full min-h-0 shrink-0 transition-colors w-[260px]",
+        "bg-white dark:bg-background flex flex-col h-full min-h-0 shrink-0 transition-colors w-[260px]",
         edge === "left"
-          ? "border-r border-[#e5e9f0] dark:border-[#333a47]"
-          : "border-l border-[#e5e9f0] dark:border-[#333a47]",
+          ? "border-r border-[#e5e9f0] dark:border-border"
+          : "border-l border-[#e5e9f0] dark:border-border",
         className,
       )}
     >
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e9f0] dark:border-[#333a47] shrink-0">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e9f0] dark:border-border shrink-0">
         <span
-          className="text-sm text-[#212121] dark:text-[#e4e4e4]"
+          className="text-sm text-[#212121] dark:text-foreground"
           style={{ fontWeight: 400 }}
         >
           {title}
         </span>
         <button
           onClick={onToggleCollapse}
-          className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+          className="p-1 rounded hover:bg-[#f5f5f5] dark:hover:bg-muted transition-colors"
           title="Collapse filters"
         >
-          <X className="w-3.5 h-3.5 text-[#555] dark:text-[#8b92a5]" />
+          <X className="w-3.5 h-3.5 text-[#555] dark:text-muted-foreground" />
         </button>
       </div>
 
@@ -205,10 +205,10 @@ export function FilterPanel({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-3 border-t border-[#e5e9f0] dark:border-[#333a47] shrink-0">
+      <div className="flex items-center gap-2 px-3 py-3 border-t border-[#e5e9f0] dark:border-border shrink-0">
         <button
           onClick={handleReset}
-          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-[13px] text-[#555] dark:text-[#8b92a5] border border-[#e5e9f0] dark:border-[#333a47] rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-[13px] text-[#555] dark:text-muted-foreground border border-[#e5e9f0] dark:border-border rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-muted transition-colors"
           style={{ fontWeight: 400 }}
         >
           <RotateCcw className="w-3 h-3" />

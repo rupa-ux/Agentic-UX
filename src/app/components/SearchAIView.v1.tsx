@@ -274,7 +274,7 @@ mapBubblesByPlatform["All sites"] = mapBubblesByPlatform.ChatGPT;
 /* ─── Reusable: Card ─── */
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-white dark:bg-[#1e2229] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] transition-colors w-full min-w-0 ${className}`}>
+    <div className={`bg-white dark:bg-background border border-[#e5e9f0] dark:border-border rounded-[8px] transition-colors w-full min-w-0 ${className}`}>
       {children}
     </div>
   );
@@ -286,10 +286,10 @@ function CardHeader({ title, subtitle, actions }: { title: React.ReactNode; subt
     <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-5 py-3 sm:py-4 gap-2 sm:gap-4">
       <div className="flex flex-col gap-1 min-w-0">
         <div className="flex items-center gap-1 flex-wrap">
-          <span className="text-[18px] text-[#555] dark:text-[#8b92a5] tracking-[-0.36px]" style={{ fontWeight: 400 }}>{title}</span>
+          <span className="text-[18px] text-[#555] dark:text-muted-foreground tracking-[-0.36px]" style={{ fontWeight: 400 }}>{title}</span>
         </div>
         {subtitle && (
-          <span className="text-[12px] text-[#555] dark:text-[#8b92a5]">{subtitle}</span>
+          <span className="text-[12px] text-[#555] dark:text-muted-foreground">{subtitle}</span>
         )}
       </div>
       {actions && <div className="flex items-center gap-2 shrink-0 flex-wrap">{actions}</div>}
@@ -310,8 +310,8 @@ function IconBtn({ children }: { children: React.ReactNode }) {
 function DropdownBtn({ label }: { label: string }) {
   return (
     <Button variant="outline" className="gap-2 shrink-0">
-      <span className="text-[14px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.28px]" style={{ fontWeight: 400 }}>{label}</span>
-      <ChevronDown className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" />
+      <span className="text-[14px] text-[#212121] dark:text-foreground tracking-[-0.28px]" style={{ fontWeight: 400 }}>{label}</span>
+      <ChevronDown className="w-[14px] h-[14px] text-[#555] dark:text-muted-foreground" />
     </Button>
   );
 }
@@ -330,15 +330,15 @@ function SummarizeBtn() {
 /* ─── Reusable: Toggle (By locations / By brand) ─── */
 function Toggle({ options, active, onChange }: { options: string[]; active: string; onChange: (v: string) => void }) {
   return (
-    <div className="h-[var(--button-height)] bg-white dark:bg-[#262b35] border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] flex items-center gap-2 p-2 shrink-0">
+    <div className="h-[var(--button-height)] bg-white dark:bg-muted border border-[#e5e9f0] dark:border-border rounded-[8px] flex items-center gap-2 p-2 shrink-0">
       {options.map(opt => (
         <button
           key={opt}
           onClick={() => onChange(opt)}
           className={`h-[24px] px-2 rounded-[4px] text-[14px] tracking-[-0.28px] transition-colors ${
             active === opt
-              ? "bg-[#e5e9f0] dark:bg-[#333a47] text-[#212121] dark:text-[#e4e4e4]"
-              : "text-[#212121] dark:text-[#e4e4e4]"
+              ? "bg-[#e5e9f0] dark:bg-muted text-[#212121] dark:text-foreground"
+              : "text-[#212121] dark:text-foreground"
           }`}
           style={{ fontWeight: 400 }}
         >
@@ -370,7 +370,7 @@ function LegendItem({ color, label, dashed }: { color: string; label: string; da
         <line x1="0" y1="6" x2="16" y2="6" stroke={color} strokeWidth="2" strokeDasharray={dashed ? "4 4" : "0"} />
         <circle cx="8" cy="6" r="3.5" fill={color} stroke={color} />
       </svg>
-      <span className="text-[12px] text-[#555] dark:text-[#8b92a5] tracking-[-0.24px] whitespace-nowrap" style={{ fontWeight: 400 }}>{label}</span>
+      <span className="text-[12px] text-[#555] dark:text-muted-foreground tracking-[-0.24px] whitespace-nowrap" style={{ fontWeight: 400 }}>{label}</span>
     </div>
   );
 }
@@ -379,18 +379,18 @@ function LegendItem({ color, label, dashed }: { color: string; label: string; da
 function ChartTooltip({ active, payload, label }: any) {
   if (!active || !payload) return null;
   return (
-    <div className="bg-white dark:bg-[#22262f] border border-[#e5e9f0] dark:border-[#333a47] rounded-[4px] shadow-[0px_10px_24px_rgba(33,33,33,0.2)] min-w-[200px]">
+    <div className="bg-white dark:bg-background border border-[#e5e9f0] dark:border-border rounded-[4px] shadow-[0px_10px_24px_rgba(33,33,33,0.2)] min-w-[200px]">
       <div className="px-4 pt-4 pb-2">
-        <p className="text-[12px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.24px]" style={{ fontWeight: 400 }}>{label}</p>
+        <p className="text-[12px] text-[#212121] dark:text-foreground tracking-[-0.24px]" style={{ fontWeight: 400 }}>{label}</p>
       </div>
       <div className="px-4 pb-4 flex flex-col gap-1">
         {payload.map((entry: any) => (
           <div key={entry.dataKey} className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
-              <span className="text-[12px] text-[#555] dark:text-[#8b92a5] whitespace-nowrap">{entry.name}</span>
+              <span className="text-[12px] text-[#555] dark:text-muted-foreground whitespace-nowrap">{entry.name}</span>
             </div>
-            <span className="text-[12px] text-[#555] dark:text-[#8b92a5]">{entry.value}%</span>
+            <span className="text-[12px] text-[#555] dark:text-muted-foreground">{entry.value}%</span>
           </div>
         ))}
       </div>
@@ -430,7 +430,7 @@ function SearchAIVisibilityDashboard() {
   const sovData = useMemo(() => shareOfVoiceByPlatform[sovTab] || shareOfVoiceByPlatform.ChatGPT, [sovTab]);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden bg-white dark:bg-[#1e2229] transition-colors duration-300">
+    <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden bg-white dark:bg-background transition-colors duration-300">
       <MainCanvasViewHeader
         title="Visibility"
         description="See how frequently your brand is mentioned in AI-generated answers compared to competitors"
@@ -457,19 +457,19 @@ function SearchAIVisibilityDashboard() {
             <CardHeader
               title="Summary"
               subtitle="Percentage of AI responses that mention your brand"
-              actions={<IconBtn><MoreVertical className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" /></IconBtn>}
+              actions={<IconBtn><MoreVertical className="w-[14px] h-[14px] text-[#555] dark:text-muted-foreground" /></IconBtn>}
             />
             <div className="px-4 sm:px-5 pb-5">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-8">
                 {summaryMetrics.map(m => (
                   <div key={m.label} className="flex flex-col gap-1">
                     <div className="flex items-center gap-1">
-                      <span className="text-[30px] text-[#222] dark:text-[#e4e4e4] leading-[42px]" style={{ fontWeight: 400 }}>{m.value}</span>
+                      <span className="text-[30px] text-[#222] dark:text-foreground leading-[42px]" style={{ fontWeight: 400 }}>{m.value}</span>
                       <div className="flex flex-col h-[32px] justify-end">
                         <span className={`text-[12px] leading-[18px] ${m.positive ? "text-[#377e2c]" : "text-[#de1b0c]"}`}>{m.change}</span>
                       </div>
                     </div>
-                    <span className="text-[16px] text-[#555] dark:text-[#8b92a5] leading-[24px]" style={{ fontWeight: 400 }}>{m.label}</span>
+                    <span className="text-[16px] text-[#555] dark:text-muted-foreground leading-[24px]" style={{ fontWeight: 400 }}>{m.label}</span>
                   </div>
                 ))}
               </div>
@@ -492,7 +492,7 @@ function SearchAIVisibilityDashboard() {
                 <div className="flex items-center gap-2">
                   <DropdownBtn label="Last 12 months" />
                   <SummarizeBtn />
-                  <IconBtn><MoreVertical className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" /></IconBtn>
+                  <IconBtn><MoreVertical className="w-[14px] h-[14px] text-[#555] dark:text-muted-foreground" /></IconBtn>
                 </div>
               }
             />
@@ -532,16 +532,16 @@ function SearchAIVisibilityDashboard() {
               subtitle="Track how often and how prominently your locations appear in AI-generated answers across themes"
               actions={
                 <div className="flex items-center gap-2">
-                  <Search className="w-5 h-5 text-[#303030] dark:text-[#8b92a5]" />
+                  <Search className="w-5 h-5 text-[#303030] dark:text-muted-foreground" />
                   <DropdownBtn label="Last 12 months" />
                   <SummarizeBtn />
-                  <IconBtn><MoreVertical className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" /></IconBtn>
+                  <IconBtn><MoreVertical className="w-[14px] h-[14px] text-[#555] dark:text-muted-foreground" /></IconBtn>
                 </div>
               }
             />
             <PlatformTabs activeTab={mapTab} onTabChange={t => setMapTab(t as PlatformTab)} />
             <div className="px-4 sm:px-5 pb-5 pt-4">
-              <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[490px] rounded-[12px] overflow-hidden bg-[#e8ece4] dark:bg-[#262b35]">
+              <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[490px] rounded-[12px] overflow-hidden bg-[#e8ece4] dark:bg-muted">
                 <img src={imgMap} alt="Map" className="absolute inset-0 w-full h-full object-cover" />
                 {mapBubbles.map((b, i) => (
                   <div
@@ -583,7 +583,7 @@ function SearchAIVisibilityDashboard() {
                 <div className="flex items-center gap-2">
                   <DropdownBtn label="Last 12 months" />
                   <SummarizeBtn />
-                  <IconBtn><MoreVertical className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" /></IconBtn>
+                  <IconBtn><MoreVertical className="w-[14px] h-[14px] text-[#555] dark:text-muted-foreground" /></IconBtn>
                 </div>
               }
             />
@@ -620,32 +620,32 @@ function SearchAIVisibilityDashboard() {
             {/* Competitor Table */}
             <div className="px-4 sm:px-5 pt-4 pb-5">
               <div className="overflow-x-auto">
-                <div className="flex border-t border-[#eaeaea] dark:border-[#333a47] min-w-[400px]">
+                <div className="flex border-t border-[#eaeaea] dark:border-border min-w-[400px]">
                   <div className="flex-1 min-w-[128px]">
-                    <div className="h-[52px] flex items-center px-4 border-b border-[#e9e9eb] dark:border-[#333a47]">
+                    <div className="h-[52px] flex items-center px-4 border-b border-[#e9e9eb] dark:border-border">
                       <div className="flex items-center gap-1 flex-1">
-                        <span className="text-[12px] text-[#555] dark:text-[#8b92a5]" style={{ fontWeight: 400 }}>Competitors</span>
-                        <ChevronDown className="w-4 h-4 text-[#303030] dark:text-[#8b92a5]" />
+                        <span className="text-[12px] text-[#555] dark:text-muted-foreground" style={{ fontWeight: 400 }}>Competitors</span>
+                        <ChevronDown className="w-4 h-4 text-[#303030] dark:text-muted-foreground" />
                       </div>
                     </div>
                     {compTable.map(row => (
-                      <div key={row.name} className={`h-[56px] flex items-center px-4 border-b border-[#eaeaea] dark:border-[#333a47] ${row.isYou ? "bg-[#f2f4f7] dark:bg-[#252a3a]" : ""}`}>
-                        <span className="text-[14px] text-[#212121] dark:text-[#e4e4e4] tracking-[-0.28px] truncate" style={{ fontWeight: 400 }}>{row.name}</span>
+                      <div key={row.name} className={`h-[56px] flex items-center px-4 border-b border-[#eaeaea] dark:border-border ${row.isYou ? "bg-[#f2f4f7] dark:bg-muted" : ""}`}>
+                        <span className="text-[14px] text-[#212121] dark:text-foreground tracking-[-0.28px] truncate" style={{ fontWeight: 400 }}>{row.name}</span>
                         {row.isYou && <span className="ml-2"><YouBadge small /></span>}
                       </div>
                     ))}
                   </div>
                   <div className="flex-1 min-w-[82px]">
-                    <div className="h-[52px] flex items-center px-4 border-b border-[#e9e9eb] dark:border-[#333a47]">
+                    <div className="h-[52px] flex items-center px-4 border-b border-[#e9e9eb] dark:border-border">
                       <div className="flex items-center gap-1 flex-1">
-                        <span className="text-[12px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>Visibility score</span>
-                        <ChevronUp className="w-4 h-4 text-[#303030] dark:text-[#8b92a5]" />
+                        <span className="text-[12px] text-[#212121] dark:text-foreground" style={{ fontWeight: 400 }}>Visibility score</span>
+                        <ChevronUp className="w-4 h-4 text-[#303030] dark:text-muted-foreground" />
                       </div>
                     </div>
                     {compTable.map(row => (
-                      <div key={row.name} className={`h-[56px] flex items-center gap-2 px-4 border-b border-[#eaeaea] dark:border-[#333a47] ${row.isYou ? "bg-[#f2f4f7] dark:bg-[#252a3a]" : ""}`}>
-                        <span className="text-[13px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{row.score}</span>
-                        <span className="text-[12px] text-[#999] dark:text-[#6b7280]">{row.change}</span>
+                      <div key={row.name} className={`h-[56px] flex items-center gap-2 px-4 border-b border-[#eaeaea] dark:border-border ${row.isYou ? "bg-[#f2f4f7] dark:bg-muted" : ""}`}>
+                        <span className="text-[13px] text-[#212121] dark:text-foreground" style={{ fontWeight: 400 }}>{row.score}</span>
+                        <span className="text-[12px] text-[#999] dark:text-muted-foreground">{row.change}</span>
                       </div>
                     ))}
                   </div>
@@ -661,9 +661,9 @@ function SearchAIVisibilityDashboard() {
               subtitle="Understand how your brand compares to competitors by theme and ranking position across AI platforms"
               actions={
                 <div className="flex items-center gap-2">
-                  <Search className="w-5 h-5 text-[#555] dark:text-[#8b92a5]" />
+                  <Search className="w-5 h-5 text-[#555] dark:text-muted-foreground" />
                   <SummarizeBtn />
-                  <IconBtn><MoreVertical className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" /></IconBtn>
+                  <IconBtn><MoreVertical className="w-[14px] h-[14px] text-[#555] dark:text-muted-foreground" /></IconBtn>
                 </div>
               }
             />
@@ -672,8 +672,8 @@ function SearchAIVisibilityDashboard() {
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[600px]">
                   <thead>
-                    <tr className="border-b border-[#e9e9eb] dark:border-[#333a47]">
-                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-4 px-4 min-w-[300px]" style={{ fontWeight: 400 }}>
+                    <tr className="border-b border-[#e9e9eb] dark:border-border">
+                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-muted-foreground py-4 px-4 min-w-[300px]" style={{ fontWeight: 400 }}>
                         <div className="flex items-center gap-1">
                           Themes <ChevronDown className="w-4 h-4" />
                         </div>
@@ -684,7 +684,7 @@ function SearchAIVisibilityDashboard() {
                             {b.isYou ? (
                               <YouBadge />
                             ) : (
-                              <span className="bg-[#ecf5fd] dark:bg-[#252a3a] px-[9px] py-[3px] rounded-[20px] text-[12px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{b.rank}</span>
+                              <span className="bg-[#ecf5fd] dark:bg-muted px-[9px] py-[3px] rounded-[20px] text-[12px] text-[#212121] dark:text-foreground" style={{ fontWeight: 400 }}>{b.rank}</span>
                             )}
                           </div>
                         </th>
@@ -694,19 +694,19 @@ function SearchAIVisibilityDashboard() {
                   <tbody>
                     {rankingThemes.map((item, themeIdx) => (
                       <Fragment key={item.theme}>
-                        <tr className="border-b border-[#eaeaea] dark:border-[#333a47] hover:bg-[#fafafa] dark:hover:bg-[#22262f] transition-colors">
+                        <tr className="border-b border-[#eaeaea] dark:border-border hover:bg-[#fafafa] dark:hover:bg-muted transition-colors">
                           <td className="py-4 px-4">
                             <div className="flex items-center gap-2">
                               <button onClick={() => item.subThemes.length > 0 && toggleTheme(item.theme)}>
                                 {item.subThemes.length > 0 ? (
                                   expandedThemes.includes(item.theme)
-                                    ? <ChevronUp className="w-4 h-4 text-[#303030] dark:text-[#8b92a5]" />
-                                    : <ChevronDown className="w-4 h-4 text-[#303030] dark:text-[#8b92a5]" />
+                                    ? <ChevronUp className="w-4 h-4 text-[#303030] dark:text-muted-foreground" />
+                                    : <ChevronDown className="w-4 h-4 text-[#303030] dark:text-muted-foreground" />
                                 ) : (
-                                  <ChevronDown className="w-4 h-4 text-[#303030] dark:text-[#8b92a5]" />
+                                  <ChevronDown className="w-4 h-4 text-[#303030] dark:text-muted-foreground" />
                                 )}
                               </button>
-                              <span className="text-[14px] text-[#212121] dark:text-[#e4e4e4] truncate" style={{ fontWeight: 400 }}>{item.theme}</span>
+                              <span className="text-[14px] text-[#212121] dark:text-foreground truncate" style={{ fontWeight: 400 }}>{item.theme}</span>
                               {item.badge && (
                                 <span className="px-2 py-0.5 rounded-[4px] text-[12px] border shrink-0" style={{ fontWeight: 400, color: item.badgeColor!, borderColor: item.badgeColor! }}>
                                   {item.badge}
@@ -733,11 +733,11 @@ function SearchAIVisibilityDashboard() {
                           const parentOrder = rankOrders[themeIdx] || [1,2,3,4,5];
                           const subOrder = parentOrder.map(v => Math.min(5, v + subIdx));
                           return (
-                            <tr key={sub.theme} className="border-b border-[#eaeaea] dark:border-[#333a47] bg-[#fafafa] dark:bg-[#1a1d24]">
+                            <tr key={sub.theme} className="border-b border-[#eaeaea] dark:border-border bg-[#fafafa] dark:bg-app-shell-rail">
                               <td className="py-4 px-4 pl-12">
                                 <div className="flex items-center gap-2">
-                                  <ChevronDown className="w-4 h-4 text-[#303030] dark:text-[#8b92a5]" />
-                                  <span className="text-[14px] text-[#555] dark:text-[#9ba2b0] truncate tracking-[-0.28px]" style={{ fontWeight: 400 }}>{sub.theme}</span>
+                                  <ChevronDown className="w-4 h-4 text-[#303030] dark:text-muted-foreground" />
+                                  <span className="text-[14px] text-[#555] dark:text-muted-foreground truncate tracking-[-0.28px]" style={{ fontWeight: 400 }}>{sub.theme}</span>
                                   {sub.badge && (
                                     <span className="px-2 py-0.5 rounded-[4px] text-[12px] border shrink-0" style={{ fontWeight: 400, color: sub.badgeColor!, borderColor: sub.badgeColor! }}>
                                       {sub.badge}
@@ -773,7 +773,7 @@ function SearchAIVisibilityDashboard() {
               actions={
                 <div className="flex items-center gap-2">
                   <SummarizeBtn />
-                  <IconBtn><MoreVertical className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" /></IconBtn>
+                  <IconBtn><MoreVertical className="w-[14px] h-[14px] text-[#555] dark:text-muted-foreground" /></IconBtn>
                 </div>
               }
             />
@@ -802,23 +802,23 @@ function SearchAIVisibilityDashboard() {
                 <div className="flex-1 w-full min-w-0 overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-[#e9e9eb] dark:border-[#333a47]">
-                        <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>Competitor</th>
-                        <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>Share %</th>
-                        <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3" style={{ fontWeight: 400 }}>No. of AI mentions</th>
+                      <tr className="border-b border-[#e9e9eb] dark:border-border">
+                        <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-muted-foreground py-3 pr-4" style={{ fontWeight: 400 }}>Competitor</th>
+                        <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-muted-foreground py-3 pr-4" style={{ fontWeight: 400 }}>Share %</th>
+                        <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-muted-foreground py-3" style={{ fontWeight: 400 }}>No. of AI mentions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {sovData.table.map(row => (
-                        <tr key={row.name} className="border-b border-[#eaeaea] dark:border-[#333a47] last:border-0">
+                        <tr key={row.name} className="border-b border-[#eaeaea] dark:border-border last:border-0">
                           <td className="py-3 pr-4">
                             <div className="flex items-center gap-2">
-                              <span className="text-[13px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{row.name}</span>
+                              <span className="text-[13px] text-[#212121] dark:text-foreground" style={{ fontWeight: 400 }}>{row.name}</span>
                               {row.isYou && <YouBadge small />}
                             </div>
                           </td>
-                          <td className="text-[13px] text-[#212121] dark:text-[#e4e4e4] py-3 pr-4" style={{ fontWeight: 400 }}>{row.pct}</td>
-                          <td className="text-[13px] text-[#212121] dark:text-[#e4e4e4] py-3" style={{ fontWeight: 400 }}>{row.count}</td>
+                          <td className="text-[13px] text-[#212121] dark:text-foreground py-3 pr-4" style={{ fontWeight: 400 }}>{row.pct}</td>
+                          <td className="text-[13px] text-[#212121] dark:text-foreground py-3" style={{ fontWeight: 400 }}>{row.count}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -837,7 +837,7 @@ function SearchAIVisibilityDashboard() {
                 <div className="flex items-center gap-2">
                   <DropdownBtn label="Last 12 months" />
                   <SummarizeBtn />
-                  <IconBtn><MoreVertical className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" /></IconBtn>
+                  <IconBtn><MoreVertical className="w-[14px] h-[14px] text-[#555] dark:text-muted-foreground" /></IconBtn>
                 </div>
               }
             />
@@ -845,50 +845,50 @@ function SearchAIVisibilityDashboard() {
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[700px]">
                   <thead>
-                    <tr className="border-b border-[#e9e9eb] dark:border-[#333a47]">
-                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>Theme</th>
-                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>
+                    <tr className="border-b border-[#e9e9eb] dark:border-border">
+                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-muted-foreground py-3 pr-4" style={{ fontWeight: 400 }}>Theme</th>
+                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-muted-foreground py-3 pr-4" style={{ fontWeight: 400 }}>
                         <div className="flex items-center gap-1">Visibility (%)<ChevronDown className="w-3 h-3" /></div>
                       </th>
-                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>Citations</th>
-                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3 pr-4" style={{ fontWeight: 400 }}>Rankings</th>
-                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-[#8b92a5] py-3" style={{ fontWeight: 400 }}>Sentiment</th>
+                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-muted-foreground py-3 pr-4" style={{ fontWeight: 400 }}>Citations</th>
+                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-muted-foreground py-3 pr-4" style={{ fontWeight: 400 }}>Rankings</th>
+                      <th className="text-left text-[length:var(--table-label-size)] text-[#555] dark:text-muted-foreground py-3" style={{ fontWeight: 400 }}>Sentiment</th>
                     </tr>
                   </thead>
                   <tbody>
                     {themesTableData.map(row => (
-                      <tr key={row.theme} className="border-b border-[#eaeaea] dark:border-[#333a47] last:border-0">
+                      <tr key={row.theme} className="border-b border-[#eaeaea] dark:border-border last:border-0">
                         <td className="py-3 pr-4">
                           <div className="flex items-center gap-2">
-                            <ChevronDown className="w-4 h-4 text-[#303030] dark:text-[#8b92a5] shrink-0" />
-                            <span className="text-[14px] text-[#212121] dark:text-[#e4e4e4] whitespace-nowrap" style={{ fontWeight: 400 }}>{row.theme}</span>
+                            <ChevronDown className="w-4 h-4 text-[#303030] dark:text-muted-foreground shrink-0" />
+                            <span className="text-[14px] text-[#212121] dark:text-foreground whitespace-nowrap" style={{ fontWeight: 400 }}>{row.theme}</span>
                           </div>
                         </td>
                         <td className="py-3 pr-4">
                           <div className="flex items-center gap-2">
-                            <div className="w-[80px] h-[6px] bg-[#eaeaea] dark:bg-[#333a47] rounded-full overflow-hidden shrink-0">
+                            <div className="w-[80px] h-[6px] bg-[#eaeaea] dark:bg-muted rounded-full overflow-hidden shrink-0">
                               <div className="h-full bg-[#0099FF] rounded-full" style={{ width: `${row.visibility}%` }} />
                             </div>
-                            <span className="text-[13px] text-[#212121] dark:text-[#e4e4e4] whitespace-nowrap" style={{ fontWeight: 400 }}>{row.visibility}%</span>
-                            <span className="text-[12px] text-[#999] dark:text-[#6b7280] whitespace-nowrap">{row.visChange}</span>
+                            <span className="text-[13px] text-[#212121] dark:text-foreground whitespace-nowrap" style={{ fontWeight: 400 }}>{row.visibility}%</span>
+                            <span className="text-[12px] text-[#999] dark:text-muted-foreground whitespace-nowrap">{row.visChange}</span>
                           </div>
                         </td>
                         <td className="py-3 pr-4">
                           <div className="flex items-center gap-2">
-                            <span className="text-[13px] text-[#212121] dark:text-[#e4e4e4] whitespace-nowrap" style={{ fontWeight: 400 }}>{row.citations}</span>
-                            <span className="text-[12px] text-[#999] dark:text-[#6b7280] whitespace-nowrap">{row.citChange}</span>
+                            <span className="text-[13px] text-[#212121] dark:text-foreground whitespace-nowrap" style={{ fontWeight: 400 }}>{row.citations}</span>
+                            <span className="text-[12px] text-[#999] dark:text-muted-foreground whitespace-nowrap">{row.citChange}</span>
                           </div>
                         </td>
                         <td className="py-3 pr-4">
                           <div className="flex items-center gap-2">
-                            <span className="text-[13px] text-[#212121] dark:text-[#e4e4e4] whitespace-nowrap" style={{ fontWeight: 400 }}>#{row.rankings}</span>
-                            <span className="text-[12px] text-[#999] dark:text-[#6b7280] whitespace-nowrap">{row.rankChange}</span>
+                            <span className="text-[13px] text-[#212121] dark:text-foreground whitespace-nowrap" style={{ fontWeight: 400 }}>#{row.rankings}</span>
+                            <span className="text-[12px] text-[#999] dark:text-muted-foreground whitespace-nowrap">{row.rankChange}</span>
                           </div>
                         </td>
                         <td className="py-3">
                           <div className="flex items-center gap-2">
-                            <span className="text-[13px] text-[#212121] dark:text-[#e4e4e4] whitespace-nowrap" style={{ fontWeight: 400 }}>{row.sentiment}</span>
-                            <span className="text-[12px] text-[#999] dark:text-[#6b7280] whitespace-nowrap">{row.sentChange}</span>
+                            <span className="text-[13px] text-[#212121] dark:text-foreground whitespace-nowrap" style={{ fontWeight: 400 }}>{row.sentiment}</span>
+                            <span className="text-[12px] text-[#999] dark:text-muted-foreground whitespace-nowrap">{row.sentChange}</span>
                           </div>
                         </td>
                       </tr>

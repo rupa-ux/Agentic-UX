@@ -29,14 +29,14 @@ export function SegmentedToggle<T extends string>({
     <div
       role="group"
       aria-label={ariaLabel}
-      className={`inline-flex h-[var(--button-height)] items-stretch bg-[#f0f1f5] dark:bg-[#262b35] rounded-md p-[2px] ${className ?? ""}`}
+      className={`inline-flex h-[var(--button-height)] items-stretch bg-[#f0f1f5] dark:bg-muted rounded-md p-[2px] ${className ?? ""}`}
     >
       {items.map((item) => {
         const active = item.value === value;
         const sizing = iconOnly ? "h-full aspect-square" : "h-full px-3";
         const stateClasses = active
-          ? "bg-white dark:bg-[#333a47] shadow-[0_1px_3px_rgba(0,0,0,0.08)] text-[#212121] dark:text-[#e4e4e4]"
-          : "text-[#888] dark:text-[#6b7280] hover:text-[#555] dark:hover:text-[#c0c6d4]";
+          ? "bg-white dark:bg-muted shadow-[0_1px_3px_rgba(0,0,0,0.08)] text-[#212121] dark:text-foreground"
+          : "text-[#888] dark:text-muted-foreground hover:text-[#555] dark:hover:text-[#c0c6d4]";
         return (
           <button
             key={item.value}

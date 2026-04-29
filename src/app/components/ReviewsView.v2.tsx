@@ -403,7 +403,7 @@ function ProgressiveImg({ src, alt, className }: { src: string; alt: string; cla
     <div className={`relative overflow-hidden ${className ?? ""}`}>
       <div
         aria-hidden
-        className="absolute inset-0 bg-[#eff0f2] dark:bg-[#282d37] animate-pulse opacity-70 transition-opacity duration-300"
+        className="absolute inset-0 bg-[#eff0f2] dark:bg-muted animate-pulse opacity-70 transition-opacity duration-300"
         style={{ opacity: phase === "idle" ? 1 : 0 }}
       />
       <img
@@ -529,13 +529,13 @@ function PhotoCarousel({ photos }: { photos: string[] }) {
 
 function MynaAIReply({ text, hasThreeDots }: { text?: string; hasThreeDots?: boolean }) {
   return (
-    <div className="relative bg-[#f9f7fd] dark:bg-[#1e1a2e] rounded-[8px] p-4 w-full">
+    <div className="relative bg-[#f9f7fd] dark:bg-background rounded-[8px] p-4 w-full">
       <div className="flex flex-col gap-[6px]">
         <div className="flex items-center gap-2">
-          <span className="text-[12px] text-[#555] dark:text-[#8b92a5]">BirdAI suggested reply</span>
+          <span className="text-[12px] text-[#555] dark:text-muted-foreground">BirdAI suggested reply</span>
           <div className="size-[4px] rounded-full bg-[#555] dark:bg-[#8b92a5]" />
           <div className="flex items-center">
-            <span className="text-[12px] text-[#555] dark:text-[#8b92a5]">Reply as</span>
+            <span className="text-[12px] text-[#555] dark:text-muted-foreground">Reply as</span>
             <div className="flex items-center gap-[2px] px-1 rounded-full cursor-pointer">
               <span className="text-[12px] text-[#1976d2]">Sampada (me)</span>
               <svg className="w-[7.5px] h-[3.75px]" viewBox="0 0 7.5 3.75" fill="none">
@@ -544,12 +544,12 @@ function MynaAIReply({ text, hasThreeDots }: { text?: string; hasThreeDots?: boo
             </div>
           </div>
         </div>
-        <p className="text-[13px] text-[#212121] dark:text-[#d0d0d0] leading-[18px]">
+        <p className="text-[13px] text-[#212121] dark:text-muted-foreground leading-[18px]">
           {text ?? "We appreciate your feedback! Thank you for taking the time to share your experience with us."}
         </p>
       </div>
       {hasThreeDots && (
-        <div className="absolute right-3 top-2 bg-[#f9f7fd] dark:bg-[#1e1a2e] rounded-full size-[24px] flex items-center justify-center">
+        <div className="absolute right-3 top-2 bg-[#f9f7fd] dark:bg-background rounded-full size-[24px] flex items-center justify-center">
           <MoreVertical className="size-[12px] text-[#757575]" />
         </div>
       )}
@@ -566,7 +566,7 @@ function AIReplyMenu({ onSelect }: { onSelect: (action: string) => void }) {
         <button
           type="button"
           title="AI writing assistant"
-          className="flex items-center gap-1 px-2 py-1 rounded-md border border-[#e5e9f0] dark:border-[#333a47] bg-white dark:bg-[#262b35] hover:bg-muted text-[#6834B7] transition-colors"
+          className="flex items-center gap-1 px-2 py-1 rounded-md border border-[#e5e9f0] dark:border-border bg-white dark:bg-muted hover:bg-muted text-[#6834B7] transition-colors"
         >
           <svg className="w-[14px] h-[14px]" viewBox="0 0 16.6975 14.8252" fill="none">
             <path d={svgPaths.p33170700} fill="#6834B7" />
@@ -663,7 +663,7 @@ function TemplatePickerDialog({
               placeholder="Find"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-md border border-[#e5e9f0] dark:border-[#333a47] bg-white dark:bg-[#262b35] py-2 pl-9 pr-3 text-[13px] outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground"
+              className="w-full rounded-md border border-[#e5e9f0] dark:border-border bg-white dark:bg-muted py-2 pl-9 pr-3 text-[13px] outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground"
             />
           </div>
         </div>
@@ -680,7 +680,7 @@ function TemplatePickerDialog({
                 className={`w-full text-left px-4 py-3 text-[13px] border-b last:border-b-0 transition-colors ${
                   selectedId === t.id
                     ? "bg-primary/10 text-primary font-medium"
-                    : "text-[#212121] dark:text-[#e4e4e4] hover:bg-muted"
+                    : "text-[#212121] dark:text-foreground hover:bg-muted"
                 }`}
               >
                 {t.name}
@@ -696,10 +696,10 @@ function TemplatePickerDialog({
             {selected ? (
               <div className="flex flex-col gap-3">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-[13px] font-semibold text-[#212121] dark:text-[#e4e4e4]">{selected.name}</span>
+                  <span className="text-[13px] font-semibold text-[#212121] dark:text-foreground">{selected.name}</span>
                   <span className="text-[11px] text-muted-foreground shrink-0">{selected.source}</span>
                 </div>
-                <p className="text-[13px] leading-[18px] text-[#212121] dark:text-[#d0d0d0] whitespace-pre-line">{selected.content}</p>
+                <p className="text-[13px] leading-[18px] text-[#212121] dark:text-muted-foreground whitespace-pre-line">{selected.content}</p>
               </div>
             ) : (
               <div className="flex h-full items-center justify-center">
@@ -752,10 +752,10 @@ function ReviewReplyEditor({
       />
 
       <div className="flex flex-col gap-3 w-full">
-        <span className="text-[13px] font-medium text-[#212121] dark:text-[#e4e4e4]">Review reply</span>
+        <span className="text-[13px] font-medium text-[#212121] dark:text-foreground">Review reply</span>
 
         {/* Textarea box */}
-        <div className={`flex flex-col rounded-lg border bg-white dark:bg-[#262b35] transition-all ${focused ? "border-primary ring-1 ring-primary" : "border-[#e5e9f0] dark:border-[#333a47]"}`}>
+        <div className={`flex flex-col rounded-lg border bg-white dark:bg-muted transition-all ${focused ? "border-primary ring-1 ring-primary" : "border-[#e5e9f0] dark:border-border"}`}>
           <textarea
             rows={4}
             value={text}
@@ -763,7 +763,7 @@ function ReviewReplyEditor({
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             placeholder="Write a reply or generate one using AI"
-            className="resize-none rounded-t-lg bg-transparent px-3 pt-3 text-[13px] leading-[18px] text-[#212121] dark:text-[#e4e4e4] outline-none placeholder:text-[#1976d2] dark:placeholder:text-[#90caf9]"
+            className="resize-none rounded-t-lg bg-transparent px-3 pt-3 text-[13px] leading-[18px] text-[#212121] dark:text-foreground outline-none placeholder:text-[#1976d2] dark:placeholder:text-[#90caf9]"
           />
           {/* Toolbar row inside box */}
           <div className="flex items-center gap-2 px-2 pb-2 pt-1">
@@ -771,9 +771,9 @@ function ReviewReplyEditor({
               type="button"
               title="Use a reply template"
               onClick={() => setTemplateOpen(true)}
-              className="flex items-center justify-center size-7 rounded-md border border-[#e5e9f0] dark:border-[#333a47] bg-white dark:bg-[#262b35] hover:bg-muted transition-colors"
+              className="flex items-center justify-center size-7 rounded-md border border-[#e5e9f0] dark:border-border bg-white dark:bg-muted hover:bg-muted transition-colors"
             >
-              <LayoutTemplate className="size-[14px] text-[#555] dark:text-[#8b92a5]" />
+              <LayoutTemplate className="size-[14px] text-[#555] dark:text-muted-foreground" />
             </button>
             <AIReplyMenu onSelect={handleAIAction} />
           </div>
@@ -827,7 +827,7 @@ function ReviewDetailPanel({
   onOpenConversation: () => void;
 }) {
   return (
-    <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-white dark:bg-[#1e2229]">
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-white dark:bg-background">
       <div className="flex-1 overflow-y-auto px-6 py-5">
         <div className="flex flex-col gap-5 max-w-3xl">
 
@@ -836,28 +836,28 @@ function ReviewDetailPanel({
             <div className="flex min-w-0 items-start gap-3">
               <ReviewSiteLogo site={review.site} size={40} />
               <div className="flex min-w-0 flex-col gap-1">
-                <span className="text-[13px] font-semibold leading-tight text-[#212121] dark:text-[#e4e4e4]">{review.reviewer}</span>
+                <span className="text-[13px] font-semibold leading-tight text-[#212121] dark:text-foreground">{review.reviewer}</span>
                 <div className="flex flex-wrap items-center gap-2 text-[12px]">
                   <StarRating rating={review.rating} size={14} />
-                  <span className="text-[#555] dark:text-[#8b92a5]">{formatReviewDateRelative(review.date)}</span>
+                  <span className="text-[#555] dark:text-muted-foreground">{formatReviewDateRelative(review.date)}</span>
                   {review.photoCount != null && review.photoCount > 0 && (
                     <>
                       <div className="size-[3px] shrink-0 rounded-full bg-[#555] dark:bg-[#8b92a5]" />
-                      <span className="text-[#555] dark:text-[#8b92a5]">{review.photoCount} photos</span>
+                      <span className="text-[#555] dark:text-muted-foreground">{review.photoCount} photos</span>
                     </>
                   )}
                   {review.featured && (
                     <>
                       <div className="size-[3px] shrink-0 rounded-full bg-[#555] dark:bg-[#8b92a5]" />
-                      <div className="rounded-[4px] bg-[#eaeaea] px-2 py-0.5 dark:bg-[#333a47]">
-                        <span className="text-[12px] text-[#212121] dark:text-[#e4e4e4]">Featured</span>
+                      <div className="rounded-[4px] bg-[#eaeaea] px-2 py-0.5 dark:bg-muted">
+                        <span className="text-[12px] text-[#212121] dark:text-foreground">Featured</span>
                       </div>
                     </>
                   )}
                 </div>
               </div>
             </div>
-            <div className="flex shrink-0 items-center gap-2 text-[12px] text-[#555] dark:text-[#8b92a5]">
+            <div className="flex shrink-0 items-center gap-2 text-[12px] text-[#555] dark:text-muted-foreground">
               <span className="whitespace-nowrap">{review.employees} {review.employees === 1 ? "employee" : "employees"}</span>
               <div className="size-[3px] shrink-0 rounded-full bg-[#555] dark:bg-[#8b92a5]" />
               <span className="whitespace-nowrap">{review.location}</span>
@@ -872,14 +872,14 @@ function ReviewDetailPanel({
 
           {/* Existing reply display (edit mode, not currently editing) */}
           {review.replyStatus === "edit" && review.existingReply && !replyEditing && (
-            <div className="rounded-lg border border-[#e5e9f0] dark:border-[#333a47] bg-[#f7f8fa] dark:bg-[#262b35] p-4">
+            <div className="rounded-lg border border-[#e5e9f0] dark:border-border bg-[#f7f8fa] dark:bg-muted p-4">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-[11px] text-[#555] dark:text-[#8b92a5]">Response posted on</span>
-                <span className="text-[11px] font-medium text-[#555] dark:text-[#8b92a5]">{review.existingReply.platform}</span>
+                <span className="text-[11px] text-[#555] dark:text-muted-foreground">Response posted on</span>
+                <span className="text-[11px] font-medium text-[#555] dark:text-muted-foreground">{review.existingReply.platform}</span>
                 <div className="size-[3px] shrink-0 rounded-full bg-[#555] dark:bg-[#8b92a5]" />
-                <span className="text-[11px] text-[#555] dark:text-[#8b92a5]">{formatReviewDateRelative(review.existingReply.date)}</span>
+                <span className="text-[11px] text-[#555] dark:text-muted-foreground">{formatReviewDateRelative(review.existingReply.date)}</span>
               </div>
-              <p className="text-[13px] leading-[18px] text-[#212121] dark:text-[#d0d0d0]">{review.existingReply.text}</p>
+              <p className="text-[13px] leading-[18px] text-[#212121] dark:text-muted-foreground">{review.existingReply.text}</p>
             </div>
           )}
 
@@ -903,7 +903,7 @@ function ReviewDetailPanel({
                   type="button"
                   title="Post reply"
                   onClick={onEditReply}
-                  className="flex size-8 items-center justify-center rounded-md text-[#555] dark:text-[#8b92a5] hover:bg-muted transition-colors"
+                  className="flex size-8 items-center justify-center rounded-md text-[#555] dark:text-muted-foreground hover:bg-muted transition-colors"
                 >
                   <Send className="size-[16px]" strokeWidth={1.2} absoluteStrokeWidth />
                 </button>
@@ -911,7 +911,7 @@ function ReviewDetailPanel({
                 <button
                   type="button"
                   onClick={onEditReply}
-                  className="flex items-center gap-1.5 h-8 px-3 rounded-md border border-[#e5e9f0] dark:border-[#333a47] text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-muted transition-colors"
+                  className="flex items-center gap-1.5 h-8 px-3 rounded-md border border-[#e5e9f0] dark:border-border text-[13px] text-[#212121] dark:text-foreground hover:bg-muted transition-colors"
                 >
                   <Pencil className="size-[13px]" strokeWidth={1.2} absoluteStrokeWidth />
                   Edit reply
@@ -923,7 +923,7 @@ function ReviewDetailPanel({
                 type="button"
                 title="Open conversation"
                 onClick={onOpenConversation}
-                className="relative flex size-8 items-center justify-center rounded-md text-[#555] dark:text-[#8b92a5] hover:bg-muted transition-colors"
+                className="relative flex size-8 items-center justify-center rounded-md text-[#555] dark:text-muted-foreground hover:bg-muted transition-colors"
               >
                 <MessageCircle className="size-[16px]" strokeWidth={1.2} absoluteStrokeWidth />
                 {review.hasConversation && (
@@ -934,7 +934,7 @@ function ReviewDetailPanel({
               {/* More menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button type="button" title="More actions" className="flex size-8 items-center justify-center rounded-md text-[#555] dark:text-[#8b92a5] hover:bg-muted transition-colors">
+                  <button type="button" title="More actions" className="flex size-8 items-center justify-center rounded-md text-[#555] dark:text-muted-foreground hover:bg-muted transition-colors">
                     <MoreVertical className="size-[16px]" strokeWidth={1.2} absoluteStrokeWidth />
                   </button>
                 </DropdownMenuTrigger>
@@ -964,20 +964,20 @@ function ReviewConversationPanel({
   const [editingReply, setEditingReply] = useState(false);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-white dark:bg-[#1e2229]">
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-white dark:bg-background">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-[#e5e9f0] dark:border-[#333a47] shrink-0">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-[#e5e9f0] dark:border-border shrink-0">
         <button
           type="button"
           onClick={onBack}
           className="flex size-7 items-center justify-center rounded-md hover:bg-muted transition-colors"
         >
-          <ArrowLeft className="size-4 text-[#555] dark:text-[#8b92a5]" />
+          <ArrowLeft className="size-4 text-[#555] dark:text-muted-foreground" />
         </button>
-        <span className="flex-1 text-[14px] font-medium text-[#212121] dark:text-[#e4e4e4] truncate">{review.reviewer}</span>
+        <span className="flex-1 text-[14px] font-medium text-[#212121] dark:text-foreground truncate">{review.reviewer}</span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button type="button" className="flex h-7 items-center gap-1 px-3 rounded-md border border-[#e5e9f0] dark:border-[#333a47] text-[12px] text-[#555] dark:text-[#8b92a5] hover:bg-muted">
+            <button type="button" className="flex h-7 items-center gap-1 px-3 rounded-md border border-[#e5e9f0] dark:border-border text-[12px] text-[#555] dark:text-muted-foreground hover:bg-muted">
               Unassigned
               <ChevronDown className="size-3" />
             </button>
@@ -990,7 +990,7 @@ function ReviewConversationPanel({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button type="button" className="flex size-7 items-center justify-center rounded-md hover:bg-muted transition-colors">
-              <MoreVertical className="size-4 text-[#555] dark:text-[#8b92a5]" />
+              <MoreVertical className="size-4 text-[#555] dark:text-muted-foreground" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -1006,38 +1006,38 @@ function ReviewConversationPanel({
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
         {/* Date separator */}
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-[#e5e9f0] dark:bg-[#333a47]" />
+          <div className="flex-1 h-px bg-[#e5e9f0] dark:bg-muted" />
           <span className="text-[11px] text-[#8b92a5] shrink-0">Today • Apr 21</span>
-          <div className="flex-1 h-px bg-[#e5e9f0] dark:bg-[#333a47]" />
+          <div className="flex-1 h-px bg-[#e5e9f0] dark:bg-muted" />
         </div>
 
         {/* System chips */}
         <div className="flex flex-col items-end gap-1.5">
-          <div className="flex items-center gap-2 bg-[#f0f1f5] dark:bg-[#262b35] rounded-full px-3 py-1.5 max-w-[280px]">
+          <div className="flex items-center gap-2 bg-[#f0f1f5] dark:bg-muted rounded-full px-3 py-1.5 max-w-[280px]">
             <span className="text-[11px]">📧</span>
-            <span className="text-[12px] font-medium text-[#212121] dark:text-[#e4e4e4]">RR - WAR</span>
+            <span className="text-[12px] font-medium text-[#212121] dark:text-foreground">RR - WAR</span>
           </div>
           <span className="text-[10px] text-[#8b92a5] pr-1">System · 11:18 AM</span>
         </div>
         <div className="flex flex-col items-end gap-1.5">
-          <div className="flex items-center gap-2 bg-[#f0f1f5] dark:bg-[#262b35] rounded-full px-3 py-1.5 max-w-[280px]">
+          <div className="flex items-center gap-2 bg-[#f0f1f5] dark:bg-muted rounded-full px-3 py-1.5 max-w-[280px]">
             <span className="text-[11px]">📧</span>
-            <span className="text-[12px] font-medium text-[#212121] dark:text-[#e4e4e4]">Review Request email(95)</span>
+            <span className="text-[12px] font-medium text-[#212121] dark:text-foreground">Review Request email(95)</span>
           </div>
           <span className="text-[10px] text-[#8b92a5] pr-1">System · 11:33 AM</span>
         </div>
 
         {/* Embedded review card */}
-        <div className="rounded-lg border border-[#e5e9f0] dark:border-[#333a47] bg-white dark:bg-[#262b35] overflow-hidden">
+        <div className="rounded-lg border border-[#e5e9f0] dark:border-border bg-white dark:bg-muted overflow-hidden">
           {/* Card header */}
-          <div className="flex items-start justify-between px-4 py-3 border-b border-[#e5e9f0] dark:border-[#333a47]">
+          <div className="flex items-start justify-between px-4 py-3 border-b border-[#e5e9f0] dark:border-border">
             <div className="flex flex-col gap-0.5">
               <div className="flex items-center gap-1.5">
                 <span className="text-[10px] text-[#8b92a5] uppercase tracking-wide">Direct feedback</span>
                 <ReviewSiteLogo site={review.site} size={16} />
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[13px] font-medium text-[#212121] dark:text-[#e4e4e4]">{review.reviewer}</span>
+                <span className="text-[13px] font-medium text-[#212121] dark:text-foreground">{review.reviewer}</span>
                 <span className="text-[11px] text-[#8b92a5]">{review.date}</span>
                 <span className="text-[11px] text-[#8b92a5]">• 8 custom fields</span>
               </div>
@@ -1050,18 +1050,18 @@ function ReviewConversationPanel({
           {/* Review text */}
           <div className="px-4 py-3">
             <StarRating rating={review.rating} size={12} />
-            <p className="mt-2 text-[13px] leading-[18px] text-[#212121] dark:text-[#d0d0d0] line-clamp-4">{review.text}</p>
+            <p className="mt-2 text-[13px] leading-[18px] text-[#212121] dark:text-muted-foreground line-clamp-4">{review.text}</p>
           </div>
 
           {/* Response block */}
           {review.existingReply && !editingReply && (
-            <div className="mx-4 mb-3 rounded-lg bg-[#f7f8fa] dark:bg-[#1e2229] p-3">
+            <div className="mx-4 mb-3 rounded-lg bg-[#f7f8fa] dark:bg-background p-3">
               <div className="flex items-center gap-1 mb-1.5">
-                <span className="text-[11px] text-[#555] dark:text-[#8b92a5]">Response auto-posted on</span>
-                <span className="text-[11px] font-semibold text-[#555] dark:text-[#8b92a5]">{review.existingReply.platform}</span>
+                <span className="text-[11px] text-[#555] dark:text-muted-foreground">Response auto-posted on</span>
+                <span className="text-[11px] font-semibold text-[#555] dark:text-muted-foreground">{review.existingReply.platform}</span>
                 <span className="text-[11px] text-[#8b92a5]">· {formatReviewDateRelative(review.existingReply.date)}</span>
               </div>
-              <p className="text-[13px] leading-[18px] text-[#212121] dark:text-[#d0d0d0]">{review.existingReply.text}</p>
+              <p className="text-[13px] leading-[18px] text-[#212121] dark:text-muted-foreground">{review.existingReply.text}</p>
             </div>
           )}
 
@@ -1083,7 +1083,7 @@ function ReviewConversationPanel({
                 <button
                   type="button"
                   onClick={() => setEditingReply(true)}
-                  className="flex items-center gap-1.5 h-7 px-3 rounded-md border border-[#e5e9f0] dark:border-[#333a47] text-[12px] text-[#212121] dark:text-[#e4e4e4] hover:bg-muted transition-colors"
+                  className="flex items-center gap-1.5 h-7 px-3 rounded-md border border-[#e5e9f0] dark:border-border text-[12px] text-[#212121] dark:text-foreground hover:bg-muted transition-colors"
                 >
                   Edit reply
                 </button>
@@ -1091,7 +1091,7 @@ function ReviewConversationPanel({
                 <button
                   type="button"
                   onClick={() => setEditingReply(true)}
-                  className="flex items-center gap-1.5 h-7 px-3 rounded-md border border-[#e5e9f0] dark:border-[#333a47] text-[12px] text-[#212121] dark:text-[#e4e4e4] hover:bg-muted transition-colors"
+                  className="flex items-center gap-1.5 h-7 px-3 rounded-md border border-[#e5e9f0] dark:border-border text-[12px] text-[#212121] dark:text-foreground hover:bg-muted transition-colors"
                 >
                   <Pencil className="size-[11px]" />
                   Add reply
@@ -1099,8 +1099,8 @@ function ReviewConversationPanel({
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button type="button" className="flex size-7 items-center justify-center rounded-md border border-[#e5e9f0] dark:border-[#333a47] hover:bg-muted transition-colors">
-                    <MoreVertical className="size-[13px] text-[#555] dark:text-[#8b92a5]" />
+                  <button type="button" className="flex size-7 items-center justify-center rounded-md border border-[#e5e9f0] dark:border-border hover:bg-muted transition-colors">
+                    <MoreVertical className="size-[13px] text-[#555] dark:text-muted-foreground" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -1116,7 +1116,7 @@ function ReviewConversationPanel({
       </div>
 
       {/* Composer footer */}
-      <div className="shrink-0 border-t border-[#e5e9f0] dark:border-[#333a47] bg-white dark:bg-[#1e2229]">
+      <div className="shrink-0 border-t border-[#e5e9f0] dark:border-border bg-white dark:bg-background">
         <div className="flex items-center gap-2 px-4 pt-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -1136,7 +1136,7 @@ function ReviewConversationPanel({
           value={composerText}
           onChange={(e) => setComposerText(e.target.value)}
           placeholder="Type your message or use a template"
-          className="w-full resize-none bg-transparent px-4 py-2 text-[13px] leading-[18px] text-[#212121] dark:text-[#e4e4e4] outline-none placeholder:text-muted-foreground"
+          className="w-full resize-none bg-transparent px-4 py-2 text-[13px] leading-[18px] text-[#212121] dark:text-foreground outline-none placeholder:text-muted-foreground"
         />
         <div className="flex items-center justify-between gap-2 px-4 pb-3">
           <div className="flex items-center gap-1">
@@ -1194,13 +1194,13 @@ function ReviewListPanel({
   onViewModeChange?: (mode: ReviewsViewMode) => void;
 }) {
   return (
-    <div className="flex flex-col h-full min-h-0 bg-white dark:bg-[#1e2229] border-r border-[#e5e9f0] dark:border-[#333a47]">
+    <div className="flex flex-col h-full min-h-0 bg-white dark:bg-background border-r border-[#e5e9f0] dark:border-border">
       {/* Header */}
       <div className="shrink-0 px-4 pt-4 pb-4">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <h2 className="text-[15px] font-medium text-[#212121] dark:text-[#e4e4e4]">All reviews</h2>
-            <div className="flex items-center gap-1 text-[11px] text-[#555] dark:text-[#8b92a5] mt-0.5">
+            <h2 className="text-[15px] font-medium text-[#212121] dark:text-foreground">All reviews</h2>
+            <div className="flex items-center gap-1 text-[11px] text-[#555] dark:text-muted-foreground mt-0.5">
               <span>{reviews.length} reviews</span>
               <div className="size-[3px] rounded-full bg-[#555] dark:bg-[#8b92a5] mx-0.5" />
               <span>4.1</span>
@@ -1255,7 +1255,7 @@ function ReviewListPanel({
               {/* Content */}
               <div className="flex-1 min-w-0 flex flex-col gap-0.5">
                 <div className="flex items-center justify-between gap-2">
-                  <span className={`text-[12px] font-semibold truncate ${isSelected ? "text-primary" : "text-[#212121] dark:text-[#e4e4e4]"}`}>
+                  <span className={`text-[12px] font-semibold truncate ${isSelected ? "text-primary" : "text-[#212121] dark:text-foreground"}`}>
                     {review.reviewer}
                   </span>
                   <span className="text-[10px] text-[#8b92a5] shrink-0">{formatReviewDateRelative(review.date)}</span>
@@ -1263,7 +1263,7 @@ function ReviewListPanel({
                 <div className="flex items-center gap-2">
                   <StarRating rating={review.rating} size={10} />
                 </div>
-                <p className="text-[11px] text-[#555] dark:text-[#8b92a5] line-clamp-1 mt-0.5">{review.text}</p>
+                <p className="text-[11px] text-[#555] dark:text-muted-foreground line-clamp-1 mt-0.5">{review.text}</p>
                 <div className="mt-0.5">
                   <span className="text-[10px] text-[#8b92a5]">{review.location}</span>
                 </div>
@@ -1378,7 +1378,7 @@ export function ReviewsViewConversation({
   );
 
   return (
-    <div className="flex-1 flex min-h-0 overflow-hidden bg-white dark:bg-[#1e2229]">
+    <div className="flex-1 flex min-h-0 overflow-hidden bg-white dark:bg-background">
       <div
         ref={listContainerRef}
         className="relative flex shrink-0 flex-col min-h-0"

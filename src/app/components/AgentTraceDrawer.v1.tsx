@@ -36,7 +36,7 @@ function TraceStepRow({ step, isLast }: { step: typeof TRACE_STEPS[0]; isLast: b
       {/* Vertical line + dot */}
       <div className="flex flex-col items-center">
         <div className={cn("mt-1 size-2.5 shrink-0 rounded-full ring-2 ring-white dark:ring-[#1e2229]", s.dot)} />
-        {!isLast && <div className="mt-1 w-px flex-1 bg-[#eaeaea] dark:bg-[#2e3340]" />}
+        {!isLast && <div className="mt-1 w-px flex-1 bg-[#eaeaea] dark:bg-muted" />}
       </div>
 
       {/* Content */}
@@ -49,9 +49,9 @@ function TraceStepRow({ step, isLast }: { step: typeof TRACE_STEPS[0]; isLast: b
           <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-2">
               <span className={cn("text-[9px] font-bold uppercase tracking-widest", s.dot.replace("bg-", "text-"))}>{s.label}</span>
-              <span className="text-[13px] font-medium text-[#212121] dark:text-[#e4e4e4]">{step.name}</span>
+              <span className="text-[13px] font-medium text-[#212121] dark:text-foreground">{step.name}</span>
             </div>
-            <span className="text-[11px] leading-snug text-[#666] dark:text-[#9ba2b0]">{step.detail}</span>
+            <span className="text-[11px] leading-snug text-[#666] dark:text-muted-foreground">{step.detail}</span>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <span className="font-mono text-[10px] text-[#999]">{step.time}</span>
@@ -60,10 +60,10 @@ function TraceStepRow({ step, isLast }: { step: typeof TRACE_STEPS[0]; isLast: b
         </button>
 
         {open && step.kv && (
-          <div className="mt-2 rounded-md bg-[#f5f6f8] dark:bg-[#13161b] px-3 py-2 font-mono text-[11px] text-[#444] dark:text-[#9ba2b0]">
+          <div className="mt-2 rounded-md bg-[#f5f6f8] dark:bg-app-shell-gutter px-3 py-2 font-mono text-[11px] text-[#444] dark:text-muted-foreground">
             {Object.entries(step.kv).map(([k, v]) => (
               <div key={k} className="flex gap-2">
-                <span className="text-[#999] dark:text-[#6b7280]">{k}:</span>
+                <span className="text-[#999] dark:text-muted-foreground">{k}:</span>
                 <span>{v}</span>
               </div>
             ))}
@@ -95,7 +95,7 @@ function RubricRow({ label, value, onChange }: { label: string; value: RubricSco
   };
   return (
     <div className="flex items-center justify-between">
-      <span className="text-[13px] text-[#212121] dark:text-[#e4e4e4]">{label}</span>
+      <span className="text-[13px] text-[#212121] dark:text-foreground">{label}</span>
       <div className="flex gap-1">
         {opts.map((o) => (
           <button
@@ -106,7 +106,7 @@ function RubricRow({ label, value, onChange }: { label: string; value: RubricSco
               "cursor-pointer rounded px-2.5 py-1 text-[12px] font-medium capitalize transition-colors",
               value === o
                 ? cn("border-0", colors[o])
-                : "border border-[#eaeaea] dark:border-[#333a47] text-[#666] dark:text-[#9ba2b0] hover:bg-[#f0f1f5] dark:hover:bg-[#2e3340]",
+                : "border border-[#eaeaea] dark:border-border text-[#666] dark:text-muted-foreground hover:bg-[#f0f1f5] dark:hover:bg-muted",
             )}
           >
             {o}
@@ -218,10 +218,10 @@ export function AgentTraceDrawer({
 
             {/* Incoming review */}
             <section>
-              <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#999] dark:text-[#6b7280]">
+              <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#999] dark:text-muted-foreground">
                 Incoming Review
               </p>
-              <div className="rounded-xl border border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] p-4">
+              <div className="rounded-xl border border-[#eaeaea] dark:border-border bg-white dark:bg-background p-4">
                 <div className="mb-2 flex items-center gap-2">
                   <div
                     className="flex size-7 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
@@ -231,7 +231,7 @@ export function AgentTraceDrawer({
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-[13px] font-medium text-[#212121] dark:text-[#e4e4e4]">{activity.name}</span>
+                      <span className="text-[13px] font-medium text-[#212121] dark:text-foreground">{activity.name}</span>
                       <Stars rating={activity.rating} />
                       <span className="text-[11px] text-[#999]">{activity.source}</span>
                     </div>
@@ -252,7 +252,7 @@ export function AgentTraceDrawer({
 
             {/* Execution trace */}
             <section>
-              <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#999] dark:text-[#6b7280]">
+              <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#999] dark:text-muted-foreground">
                 Execution Trace
               </p>
               <div className="flex flex-col">
@@ -267,12 +267,12 @@ export function AgentTraceDrawer({
             {/* Draft reply */}
             <section>
               <div className="mb-3 flex items-center justify-between">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#999] dark:text-[#6b7280]">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#999] dark:text-muted-foreground">
                   Draft Reply
                 </p>
                 <div className="flex items-center gap-1.5">
                   <Sparkles className="size-3 text-violet-500" />
-                  <span className="text-[11px] text-[#666] dark:text-[#9ba2b0]">
+                  <span className="text-[11px] text-[#666] dark:text-muted-foreground">
                     BirdAI · confidence{" "}
                     <span className={cn("font-semibold", confColor)}>
                       {conf > 0 ? conf.toFixed(2) : "—"}
@@ -308,8 +308,8 @@ export function AgentTraceDrawer({
 
             {/* Rubric */}
             <section>
-              <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#999] dark:text-[#6b7280]">Rubric</p>
-              <div className="flex flex-col gap-2.5 rounded-xl border border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] px-4 py-3">
+              <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#999] dark:text-muted-foreground">Rubric</p>
+              <div className="flex flex-col gap-2.5 rounded-xl border border-[#eaeaea] dark:border-border bg-white dark:bg-background px-4 py-3">
                 <RubricRow label="Tone"     value={rubric.tone}     onChange={(v) => setRubric((r) => ({ ...r, tone: v }))}     />
                 <Separator />
                 <RubricRow label="Accuracy" value={rubric.accuracy} onChange={(v) => setRubric((r) => ({ ...r, accuracy: v }))} />
@@ -330,8 +330,8 @@ export function AgentTraceDrawer({
               </div>
               <div className="flex flex-col gap-1.5">
                 {rules.map((rule, i) => (
-                  <div key={i} className="flex items-center gap-2 rounded-lg bg-[#fafafa] dark:bg-[#1a1d23] px-3 py-2">
-                    <span className="flex-1 text-[12px] text-[#444] dark:text-[#9ba2b0]">{rule}</span>
+                  <div key={i} className="flex items-center gap-2 rounded-lg bg-[#fafafa] dark:bg-app-shell-rail px-3 py-2">
+                    <span className="flex-1 text-[12px] text-[#444] dark:text-muted-foreground">{rule}</span>
                     <button
                       type="button"
                       onClick={() => setRules((rs) => rs.filter((_, j) => j !== i))}
@@ -352,7 +352,7 @@ export function AgentTraceDrawer({
                       }
                     }}
                     placeholder="Add a rule… (Enter to save)"
-                    className="flex-1 rounded-md border border-[#e0e4ea] dark:border-[#333a47] bg-white dark:bg-[#1e2229] px-3 py-1.5 text-[12px] text-[#212121] dark:text-[#e4e4e4] placeholder:text-[#bbb] dark:placeholder:text-[#555] outline-none focus:border-[#2552ED]"
+                    className="flex-1 rounded-md border border-[#e0e4ea] dark:border-border bg-white dark:bg-background px-3 py-1.5 text-[12px] text-[#212121] dark:text-foreground placeholder:text-[#bbb] dark:placeholder:text-[#555] outline-none focus:border-[#2552ED]"
                   />
                   <Button
                     size="sm"

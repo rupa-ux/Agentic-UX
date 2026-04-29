@@ -194,7 +194,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                 className={`transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] ${
                   isActive
                     ? "text-[#1E44CC] dark:text-[#2952E3]"
-                    : "text-[#505050] dark:text-[#9ba2b0] group-hover:scale-110"
+                    : "text-[#505050] dark:text-muted-foreground group-hover:scale-110"
                 } ${label === "Agents" && isActive ? "group-hover:animate-[agents-shimmer_3s_ease-in-out_infinite]" : ""}`}
               />
             </button>
@@ -213,7 +213,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
             width={L1_STRIP_ICON_SIZE}
             height={L1_STRIP_ICON_SIZE}
             strokeWidth={L1_STRIP_ICON_STROKE_PX}
-            className="text-[#505050] dark:text-[#9ba2b0] transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] group-hover:scale-110"
+            className="text-[#505050] dark:text-muted-foreground transition-all duration-200 group-hover:text-[#1E44CC] dark:group-hover:text-[#2952E3] group-active:text-[#1E44CC] dark:group-active:text-[#2952E3] group-hover:scale-110"
           />
         </button>
 
@@ -238,7 +238,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
 
           {/* Dropdown - opens UPWARD from bottom-left */}
           {profileOpen && (
-            <div className="absolute left-[calc(100%+8px)] bottom-0 bg-white dark:bg-[#22262f] rounded-xl shadow-[0px_4px_24px_rgba(0,0,0,0.14)] dark:shadow-[0px_4px_24px_rgba(0,0,0,0.4)] border border-[#e8eaed] dark:border-[#333a47] w-[260px] z-50 overflow-hidden transition-colors duration-300">
+            <div className="absolute left-[calc(100%+8px)] bottom-0 bg-white dark:bg-background rounded-xl shadow-[0px_4px_24px_rgba(0,0,0,0.14)] dark:shadow-[0px_4px_24px_rgba(0,0,0,0.4)] border border-[#e8eaed] dark:border-border w-[260px] z-50 overflow-hidden transition-colors duration-300">
               {/* Slide between main menu and appearance sub-panel */}
               <div className="relative overflow-hidden">
                 <div
@@ -248,7 +248,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                   {/* ─── Main menu panel ─── */}
                   <div className="w-full shrink-0">
                     {/* Profile header */}
-                    <div className="px-4 py-3 border-b border-[#f0f0f0] dark:border-[#333a47]">
+                    <div className="px-4 py-3 border-b border-[#f0f0f0] dark:border-border">
                       <div className="flex items-center gap-3">
                         <div className="relative group shrink-0">
                           <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-[#e8eaed] dark:ring-[#3d4555]">
@@ -272,7 +272,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                           />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4] truncate" style={{ fontWeight: 400 }}>John Doe</p>
+                          <p className="text-[13px] text-[#212121] dark:text-foreground truncate" style={{ fontWeight: 400 }}>John Doe</p>
                           <p className="text-[11px] text-[#999] dark:text-[#777] truncate">john.doe@acmecorp.com</p>
                         </div>
                       </div>
@@ -286,9 +286,9 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                           setProfileOpen(false);
                           setShowAppearance(false);
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+                        className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-foreground hover:bg-[#f5f5f5] dark:hover:bg-muted transition-colors"
                       >
-                        <User className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
+                        <User className="w-4 h-4 text-[#555] dark:text-muted-foreground" />
                         My profile
                       </button>
                       <button
@@ -300,7 +300,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                         className={`w-full flex items-center gap-3 px-4 py-2 text-[13px] transition-colors ${
                           currentView === "shared-by-me"
                             ? "text-[#2552ED] bg-[#e8effe] dark:bg-[#1e2d5e]"
-                            : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
+                            : "text-[#212121] dark:text-foreground hover:bg-[#f5f5f5] dark:hover:bg-muted"
                         }`}
                       >
                         <Share2 className="w-4 h-4" style={{ color: currentView === "shared-by-me" ? "#2552ED" : undefined }} />
@@ -315,14 +315,14 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                         className={`w-full flex items-center gap-3 px-4 py-2 text-[13px] transition-colors ${
                           currentView === "scheduled-deliveries"
                             ? "text-[#2552ED] bg-[#e8effe] dark:bg-[#1e2d5e]"
-                            : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
+                            : "text-[#212121] dark:text-foreground hover:bg-[#f5f5f5] dark:hover:bg-muted"
                         }`}
                       >
                         <Clock className="w-4 h-4" style={{ color: currentView === "scheduled-deliveries" ? "#2552ED" : undefined }} />
                         Scheduled deliveries
                       </button>
-                      <button className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
-                        <Settings className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
+                      <button className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-foreground hover:bg-[#f5f5f5] dark:hover:bg-muted transition-colors">
+                        <Settings className="w-4 h-4 text-[#555] dark:text-muted-foreground" />
                         Settings
                       </button>
                       {onOpenKeyboardShortcuts && (
@@ -333,25 +333,25 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                             setProfileOpen(false);
                             setShowAppearance(false);
                           }}
-                          className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+                          className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-foreground hover:bg-[#f5f5f5] dark:hover:bg-muted transition-colors"
                         >
-                          <Keyboard className="w-4 h-4 text-[#555] dark:text-[#8b92a5]" />
+                          <Keyboard className="w-4 h-4 text-[#555] dark:text-muted-foreground" />
                           Keyboard shortcuts
                         </button>
                       )}
                       {/* Switch appearance – navigates to sub-panel */}
                       <button
                         onClick={() => setShowAppearance(true)}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors"
+                        className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-[#212121] dark:text-foreground hover:bg-[#f5f5f5] dark:hover:bg-muted transition-colors"
                       >
                         <Moon
-                          className="w-4 h-4 text-[#555] dark:text-[#8b92a5] transition-transform duration-500"
+                          className="w-4 h-4 text-[#555] dark:text-muted-foreground transition-transform duration-500"
                           style={{ transform: isDark ? "rotate(-30deg)" : "rotate(0deg)" }}
                         />
                         Switch appearance
                       </button>
                     </div>
-                    <div className="border-t border-[#f0f0f0] dark:border-[#333a47] py-1.5">
+                    <div className="border-t border-[#f0f0f0] dark:border-border py-1.5">
                       <button
                         type="button"
                         onClick={() => {
@@ -370,7 +370,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                   {/* ─── Appearance sub-panel ─── */}
                   <div className="w-full shrink-0">
                     {/* Header row */}
-                    <div className="flex items-center gap-2.5 px-3 py-3 border-b border-[#f0f0f0] dark:border-[#333a47]">
+                    <div className="flex items-center gap-2.5 px-3 py-3 border-b border-[#f0f0f0] dark:border-border">
                       <Button
                         type="button"
                         variant="outline"
@@ -380,7 +380,7 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                       >
                         <ChevronLeft className="h-4 w-4 text-[#2552ED]" />
                       </Button>
-                      <span className="text-[14px] text-[#212121] dark:text-[#e4e4e4] flex-1" style={{ fontWeight: 400 }}>
+                      <span className="text-[14px] text-[#212121] dark:text-foreground flex-1" style={{ fontWeight: 400 }}>
                         Switch appearance
                       </span>
                       <Moon
@@ -403,13 +403,13 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                             className={`w-full flex items-center justify-between px-4 py-2.5 text-[13px] transition-colors ${
                               isSelected
                                 ? "text-[#2552ED] bg-[#e8effe] dark:bg-[#1e2d5e]"
-                                : "text-[#212121] dark:text-[#e4e4e4] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]"
+                                : "text-[#212121] dark:text-foreground hover:bg-[#f5f5f5] dark:hover:bg-muted"
                             }`}
                           >
                             <span className="flex items-center gap-3">
                               <Icon
                                 className={`w-4 h-4 transition-transform duration-500 ${
-                                  isSelected ? "text-[#2552ED]" : "text-[#555] dark:text-[#8b92a5]"
+                                  isSelected ? "text-[#2552ED]" : "text-[#555] dark:text-muted-foreground"
                                 }`}
                                 style={{
                                   transform: value === "dark" && isDark ? "rotate(-30deg)" : "rotate(0deg)",
@@ -514,8 +514,8 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
         >
           <span>{section.label}</span>
           {isExp
-            ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-            : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+            ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-muted-foreground shrink-0" />
+            : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-muted-foreground shrink-0" />
           }
         </button>
         {isExp && section.children.map(child => {
@@ -549,8 +549,8 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
         >
           <span>{section.label}</span>
           {isExp
-            ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-            : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+            ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-muted-foreground shrink-0" />
+            : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-muted-foreground shrink-0" />
           }
         </button>
         {isExp && section.children.map(child => {
@@ -1037,8 +1037,8 @@ export function InboxL2NavPanel() {
             >
               <span>{section.label}</span>
               {inboxExpanded[section.label]
-                ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-                : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+                ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-muted-foreground shrink-0" />
+                : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-muted-foreground shrink-0" />
               }
             </button>
             {inboxExpanded[section.label] && renderChildren(section.label, section.children, "inbox")}
@@ -1068,8 +1068,8 @@ export function InboxL2NavPanel() {
             >
               <span>{section.label}</span>
               {teamExpanded[section.label]
-                ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-                : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+                ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-muted-foreground shrink-0" />
+                : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-muted-foreground shrink-0" />
               }
             </button>
             {teamExpanded[section.label] && renderChildren(section.label, section.children, "team")}

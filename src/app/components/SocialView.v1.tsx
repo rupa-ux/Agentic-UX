@@ -279,7 +279,7 @@ function PostCardComponent({
   onOpenPreview: () => void;
 }) {
   return (
-    <div className="w-full rounded-[6px] border border-[#e9e9eb] bg-[#f4f6f7] p-2 transition-colors dark:border-[#333a47] dark:bg-[#22262f]">
+    <div className="w-full rounded-[6px] border border-[#e9e9eb] bg-[#f4f6f7] p-2 transition-colors dark:border-border dark:bg-background">
       <div className="flex flex-col gap-2">
         <button
           type="button"
@@ -294,14 +294,14 @@ function PostCardComponent({
           <div className="flex items-center gap-1">
             <button
               type="button"
-              className="p-0.5 text-[#555] transition-colors hover:text-[#212121] dark:text-[#8b92a5] dark:hover:text-[#e4e4e4]"
+              className="p-0.5 text-[#555] transition-colors hover:text-[#212121] dark:text-muted-foreground dark:hover:text-[#e4e4e4]"
               aria-label="Edit post"
             >
               <EditIcon />
             </button>
             <button
               type="button"
-              className="p-0.5 text-[#555] transition-colors hover:text-[#212121] dark:text-[#8b92a5] dark:hover:text-[#e4e4e4]"
+              className="p-0.5 text-[#555] transition-colors hover:text-[#212121] dark:text-muted-foreground dark:hover:text-[#e4e4e4]"
               aria-label="Schedule"
             >
               <CalendarIcon />
@@ -309,7 +309,7 @@ function PostCardComponent({
           </div>
           <button
             type="button"
-            className="-rotate-90 p-0.5 text-[#555] transition-colors hover:text-[#212121] dark:text-[#8b92a5] dark:hover:text-[#e4e4e4]"
+            className="-rotate-90 p-0.5 text-[#555] transition-colors hover:text-[#212121] dark:text-muted-foreground dark:hover:text-[#e4e4e4]"
             aria-label="More options"
           >
             <MoreHorizontal className="h-[14px] w-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
@@ -328,9 +328,9 @@ function SocialWeekGrid({
 }) {
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden text-xs leading-normal">
-      <div className="flex shrink-0 border-b border-[#e9e9eb] dark:border-[#333a47]">
+      <div className="flex shrink-0 border-b border-[#e9e9eb] dark:border-border">
         {WEEK_DAYS.map((day) => (
-          <div key={day.date} className="flex flex-1 items-center justify-center bg-white py-3 dark:bg-[#1e2229]">
+          <div key={day.date} className="flex flex-1 items-center justify-center bg-white py-3 dark:bg-background">
             {day.isToday ? (
               <div className="flex items-center gap-1">
                 <span className="text-[#125598] dark:text-[#6b9bff]">{day.label}</span>
@@ -342,7 +342,7 @@ function SocialWeekGrid({
                 </span>
               </div>
             ) : (
-              <span className="text-[#555] dark:text-[#8b92a5]">
+              <span className="text-[#555] dark:text-muted-foreground">
                 {day.label} {day.date}
               </span>
             )}
@@ -356,8 +356,8 @@ function SocialWeekGrid({
           return (
             <div
               key={day.date}
-              className={`flex min-w-0 flex-1 flex-col gap-2 border-r border-[#e9e9eb] p-2 last:border-r-0 dark:border-[#333a47] ${
-                day.isToday ? "bg-white dark:bg-[#1e2229]" : "bg-[#f9fafb] dark:bg-[#181b22]"
+              className={`flex min-w-0 flex-1 flex-col gap-2 border-r border-[#e9e9eb] p-2 last:border-r-0 dark:border-border ${
+                day.isToday ? "bg-white dark:bg-background" : "bg-[#f9fafb] dark:bg-app-shell-rail"
               }`}
             >
               {posts.map((post) => (
@@ -396,13 +396,13 @@ function SocialListView({
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden text-xs leading-normal">
-      <div className="min-h-0 flex-1 overflow-y-auto bg-white px-4 py-4 dark:bg-[#1e2229]">
+      <div className="min-h-0 flex-1 overflow-y-auto bg-white px-4 py-4 dark:bg-background">
         <div className="mx-auto flex max-w-2xl flex-col gap-4">
           {grouped.map(({ day, posts }) => (
             <section key={day} aria-labelledby={`social-list-day-${day}`}>
               <h2
                 id={`social-list-day-${day}`}
-                className="sticky top-0 z-[1] -mx-1 mb-2 border-b border-[#e9e9eb] bg-white px-1 py-2 font-semibold text-[#212121] dark:border-[#333a47] dark:bg-[#1e2229] dark:text-[#e4e4e4]"
+                className="sticky top-0 z-[1] -mx-1 mb-2 border-b border-[#e9e9eb] bg-white px-1 py-2 font-semibold text-[#212121] dark:border-border dark:bg-background dark:text-foreground"
               >
                 April {day}
               </h2>

@@ -492,8 +492,8 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
             {searchOpen ? (
               <div className="relative h-[var(--button-height)] w-[240px]">
                 <Search
-                  className="pointer-events-none absolute left-2 top-1/2 size-[14px] -translate-y-1/2 text-[#303030] dark:text-[#8b92a5]"
-                  strokeWidth={1}
+                  className="pointer-events-none absolute left-2 top-1/2 size-[14px] -translate-y-1/2 text-[#303030] dark:text-muted-foreground"
+                  strokeWidth={1.6}
                   absoluteStrokeWidth
                   aria-hidden
                 />
@@ -512,7 +512,7 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
                   }}
                   autoFocus
                   placeholder="Search referrals"
-                  className="h-full w-full rounded-[8px] border border-[#e5e9f0] bg-white py-0 pr-2 pl-8 text-[14px] text-[#212121] outline-none transition-colors placeholder:text-[#757575] focus:border-[#2552ED] focus:ring-1 focus:ring-[#2552ED] dark:border-[#333a47] dark:bg-[#262b35] dark:text-[#e4e4e4] dark:placeholder:text-[#8b92a5]"
+                  className="h-full w-full rounded-[8px] border border-[#e5e9f0] bg-white py-0 pr-2 pl-8 text-[14px] text-[#212121] outline-none transition-colors placeholder:text-[#757575] focus:border-[#2552ED] focus:ring-1 focus:ring-[#2552ED] dark:border-border dark:bg-muted dark:text-foreground dark:placeholder:text-[#8b92a5]"
                   aria-label="Search referrals"
                 />
               </div>
@@ -526,7 +526,7 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
                 title="Search referrals"
                 onClick={() => setSearchOpen(true)}
               >
-                <Search className="h-[14px] w-[14px] text-[#303030] dark:text-[#8b92a5]" strokeWidth={1} absoluteStrokeWidth aria-hidden />
+                <Search className="h-[14px] w-[14px] text-[#303030] dark:text-muted-foreground" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
               </Button>
             )}
             <AppDataTableColumnSettingsTrigger

@@ -116,7 +116,7 @@ export function MynaChatPanel({
 
   const headerIconBtnTone = expanded
     ? "text-[#6b6b6b] hover:bg-black/[0.06] dark:text-[#a8a8a8] dark:hover:bg-white/[0.08]"
-    : "text-[#555] hover:bg-[#f0f1f5] dark:text-[#8b92a5] dark:hover:bg-[#2e3340]";
+    : "text-[#555] hover:bg-[#f0f1f5] dark:text-muted-foreground dark:hover:bg-muted";
 
   const renderComposer = (variant: "docked" | "expanded") => {
     const expandedShell = variant === "expanded";
@@ -144,7 +144,7 @@ export function MynaChatPanel({
               "flex flex-wrap gap-2 border-b px-4 py-2",
               expandedShell
                 ? "border-black/[0.06] dark:border-white/[0.08]"
-                : "border-[#e5e9f0] dark:border-[#333a47]",
+                : "border-[#e5e9f0] dark:border-border",
             )}
             onClick={(e) => e.stopPropagation()}
           >
@@ -154,16 +154,16 @@ export function MynaChatPanel({
                 className={cn(
                   "flex max-w-full items-center gap-2 rounded-lg px-4 py-2 text-[13px]",
                   expandedShell
-                    ? "bg-white/80 text-[#0d0d0d] dark:bg-black/20 dark:text-[#e4e4e4]"
-                    : "bg-[#f0f1f5] text-[#212121] dark:bg-[#2e3340] dark:text-[#e4e4e4]",
+                    ? "bg-white/80 text-[#0d0d0d] dark:bg-black/20 dark:text-foreground"
+                    : "bg-[#f0f1f5] text-[#212121] dark:bg-muted dark:text-foreground",
                 )}
               >
-                <Paperclip className="size-4 shrink-0 text-[#555] dark:text-[#8b92a5]" aria-hidden />
+                <Paperclip className="size-4 shrink-0 text-[#555] dark:text-muted-foreground" aria-hidden />
                 <span className="max-w-[140px] truncate">{file.name}</span>
                 <button
                   type="button"
                   onClick={() => handleRemoveFile(index)}
-                  className="rounded-full p-1 text-[#555] hover:bg-[#e4e6ea] dark:text-[#8b92a5] dark:hover:bg-[#333a47]"
+                  className="rounded-full p-1 text-[#555] hover:bg-[#e4e6ea] dark:text-muted-foreground dark:hover:bg-[#333a47]"
                   aria-label={`Remove ${file.name}`}
                 >
                   <X className="size-4" />
@@ -241,7 +241,7 @@ export function MynaChatPanel({
           {!expanded ? (
             <div className="flex min-w-0 items-center gap-1">
               <p
-                className="truncate text-[14px] text-[#212121] dark:text-[#e4e4e4]"
+                className="truncate text-[14px] text-[#212121] dark:text-foreground"
                 style={{ fontWeight: 500 }}
               >
                 {MYNA_CHAT_HEADER_TITLE}
@@ -283,7 +283,7 @@ export function MynaChatPanel({
                   >
                     <div className="px-4 pt-3 pb-2">
                       <p
-                        className="text-[14px] text-[#212121] dark:text-[#e4e4e4]"
+                        className="text-[14px] text-[#212121] dark:text-foreground"
                         style={{ fontWeight: 500 }}
                       >
                         History
@@ -291,7 +291,7 @@ export function MynaChatPanel({
                     </div>
                     <div className="flex max-h-[min(16rem,40vh)] flex-col gap-2 overflow-y-auto px-4 pb-4 pt-0">
                       {conversations.length === 0 ? (
-                        <p className="text-[12px] leading-4 text-[#555] dark:text-[#8b92a5]">
+                        <p className="text-[12px] leading-4 text-[#555] dark:text-muted-foreground">
                           No conversations yet.
                         </p>
                       ) : (
@@ -306,8 +306,8 @@ export function MynaChatPanel({
                             className={cn(
                               "w-full min-w-0 rounded-lg px-2 py-2 text-left text-[12px] leading-4 transition-colors",
                               c.id === activeConversationId
-                                ? "bg-[#eef2ff] text-[#212121] dark:bg-[#1e2d5e] dark:text-[#e4e4e4]"
-                                : "text-[#212121] hover:bg-[#f0f1f5] dark:text-[#e4e4e4] dark:hover:bg-[#2e3340]",
+                                ? "bg-[#eef2ff] text-[#212121] dark:bg-[#1e2d5e] dark:text-foreground"
+                                : "text-[#212121] hover:bg-[#f0f1f5] dark:text-foreground dark:hover:bg-muted",
                             )}
                           >
                             <span className="line-clamp-2 break-words">{c.title}</span>
@@ -360,7 +360,7 @@ export function MynaChatPanel({
               )}
             >
               {messages.length === 0 ? (
-                <p className="text-[13px] text-[#555] dark:text-[#8b92a5]">No messages yet.</p>
+                <p className="text-[13px] text-[#555] dark:text-muted-foreground">No messages yet.</p>
               ) : (
                 messages.map((msg) =>
                   msg.role === "assistant" ? (

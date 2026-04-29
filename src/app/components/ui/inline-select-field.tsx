@@ -112,7 +112,7 @@ export function InlineSelectField({
                       optionText,
                       selected
                         ? "bg-[#e8effe] text-[#2552ED] dark:bg-[#1e2d5e] dark:text-[#6b9bff]"
-                        : "text-[#212121] hover:bg-[#f3f4f6] dark:text-[#e4e4e4] dark:hover:bg-white/[0.06]",
+                        : "text-[#212121] hover:bg-[#f3f4f6] dark:text-foreground dark:hover:bg-white/[0.06]",
                     )}
                     style={{ fontWeight: 400 }}
                   >
@@ -130,7 +130,7 @@ export function InlineSelectField({
     <div className={cn("w-full", className)} ref={rootRef}>
       {label ? (
         <label
-          className="mb-2 block text-[12px] tracking-[-0.24px] text-[#888] dark:text-[#6b7280]"
+          className="mb-2 block text-[12px] tracking-[-0.24px] text-[#888] dark:text-muted-foreground"
           style={{ fontWeight: 400 }}
         >
           {label}
@@ -141,8 +141,8 @@ export function InlineSelectField({
           type="button"
           onClick={() => setOpen((o) => !o)}
           className={cn(
-            "flex w-full items-center justify-between rounded-lg border border-[#e5e9f0] bg-white px-3 py-2 text-[#212121] transition-colors hover:border-[#c0c6d4] dark:border-[#333a47] dark:bg-[#262b35] dark:text-[#e4e4e4] dark:hover:border-[#4d5568]",
-            isMd && "hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]",
+            "flex w-full items-center justify-between rounded-lg border border-[#e5e9f0] bg-white px-3 py-2 text-[#212121] transition-colors hover:border-[#c0c6d4] dark:border-border dark:bg-muted dark:text-foreground dark:hover:border-[#4d5568]",
+            isMd && "hover:bg-[#f5f5f5] dark:hover:bg-muted",
             triggerText,
           )}
           style={{ fontWeight: 400 }}
@@ -152,7 +152,7 @@ export function InlineSelectField({
           <span className="min-w-0 truncate text-left">{value}</span>
           <ChevronDown
             className={cn(
-              "h-3.5 w-3.5 shrink-0 text-[#888] transition-transform dark:text-[#6b7280]",
+              "h-3.5 w-3.5 shrink-0 text-[#888] transition-transform dark:text-muted-foreground",
               open && "rotate-180",
               isMd && "h-3 w-3 text-[#999]",
             )}

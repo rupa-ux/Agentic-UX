@@ -12,6 +12,22 @@ When working **in this repository**:
 
 1. **Colour source of truth (Aero)** — Figma [Aero Design System](https://www.figma.com/design/xecPAre4cKkeXEdvTig1oI/Aero-Design-System): foundation [node `238:759`](https://www.figma.com/design/xecPAre4cKkeXEdvTig1oI/Aero-Design-System?node-id=238-759), chart series [node `10745:12765`](https://www.figma.com/design/xecPAre4cKkeXEdvTig1oI/Aero-Design-System?node-id=10745-12765).
 2. **Implementation** — [`src/styles/theme.css`](../../../src/styles/theme.css): semantic CSS variables (`--primary`, `--chart-1`…`--chart-5`, `--sidebar-*`, …) exposed as Tailwind (`bg-primary`, `text-muted-foreground`, etc.).
+
+### Dark Mode Rhythm (Ground Truth)
+
+To maintain a consistent "blueish-grey" harmony in dark mode, strictly follow the 260° hue rhythm. **Never use hardcoded hex values** (e.g. `dark:bg-[#1e2229]`) in component code. Use semantic Tailwind utilities that map to the updated `theme.css`.
+
+| Level | Semantic Utility | Dark Value (Theme) | Role |
+| :--- | :--- | :--- | :--- |
+| **L0** | `bg-app-shell-gutter` | `#13161b` | Outer shell void / gutter |
+| **L1** | `bg-app-shell-rail` | `#181b22` | L1 rail icon strip / TopBar |
+| **L2** | `bg-background` / `bg-card` | **`#1e2229`** | **Primary Surface / Main Canvas / Card** |
+| **L3** | `bg-muted` / `bg-accent` | `#262b35` | Inner panels / Muted bands / Dividers |
+| **L4** | `border-border` / `bg-app-shell-l2-row-hover` | `#333848` | Standard UI borders / Row hover wash |
+| **L5** | `bg-app-shell-l2-row-active` | `#4a5160` | Selected / Active row highlights |
+
+**Hard Guardrail:** If you find yourself writing a hex code for a dark-mode background, border, or text color, stop and map it to one of these levels instead. This ensures that as the "bluishness" of the app is tuned, the entire interface stays in perfect harmony.
+
 3. **Storybook** — [`src/stories/DesignTokens.stories.tsx`](../../../src/stories/DesignTokens.stories.tsx) under **Design System/Tokens** documents the same tokens for review.
 4. **Spacing** — Follow the repo [spacing grid rule](../../../.cursor/rules/spacing-grid.mdc): default rhythm 8px (Tailwind `2, 4, 6…`), dense 4px where appropriate.
 5. **CSV / `search.py` palettes** — Use for **ideas or greenfield work outside this repo**. For ShareConsolidated code, **do not** override Aero + `theme.css` with ad hoc hex from the CSV database.

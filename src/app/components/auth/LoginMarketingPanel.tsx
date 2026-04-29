@@ -112,7 +112,7 @@ export function LoginMarketingPanel({ className }: { className?: string }) {
           </div>
 
           {/* Subtitle */}
-          <p className="max-w-[440px] text-[20.625px] leading-relaxed text-[#555] dark:text-[#9ba2b0]">
+          <p className="max-w-[440px] text-[20.625px] leading-relaxed text-[#555] dark:text-muted-foreground">
             AI agents that track visibility and act on what&apos;s missing—across every location.
           </p>
 

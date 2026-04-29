@@ -201,7 +201,7 @@ export function ReviewBody({ text }: { text: string }) {
   return (
     <div ref={wrapRef} className="w-full min-w-0">
       <p
-        className={`whitespace-pre-wrap break-words text-[13px] leading-[18px] text-[#212121] dark:text-[#d0d0d0] ${showLineClampFallback ? "line-clamp-5" : ""}`}
+        className={`whitespace-pre-wrap break-words text-[13px] leading-[18px] text-[#212121] dark:text-muted-foreground ${showLineClampFallback ? "line-clamp-5" : ""}`}
       >
         {paragraphText}
       </p>
@@ -455,14 +455,14 @@ function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
 /* ─── BirdAI Suggested Reply ─── */
 function MynaAIReply({ hasThreeDots }: { hasThreeDots?: boolean }) {
   return (
-    <div className="relative bg-[#f9f7fd] dark:bg-[#1e1a2e] rounded-[8px] p-5 w-full">
+    <div className="relative bg-[#f9f7fd] dark:bg-background rounded-[8px] p-5 w-full">
       <div className="flex flex-col gap-[6px]">
         {/* Header row */}
         <div className="flex items-center gap-2">
-          <span className="text-[12px] text-[#555] dark:text-[#8b92a5]">BirdAI suggested reply</span>
+          <span className="text-[12px] text-[#555] dark:text-muted-foreground">BirdAI suggested reply</span>
           <div className="size-[4px] rounded-full bg-[#555] dark:bg-[#8b92a5]" />
           <div className="flex items-center">
-            <span className="text-[12px] text-[#555] dark:text-[#8b92a5]">Reply as</span>
+            <span className="text-[12px] text-[#555] dark:text-muted-foreground">Reply as</span>
             <div className="flex items-center gap-[2px] px-1 rounded-full">
               <span className="text-[12px] text-[#1976d2]">Sampada (me)</span>
               <svg className="w-[7.5px] h-[3.75px]" viewBox="0 0 7.5 3.75" fill="none">
@@ -472,13 +472,13 @@ function MynaAIReply({ hasThreeDots }: { hasThreeDots?: boolean }) {
           </div>
         </div>
         {/* Reply text */}
-        <p className="text-[13px] text-[#212121] dark:text-[#d0d0d0] leading-[18px]">
+        <p className="text-[13px] text-[#212121] dark:text-muted-foreground leading-[18px]">
           We appreciate your feedback! Thank you for taking the time to share your experience with us.
         </p>
       </div>
       {/* Optional 3-dot menu on reply */}
       {hasThreeDots && (
-        <div className="absolute right-3 top-2 bg-[#f9f7fd] dark:bg-[#1e1a2e] rounded-full size-[24px] flex items-center justify-center">
+        <div className="absolute right-3 top-2 bg-[#f9f7fd] dark:bg-background rounded-full size-[24px] flex items-center justify-center">
           <svg className="w-[12px] h-[3px] rotate-90" viewBox="0 0 12 3" fill="none">
             <path clipRule="evenodd" d={svgPaths.p2d3a0500} fill="#757575" fillRule="evenodd" />
           </svg>
@@ -556,7 +556,7 @@ function ProgressiveImg({
       {/* Shimmer bg — fades out once the blurred image is visible */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-[#eff0f2] dark:bg-[#282d37] animate-pulse opacity-70 transition-opacity duration-300 ease-out"
+        className="absolute inset-0 bg-[#eff0f2] dark:bg-muted animate-pulse opacity-70 transition-opacity duration-300 ease-out"
         style={{ opacity: phase === "idle" ? 1 : 0 }}
       />
       <img
@@ -745,7 +745,7 @@ function PhotoCarousel({ photos }: { photos: string[] }) {
             type="button"
             onClick={scrollLeft}
             aria-label="Previous photos"
-            className="absolute left-2 top-1/2 z-[2] flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/90 border border-border text-foreground shadow-md backdrop-blur-sm transition-all hover:scale-105 hover:bg-muted dark:bg-[#1e2229]/90 dark:hover:bg-muted"
+            className="absolute left-2 top-1/2 z-[2] flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/90 border border-border text-foreground shadow-md backdrop-blur-sm transition-all hover:scale-105 hover:bg-muted dark:bg-background/90 dark:hover:bg-muted"
           >
             <ChevronLeft className="size-4" aria-hidden />
           </button>
@@ -755,7 +755,7 @@ function PhotoCarousel({ photos }: { photos: string[] }) {
             type="button"
             onClick={scrollRight}
             aria-label="Next photos"
-            className="absolute right-2 top-1/2 z-[2] flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/90 border border-border text-foreground shadow-md backdrop-blur-sm transition-all hover:scale-105 hover:bg-muted dark:bg-[#1e2229]/90 dark:hover:bg-muted"
+            className="absolute right-2 top-1/2 z-[2] flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/90 border border-border text-foreground shadow-md backdrop-blur-sm transition-all hover:scale-105 hover:bg-muted dark:bg-background/90 dark:hover:bg-muted"
           >
             <ChevronRight className="size-4" aria-hidden />
           </button>
@@ -774,32 +774,32 @@ function ReviewCard({ review }: { review: Review }) {
         <div className="flex min-w-0 items-start gap-3">
           <ReviewSiteLogo site={review.site} size={40} />
           <div className="flex min-w-0 flex-col gap-1">
-            <span className="text-[13px] font-semibold leading-tight text-[#212121] dark:text-[#e4e4e4]">
+            <span className="text-[13px] font-semibold leading-tight text-[#212121] dark:text-foreground">
               {review.reviewer}
             </span>
             <div className="flex flex-wrap items-center gap-2 text-[12px]">
               <StarRating rating={review.rating} size={14} />
-              <span className="text-[#555] dark:text-[#8b92a5]" title={review.date}>
+              <span className="text-[#555] dark:text-muted-foreground" title={review.date}>
                 {formatReviewDateRelative(review.date)}
               </span>
               {review.photoCount != null && review.photoCount > 0 && (
                 <>
                   <div className="size-[3px] shrink-0 rounded-full bg-[#555] dark:bg-[#8b92a5]" />
-                  <span className="text-[#555] dark:text-[#8b92a5]">{review.photoCount} photos</span>
+                  <span className="text-[#555] dark:text-muted-foreground">{review.photoCount} photos</span>
                 </>
               )}
               {review.featured && (
                 <>
                   <div className="size-[3px] shrink-0 rounded-full bg-[#555] dark:bg-[#8b92a5]" />
-                  <div className="rounded-[4px] bg-[#eaeaea] px-2 py-0.5 dark:bg-[#333a47]">
-                    <span className="text-[12px] text-[#212121] dark:text-[#e4e4e4]">Featured</span>
+                  <div className="rounded-[4px] bg-[#eaeaea] px-2 py-0.5 dark:bg-muted">
+                    <span className="text-[12px] text-[#212121] dark:text-foreground">Featured</span>
                   </div>
                 </>
               )}
             </div>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2 text-[12px] text-[#555] dark:text-[#8b92a5]">
+        <div className="flex shrink-0 items-center gap-2 text-[12px] text-[#555] dark:text-muted-foreground">
           <span className="whitespace-nowrap">
             {review.employees} {review.employees === 1 ? "employee" : "employees"}
           </span>
@@ -825,7 +825,7 @@ function ReviewCard({ review }: { review: Review }) {
 
 /* ─── Review card skeleton ─── */
 function ReviewCardSkeleton() {
-  const s = "bg-[#eff0f2] dark:bg-[#282d37] rounded animate-pulse opacity-70";
+  const s = "bg-[#eff0f2] dark:bg-muted rounded animate-pulse opacity-70";
   return (
     <div className="flex flex-col gap-4 py-1">
       {/* Header: avatar + name/sub-line | right label */}
@@ -945,7 +945,7 @@ export function ReviewsViewList({
   }, [isLoadingMore, visibleCount, filteredReviews.length, filteredReviews]);
 
   return (
-    <div className="flex-1 flex min-h-0 overflow-hidden bg-white dark:bg-[#1e2229] transition-colors duration-300">
+    <div className="flex-1 flex min-h-0 overflow-hidden bg-white dark:bg-background transition-colors duration-300">
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         <MainCanvasViewHeader
@@ -977,7 +977,7 @@ export function ReviewsViewList({
           <div className="flex items-center gap-2">
             {searchOpen ? (
               <div className="relative h-[var(--button-height)] w-[240px]">
-                <Search className="pointer-events-none absolute left-2 top-1/2 size-[14px] -translate-y-1/2 text-[#303030] dark:text-[#8b92a5]" aria-hidden />
+                <Search className="pointer-events-none absolute left-2 top-1/2 size-[14px] -translate-y-1/2 text-[#303030] dark:text-muted-foreground" aria-hidden />
                 <input
                   ref={searchInputRef}
                   type="search"
@@ -994,7 +994,7 @@ export function ReviewsViewList({
                   }}
                   autoFocus
                   placeholder="Search reviews"
-                  className="h-full w-full rounded-[8px] border border-[#e5e9f0] bg-white py-0 pr-2 pl-8 text-[14px] text-[#212121] outline-none transition-colors placeholder:text-[#757575] focus:border-[#2552ED] focus:ring-1 focus:ring-[#2552ED] dark:border-[#333a47] dark:bg-[#262b35] dark:text-[#e4e4e4] dark:placeholder:text-[#8b92a5]"
+                  className="h-full w-full rounded-[8px] border border-[#e5e9f0] bg-white py-0 pr-2 pl-8 text-[14px] text-[#212121] outline-none transition-colors placeholder:text-[#757575] focus:border-[#2552ED] focus:ring-1 focus:ring-[#2552ED] dark:border-border dark:bg-muted dark:text-foreground dark:placeholder:text-[#8b92a5]"
                   aria-label="Search reviews"
                 />
               </div>
@@ -1008,7 +1008,7 @@ export function ReviewsViewList({
                 title="Search reviews"
                 onClick={() => setSearchOpen(true)}
               >
-                <Search className="w-[14px] h-[14px] text-[#303030] dark:text-[#8b92a5]" aria-hidden />
+                <Search className="w-[14px] h-[14px] text-[#303030] dark:text-muted-foreground" aria-hidden />
               </Button>
             )}
 
@@ -1027,7 +1027,7 @@ export function ReviewsViewList({
 
             {/* More options */}
             <Button variant="outline" size="icon">
-              <MoreVertical className="w-[14px] h-[14px] text-[#303030] dark:text-[#8b92a5]" />
+              <MoreVertical className="w-[14px] h-[14px] text-[#303030] dark:text-muted-foreground" />
             </Button>
 
             {/* AI button */}

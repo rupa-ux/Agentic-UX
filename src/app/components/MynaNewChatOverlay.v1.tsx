@@ -74,22 +74,22 @@ export function MynaNewChatOverlay({
         role="dialog"
         aria-modal="true"
         aria-labelledby="myna-new-chat-title"
-        className="relative z-[101] w-full max-w-xl rounded-xl border border-[#e5e9f0] bg-white p-6 shadow-xl dark:border-[#333a47] dark:bg-[#1a1d24]"
+        className="relative z-[101] w-full max-w-xl rounded-xl border border-[#e5e9f0] bg-white p-6 shadow-xl dark:border-border dark:bg-app-shell-rail"
         data-shortcuts-ignore
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <h2 id="myna-new-chat-title" className="text-[16px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 500 }}>
+            <h2 id="myna-new-chat-title" className="text-[16px] text-[#212121] dark:text-foreground" style={{ fontWeight: 500 }}>
               {MYNA_CHAT_HEADER_TITLE}
             </h2>
-            <p className="mt-2 text-[13px] text-[#555] dark:text-[#8b92a5]">
-              Context: <span className="text-[#212121] dark:text-[#e4e4e4]">{screenTitle}</span>
+            <p className="mt-2 text-[13px] text-[#555] dark:text-muted-foreground">
+              Context: <span className="text-[#212121] dark:text-foreground">{screenTitle}</span>
             </p>
           </div>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="rounded-lg p-2 text-[#555] hover:bg-[#f0f1f5] dark:text-[#8b92a5] dark:hover:bg-[#2e3340]"
+            className="rounded-lg p-2 text-[#555] hover:bg-[#f0f1f5] dark:text-muted-foreground dark:hover:bg-muted"
             aria-label="Close"
           >
             <X className="size-4" />
