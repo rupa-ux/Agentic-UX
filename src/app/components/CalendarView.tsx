@@ -1,5 +1,5 @@
 import { POST_DATA } from '../data/postData';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   ChevronLeft, ChevronRight, Filter, MoreVertical, Sparkles,
   Pencil, Copy, Tag, Trash2, CalendarDays, Send,
@@ -14,6 +14,7 @@ import {
 } from './ui/dropdown-menu';
 import { SocialPostPlatformIcon } from './social/socialPostShared';
 import { cn } from './ui/utils';
+import { ReportActionsButton, buildReportContext } from './report-actions/ReportActionsButton';
 
 interface CalendarViewProps {
   onPostClick: (postId: string) => void;
@@ -218,6 +219,18 @@ export function CalendarView({ onPostClick, onActivityClick, onViewExpiredPosts,
   const [createdPostId, setCreatedPostId] = useState<string | null>(null);
   const [visibleToast, setVisibleToast] = useState<string | null>(null);
 
+  /** Report-actions context for Share / Customize & share / Schedule (parity with Insights Dashboard). */
+  const socialCalendarReportContext = useMemo(
+    () =>
+      buildReportContext({
+        reportId: "social-publish-calendar",
+        reportType: "social",
+        reportName: "Social publish calendar",
+        entityType: "dashboard",
+      }),
+    [],
+  );
+
   useEffect(() => {
     if (highlightedPostId?.startsWith('post-new')) setCreatedPostId(highlightedPostId);
   }, [highlightedPostId]);
@@ -300,6 +313,12 @@ export function CalendarView({ onPostClick, onActivityClick, onViewExpiredPosts,
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Report actions (Share / Customize & share / Schedule) */}
+            <ReportActionsButton
+              context={socialCalendarReportContext}
+              actions={["share", "customizeShare", "schedule"]}
+            />
 
             {/* Filter */}
             <Button variant="outline" size="icon">
