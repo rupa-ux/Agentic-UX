@@ -24,6 +24,8 @@ git checkout main   # or your default branch
 git pull upstream main
 ```
 
+**Git / `main` workflow:** Branch protection, merge convention, and **`aero-ds` submodule bumps** are documented in [`docs/git-workflow.md`](docs/git-workflow.md).
+
 ---
 
 ## Prerequisites
