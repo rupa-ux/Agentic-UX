@@ -16,13 +16,30 @@ When working **in this repository**:
 4. **Spacing** — Follow the repo [spacing grid rule](../../../.cursor/rules/spacing-grid.mdc): default rhythm 8px (Tailwind `2, 4, 6…`), dense 4px where appropriate.
 5. **CSV / `search.py` palettes** — Use for **ideas or greenfield work outside this repo**. For ShareConsolidated code, **do not** override Aero + `theme.css` with ad hoc hex from the CSV database.
 
+## aero-ds npm package
+
+`@balajik-cmyk/aero-ds` is the published design system package installed in `node_modules`. Import from it instead of duplicating constants in the app.
+
+| What you need | Import |
+|---|---|
+| Tailwind class merge utility | `import { cn } from "@balajik-cmyk/aero-ds"` |
+| Design version token | `import { DESIGN_VERSION } from "@balajik-cmyk/aero-ds"` |
+| App shell layout classes | `import { APP_SHELL_BELOW_TOPBAR_CARD_CLASS, APP_SHELL_GUTTER_SURFACE_CLASS, APP_MAIN_CONTENT_SHELL_CLASS } from "@balajik-cmyk/aero-ds"` |
+| Floating panel surface | `import { FLOATING_PANEL_SURFACE_CLASSNAME, FLOATING_PANEL_LIST_PADDING_CLASSNAME } from "@balajik-cmyk/aero-ds"` |
+| Slide panel motion | `import { SLIDE_MS, SLIDE_EASING } from "@balajik-cmyk/aero-ds"` |
+| Canonical token CSS | `import "@balajik-cmyk/aero-ds/theme.css"` |
+
+**Do not** modify files inside `aero-ds/` directly — it is a separate repo at [github.com/balajik-cmyk/aero-ds](https://github.com/balajik-cmyk/aero-ds). To add new exports, open a PR there, publish a new version, then update the version pin in `birdeyev2/package.json`.
+
+---
+
 ## Storybook workflow (verification)
 
 Storybook is the **primary visual verification surface** for UI work in this repository (same Tailwind + theme pipeline as the Vite app).
 
 - **Run** (from repository root): `npm run storybook` — dev server on port **6006** (see [package.json](../../../package.json)).
 - **Design tokens:** Use the **Design System/Tokens** story in [`src/stories/DesignTokens.stories.tsx`](../../../src/stories/DesignTokens.stories.tsx) to confirm colours, type scale, and semantic classes match [`src/styles/theme.css`](../../../src/styles/theme.css).
-- **Stories:** When adding or changing user-visible UI under `src/app/`, add or update a story under [`src/stories/`](../../../src/stories/) where practical so states are reviewable in isolation.
+- **Stories:** When creating a **new** component under `src/app/components/` (including `ui/`), always create a corresponding story under [`src/stories/`](../../../src/stories/) in the same response — a component without a story is incomplete. When **modifying** an existing component, update its story to reflect the change.
 - **Preview globals:** Follow [`.storybook/preview.tsx`](../../../.storybook/preview.tsx) — light/dark theme toolbar, `DESIGN_VERSION` tokens CSS + [`src/styles/index.css`](../../../src/styles/index.css), story `layout` parameters; backgrounds addon stays disabled in favour of CSS variables.
 - **Parity:** Components should look and behave in Storybook the same way they do in the running app (shared CSS entry).
 
