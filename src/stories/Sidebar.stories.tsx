@@ -239,6 +239,14 @@ export const L2ReviewsDesignV2: Story = {
   ),
 };
 export const L2Social: Story      = { name: panelStories[2].name,  render: () => <SidebarFrame><SocialL2NavPanel /></SidebarFrame> };
+export const L2SocialPlaceholder: Story = {
+  name: "L2 / Social AI (placeholder shell)",
+  render: () => (
+    <SidebarFrame>
+      <SocialL2NavPanel activeItem="" onActiveItemChange={() => {}} mode="placeholder" />
+    </SidebarFrame>
+  ),
+};
 export const L2SearchAI: Story    = { name: panelStories[3].name,  render: () => <SidebarFrame><SearchAIL2NavPanelStateful /></SidebarFrame> };
 export const L2Listings: Story    = { name: panelStories[4].name,  render: () => <SidebarFrame><ListingsL2NavPanel /></SidebarFrame> };
 export const L2Contacts: Story    = { name: panelStories[5].name,  render: () => <SidebarFrame><ContactsL2NavPanel activeItem={CONTACTS_L2_KEY_ALL} onActiveItemChange={() => {}} onAddContact={() => {}} /></SidebarFrame> };

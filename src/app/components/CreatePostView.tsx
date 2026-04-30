@@ -3,6 +3,7 @@ import svgPaths from '../../imports/svg-zf6pg056p3';
 import svgMain from '../../imports/svg-q05k7ytov1';
 import { imgHelp } from '../../imports/svg-ss3mz';
 import { FacebookIcon, InstagramIcon, LinkedInIcon } from './PlatformIcons';
+import { MAIN_VIEW_PRIMARY_HEADING_CLASS } from './layout/mainViewTitleClasses';
 import {
   Grid3X3, List, Trash2, Upload,
   Camera, Smile, Type, Lightbulb, X, Plus, ChevronDown
@@ -938,7 +939,7 @@ export function CreatePostView({ onBack, onPublish }: CreatePostViewProps) {
               <path d="M19 12H5M12 5l-7 7 7 7" />
             </svg>
           </button>
-          <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[26px] text-[#212121] dark:text-[#e4e8f0] text-[18px] tracking-[-0.36px] whitespace-nowrap" style={{ fontVariationSettings: "'wdth' 100" }}>
+          <p className={`${MAIN_VIEW_PRIMARY_HEADING_CLASS} whitespace-nowrap`} style={{ fontVariationSettings: "'wdth' 100" }}>
             Create post
           </p>
         </div>

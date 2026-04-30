@@ -248,13 +248,16 @@ export default function App() {
     if (view !== currentView) {
       setMynaChatExpanded(false);
     }
+    if (view === "social" && currentView !== "social") {
+      setSocialL2Active("Publish/Calendar");
+    }
     if (slug?.startsWith("l2:")) {
       setJourneysL2ActiveKey(slug.slice(3));
       setCurrentView(view);
       return;
     }
     setCurrentView(view);
-  }, [currentView]);
+  }, [currentView, setSocialL2Active]);
 
   const handleEditDraft = (draft: DraftReport) => {
     setEditingDraft(draft);

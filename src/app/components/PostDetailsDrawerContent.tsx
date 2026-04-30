@@ -15,6 +15,7 @@ import { APPROVAL_DATA, type ApprovalLocation } from "../data/approvalData";
 import { POST_DATA, StatusType, type PostPage } from "../data/postData";
 import { FacebookIcon, InstagramIcon, LinkedInIcon } from "./PlatformIcons";
 import { ActivityFeed } from "./ActivityFeed";
+import { MAIN_VIEW_PRIMARY_HEADING_CLASS } from "./layout/mainViewTitleClasses";
 
 interface PostDetailsDrawerContentProps {
   postId: string;
@@ -785,7 +786,7 @@ export function PostDetailsDrawerContent({
   // ── Render ─────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="relative flex h-full min-h-0 flex-col bg-white dark:bg-[#1e2229] transition-colors duration-300">
+    <div className="relative flex h-full min-h-0 flex-col bg-background transition-colors duration-300">
 
       {/* ── Shimmer overlay — sits on top, fades out after 3 s ── */}
       {shimmerPhase !== "gone" && (
@@ -799,18 +800,18 @@ export function PostDetailsDrawerContent({
       )}
 
       {/* ── Header ── */}
-      <div className="shrink-0 border-b border-[#eef1f6] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] px-6 py-4">
+      <div className="shrink-0 border-b border-border bg-background px-6 py-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           {/* Left: back + title + status */}
           <div className="flex min-w-0 items-center gap-3">
             <button
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] border border-[#e8ecf2] dark:border-[#2e3340] bg-white dark:bg-[#252a35] text-[#374151] dark:text-[#9ba2b0] transition-colors hover:bg-[#f8f9fb] dark:hover:bg-[#2e3340]"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               onClick={onClose}
             >
               <ArrowLeft size={16} />
             </button>
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-[20px] font-medium tracking-[-0.5px] text-[#1e2530] dark:text-[#e4e8f0]" style={RV}>
+              <p className={MAIN_VIEW_PRIMARY_HEADING_CLASS} style={RV}>
                 Post details
               </p>
               <span
@@ -847,7 +848,7 @@ export function PostDetailsDrawerContent({
               </div>
             )}
             {headerActions}
-            <button className="flex h-9 w-9 items-center justify-center rounded-[7px] border border-[#e8ecf2] dark:border-[#2e3340] bg-white dark:bg-[#252a35] text-[#9aa3b2] dark:text-[#6b7a94] transition-colors hover:bg-[#f8f9fb] dark:hover:bg-[#2e3340]">
+            <button className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
               <MoreVertical size={16} />
             </button>
           </div>
@@ -858,10 +859,10 @@ export function PostDetailsDrawerContent({
       <div className="grid min-h-0 flex-1 grid-cols-1 xl:grid-cols-2">
 
         {/* ── Left: Overview / Activity ── */}
-        <div className="flex min-h-0 flex-col bg-white dark:bg-[#1e2229] border-b border-[#eef1f6] dark:border-[#2e3340] xl:border-b-0 xl:border-r xl:border-r-[#eef1f6] dark:xl:border-r-[#2e3340]">
+        <div className="flex min-h-0 flex-col border-b border-border bg-background xl:border-b-0 xl:border-r xl:border-r-border">
 
           {/* Tab bar */}
-          <div className="flex shrink-0 items-center gap-1 border-b border-[#eef1f6] dark:border-[#2e3340] px-6">
+          <div className="flex shrink-0 items-center gap-1 border-b border-border px-6">
             {(["Overview", "Activity"] as const).map((tab) => {
               const key = tab.toLowerCase() as ActiveTab;
               return (
@@ -888,7 +889,7 @@ export function PostDetailsDrawerContent({
               {/* Overview tab */}
               {activeTab === "overview" && (
                 <div className="px-[30px] py-6">
-                  <div className="divide-y divide-[#f0f3f8] dark:divide-[#2e3340]">
+                  <div className="divide-y divide-border">
                     {overviewSections.map((section, i) => (
                       <div key={i} className={i === 0 ? "pb-5" : "py-5"}>
                         {section}
@@ -911,7 +912,7 @@ export function PostDetailsDrawerContent({
         </div>
 
         {/* ── Right: Preview ── */}
-        <div className="flex min-h-0 flex-col overflow-auto bg-[#f6f8fb] dark:bg-[#181b22]">
+        <div className="flex min-h-0 flex-col overflow-auto bg-muted/20">
           <div className="w-full px-[30px] py-6">
 
             {/* 1. Channel switcher — full row */}

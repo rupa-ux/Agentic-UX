@@ -1,32 +1,33 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Pencil, MessageSquare, Info, History, Copy, Trash2,
   Search, ChevronDown, MoreVertical, AlertCircle, Clock, RefreshCw
-} from 'lucide-react';
-import { POST_DATA } from '../data/postData';
-import { APPROVAL_DATA } from '../data/approvalData';
-import { PlatformIcons } from './PlatformIcons';
+} from "lucide-react";
+import { POST_DATA } from "../data/postData";
+import { APPROVAL_DATA } from "../data/approvalData";
+import { PlatformIcons } from "./PlatformIcons";
+import { Badge } from "@/app/components/ui/badge";
+import { Button } from "@/app/components/ui/button";
+import {
+  MAIN_VIEW_HEADER_BAND_CLASS,
+  MAIN_VIEW_PRIMARY_HEADING_CLASS,
+} from "./layout/mainViewTitleClasses";
 
 // ─── Status Badge ──────────────────────────────────────────────────────────────
 
-type CardStatus = 'rejected' | 'expired';
+type CardStatus = "rejected" | "expired";
 
-const statusConfig: Record<CardStatus, { bg: string; color: string; label: string; icon: React.ReactNode }> = {
-  rejected: { bg: '#fef6f5', color: '#de1b0c', label: 'Rejected',
+const statusConfig: Record<CardStatus, { label: string; icon: React.ReactNode }> = {
+  rejected: { label: "Rejected",
     icon: <AlertCircle size={13} className="inline mr-[3px] mb-[1px]" /> },
-  expired:  { bg: '#f0f0f0', color: '#555',    label: 'Expired',
+  expired:  { label: "Expired",
     icon: <Clock size={13} className="inline mr-[3px] mb-[1px]" /> },
 };
 
 function StatusBadge({ status }: { status: CardStatus }) {
   const cfg = statusConfig[status];
   return (
-    <span
-      className="font-['Roboto:Regular',sans-serif] text-[12px] px-[8px] py-[3px] rounded-[4px] whitespace-nowrap shrink-0 flex items-center gap-[3px]"
-      style={{ backgroundColor: cfg.bg, color: cfg.color }}
-    >
-      {cfg.icon}{cfg.label}
-    </span>
+    <Badge variant={status === "rejected" ? "destructive" : "outline"}>{cfg.icon}{cfg.label}</Badge>
   );
 }
 
@@ -34,16 +35,16 @@ function StatusBadge({ status }: { status: CardStatus }) {
 
 function RejectionBanner({ reason, rejectedBy }: { reason: string; rejectedBy?: string }) {
   return (
-    <div className="bg-[#fef6f5] dark:bg-[#2d1c1a] border border-[#f5c6c2] dark:border-[#5c2a24] rounded-[6px] px-[14px] py-[10px] mb-[12px]">
+    <div className="mb-3 rounded-md border border-destructive/20 bg-destructive/10 px-4 py-3">
       <div className="flex items-start gap-[8px]">
-        <AlertCircle size={16} className="text-[#de1b0c] shrink-0 mt-[1px]" />
+        <AlertCircle size={16} className="mt-[1px] shrink-0 text-destructive" />
         <div>
           {rejectedBy && (
-            <p className="font-['Roboto:Medium',sans-serif] text-[12px] text-[#de1b0c] mb-[2px]" style={{ fontVariationSettings: "'wdth' 100" }}>
+            <p className="mb-0.5 text-xs text-destructive">
               Rejected by {rejectedBy}
             </p>
           )}
-          <p className="font-['Roboto:Regular',sans-serif] text-[13px] text-[#de1b0c] dark:text-[#f08080] leading-[18px]" style={{ fontVariationSettings: "'wdth' 100" }}>
+          <p className="text-sm leading-5 text-destructive">
             {reason}
           </p>
         </div>
@@ -56,14 +57,14 @@ function RejectionBanner({ reason, rejectedBy }: { reason: string; rejectedBy?: 
 
 function ExpiredBanner() {
   return (
-    <div className="bg-[#f5f5f5] dark:bg-[#252a35] border border-[#e0e0e0] dark:border-[#2e3340] rounded-[6px] px-[14px] py-[10px] mb-[12px]">
+    <div className="mb-3 rounded-md border border-border bg-muted/30 px-4 py-3">
       <div className="flex items-start gap-[8px]">
-        <Clock size={16} className="text-[#777] dark:text-[#6b7a94] shrink-0 mt-[1px]" />
+        <Clock size={16} className="mt-[1px] shrink-0 text-muted-foreground" />
         <div>
-          <p className="font-['Roboto:Medium',sans-serif] text-[12px] text-[#555] dark:text-[#9ba2b0] mb-[2px]" style={{ fontVariationSettings: "'wdth' 100" }}>
+          <p className="mb-0.5 text-xs text-foreground">
             Approval window expired
           </p>
-          <p className="font-['Roboto:Regular',sans-serif] text-[13px] text-[#777] dark:text-[#6b7a94] leading-[18px]" style={{ fontVariationSettings: "'wdth' 100" }}>
+          <p className="text-sm leading-5 text-muted-foreground">
             The scheduled time passed without completing the approval process. Edit and resubmit to publish this post.
           </p>
         </div>
@@ -115,7 +116,7 @@ function RejectedPostCard({ postId, cardStatus, onOpenDetails, onOpenActivity }:
 
   return (
     <div
-      className="bg-white dark:bg-[#1e2229] border border-[#eaeaea] dark:border-[#2e3340] rounded-[8px] overflow-hidden cursor-pointer hover:border-[#1976d2] dark:hover:border-[#5b9cf6] transition-colors"
+      className="cursor-pointer overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary"
       onClick={() => onOpenDetails(postId)}
     >
       <div className="px-[16px] pt-[16px] pb-[0px]">
@@ -126,14 +127,14 @@ function RejectedPostCard({ postId, cardStatus, onOpenDetails, onOpenActivity }:
         </div>
 
         {/* Meta row */}
-        <div className="flex items-center gap-[6px] mb-[12px] flex-wrap">
-          <span className="font-['Roboto:Regular',sans-serif] text-[13px] text-[#555] dark:text-[#9ba2b0]">{displayDate}</span>
-          <span className="text-[#aaa] dark:text-[#6b7a94] text-[12px]">•</span>
-          <span className="font-['Roboto:Regular',sans-serif] text-[13px] text-[#555] dark:text-[#9ba2b0]">{locationCount} locations</span>
-          <span className="text-[#aaa] dark:text-[#6b7a94] text-[12px]">•</span>
-          <span className="font-['Roboto:Regular',sans-serif] text-[13px] text-[#555] dark:text-[#9ba2b0]">{approval?.submittedBy ?? 'Creator name'}</span>
-          <span className="text-[#aaa] dark:text-[#6b7a94] text-[12px]">•</span>
-          <span className="font-['Roboto:Regular',sans-serif] text-[13px] text-[#555] dark:text-[#9ba2b0]">{approval?.workflowTitle ?? 'Workflow name'}</span>
+        <div className="mb-3 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+          <span>{displayDate}</span>
+          <span aria-hidden>·</span>
+          <span>{locationCount} locations</span>
+          <span aria-hidden>·</span>
+          <span>{approval?.submittedBy ?? "Creator name"}</span>
+          <span aria-hidden>·</span>
+          <span>{approval?.workflowTitle ?? "Workflow name"}</span>
         </div>
 
         {/* Rejection / Expired banner */}
@@ -143,12 +144,12 @@ function RejectedPostCard({ postId, cardStatus, onOpenDetails, onOpenActivity }:
         {cardStatus === 'expired' && <ExpiredBanner />}
 
         {/* Caption */}
-        <p className="font-['Roboto:Regular',sans-serif] text-[14px] text-[#212121] dark:text-[#e4e8f0] leading-[22px] mb-[12px] line-clamp-2" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="mb-3 line-clamp-2 text-sm leading-6 text-foreground">
           {post.caption}
         </p>
 
         {/* Hashtags */}
-        <p className="font-['Roboto:Regular',sans-serif] text-[13px] text-[#1976d2] dark:text-[#5b9cf6] leading-[20px] mb-[14px] line-clamp-1">
+        <p className="mb-4 line-clamp-1 text-sm text-primary">
           {post.hashtags}
         </p>
 
@@ -162,43 +163,43 @@ function RejectedPostCard({ postId, cardStatus, onOpenDetails, onOpenActivity }:
 
       {/* Action bar */}
       <div
-        className="border-t border-[#eaeaea] dark:border-[#2e3340] px-[16px] py-[10px] flex items-center justify-between"
+        className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3"
         onClick={e => e.stopPropagation()}
       >
         {/* Left icons */}
-        <div className="flex items-center gap-[12px]">
-          <button className="text-[#555] dark:text-[#9ba2b0] hover:text-[#212121] dark:hover:text-[#e4e8f0] p-[2px]" title="Edit">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <button className="p-0.5 transition-colors hover:text-foreground" title="Edit">
             <Pencil size={18} />
           </button>
-          <button className="text-[#555] dark:text-[#9ba2b0] hover:text-[#212121] dark:hover:text-[#e4e8f0] p-[2px]" title="Comment">
+          <button className="p-0.5 transition-colors hover:text-foreground" title="Comment">
             <MessageSquare size={18} />
           </button>
-          <button className="text-[#555] dark:text-[#9ba2b0] hover:text-[#212121] dark:hover:text-[#e4e8f0] p-[2px]" title="Info">
+          <button className="p-0.5 transition-colors hover:text-foreground" title="Info">
             <Info size={18} />
           </button>
           <button
-            className="text-[#555] dark:text-[#9ba2b0] hover:text-[#1976d2] dark:hover:text-[#5b9cf6] p-[2px]"
+            className="p-0.5 transition-colors hover:text-primary"
             title="Activity"
             onClick={() => onOpenActivity(postId)}
           >
             <History size={18} />
           </button>
-          <button className="text-[#555] dark:text-[#9ba2b0] hover:text-[#212121] dark:hover:text-[#e4e8f0] p-[2px]" title="Copy">
+          <button className="p-0.5 transition-colors hover:text-foreground" title="Copy">
             <Copy size={18} />
           </button>
-          <button className="text-[#555] dark:text-[#9ba2b0] hover:text-[#de1b0c] p-[2px]" title="Delete">
+          <button className="p-0.5 transition-colors hover:text-destructive" title="Delete">
             <Trash2 size={18} />
           </button>
         </div>
 
         {/* Right: Edit & Resubmit */}
-        <div className="flex items-center gap-[8px]">
-          <button className="h-[36px] px-[16px] flex items-center gap-[6px] rounded-[4px] border border-[#e5e9f0] dark:border-[#2e3340] bg-white dark:bg-[#252a35] font-['Roboto:Regular',sans-serif] text-[14px] text-[#212121] dark:text-[#e4e8f0] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340] transition-colors">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="gap-1.5">
             <Pencil size={14} /> Edit
-          </button>
-          <button className="h-[36px] px-[16px] flex items-center gap-[6px] rounded-[4px] bg-[#1976d2] font-['Roboto:Regular',sans-serif] text-[14px] text-white hover:bg-[#1565c0] transition-colors">
+          </Button>
+          <Button size="sm" className="gap-1.5">
             <RefreshCw size={14} /> Resubmit
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -207,7 +208,7 @@ function RejectedPostCard({ postId, cardStatus, onOpenDetails, onOpenActivity }:
 
 // ─── Mock Expired Posts ────────────────────────────────────────────────────────
 // These are additional expired posts (awaiting posts that timed out)
-const EXPIRED_POST_IDS = ['post-7']; // Post 7 is scheduled — we'll show it as expired for demo
+const EXPIRED_POST_IDS = ["post-7"];
 
 // ─── Main View ─────────────────────────────────────────────────────────────────
 
@@ -216,22 +217,22 @@ interface RejectedPostsViewProps {
   onOpenActivity: (postId: string) => void;
 }
 
-type FilterTab = 'all' | 'rejected' | 'expired';
+type FilterTab = "all" | "rejected" | "expired";
 
 export function RejectedPostsView({ onOpenDetails, onOpenActivity }: RejectedPostsViewProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<FilterTab>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<FilterTab>("all");
 
   // Rejected posts from data
   const rejectedPostIds = Object.keys(POST_DATA).filter(
-    id => POST_DATA[id].status === 'rejected'
+    id => POST_DATA[id].status === "rejected"
   );
 
   // All cards: rejected + expired
   type CardEntry = { postId: string; cardStatus: CardStatus };
   const allCards: CardEntry[] = [
-    ...rejectedPostIds.map(id => ({ postId: id, cardStatus: 'rejected' as CardStatus })),
-    ...EXPIRED_POST_IDS.map(id => ({ postId: id, cardStatus: 'expired' as CardStatus })),
+    ...rejectedPostIds.map(id => ({ postId: id, cardStatus: "rejected" as CardStatus })),
+    ...EXPIRED_POST_IDS.map(id => ({ postId: id, cardStatus: "expired" as CardStatus })),
   ];
 
   const filtered = allCards.filter(({ postId, cardStatus }) => {
@@ -244,54 +245,50 @@ export function RejectedPostsView({ onOpenDetails, onOpenActivity }: RejectedPos
   });
 
   const tabs: { id: FilterTab; label: string; count: number }[] = [
-    { id: 'all', label: 'All', count: allCards.length },
-    { id: 'rejected', label: 'Rejected', count: rejectedPostIds.length },
-    { id: 'expired', label: 'Expired', count: EXPIRED_POST_IDS.length },
+    { id: "all", label: "All", count: allCards.length },
+    { id: "rejected", label: "Rejected", count: rejectedPostIds.length },
+    { id: "expired", label: "Expired", count: EXPIRED_POST_IDS.length },
   ];
 
   return (
     <div className="flex flex-col h-full transition-colors duration-300">
       {/* Page header */}
-      <div className="border-b border-[#eaeaea] dark:border-[#2e3340] px-[24px] h-[64px] flex items-center justify-between shrink-0 bg-white dark:bg-[#1e2229]">
-        <h1 className="font-['Roboto:Regular',sans-serif] font-normal text-[20px] text-[#212121] dark:text-[#e4e8f0] tracking-[-0.4px]" style={{ fontVariationSettings: "'wdth' 100" }}>
+      <div className={`${MAIN_VIEW_HEADER_BAND_CLASS} border-b border-border bg-background`}>
+        <h1 className={MAIN_VIEW_PRIMARY_HEADING_CLASS}>
           Fix rejected posts
         </h1>
-        <div className="flex items-center gap-[8px]">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="relative flex items-center">
-            <Search size={16} className="absolute left-[10px] text-[#aaa] dark:text-[#6b7a94]" />
+            <Search size={16} className="absolute left-3 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search posts..."
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="h-[36px] pl-[32px] pr-[12px] rounded-[4px] border border-[#e5e9f0] dark:border-[#2e3340] bg-white dark:bg-[#252a35] font-['Roboto:Regular',sans-serif] text-[14px] text-[#212121] dark:text-[#e4e8f0] outline-none focus:border-[#1976d2] dark:focus:border-[#5b9cf6] w-[200px] placeholder:text-[#aaa] dark:placeholder:text-[#6b7a94]"
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-9 w-[200px] rounded-md border border-input bg-background pl-8 pr-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
             />
           </div>
-          <button className="h-[36px] px-[12px] flex items-center gap-[6px] rounded-[4px] border border-[#e5e9f0] dark:border-[#2e3340] bg-white dark:bg-[#252a35] font-['Roboto:Regular',sans-serif] text-[14px] text-[#212121] dark:text-[#e4e8f0] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]">
-            Newest <ChevronDown size={16} />
-          </button>
-          <button className="h-[36px] w-[36px] flex items-center justify-center rounded-[4px] border border-[#e5e9f0] dark:border-[#2e3340] bg-white dark:bg-[#252a35] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]">
-            <MoreVertical size={16} className="text-[#555] dark:text-[#9ba2b0]" />
-          </button>
+          <Button variant="outline" size="sm">Newest <ChevronDown size={16} /></Button>
+          <Button variant="outline" size="icon" className="h-9 w-9" aria-label="More"><MoreVertical size={16} /></Button>
         </div>
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-[0px] border-b border-[#eaeaea] dark:border-[#2e3340] px-[24px] bg-white dark:bg-[#1e2229] shrink-0">
+      <div className="shrink-0 border-b border-border bg-background px-6">
         {tabs.map(tab => (
           <button
             key={tab.id}
-            className={`px-[16px] py-[12px] font-['Roboto:Regular',sans-serif] text-[14px] border-b-2 -mb-[1px] flex items-center gap-[6px] transition-colors ${
+            className={`-mb-px flex items-center gap-1.5 border-b-2 px-4 py-3 text-sm transition-colors ${
               activeTab === tab.id
-                ? 'border-[#1976d2] dark:border-[#5b9cf6] text-[#1976d2] dark:text-[#5b9cf6]'
-                : 'border-transparent text-[#555] dark:text-[#9ba2b0] hover:text-[#212121] dark:hover:text-[#e4e8f0]'
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}
             <span
-              className={`text-[11px] px-[6px] py-[1px] rounded-[10px] ${
-                activeTab === tab.id ? 'bg-[#1976d2] dark:bg-[#5b9cf6] text-white' : 'bg-[#eaeaea] dark:bg-[#252a35] text-[#555] dark:text-[#9ba2b0]'
+              className={`rounded-full px-1.5 py-0.5 text-[11px] ${
+                activeTab === tab.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
               }`}
             >
               {tab.count}
@@ -301,11 +298,11 @@ export function RejectedPostsView({ onOpenDetails, onOpenActivity }: RejectedPos
       </div>
 
       {/* Posts list */}
-      <div className="flex-1 overflow-y-auto px-[24px] py-[16px] bg-[#fafafa] dark:bg-[#181b22]">
+      <div className="flex-1 overflow-y-auto bg-muted/20 px-6 py-4">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-[300px] gap-[8px]">
-            <p className="font-['Roboto:Regular',sans-serif] text-[16px] text-[#555] dark:text-[#9ba2b0]">No posts here</p>
-            <p className="font-['Roboto:Regular',sans-serif] text-[13px] text-[#aaa] dark:text-[#6b7a94]">All posts are approved and on track!</p>
+            <p className="text-base text-muted-foreground">No posts here</p>
+            <p className="text-xs text-muted-foreground">All posts are approved and on track.</p>
           </div>
         ) : (
           <div className="flex flex-col gap-[16px] max-w-[700px] mx-auto">

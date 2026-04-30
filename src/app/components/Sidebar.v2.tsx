@@ -42,8 +42,9 @@ import {
   L2NavLayout,
   L2_FLAT_NAV_KEY_PREFIX,
   PANEL,
-  PANEL_INBOX_L2,
   ROW,
+  L2_ROW_SELECTED_BG,
+  PANEL_INBOX_L2,
   HOVER,
   CHILD_ACTIVE,
   CHILD_INACTIVE,
@@ -756,7 +757,7 @@ export function IconStrip({
                           setShowAppearance(false);
                           onSignOut?.();
                         }}
-                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-[#C62828] transition-colors duration-150 hover:bg-[#fce4ec] dark:hover:bg-[#3d2528]"
+                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-destructive transition-colors duration-150 hover:bg-destructive/10"
                       >
                         Sign out
                       </button>
@@ -818,7 +819,7 @@ export function IconStrip({
                               className={`flex h-[18px] w-[18px] items-center justify-center rounded-full border-2 transition-colors ${
                                 isSelected
                                   ? "border-primary"
-                                  : "border-muted-foreground/40 dark:border-[#4d5568]"
+                                  : "border-muted-foreground/40"
                               }`}
                             >
                               {isSelected && (
@@ -986,8 +987,8 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
         >
           <span>{section.label}</span>
           {isExp
-            ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-            : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+            ? <ChevronUp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            : <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           }
         </button>
         {isExp && section.children.map(child => {
@@ -1021,8 +1022,8 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
         >
           <span>{section.label}</span>
           {isExp
-            ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-            : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+            ? <ChevronUp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            : <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           }
         </button>
         {isExp && section.children.map(child => {
@@ -1244,9 +1245,44 @@ const socialConfig = {
 export type SocialL2NavPanelProps = {
   activeItem: string;
   onActiveItemChange: (key: string) => void;
+  /** Shell-only placeholder (non-interactive rows) for static Social nav previews. */
+  mode?: "live" | "placeholder";
 };
 
-export function SocialL2NavPanel({ activeItem, onActiveItemChange }: SocialL2NavPanelProps) {
+const SOCIAL_PLACEHOLDER_ROWS = [
+  "Calendar",
+  "View drafts",
+  "Approve posts",
+  "Fix failed posts",
+  "Fix rejected posts",
+  "Expired posts",
+] as const;
+
+function SocialL2NavPlaceholder() {
+  return (
+    <aside className={PANEL} aria-label="Social secondary navigation placeholder" data-no-print>
+      <div className="min-h-0 flex-1 overflow-y-auto px-[8px] pb-4 pt-3">
+        {SOCIAL_PLACEHOLDER_ROWS.map((label, index) => (
+          <div
+            key={label}
+            className={`${ROW} text-left ${index === 2 ? `text-foreground ${L2_ROW_SELECTED_BG}` : "text-muted-foreground"}`}
+            style={{ fontWeight: index === 2 ? 400 : 300 }}
+            aria-current={index === 2 ? "page" : undefined}
+          >
+            {label}
+          </div>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
+export function SocialL2NavPanel({
+  activeItem,
+  onActiveItemChange,
+  mode = "live",
+}: SocialL2NavPanelProps) {
+  if (mode === "placeholder") return <SocialL2NavPlaceholder />;
   return (
     <L2NavLayout
       {...socialConfig}
@@ -1628,8 +1664,8 @@ export function InboxL2NavPanel() {
             >
               <span>{section.label}</span>
               {inboxExpanded[section.label]
-                ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-                : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+                ? <ChevronUp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                : <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               }
             </button>
             {inboxExpanded[section.label] && renderChildren(section.label, section.children, "inbox")}
@@ -1659,8 +1695,8 @@ export function InboxL2NavPanel() {
             >
               <span>{section.label}</span>
               {teamExpanded[section.label]
-                ? <ChevronUp className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
-                : <ChevronDown className="w-3.5 h-3.5 text-[#888] dark:text-[#6b7280] shrink-0" />
+                ? <ChevronUp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                : <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               }
             </button>
             {teamExpanded[section.label] && renderChildren(section.label, section.children, "team")}

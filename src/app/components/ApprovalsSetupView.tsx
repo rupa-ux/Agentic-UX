@@ -3,6 +3,15 @@ import {
   Search, Plus, MoreVertical, ChevronDown, X, Info,
   Check, Pencil, SlidersHorizontal, AlertTriangle
 } from 'lucide-react';
+import { createColumnHelper } from "@tanstack/react-table";
+import { AppDataTable } from "@/app/components/ui/AppDataTable";
+import { Button } from "@/app/components/ui/button";
+import { Badge } from "@/app/components/ui/badge";
+import {
+  MAIN_VIEW_HEADER_BAND_CLASS,
+  MAIN_VIEW_PRIMARY_HEADING_CLASS,
+} from './layout/mainViewTitleClasses';
+import { buildApprovalWorkflowRows } from "./social/socialTableFixtures";
 
 // ─── Coverage helper ────────────────────────────────────────────────────────────
 function hasAllLocationsApprover(step: { approvers: { locationType: string }[] }) {
@@ -37,13 +46,7 @@ interface Workflow {
 
 // ─── Mock Data ─────────────────────────────────────────────────────────────────
 
-const WORKFLOWS: Workflow[] = [
-  { id: 'wf1', name: 'Compliance check',           status: 'Enabled',  lastUpdated: 'Mar 13, 2026', updatedBy: 'Emma'   },
-  { id: 'wf2', name: 'Manager review',             status: 'Disabled', lastUpdated: 'Mar 12, 2026', updatedBy: 'Samuel' },
-  { id: 'wf3', name: 'Team lead sign-off',         status: 'Enabled',  lastUpdated: 'Mar 11, 2026', updatedBy: 'James'  },
-  { id: 'wf4', name: 'Local store manager approval', status: 'Disabled', lastUpdated: 'Mar 10, 2026', updatedBy: 'Ethan'  },
-  { id: 'wf5', name: 'Brand & Legal approval',     status: 'Enabled',  lastUpdated: 'Mar 10, 2026', updatedBy: 'Evelyn' },
-];
+const WORKFLOWS: Workflow[] = buildApprovalWorkflowRows(31, 24);
 
 const ALL_APPROVERS: Approver[] = [
   { id: 'u1', name: 'Aaron Blake',    initials: 'AB', color: '#1976d2', locationType: 'partial', locations: ['Boston, MA','Culver City, CA','Corvallis, OR','Fremont, CA','Kansas City, MO','Manchester, LA','Springfield, IL','Tampa, FL','Tucson, AZ','Austin, TX'] },
@@ -521,124 +524,128 @@ function WorkflowEditor({ workflow, onBack }: { workflow: Workflow; onBack: () =
 
 // ─── Workflow List ──────────────────────────────────────────────────────────────
 
+type ApprovalListState = "live" | "loading" | "error" | "empty";
+const approvalColumn = createColumnHelper<Workflow>();
+const approvalColumns = [
+  approvalColumn.accessor("name", {
+    id: "name",
+    header: "Name",
+    size: 300,
+    enableSorting: true,
+    cell: (info) => <span className="truncate font-medium">{info.getValue()}</span>,
+  }),
+  approvalColumn.accessor("status", {
+    id: "status",
+    header: "Status",
+    size: 160,
+    enableSorting: true,
+    cell: (info) => (
+      <Badge variant={info.getValue() === "Enabled" ? "success" : "outline"}>
+        {info.getValue()}
+      </Badge>
+    ),
+  }),
+  approvalColumn.accessor("lastUpdated", {
+    id: "lastUpdated",
+    header: "Last updated",
+    size: 180,
+    enableSorting: true,
+  }),
+  approvalColumn.accessor("updatedBy", {
+    id: "updatedBy",
+    header: "Updated by",
+    size: 180,
+    enableSorting: true,
+  }),
+  approvalColumn.display({
+    id: "actions",
+    header: "",
+    size: 64,
+    cell: () => (
+      <Button variant="ghost" size="iconXs" className="text-muted-foreground">
+        <MoreVertical size={14} />
+      </Button>
+    ),
+    meta: { stopRowClick: true, settingsLabel: "Actions" },
+    enableSorting: false,
+    enableResizing: false,
+  }),
+];
+
 function WorkflowList({ onEdit, onCreate }: { onEdit: (wf: Workflow) => void; onCreate: () => void }) {
-  const [workflows, setWorkflows] = useState(WORKFLOWS);
-  const [sortCol, setSortCol] = useState<'name' | 'status' | 'lastUpdated' | 'updatedBy'>('lastUpdated');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
-  const [search, setSearch] = useState('');
+  const [workflows] = useState(WORKFLOWS);
+  const [search, setSearch] = useState("");
+  const [listState, setListState] = useState<ApprovalListState>("live");
+  const showStateControls = import.meta.env.DEV;
 
-  const toggleSort = (col: typeof sortCol) => {
-    if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-    else { setSortCol(col); setSortDir('asc'); }
-  };
-
-  const filtered = workflows.filter(w =>
-    w.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const SortIcon = ({ col }: { col: typeof sortCol }) => (
-    <ChevronDown
-      size={13}
-      className={`text-[#aaa] transition-transform ${sortCol === col && sortDir === 'asc' ? 'rotate-180' : ''}`}
-    />
-  );
-
-  const ColHeader = ({ col, label }: { col: typeof sortCol; label: string }) => (
-    <th
-      className="text-left py-[10px] px-[16px] cursor-pointer select-none"
-      onClick={() => toggleSort(col)}
-    >
-      <div className="flex items-center gap-[4px]">
-        <span className="font-['Roboto:Medium',sans-serif] text-[13px] text-[#555] dark:text-[#9ba2b0]">{label}</span>
-        <SortIcon col={col} />
-      </div>
-    </th>
-  );
-
-  const toggleStatus = (id: string) => {
-    setWorkflows(prev => prev.map(w =>
-      w.id === id ? { ...w, status: w.status === 'Enabled' ? 'Disabled' : 'Enabled' } : w
-    ));
-  };
+  const baseRows = listState === "empty" ? [] : workflows;
+  const filtered = baseRows.filter((w) => w.name.toLowerCase().includes(search.toLowerCase()));
+  const isFilteredEmpty = listState === "live" && baseRows.length > 0 && filtered.length === 0;
 
   return (
-    <div className="flex flex-col h-full transition-colors duration-300">
-      {/* Page header */}
-      <div className="border-b border-[#eaeaea] dark:border-[#2e3340] px-[24px] h-[64px] flex items-center justify-between shrink-0 bg-white dark:bg-[#1e2229]">
-        <h1 className="font-['Roboto:Regular',sans-serif] font-normal text-[20px] text-[#212121] dark:text-[#e4e8f0] tracking-[-0.4px]" style={{ fontVariationSettings: "'wdth' 100" }}>
-          {workflows.length} Approvals
-        </h1>
-        <div className="flex items-center gap-[8px]">
-          <button className="h-[36px] w-[36px] flex items-center justify-center rounded-[4px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]">
-            <Search size={18} className="text-[#555] dark:text-[#9ba2b0]" />
-          </button>
-          <button
-            onClick={onCreate}
-            className="h-[36px] px-[16px] flex items-center gap-[6px] rounded-[4px] bg-[#1976d2] font-['Roboto:Regular',sans-serif] text-[14px] text-white hover:bg-[#1565c0] transition-colors"
-          >
+    <div className="flex h-full flex-col bg-background transition-colors duration-300">
+      <div className={`${MAIN_VIEW_HEADER_BAND_CLASS} border-b border-border`}>
+        <div>
+          <h1 className={MAIN_VIEW_PRIMARY_HEADING_CLASS}>{workflows.length} Approvals</h1>
+          <p className="text-xs text-muted-foreground">Approval workflow directory</p>
+        </div>
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+          <div className="relative w-full sm:w-auto">
+            <Search size={16} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              className="h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm sm:w-[220px]"
+              placeholder="Search workflows..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </div>
+          <Button onClick={onCreate} size="sm">
             Create approval
-          </button>
-          <button className="h-[36px] w-[36px] flex items-center justify-center rounded-[4px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]">
-            <MoreVertical size={18} className="text-[#555] dark:text-[#9ba2b0]" />
-          </button>
-          <button className="h-[36px] w-[36px] flex items-center justify-center rounded-[4px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]">
-            <SlidersHorizontal size={18} className="text-[#555] dark:text-[#9ba2b0]" />
-          </button>
+          </Button>
+          {showStateControls ? (
+            <>
+              <Button variant="outline" size="sm" onClick={() => setListState("live")}>Live</Button>
+              <Button variant="outline" size="sm" onClick={() => setListState("loading")}>Loading</Button>
+              <Button variant="outline" size="sm" onClick={() => setListState("error")}>Error</Button>
+              <Button variant="outline" size="sm" onClick={() => setListState("empty")}>Empty</Button>
+            </>
+          ) : null}
+          <Button variant="outline" size="icon" className="h-9 w-9"><SlidersHorizontal size={16} /></Button>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="flex-1 overflow-y-auto bg-white dark:bg-[#1e2229]">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="border-b border-[#eaeaea] dark:border-[#2e3340] bg-white dark:bg-[#1e2229] sticky top-0">
-              <ColHeader col="name" label="Name" />
-              <ColHeader col="status" label="Status" />
-              <ColHeader col="lastUpdated" label="Last updated" />
-              <ColHeader col="updatedBy" label="Updated by" />
-              <th className="w-[60px]" />
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map(wf => (
-              <tr
-                key={wf.id}
-                className="border-b border-[#eaeaea] dark:border-[#2e3340] hover:bg-[#fafafa] dark:hover:bg-[#252a35] cursor-pointer group"
-                onClick={() => onEdit(wf)}
-              >
-                <td className="py-[14px] px-[16px]">
-                  <span className="font-['Roboto:Regular',sans-serif] text-[14px] text-[#212121] dark:text-[#e4e8f0]">{wf.name}</span>
-                </td>
-                <td className="py-[14px] px-[16px]">
-                  <span
-                    className="px-[10px] py-[3px] rounded-[4px] font-['Roboto:Regular',sans-serif] text-[13px] cursor-pointer select-none"
-                    style={{
-                      background: wf.status === 'Enabled' ? '#e8f5e9' : '#f5f5f5',
-                      color:      wf.status === 'Enabled' ? '#2e7d32' : '#757575',
-                    }}
-                    onClick={e => { e.stopPropagation(); toggleStatus(wf.id); }}
-                  >
-                    {wf.status}
-                  </span>
-                </td>
-                <td className="py-[14px] px-[16px]">
-                  <span className="font-['Roboto:Regular',sans-serif] text-[14px] text-[#555] dark:text-[#9ba2b0]">{wf.lastUpdated}</span>
-                </td>
-                <td className="py-[14px] px-[16px]">
-                  <span className="font-['Roboto:Regular',sans-serif] text-[14px] text-[#555] dark:text-[#9ba2b0]">{wf.updatedBy}</span>
-                </td>
-                <td className="py-[14px] px-[16px]">
-                  <button
-                    className="opacity-0 group-hover:opacity-100 text-[#aaa] dark:text-[#6b7a94] hover:text-[#555] dark:hover:text-[#9ba2b0]"
-                    onClick={e => { e.stopPropagation(); }}
-                  >
-                    <MoreVertical size={16} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="min-h-0 flex-1 bg-muted/20 py-4">
+        {listState === "loading" ? (
+          <div className="flex h-[260px] items-center justify-center text-sm text-muted-foreground">
+            Loading approval workflows...
+          </div>
+        ) : listState === "error" ? (
+          <div className="flex h-[260px] flex-col items-center justify-center gap-2">
+            <Badge variant="destructive"><AlertTriangle size={12} />Unable to load workflows</Badge>
+            <Button size="sm" onClick={() => setListState("live")}>Retry</Button>
+          </div>
+        ) : isFilteredEmpty ? (
+          <div className="flex h-[260px] flex-col items-center justify-center gap-2">
+            <p className="text-sm text-foreground">No workflows match your search</p>
+            <p className="text-xs text-muted-foreground">Try a different query or reset the filter.</p>
+          </div>
+        ) : (
+          <AppDataTable<Workflow>
+            tableId="social.approvals.workflows"
+            persist={false}
+            rowDensity="default"
+            columns={approvalColumns}
+            data={filtered}
+            onRowClick={onEdit}
+            stickyLeadingColumnCount={1}
+            emptyState={
+              <div className="flex h-[260px] flex-col items-center justify-center gap-2">
+                <p className="text-sm text-foreground">No approval workflows yet</p>
+                <p className="text-xs text-muted-foreground">Create one to start routing post approvals.</p>
+              </div>
+            }
+          />
+        )}
       </div>
     </div>
   );

@@ -20,3 +20,19 @@ export default meta;
 type Story = StoryObj<typeof SocialView>;
 
 export const Default: Story = {};
+
+export const ApprovePostsState: Story = {
+  render: () => <SocialView activeItem="Publish/Approve posts" onActiveItemChange={() => {}} />,
+};
+
+export const RejectedPostsState: Story = {
+  render: () => <SocialView activeItem="Publish/Fix rejected posts" onActiveItemChange={() => {}} />,
+};
+
+export const ExpiredPostsState: Story = {
+  render: () => <SocialView activeItem="Publish/Expired posts" onActiveItemChange={() => {}} />,
+};
+
+export const PlaceholderReportsState: Story = {
+  render: () => <SocialView activeItem="Reports/Post performance" onActiveItemChange={() => {}} />,
+};
