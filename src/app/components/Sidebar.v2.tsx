@@ -114,6 +114,11 @@ const sidebarSections: SidebarNavSection[] = [
       { label: "Payments", Icon: FigmaIconPayments, view: "payments" },
       { label: "Appointments", Icon: FigmaIconAppointments, view: "appointments" },
       { label: "Chatbot", Icon: MessageSquare, view: "searchai" },
+    ],
+  },
+  {
+    title: "Analytics",
+    items: [
       { label: "Reports", Icon: FigmaIconReports, view: "dashboard" },
       { label: "Insights", Icon: FigmaIconInsights, view: "insights" },
     ],
