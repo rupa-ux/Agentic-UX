@@ -1,9 +1,4 @@
 # GitHub Copilot / Codex — project rules for ShareConsolidated (Bird AI)
-
-> Full design intelligence: `.claude/skills/aero-ds/SKILL.md`
-
----
-
 ## 1. Storybook story required for every new component
 
 When you create a **new** component under `src/app/components/` (including `ui/`), you **must** also create a story under `src/stories/` in the same response. When **modifying** an existing component, update its story to reflect the change.
@@ -34,9 +29,10 @@ export const Default: Story = { args: {} };
 
 1. State the intent in one line (what job does this UI do?).
 2. Search `src/app/components/ui/` and Storybook titles for an existing match.
-3. Decide: **extend**, **compose**, **replace**, or **new primitive** — and why.
+3. Report the closest existing story and component file.
+4. Decide: **extend**, **compose**, **replace**, or **new primitive** — and why.
 
-Floating side panels → use **`Sheet`** with `inset="floating"`, not a bespoke `fixed` div.
+Do **not** introduce a second primitive for the same pattern without that decision. Floating side panels → use **`Sheet`** with `inset="floating"`, not a bespoke `fixed` div.
 
 ---
 
@@ -51,7 +47,7 @@ Floating side panels → use **`Sheet`** with `inset="floating"`, not a bespoke 
 ## 3. Icon stroke (1.6px)
 
 - All Lucide icons: `strokeWidth={1.6}` (source: `l1StripIconTokens.ts`)
-- When icon size is **not** 24px: also add `absoluteStrokeWidth`
+- When icon size is **not** 24px: also add `absoluteStrokeWidth` so stroke stays 1.6px on screen
 - Do **not** rely on Lucide's default `strokeWidth={2}`
 
 ---
@@ -91,10 +87,10 @@ Badges, pills, status tags, chips: **sentence case** only.
 | `import { SLIDE_MS, SLIDE_EASING } from "@balajik-cmyk/aero-ds"` | Motion constants |
 | `import "@balajik-cmyk/aero-ds/theme.css"` | Canonical token CSS |
 
-Do **not** modify `aero-ds/` directly — open a PR at `github.com/balajik-cmyk/aero-ds`, publish a new version, then update the version pin in `package.json`.
+Do **not** modify `aero-ds/` directly — it is a separate repo. Open a PR at `github.com/balajik-cmyk/aero-ds`, publish a new version, then update the version pin in `package.json`.
 
 ---
 
 ## 7. Stack
 
-React · Vite · Tailwind v4 · shadcn-style primitives · Radix UI · TanStack Table · React Router v7 · Storybook 8
+React · Vite · Tailwind v4 · shadcn-style primitives · Radix UI · TanStack Table · React Router v7 · Storybook 8 · Playwright · Vitest
