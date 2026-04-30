@@ -33,6 +33,7 @@ import {
   type ContactsAppBridge,
   type ContactsSheetMode,
 } from "./components/ContactsView";
+import { SEARCH_AI_L2_DEFAULT_ACTIVE } from "./components/searchai/searchAIL2Keys";
 import { ScheduledDeliveriesView } from "./components/ScheduledDeliveriesView";
 import { ScheduleBuilderView } from "./components/ScheduleBuilderView";
 import { ReferralsView, referralsL2KeyToSection } from "./components/ReferralsView";
