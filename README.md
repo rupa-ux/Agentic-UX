@@ -28,32 +28,81 @@ git pull upstream main
 
 ---
 
-## Prerequisites
+## Getting started (new teammate)
 
-- **Node.js** 18 or newer (20 LTS recommended)
-- **npm** 9+ (this repo ships `package-lock.json`; use `npm ci` for clean installs)
-- **GitHub PAT** with `read:packages` scope — required to install `@balajik-cmyk/aero-ds` from GitHub Package Registry
+Follow these steps the first time you set up this project on your machine.
 
----
+### Step 1 — Install prerequisites
 
-## Setup
+- **Node.js 20 LTS** — download from [nodejs.org](https://nodejs.org) or use a version manager like `nvm`:
+  ```bash
+  nvm install 20 && nvm use 20
+  ```
+- **npm 9+** — comes with Node.js 20, no separate install needed
+- **GitHub CLI (`gh`)** — install from [cli.github.com](https://cli.github.com):
+  ```bash
+  brew install gh          # macOS
+  ```
+
+### Step 2 — Authenticate with GitHub
+
+This repo uses the **Aero Design System** (`@balajik-cmyk/aero-ds`) from GitHub Package Registry. You need to be logged in to download it.
+
+**2a. Log in to the GitHub CLI:**
 
 ```bash
-# Set a GitHub PAT with read:packages scope (add to your shell profile to persist)
-export GITHUB_TOKEN=<your-pat>
+gh auth login
+```
 
+Follow the prompts — choose **GitHub.com → HTTPS → Login with a web browser**. It opens a browser tab, you click Authorize, and you're done.
+
+**2b. Add the `write:packages` / `read:packages` scope:**
+
+```bash
+gh auth refresh -h github.com -s read:packages
+```
+
+Follow the same browser prompt. This grants permission to download packages.
+
+**2c. Add your token to your shell profile so it's always available:**
+
+```bash
+echo '\nexport GITHUB_TOKEN=$(gh auth token)' >> ~/.zshrc && source ~/.zshrc
+```
+
+You only need to do this once. Every new terminal session will have `GITHUB_TOKEN` set automatically.
+
+### Step 3 — Clone and install
+
+```bash
+git clone https://github.com/balajik-cmyk/birdeyev2.git
+cd birdeyev2
 npm install
 ```
 
----
-
-## Running the app
+### Step 4 — Run the app
 
 ```bash
 npm run dev
 ```
 
 Opens at `http://localhost:5173`
+
+### Step 5 — Run Storybook (design system)
+
+```bash
+npm run storybook
+```
+
+Opens at `http://localhost:6006`
+
+---
+
+## Prerequisites
+
+- **Node.js** 18 or newer (20 LTS recommended)
+- **npm** 9+ (this repo ships `package-lock.json`; use `npm ci` for clean installs)
+- **GitHub CLI (`gh`)** authenticated with `read:packages` scope and `GITHUB_TOKEN` set in your shell profile (see Getting started above)
 
 ---
 
