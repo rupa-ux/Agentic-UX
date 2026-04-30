@@ -44,36 +44,54 @@ git merge origin/main
 
 ---
 
-## Submodule `aero-ds`: bump flow
+## Working with `aero-ds`
 
-The **`aero-ds`** directory is a **nested Git repository** (gitlink). Clones must be able to check out the recorded commit on **GitHub**.
+`aero-ds` is a **separate repo** published as `@balajik-cmyk/aero-ds` on the GitHub Package Registry. It is consumed by birdeyev2 as a versioned npm dependency — no submodule commands needed.
 
-### Rules
+### Setup (once per machine)
 
-1. **Never commit secrets** in `aero-ds` (tokens in `.npmrc`, credentials in remotes). Push protection may block the whole repo; it is a security risk.
-2. **The commit pinned in birdeyev2 must exist on `aero-ds`’s remote** (`origin` for [balajik-cmyk/aero-ds](https://github.com/balajik-cmyk/aero-ds)). After `git clone` + `git submodule update --init`, the checkout must succeed without “missing commit” errors.
+Create or update `~/.npmrc` (global) with a PAT that has `read:packages` scope:
 
-### Recommended sequence when UI changes need `aero-ds`
+```
+//npm.pkg.github.com/:_authToken=<YOUR_PAT>
+```
 
-1. In **`aero-ds`:** create a branch, commit, open a PR, merge to **`aero-ds`** `main`, **push** so the commit is on GitHub.
-2. In **birdeyev2:** on your feature branch, point the submodule at that commit:
-   ```bash
-   cd aero-ds
-   git fetch origin
-   git checkout <sha-or-main>
-   cd ..
-   git add aero-ds
-   git commit -m "chore: bump aero-ds to <short-reason>"
-   ```
-3. Open or update the **birdeyev2** PR that includes the submodule pointer change.
+Or export it in your shell profile:
+
+```bash
+export GITHUB_TOKEN=<YOUR_PAT>
+```
+
+The repo-level `.npmrc` routes `@balajik-cmyk` installs to GitHub Package Registry and reads the token from `$GITHUB_TOKEN`.
 
 ### Fresh clone
 
 ```bash
 git clone <birdeyev2-url>
 cd birdeyev2
-git submodule update --init --recursive
+GITHUB_TOKEN=<your-pat> npm install   # pulls @balajik-cmyk/aero-ds from GPR
 ```
+
+### Making changes to `aero-ds`
+
+1. Clone `aero-ds` separately: `git clone git@github.com:balajik-cmyk/aero-ds.git`
+2. Create a branch, make changes, open a PR, merge to `main`.
+3. Bump the version in `aero-ds/package.json` (semver: patch / minor / major).
+4. Tag the release: `git tag v1.x.y && git push --tags`
+5. GitHub Actions auto-publishes the new version to GPR (see `.github/workflows/publish.yml`).
+6. In **birdeyev2**, update the version pin: `npm install @balajik-cmyk/aero-ds@1.x.y`
+7. Commit `package.json` + `package-lock.json` in a birdeyev2 PR.
+
+### What `@balajik-cmyk/aero-ds` exports
+
+| Import | What it provides |
+|---|---|
+| `import { cn } from “@balajik-cmyk/aero-ds”` | Tailwind class merge utility |
+| `import { DESIGN_VERSION } from “@balajik-cmyk/aero-ds”` | Current design version token |
+| `import { APP_SHELL_BELOW_TOPBAR_CARD_CLASS, ... } from “@balajik-cmyk/aero-ds”` | App shell layout constants |
+| `import { FLOATING_PANEL_SURFACE_CLASSNAME } from “@balajik-cmyk/aero-ds”` | Floating overlay surface class |
+| `import “@balajik-cmyk/aero-ds/theme.css”` | Canonical design token CSS |
+| `import “@balajik-cmyk/aero-ds/tokens.css”` | Base token layer |
 
 ---
 
@@ -83,5 +101,6 @@ git submodule update --init --recursive
 |--------|---------------------|
 | Start feature | `git checkout main && git pull && git checkout -b feature/my-change` |
 | Sync feature with `main` | `git fetch origin && git merge origin/main` |
-| Submodule sync | `git submodule update --init --recursive` |
+| Install deps (incl. aero-ds) | `GITHUB_TOKEN=<pat> npm install` |
+| Bump aero-ds after publish | `npm install @balajik-cmyk/aero-ds@<version>` |
 | Protect `main` | GitHub → Settings → Branches → protection rule for `main` |

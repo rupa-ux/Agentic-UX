@@ -24,7 +24,7 @@ git checkout main   # or your default branch
 git pull upstream main
 ```
 
-**Git / `main` workflow:** Branch protection, merge convention, and **`aero-ds` submodule bumps** are documented in [`docs/git-workflow.md`](docs/git-workflow.md).
+**Git / `main` workflow:** Branch protection, merge convention, and **`aero-ds` npm workflow** are documented in [`docs/git-workflow.md`](docs/git-workflow.md).
 
 ---
 
@@ -32,13 +32,16 @@ git pull upstream main
 
 - **Node.js** 18 or newer (20 LTS recommended)
 - **npm** 9+ (this repo ships `package-lock.json`; use `npm ci` for clean installs)
-- Optional: **pnpm** 8+ if you prefer `pnpm` over npm
+- **GitHub PAT** with `read:packages` scope — required to install `@balajik-cmyk/aero-ds` from GitHub Package Registry
 
 ---
 
 ## Setup
 
 ```bash
+# Set a GitHub PAT with read:packages scope (add to your shell profile to persist)
+export GITHUB_TOKEN=<your-pat>
+
 npm install
 ```
 
