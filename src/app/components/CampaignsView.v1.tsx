@@ -535,29 +535,28 @@ const ACTIVITY_CONFIG: Record<ActivityRow["action"], { className: string; icon: 
   Unsubscribed: { className: "bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400",              icon: UserMinus },
 };
 
-/* ─── Medium badge ─── */
+const MEDIUM_ICON_CLASS = "size-4 shrink-0 text-muted-foreground";
+
+/* ─── Channel icons (email / SMS) — icon-only, 1px stroke; labels via aria only ─── */
 function MediumBadge({ medium }: { medium: CampaignMedium }) {
-  const cfg = MEDIUM_CONFIG[medium];
-  const Icon = cfg.icon;
   if (medium === "both") {
     return (
-      <div className="flex items-center gap-1">
-        <Badge variant="outline" className="gap-1 bg-slate-50 text-slate-600 dark:bg-slate-800/40 dark:text-slate-400">
-          <Mail size={9} strokeWidth={1.6} absoluteStrokeWidth />
-          Email
-        </Badge>
-        <Badge variant="outline" className="gap-1 bg-slate-50 text-slate-600 dark:bg-slate-800/40 dark:text-slate-400">
-          <Smartphone size={9} strokeWidth={1.6} absoluteStrokeWidth />
-          SMS
-        </Badge>
-      </div>
+      <span
+        className="inline-flex items-center gap-1"
+        role="img"
+        aria-label={`${MEDIUM_CONFIG.email.label} and ${MEDIUM_CONFIG.sms.label}`}
+      >
+        <Mail className={MEDIUM_ICON_CLASS} strokeWidth={1} absoluteStrokeWidth aria-hidden />
+        <Smartphone className={MEDIUM_ICON_CLASS} strokeWidth={1} absoluteStrokeWidth aria-hidden />
+      </span>
     );
   }
+  const cfg = MEDIUM_CONFIG[medium];
+  const Icon = cfg.icon;
   return (
-    <Badge variant="outline" className="gap-1 bg-slate-50 text-slate-600 dark:bg-slate-800/40 dark:text-slate-400">
-      <Icon size={9} strokeWidth={1.6} absoluteStrokeWidth />
-      {cfg.label}
-    </Badge>
+    <span role="img" aria-label={cfg.label} title={cfg.label}>
+      <Icon className={MEDIUM_ICON_CLASS} strokeWidth={1} absoluteStrokeWidth aria-hidden />
+    </span>
   );
 }
 

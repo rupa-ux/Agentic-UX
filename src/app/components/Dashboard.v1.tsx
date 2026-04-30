@@ -1,5 +1,5 @@
 import { useState, useId } from "react";
-import { ChevronDown, Clock, Filter, Info, MoreVertical, Palette, Share2 } from "lucide-react";
+import { Clock, Filter, Info, MoreVertical, Palette, Share2 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { ShareModal } from "./ShareModal";
 import { AICustomizePanel } from "./AICustomizePanel";
@@ -7,13 +7,19 @@ import { ScheduleModal } from "./ScheduleModal";
 import { type DraftReport } from "./draftStore";
 import svgPaths from "../../imports/svg-mh0ycv9qll";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
+import {
+  MAIN_VIEW_PRIMARY_HEADING_CLASS,
+  MAIN_VIEW_SUBHEADING_CLASS,
+} from "@/app/components/layout/mainViewTitleClasses";
 import { Button } from "@/app/components/ui/button";
+import { cn } from "@/app/components/ui/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
+import { ChartSummaryTable, type ChartSummaryRow } from "@/app/components/ChartSummaryTable";
 
 // ─── Generate chart data for Mar 1–28 ───
 function generateChartData(series: { key: string; base: number; variance: number }[]) {
@@ -135,17 +141,27 @@ function KpiValue({ value, change, label, large }: { value: string; change: stri
   return (
     <div className="flex flex-col gap-[2px] items-start shrink-0">
       <div className="flex gap-[4px] items-center">
-        <p className={`text-[#222] dark:text-[#e4e4e4] whitespace-nowrap ${large ? "text-[30px] leading-[42px]" : "text-[20px] leading-[22px]"}`} style={{ fontWeight: 400 }}>
+        <p
+          className={cn(
+            "whitespace-nowrap text-[#222] dark:text-[#e4e4e4] !font-normal",
+            large ? "text-[30px] leading-[42px]" : "text-[20px] leading-[22px]",
+          )}
+        >
           {value}
         </p>
         {change && (
           <div className="flex items-center pt-[6px]">
             <UpArrowIcon />
-            <p className="text-[13px] text-[#4eac5d] whitespace-nowrap" style={{ fontWeight: 400 }}>{change}</p>
+            <p className="text-[13px] font-normal text-[#4eac5d] whitespace-nowrap">{change}</p>
           </div>
         )}
       </div>
-      <p className={`text-[12px] whitespace-nowrap ${large ? "text-[#555] dark:text-[#9ba2b0] leading-[18px]" : "text-[#8f8f8f] dark:text-[#7d849a] uppercase leading-[16px]"}`} style={{ fontWeight: 400 }}>
+      <p
+        className={cn(
+          "whitespace-nowrap text-[12px] font-normal",
+          large ? "text-[#555] dark:text-[#9ba2b0] leading-[18px]" : "text-[#8f8f8f] dark:text-[#7d849a] uppercase leading-[16px]",
+        )}
+      >
         {label}
       </p>
     </div>
@@ -156,27 +172,24 @@ function KpiValue({ value, change, label, large }: { value: string; change: stri
 function WidgetHeader({ title, showActions = true }: { title: string; showActions?: boolean }) {
   return (
     <div className="flex flex-col gap-[16px] items-start shrink-0 w-full">
-      <div className="flex items-start justify-between px-[20px] py-[16px] w-full relative">
-        <div className="absolute border-[#eaeaea] dark:border-[#333a47] border-b border-solid inset-0 pointer-events-none" />
-        <div className="flex flex-col gap-[4px] items-start justify-center">
-          <div className="flex gap-[4px] items-center">
-            <p className="text-[17px] text-[#555] dark:text-[#c0c6d4] whitespace-nowrap" style={{ fontWeight: 400 }}>{title}</p>
+      <div className="flex w-full items-start justify-between py-4">
+        <div className="flex min-w-0 flex-col gap-1 items-start justify-center">
+          <div className="flex min-w-0 items-center gap-1">
+            <h3 className={cn(MAIN_VIEW_PRIMARY_HEADING_CLASS, "min-w-0 truncate font-normal")}>{title}</h3>
             <QuestionIcon />
           </div>
-          <div className="flex gap-[4px] items-start text-[12px] whitespace-nowrap" style={{ fontWeight: 400 }}>
-            <span className="text-[#555] dark:text-[#9ba2b0] leading-[16px]">This month</span>
-            <span className="text-[#8f8f8f] dark:text-[#6b7280] leading-[16px]">vs</span>
-            <span className="text-[#555] dark:text-[#9ba2b0] leading-[16px]">Previous period</span>
-          </div>
+          <p className={cn(MAIN_VIEW_SUBHEADING_CLASS, "!mt-0 max-w-full")}>
+            This month <span className="text-muted-foreground/80">vs</span> previous period
+          </p>
         </div>
         {showActions && (
-          <div className="flex gap-[8px] items-start">
-            <button className="bg-white dark:bg-[#2a3040] flex items-start p-[8px] relative rounded-[8px] border border-[#e5e9f0] dark:border-[#333a47]">
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" size="icon" className="font-normal" title="Chart layout" aria-label="Chart layout">
               <EqualizerIcon />
-            </button>
-            <button className="bg-white dark:bg-[#2a3040] flex items-start p-[8px] relative rounded-[8px] border border-[#e5e9f0] dark:border-[#333a47]">
+            </Button>
+            <Button type="button" variant="outline" size="icon" className="font-normal" title="More options" aria-label="More options">
               <ThreeDotIcon />
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -193,7 +206,7 @@ interface ChartWidgetProps {
   yDomain?: [number, number];
   yTickFormatter?: (v: number) => string;
   tableHeaders?: string[];
-  tableRows?: { channel: string; values: { value: string; change: string }[] }[];
+  tableRows?: ChartSummaryRow[];
 }
 
 function ChartWidget({ title, kpis, data, series, yDomain, yTickFormatter, tableHeaders, tableRows }: ChartWidgetProps) {
@@ -205,11 +218,11 @@ function ChartWidget({ title, kpis, data, series, yDomain, yTickFormatter, table
   const formatter = yTickFormatter || defaultFormatter;
 
   return (
-    <div className="bg-white dark:bg-[#1e2229] flex flex-col gap-[20px] items-center pb-[20px] px-[20px] rounded-[8px] border border-[#e5e9f0] dark:border-[#333a47] w-full transition-colors duration-300">
+    <div className="flex w-full flex-col items-stretch gap-6 rounded-lg border border-[#e5e9f0] bg-white px-6 pb-6 transition-colors duration-300 dark:border-[#333a47] dark:bg-[#1e2229]">
       <WidgetHeader title={title} />
 
       {/* KPIs */}
-      <div className="flex gap-[24px] items-end px-[20px] w-full">
+      <div className="flex w-full items-end gap-6">
         {kpis.map(kpi => (
           <KpiValue key={kpi.label} value={kpi.value} change={kpi.change} label={kpi.label} />
         ))}
@@ -249,8 +262,9 @@ function ChartWidget({ title, kpis, data, series, yDomain, yTickFormatter, table
               />
               <Tooltip
                 key="tooltip"
-                contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #eaeaea" }}
+                contentStyle={{ fontSize: 12, fontWeight: 400, borderRadius: 8, border: "1px solid #eaeaea" }}
                 labelStyle={{ fontWeight: 400 }}
+                itemStyle={{ fontWeight: 400 }}
               />
               {series.map(s => (
                 <Area
@@ -276,48 +290,9 @@ function ChartWidget({ title, kpis, data, series, yDomain, yTickFormatter, table
         </div>
       </div>
 
-      {/* Data table */}
-      {tableHeaders && tableRows && (
-        <div className="w-full border-t border-[#eaeaea] dark:border-[#333a47]">
-          {/* Table header */}
-          <div className="flex items-center py-[12px]">
-            <div className="min-w-[200px]">
-              <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>Channels</p>
-            </div>
-            {tableHeaders.map(h => (
-              <div key={h} className="min-w-[200px] flex items-center gap-[4px]">
-                <p className="text-[13px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{h}</p>
-                <div className="relative shrink-0 size-[12px]">
-                  <div className="absolute bottom-1/4 left-[18.75%] right-[18.75%] top-[37.5%]">
-                    <svg className="absolute block size-full" fill="none" viewBox="0 0 7.5 4.5">
-                      <path d={svgPaths.p3ddac800} fill="#303030" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* Table rows */}
-          {tableRows.map(row => (
-            <div key={row.channel} className="flex items-center border-t border-[#eaeaea] dark:border-[#333a47]">
-              <div className="min-w-[200px] py-[12px]">
-                <p className="text-[15px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{row.channel}</p>
-              </div>
-              {row.values.map((v, vi) => (
-                <div key={vi} className="min-w-[200px] py-[12px] flex items-center gap-[8px]">
-                  <p className="text-[15px] text-[#212121] dark:text-[#e4e4e4]" style={{ fontWeight: 400 }}>{v.value}</p>
-                  {v.change && (
-                    <div className="flex items-center">
-                      <UpArrowIcon />
-                      <p className="text-[13px] text-[#4eac5d]" style={{ fontWeight: 400 }}>{v.change}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
+      {tableHeaders && tableRows ? (
+        <ChartSummaryTable metricHeaders={tableHeaders} rows={tableRows} />
+      ) : null}
     </div>
   );
 }
@@ -469,14 +444,22 @@ export function Dashboard({ aiPanelOpen, onAiPanelChange, editingDraft }: { aiPa
     <div className="flex-1 bg-white dark:bg-[#13161b] overflow-auto flex flex-col transition-colors duration-300">
       <div className="sticky top-0 z-10 shrink-0 bg-white transition-colors duration-300 dark:bg-[#13161b]">
         <MainCanvasViewHeader
+          className="!px-8"
           title="Profile performance"
+          titleClassName="font-normal"
           actions={
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" variant="outline" className="gap-1 text-[14px] font-normal tracking-[-0.15px]">
-                Actions
-                <ChevronDown className="size-4 shrink-0 opacity-70" aria-hidden />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="font-normal"
+                title="Actions"
+                aria-label="Actions"
+              >
+                <MoreVertical className="size-4" aria-hidden />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-[200px]">
@@ -506,33 +489,33 @@ export function Dashboard({ aiPanelOpen, onAiPanelChange, editingDraft }: { aiPa
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <button className="bg-white dark:bg-[#262b35] p-2 border border-[#e5e9f0] dark:border-[#333a47] rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-[#2e3340]">
-            <Filter className="w-[14px] h-[14px] text-[#555] dark:text-[#8b92a5]" />
-          </button>
+          <Button type="button" variant="outline" size="icon" className="font-normal" title="Filter" aria-label="Filter">
+            <Filter className="size-4 text-muted-foreground" aria-hidden />
+          </Button>
         </div>
           }
         />
       </div>
 
-      {/* Content */}
-      <div className="px-8 pt-0 pb-8 flex flex-col gap-[20px] flex-1">
+      {/* Content — px-8 matches header band override so titles and cards share one inset */}
+      <div className="flex flex-1 flex-col gap-6 px-8 pb-8 pt-0">
         {/* Performance Summary */}
-        <div className="bg-white dark:bg-[#1e2229] flex flex-col gap-[20px] items-center pb-[20px] px-[20px] rounded-[8px] border border-[#e5e9f0] dark:border-[#333a47] w-full transition-colors duration-300">
+        <div className="flex w-full flex-col items-stretch gap-6 rounded-lg border border-[#e5e9f0] bg-white px-6 pb-6 transition-colors duration-300 dark:border-[#333a47] dark:bg-[#1e2229]">
           <WidgetHeader title="Performance summary" showActions={false} />
-          <div className="flex flex-wrap gap-[80px_80px] items-start w-full px-[0px]">
+          <div className="flex w-full flex-wrap items-start gap-[80px_80px]">
             {[
               { value: "19.1K", change: "8.2%", label: "Impressions" },
               { value: "11.9K", change: "6.2%", label: "Engagement" },
               { value: "2.4%", change: "1.2%", label: "Engagement rate" },
               { value: "9.2K", change: "3.2%", label: "Post link clicks" },
-            ].map(kpi => (
+            ].map((kpi) => (
               <KpiValue key={kpi.label} value={kpi.value} change={kpi.change} label={kpi.label} large />
             ))}
           </div>
         </div>
 
         {/* Chart widgets */}
-        {chartWidgets.map(widget => (
+        {chartWidgets.map((widget) => (
           <ChartWidget key={widget.title} {...widget} />
         ))}
       </div>

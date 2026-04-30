@@ -14,6 +14,8 @@ export interface MainCanvasViewHeaderProps {
   actions?: React.ReactNode;
   /** Merged onto the outer band — avoid `border-b` here; the title row stays open into the body (use inner cards/toolbars for dividers). */
   className?: string;
+  /** Merged after {@link MAIN_VIEW_PRIMARY_HEADING_CLASS} (e.g. `font-normal` for report-style dashboards). */
+  titleClassName?: string;
   /** Default `h1` for full-width main canvas bodies. */
   titleAs?: "h1" | "h2";
 }
@@ -27,6 +29,7 @@ export function MainCanvasViewHeader({
   description,
   actions,
   className,
+  titleClassName,
   titleAs = "h1",
 }: MainCanvasViewHeaderProps) {
   const TitleTag = titleAs;
@@ -34,7 +37,7 @@ export function MainCanvasViewHeader({
   return (
     <div className={cn(MAIN_VIEW_HEADER_BAND_CLASS, className)}>
       <div className="min-w-0">
-        <TitleTag className={MAIN_VIEW_PRIMARY_HEADING_CLASS}>{title}</TitleTag>
+        <TitleTag className={cn(MAIN_VIEW_PRIMARY_HEADING_CLASS, titleClassName)}>{title}</TitleTag>
         {description != null && description !== false ? (
           <p className={MAIN_VIEW_SUBHEADING_CLASS}>{description}</p>
         ) : null}

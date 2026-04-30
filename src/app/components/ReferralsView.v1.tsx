@@ -141,11 +141,11 @@ export function referralsL2KeyToSection(l2Key: string): ReferralsSection {
 
 /* ─── Helpers ─── */
 const CHANNEL_META: Record<Channel, { label: string; icon: React.ElementType; color: string }> = {
-  email:    { label: "Email",    icon: Mail,        color: "text-blue-500" },
-  sms:      { label: "SMS",      icon: Smartphone,  color: "text-green-500" },
-  facebook: { label: "Facebook", icon: Share2,      color: "text-indigo-500" },
-  link:     { label: "Link",     icon: Link2,       color: "text-orange-500" },
-  other:    { label: "Other",    icon: Globe,       color: "text-muted-foreground" },
+  email:    { label: "Email",    icon: Mail,        color: "text-foreground" },
+  sms:      { label: "SMS",      icon: Smartphone,  color: "text-foreground" },
+  facebook: { label: "Facebook", icon: Share2,      color: "text-foreground" },
+  link:     { label: "Link",     icon: Link2,       color: "text-foreground" },
+  other:    { label: "Other",    icon: Globe,       color: "text-foreground" },
 };
 
 function channelLabel(ch: Channel) {
@@ -180,7 +180,7 @@ function StatCard({ card }: { card: StatCard }) {
           const { icon: Icon, color } = CHANNEL_META[channel];
           return (
             <div key={channel} className="flex items-center gap-2">
-              <Icon size={13} className={`shrink-0 ${color}`} strokeWidth={1.6} absoluteStrokeWidth />
+              <Icon size={13} className={`shrink-0 ${color}`} strokeWidth={1} absoluteStrokeWidth />
               <Progress value={pct} className="h-1.5 flex-1 bg-muted" />
               <span className="text-[11px] tabular-nums text-muted-foreground w-[26px] text-right">{count}</span>
             </div>
@@ -201,10 +201,10 @@ function LeadDetailSheet({ lead, open, onClose }: { lead: LeadRow | null; open: 
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
                 {lead.name}
-                <Gift size={14} className="text-[#1E44CC]" strokeWidth={1.6} absoluteStrokeWidth />
+                <Gift size={14} className="text-[#1E44CC]" strokeWidth={1} absoluteStrokeWidth />
               </SheetTitle>
               <SheetDescription className="flex items-center gap-1 text-sm">
-                <MapPin size={12} strokeWidth={1.6} absoluteStrokeWidth />
+                <MapPin size={12} strokeWidth={1} absoluteStrokeWidth />
                 {lead.location}
               </SheetDescription>
             </SheetHeader>
@@ -226,12 +226,12 @@ function LeadDetailSheet({ lead, open, onClose }: { lead: LeadRow | null; open: 
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Thanks note</span>
                 {lead.thanksSent ? (
                   <span className="flex items-center gap-1.5 text-green-600 dark:text-green-400 font-medium">
-                    <CheckCircle2 size={14} strokeWidth={1.6} absoluteStrokeWidth />
+                    <CheckCircle2 size={14} strokeWidth={1} absoluteStrokeWidth />
                     Note sent
                   </span>
                 ) : (
                   <Button size="sm" variant="outline" className="w-fit gap-1.5">
-                    <Send size={13} strokeWidth={1.6} absoluteStrokeWidth />
+                    <Send size={13} strokeWidth={1} absoluteStrokeWidth />
                     Send thanks note
                   </Button>
                 )}
@@ -396,10 +396,10 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
             <div className="flex flex-col gap-0.5">
               <span className="flex items-center gap-1 font-medium text-foreground">
                 {r.name}
-                <Gift size={11} className="text-[#1E44CC] dark:text-[#2952E3]" strokeWidth={1.6} absoluteStrokeWidth />
+                <Gift size={11} className="text-[#1E44CC] dark:text-[#2952E3]" strokeWidth={1} absoluteStrokeWidth />
               </span>
               <span className="flex items-center gap-1 text-muted-foreground">
-                <MapPin size={10} strokeWidth={1.6} absoluteStrokeWidth />
+                <MapPin size={10} strokeWidth={1} absoluteStrokeWidth />
                 {r.location}
               </span>
             </div>
@@ -438,7 +438,7 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
           const r = row.original;
           return r.thanksSent ? (
             <span className="flex items-center gap-1 font-medium text-green-600 dark:text-green-400">
-              <CheckCircle2 size={13} strokeWidth={1.6} absoluteStrokeWidth />
+              <CheckCircle2 size={13} strokeWidth={1} absoluteStrokeWidth />
               Sent
             </span>
           ) : (
@@ -450,7 +450,7 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
                 openLead(r);
               }}
             >
-              <Send size={11} strokeWidth={1.6} absoluteStrokeWidth />
+              <Send size={11} strokeWidth={1} absoluteStrokeWidth />
               Send note
             </button>
           );
@@ -493,7 +493,7 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
               <div className="relative h-[var(--button-height)] w-[240px]">
                 <Search
                   className="pointer-events-none absolute left-2 top-1/2 size-[14px] -translate-y-1/2 text-[#303030] dark:text-[#8b92a5]"
-                  strokeWidth={1.6}
+                  strokeWidth={1}
                   absoluteStrokeWidth
                   aria-hidden
                 />
@@ -526,7 +526,7 @@ export function ReferralsView({ activeSection }: ReferralsViewProps) {
                 title="Search referrals"
                 onClick={() => setSearchOpen(true)}
               >
-                <Search className="h-[14px] w-[14px] text-[#303030] dark:text-[#8b92a5]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                <Search className="h-[14px] w-[14px] text-[#303030] dark:text-[#8b92a5]" strokeWidth={1} absoluteStrokeWidth aria-hidden />
               </Button>
             )}
             <AppDataTableColumnSettingsTrigger
