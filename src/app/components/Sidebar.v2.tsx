@@ -11,7 +11,6 @@ import {
   ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Plus, Info, MessageSquare,
   MoreHorizontal,
   Search,
-  BookOpen,
 } from "lucide-react";
 import {
   FigmaIconBirdAI, FigmaIconOverview, FigmaIconInbox,
@@ -45,8 +44,6 @@ import {
   PANEL,
   ROW,
   L2_ROW_SELECTED_BG,
-  PANEL_INBOX_L2,
-  HOVER,
   CHILD_ACTIVE,
   CHILD_INACTIVE,
   FOOTER_ROW_CLS,
@@ -91,17 +88,6 @@ function AeoSearchAiL1Icon({ size, className }: { size?: number; className?: str
   );
 }
 
-function ResourcesL1Icon({ size, className }: { size?: number; className?: string }) {
-  return (
-    <BookOpen
-      size={size}
-      className={className}
-      strokeWidth={L1_STRIP_ICON_STROKE_PX}
-      absoluteStrokeWidth
-    />
-  );
-}
-
 const sidebarSections: SidebarNavSection[] = [
   {
     items: [
@@ -124,7 +110,6 @@ const sidebarSections: SidebarNavSection[] = [
     title: "Operations",
     items: [
       { label: "Inbox", Icon: FigmaIconInbox, view: "inbox" },
-      { label: "Resources", Icon: ResourcesL1Icon, view: "resources" },
       { label: "Appointments", Icon: FigmaIconAppointments, view: "appointments" },
       { label: "Contacts", Icon: FigmaIconContacts, view: "contacts" },
       { label: "Ticketing", Icon: FigmaIconTicketing, view: "ticketing" },
@@ -260,7 +245,6 @@ export function IconStrip({
     else if (currentView === "social") setActiveIcon("Social");
     else if (currentView === "searchai" || currentView === "conversation-stream") setActiveIcon("Chatbot");
     else if (currentView === "contacts") setActiveIcon("Contacts");
-    else if (currentView === "resources") setActiveIcon("Resources");
     else if (currentView === "surveys") setActiveIcon("Surveys");
     else if (currentView === "ticketing") setActiveIcon("Ticketing");
     else if (currentView === "campaigns") setActiveIcon("Campaigns");
@@ -317,7 +301,6 @@ export function IconStrip({
     else if (label === "Inbox") onViewChange("inbox");
     else if (label === "Payments") onViewChange("payments");
     else if (label === "Appointments") onViewChange("appointments");
-    else if (label === "Resources") onViewChange("resources");
     else if (label === "Chatbot") onViewChange("searchai");
     else if (label === "Reports") onViewChange("dashboard");
     else if (label === "Insights") onViewChange("insights");
@@ -1537,10 +1520,32 @@ export function CompetitorsL2NavPanel() {
    ═══════════════════════════════════════════ */
 const appointmentsConfig = {
   headerAction: { label: "Book an appointment" },
-  defaultExpandedSections: ["Actions", "Settings"],
+  defaultExpandedSections: ["Human actions"],
+  flatNavItems: [{ label: "Outcomes", key: "outcomes" }],
+  flatNavAccentKeys: ["outcomes"],
   sections: [
-    { label: "Actions", children: ["View calendar", "View schedule"] },
-    { label: "Settings", children: ["Widget", "Notifications & alerts"] },
+    { label: "Human actions", children: ["Calendar", "Schedule", "Waitlist"] },
+    {
+      label: "Agents",
+      children: [
+        "Frontdesk agent",
+        "Scheduling agent",
+        "Reminder agent",
+        "Outreach agent",
+        "Insurance verification agent",
+        "Rx Management agent",
+      ],
+    },
+    {
+      label: "Resources",
+      children: [
+        { label: "Knowledge base", external: true },
+        "Providers",
+        "Intake forms",
+        "Phone numbers",
+        "Widgets",
+      ],
+    },
   ],
 };
 
@@ -1549,189 +1554,36 @@ export function AppointmentsL2NavPanel() {
 }
 
 /* ═══════════════════════════════════════════
-   Resources L2 Nav Panel
+   Inbox L2 Nav Panel – uses L2NavLayout
    ═══════════════════════════════════════════ */
-const resourcesConfig = {
-  flatNavItems: [
-    { label: "Knowledge base", key: "knowledge-base" },
-    { label: "Providers", key: "providers" },
-    { label: "Intake forms", key: "intake-forms" },
-    { label: "Phone numbers", key: "phone-numbers" },
-    { label: "Widgets", key: "widgets" },
+const inboxConfig = {
+  headerAction: { label: "New message" },
+  defaultExpandedSections: ["Human actions"],
+  flatNavItems: [{ label: "Outcomes", key: "outcomes" }],
+  flatNavAccentKeys: ["outcomes"],
+  sections: [
+    {
+      label: "Human actions",
+      children: ["All", "Messages", "Assigned to me", "Leads", "Spam"],
+    },
+    {
+      label: "Saved filter",
+      children: ["Missed calls today", "New patient inquiries"],
+    },
+    {
+      label: "Agents",
+      children: ["Tagging & routing agent", "Lead generation agents"],
+    },
+    {
+      label: "Resources",
+      children: [{ label: "Knowledge base", external: true }],
+    },
+    { label: "Settings", children: ["Chatbot", "Receptionist"] },
   ],
-  sections: [],
 };
 
-export function ResourcesL2NavPanel() {
-  return <L2NavLayout {...resourcesConfig} storageKey="nav:l2:resources" data-no-print />;
-}
-
-/* ═══════════════════════════════════════════
-   Inbox L2 Nav Panel – custom (not using L2NavLayout)
-   ═══════════════════════════════════════════ */
-
-
-const inboxSections = [
-  {
-    label: "Assignment",
-    children: ["Assigned to me", "Assigned to AI Agents", "Assigned to others", "Unassigned", "Spam"],
-  },
-  {
-    label: "Leads",
-    children: ["Inquiries", "Missed calls", "Voicemails", "Appointments", "Service inquiry", "Insurance", "Billing", "Lost"],
-  },
-  {
-    label: "Feedback",
-    children: ["Reviews", "Surveys"],
-  },
-  {
-    label: "Saved filters",
-    children: ["My Filter 1", "My Filter 2", "My Filter 3"],
-  },
-  {
-    label: "Reports",
-    children: ["Over time", "Location", "Users", "Channels"],
-  },
-  {
-    label: "Agents",
-    children: ["Lead generation agents"],
-  },
-  {
-    label: "Settings",
-    children: ["Chatbot", "Receptionist"],
-  },
-];
-
-const teamSections = [
-  {
-    label: "Sales Team",
-    children: ["Assigned to me", "Assigned to AI Agents", "Assigned to others", "Unassigned", "Spam"],
-  },
-  {
-    label: "Customer Service Team",
-    children: ["Assigned to me", "Assigned to AI Agents", "Assigned to others", "Unassigned", "Spam"],
-  },
-];
-
 export function InboxL2NavPanel() {
-  const [activeItem, setActiveItem] = usePersistedState("nav:l2:inbox", "standalone/All messages");
-
-  const activate = (key: string) => setActiveItem(key);
-
-  // Inbox sections: "Assignment" expanded by default
-  const [inboxExpanded, setInboxExpanded] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(inboxSections.map(s => [s.label, s.label === "Assignment"]))
-  );
-  // Team sections: all expanded by default
-  const [teamExpanded, setTeamExpanded] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(teamSections.map(s => [s.label, false]))
-  );
-
-  const toggleInbox = (label: string) =>
-    setInboxExpanded(prev => ({ ...prev, [label]: !prev[label] }));
-  const toggleTeam = (label: string) =>
-    setTeamExpanded(prev => ({ ...prev, [label]: !prev[label] }));
-
-  const renderChildren = (sectionLabel: string, children: string[], prefix: string) =>
-    children.map(child => {
-      const key = `${prefix}/${sectionLabel}/${child}`;
-      const isActive = activeItem === key;
-      return (
-        <button
-          key={key}
-          onClick={() => activate(key)}
-          className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
-          style={{ fontWeight: isActive ? 400 : 300 }}
-        >
-          {child}
-        </button>
-      );
-    });
-
-  return (
-    <div className={PANEL_INBOX_L2} data-no-print>
-      <div className="flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
-
-        {/* Header: New message */}
-        <button className={`${FOOTER_ROW_CLS} mb-[6px]`} style={{ fontSize: 14 }}>
-          <span className="text-[14px]">New message</span>
-          <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
-            <Plus
-              className={L2_HEADER_PLUS_GLYPH_BLUE}
-              strokeWidth={L2_HEADER_PLUS_STROKE_PX}
-              absoluteStrokeWidth
-              aria-hidden
-            />
-          </div>
-        </button>
-
-        {/* Flat item: All messages */}
-        {(() => {
-          const key = "standalone/All messages";
-          const isActive = activeItem === key;
-          return (
-            <button
-              onClick={() => activate(key)}
-              className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
-              style={{ fontWeight: isActive ? 400 : 300 }}
-            >
-              All messages
-            </button>
-          );
-        })()}
-
-        {/* Inbox sections */}
-        {inboxSections.map(section => (
-          <div key={section.label}>
-            <button
-              onClick={() => toggleInbox(section.label)}
-              className={SECTION_HEADER}
-              style={{ fontWeight: 400 }}
-            >
-              <span>{section.label}</span>
-              {inboxExpanded[section.label]
-                ? <ChevronUp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                : <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-              }
-            </button>
-            {inboxExpanded[section.label] && renderChildren(section.label, section.children, "inbox")}
-          </div>
-        ))}
-
-        {/* Internal team chat header */}
-        <button className={`${FOOTER_ROW_CLS} mb-[6px]`} style={{ fontSize: 14 }}>
-          <span className="text-[14px]">Internal team chat</span>
-          <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
-            <Plus
-              className={L2_HEADER_PLUS_GLYPH_BLUE}
-              strokeWidth={L2_HEADER_PLUS_STROKE_PX}
-              absoluteStrokeWidth
-              aria-hidden
-            />
-          </div>
-        </button>
-
-        {/* Team sections */}
-        {teamSections.map(section => (
-          <div key={section.label}>
-            <button
-              onClick={() => toggleTeam(section.label)}
-              className={SECTION_HEADER}
-              style={{ fontWeight: 400 }}
-            >
-              <span>{section.label}</span>
-              {teamExpanded[section.label]
-                ? <ChevronUp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                : <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-              }
-            </button>
-            {teamExpanded[section.label] && renderChildren(section.label, section.children, "team")}
-          </div>
-        ))}
-
-      </div>
-    </div>
-  );
+  return <L2NavLayout {...inboxConfig} storageKey="nav:l2:inbox" data-no-print />;
 }
 
 /* ═══════════════════════════════════════════
