@@ -5,8 +5,10 @@
  *   • L1 rail / expanded Birdeye nav — selected + hover pill: `bg-app-shell-l1-nav-highlight`; pressed:
  *     `bg-app-shell-l1-nav-pressed`; selected icon/label: `text-primary` (`Sidebar.v2` `IconStrip`).
  *   • L2 tree child (neutral selection) — `CHILD_ACTIVE` / `--app-shell-l2-row-active` + `text-foreground`.
- *   • L2 flat accent rows (tabs, overflow flyout, profile pickers) — `CHILD_FLAT_ACCENT_ACTIVE`: `bg-primary/10` +
- *     `text-primary` (+ optional `ring-primary/15`).
+ *   • L2 flat accent rows (optional: Journeys **Outcomes**, overflow flyout, profile pickers) —
+ *     `CHILD_FLAT_ACCENT_ACTIVE`: `bg-primary/10` + `text-primary` (+ `ring-primary/15`). **Do not** pass
+ *     `flatNavAccentKeys` for standard product L2 (Appointments, Inbox, …) — flat rows use the same neutral
+ *     `CHILD_ACTIVE` as section children.
  *
  * APP SHELL — L2 COLUMN (required for new products):
  *   The exported `PANEL` class string includes `rounded-tl-lg` (8px top-left) and `border-r` (1px seam vs

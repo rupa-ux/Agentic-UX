@@ -7,6 +7,7 @@ import {
   REFERRALS_L2_DEFAULT_ACTIVE_KEY,
   PaymentsL2NavPanel,
   PAYMENTS_L2_DEFAULT_ACTIVE_KEY,
+  APPOINTMENTS_L2_CALENDAR_KEY,
   AeoProductListing1L2NavPanel,
   AeoSearchAiL2NavPanel,
 } from "./components/Sidebar";
@@ -39,6 +40,10 @@ import { ScheduleBuilderView } from "./components/ScheduleBuilderView";
 import { ReferralsView, referralsL2KeyToSection } from "./components/ReferralsView";
 import { PaymentsView, paymentsL2KeyToStatusFilter } from "./components/PaymentsView";
 import { AppointmentsView } from "./components/AppointmentsView";
+import {
+  appointmentsL2PlaceholderProductLabel,
+  appointmentsL2ShowsCalendarCanvas,
+} from "./components/appointmentsL2Nav";
 import { SurveysView } from "./components/SurveysView";
 import { TicketingView } from "./components/TicketingView";
 import { ListingsView } from "./components/ListingsView";
@@ -174,6 +179,10 @@ export default function App() {
   const [paymentsL2Active, setPaymentsL2Active] = usePersistedState(
     "nav:l2:payments",
     PAYMENTS_L2_DEFAULT_ACTIVE_KEY,
+  );
+  const [appointmentsL2Active, setAppointmentsL2Active] = usePersistedState(
+    "nav:l2:appointments",
+    APPOINTMENTS_L2_CALENDAR_KEY,
   );
   const [contactsSheetMode, setContactsSheetMode] = useState<ContactsSheetMode>("none");
   const [contactsDetailId, setContactsDetailId] = useState<number | null>(null);
@@ -530,7 +539,10 @@ export default function App() {
           )}
           {/* Appointments L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "appointments" && (
-            <AppointmentsL2NavPanel />
+            <AppointmentsL2NavPanel
+              activeItem={appointmentsL2Active}
+              onActiveItemChange={setAppointmentsL2Active}
+            />
           )}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "aeo-product-listing-1" && (
             <AeoProductListing1L2NavPanel />
@@ -595,7 +607,14 @@ export default function App() {
             ) : currentView === "payments" ? (
               <PaymentsView statusFilter={paymentsL2KeyToStatusFilter(paymentsL2Active)} />
             ) : currentView === "appointments" ? (
-              <AppointmentsView />
+              appointmentsL2ShowsCalendarCanvas(appointmentsL2Active) ? (
+                <AppointmentsView />
+              ) : (
+                <AppShellContentPlaceholder
+                  view="appointments"
+                  productLabel={appointmentsL2PlaceholderProductLabel(appointmentsL2Active)}
+                />
+              )
             ) : currentView === "aeo-product-listing-1" ? (
               <AppShellContentPlaceholder view="aeo-product-listing-1" productLabel="Listings" />
             ) : currentView === "aeo-search-ai" ? (

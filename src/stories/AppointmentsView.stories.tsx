@@ -9,11 +9,10 @@ const meta: Meta<typeof AppointmentsView> = {
     docs: {
       description: {
         component:
-          "Appointments product view. Migrated from `UI-web-2.0/src/app/pages/appointments/`. " +
-          "Layout and range toggles sit in `MainCanvasViewHeader` actions (icon-only segmented controls, like Reviews). " +
-          "Two modes: Calendar (day/week grid with time-positioned appointment cards per provider) " +
-          "and Schedule (sortable list table). Clicking any appointment opens a floating inset detail Sheet (md width) using the shared FloatingSheetFrame pattern. " +
-          "All data is mocked for prototype use.",
+          "Appointments product view. Canvas header uses `MainCanvasViewHeader`: calendar navigation + Today in `title`, " +
+          "and a right cluster with Status `DropdownMenu`, then a three-item `SegmentedToggle` (Day / Week / By doctor), then `FilterPaneTriggerButton` last (see **Layout/Main canvas view header**). " +
+          "Cards show patient name (bold) + doctor name (provider-color tinted) + service + time. Status dot removed. " +
+          "By-doctor view shows 4 doctor columns for a single day. Detail Sheet uses `FloatingSheetFrame`. Mock data only.",
       },
     },
   },
@@ -23,4 +22,16 @@ export default meta;
 type Story = StoryObj<typeof AppointmentsView>;
 
 export const Default: Story = {};
-export const WeekCalendar: Story = { name: "Week calendar (default)" };
+export const WeekCalendarView: Story = { name: "Week calendar" };
+export const DayCalendarView: Story = {
+  name: "Day calendar",
+  args: { defaultCalendarView: "day" },
+};
+export const ByDoctorView: Story = {
+  name: "By doctor — columns per provider",
+  args: { defaultCalendarView: "by-doctor" },
+};
+export const CleanWeekHeaders: Story = {
+  name: "Week headers — no appt count",
+  args: { defaultCalendarView: "week" },
+};

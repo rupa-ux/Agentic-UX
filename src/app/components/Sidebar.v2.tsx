@@ -52,6 +52,7 @@ import {
   L2_HEADER_PLUS_GLYPH_BLUE,
   L2_HEADER_PLUS_STROKE_PX,
 } from "./L2NavLayout";
+import { APPOINTMENTS_L2_CALENDAR_KEY } from "@/app/components/appointmentsL2Nav";
 
 /** How long to show the Reports-row shimmer before opening the tab (~sub-second “micro” handoff). */
 export const REPORTS_EXTERNAL_SHIMMER_MS = 480;
@@ -1522,9 +1523,8 @@ const appointmentsConfig = {
   headerAction: { label: "Book an appointment" },
   defaultExpandedSections: ["Human actions"],
   flatNavItems: [{ label: "Outcomes", key: "outcomes" }],
-  flatNavAccentKeys: ["outcomes"],
   sections: [
-    { label: "Human actions", children: ["Calendar", "Schedule", "Waitlist"] },
+    { label: "Human actions", children: ["Calendar", "Schedule", "Waitlist", "Providers"] },
     {
       label: "Agents",
       children: [
@@ -1539,8 +1539,7 @@ const appointmentsConfig = {
     {
       label: "Resources",
       children: [
-        { label: "Knowledge base", external: true },
-        "Providers",
+        "Knowledge base",
         "Intake forms",
         "Phone numbers",
         "Widgets",
@@ -1549,9 +1548,24 @@ const appointmentsConfig = {
   ],
 };
 
-export function AppointmentsL2NavPanel() {
-  return <L2NavLayout {...appointmentsConfig} storageKey="nav:l2:appointments" data-no-print />;
+export type AppointmentsL2NavPanelProps = {
+  activeItem: string;
+  onActiveItemChange: (key: string) => void;
+};
+
+export function AppointmentsL2NavPanel({ activeItem, onActiveItemChange }: AppointmentsL2NavPanelProps) {
+  return (
+    <L2NavLayout
+      {...appointmentsConfig}
+      defaultActive={APPOINTMENTS_L2_CALENDAR_KEY}
+      activeItem={activeItem}
+      onActiveItemChange={onActiveItemChange}
+      data-no-print
+    />
+  );
 }
+
+export { APPOINTMENTS_L2_CALENDAR_KEY } from "@/app/components/appointmentsL2Nav";
 
 /* ═══════════════════════════════════════════
    Inbox L2 Nav Panel – uses L2NavLayout
@@ -1560,7 +1574,6 @@ const inboxConfig = {
   headerAction: { label: "New message" },
   defaultExpandedSections: ["Human actions"],
   flatNavItems: [{ label: "Outcomes", key: "outcomes" }],
-  flatNavAccentKeys: ["outcomes"],
   sections: [
     {
       label: "Human actions",
@@ -1576,7 +1589,7 @@ const inboxConfig = {
     },
     {
       label: "Resources",
-      children: [{ label: "Knowledge base", external: true }],
+      children: ["Knowledge base"],
     },
     { label: "Settings", children: ["Chatbot", "Receptionist"] },
   ],

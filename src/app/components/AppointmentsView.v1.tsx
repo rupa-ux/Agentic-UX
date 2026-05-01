@@ -1,39 +1,36 @@
-import { useCallback, useMemo, useState } from "react";
-import { createColumnHelper } from "@tanstack/react-table";
+import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import {
-  ChevronLeft, ChevronRight, Search, MoreHorizontal,
-  Clock, User, Calendar, CalendarRange, List, CheckCircle2, X, Bell,
+  Clock, User, Calendar, Users, X, Bell,
   MapPin, Phone, Mail,
+  ChevronLeft, ChevronRight, ChevronDown,
 } from "lucide-react";
+import { cn } from "@/app/components/ui/utils";
+import { FilterPaneTriggerButton } from "@/app/components/FilterPane.v1";
 import { Button } from "@/app/components/ui/button";
-import { Badge } from "@/app/components/ui/badge";
-import { Input } from "@/app/components/ui/input";
-import { AppDataTable } from "@/app/components/ui/AppDataTable";
 import { SegmentedToggle } from "@/app/components/ui/segmented-toggle";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/app/components/ui/dropdown-menu";
 import {
   Sheet, SheetContent,
 } from "@/app/components/ui/sheet";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from "@/app/components/ui/dropdown-menu";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
-} from "@/app/components/ui/dialog";
 import {
   FloatingSheetFrame,
   FLOATING_SHEET_FRAME_CONTENT_CLASS,
 } from "@/app/components/layout/FloatingSheetFrame";
 import { TooltipProvider } from "@/app/components/ui/tooltip";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
-import { cn } from "@/app/components/ui/utils";
 
 /* ─── Types ─── */
 type ApptStatus = "confirmed" | "requested" | "completed" | "cancelled" | "no_show" | "in_progress";
-type ViewMode = "calendar" | "schedule";
-type CalendarView = "day" | "week";
+type CalendarView = "day" | "week" | "by-doctor";
+type AppointmentStatusFilter = "all" | ApptStatus;
 
 interface Provider {
-  id: string; name: string; specialty: string; color: string;
+  id: string; name: string; specialty: string; color: string; avatar: string;
 }
 
 interface Appointment {
@@ -52,41 +49,93 @@ interface Appointment {
   notes?: string;
 }
 
-const appointmentColumnHelper = createColumnHelper<Appointment>();
-
 /* ─── Mock data ─── */
 const PROVIDERS: Provider[] = [
-  { id: "p1", name: "Dr. Sarah Chen",   specialty: "General Dentistry", color: "#4f46e5" },
-  { id: "p2", name: "Dr. Marcus Webb",  specialty: "Orthodontics",      color: "#0891b2" },
-  { id: "p3", name: "Dr. Priya Nair",   specialty: "Cosmetic Dentistry", color: "#059669" },
-  { id: "p4", name: "Dr. James Osei",   specialty: "Oral Surgery",       color: "#d97706" },
+  // sorted A → Z by last name
+  { id: "p5", name: "Dr. Ana Alvarado",  specialty: "Pediatric Dentistry", color: "#dc2626", avatar: "https://randomuser.me/api/portraits/women/44.jpg" },
+  { id: "p1", name: "Dr. Sarah Chen",    specialty: "General Dentistry",   color: "#4f46e5", avatar: "https://randomuser.me/api/portraits/women/25.jpg" },
+  { id: "p7", name: "Dr. Diana Cruz",    specialty: "Endodontics",         color: "#be185d", avatar: "https://randomuser.me/api/portraits/women/67.jpg" },
+  { id: "p6", name: "Dr. Ben Foster",    specialty: "Periodontics",        color: "#7c3aed", avatar: "https://randomuser.me/api/portraits/men/32.jpg"   },
+  { id: "p3", name: "Dr. Priya Nair",    specialty: "Cosmetic Dentistry",  color: "#059669", avatar: "https://randomuser.me/api/portraits/women/56.jpg" },
+  { id: "p4", name: "Dr. James Osei",    specialty: "Oral Surgery",        color: "#d97706", avatar: "https://randomuser.me/api/portraits/men/76.jpg"   },
+  { id: "p8", name: "Dr. Ethan Park",    specialty: "Prosthodontics",      color: "#0d9488", avatar: "https://randomuser.me/api/portraits/men/48.jpg"   },
+  { id: "p2", name: "Dr. Marcus Webb",   specialty: "Orthodontics",        color: "#0891b2", avatar: "https://randomuser.me/api/portraits/men/85.jpg"   },
 ];
 
-// Week of Apr 14, 2026 (Mon–Sun)
-const WEEK_DATES = ["2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-18", "2026-04-19", "2026-04-20"];
-
 const APPOINTMENTS: Appointment[] = [
-  // Monday
+  // ── April 14 (Mon) ──────────────────────────────────────────────────────────
   { id: "a1",  patientName: "Lisa Monroe",     patientEmail: "lisa@example.com",    patientPhone: "(512) 555-0141", providerId: "p1", service: "Teeth Cleaning",      status: "confirmed",   date: "2026-04-14", startTime: "09:00", endTime: "09:45", duration: 45, location: "Suite 101" },
   { id: "a2",  patientName: "Tom Harrington",  patientEmail: "tom@example.com",     patientPhone: "(512) 555-0182", providerId: "p2", service: "Braces Adjustment",   status: "confirmed",   date: "2026-04-14", startTime: "10:00", endTime: "10:30", duration: 30, location: "Suite 204" },
   { id: "a3",  patientName: "Aisha Rahman",    patientEmail: "aisha@example.com",   patientPhone: "(512) 555-0109", providerId: "p3", service: "Veneer Consultation", status: "requested",   date: "2026-04-14", startTime: "11:00", endTime: "11:30", duration: 30, location: "Suite 308" },
   { id: "a4",  patientName: "Carlos Vega",     patientEmail: "carlos@example.com",  patientPhone: "(512) 555-0155", providerId: "p4", service: "Tooth Extraction",    status: "confirmed",   date: "2026-04-14", startTime: "14:00", endTime: "15:00", duration: 60, location: "Suite 412" },
-  // Tuesday
+  // ── April 15 (Tue) ──────────────────────────────────────────────────────────
   { id: "a5",  patientName: "Fiona Blake",     patientEmail: "fiona@example.com",   patientPhone: "(512) 555-0122", providerId: "p1", service: "Root Canal",          status: "in_progress", date: "2026-04-15", startTime: "09:30", endTime: "11:00", duration: 90, location: "Suite 101" },
   { id: "a6",  patientName: "David Park",      patientEmail: "david@example.com",   patientPhone: "(512) 555-0177", providerId: "p2", service: "Retainer Fitting",    status: "confirmed",   date: "2026-04-15", startTime: "13:00", endTime: "13:30", duration: 30, location: "Suite 204" },
-  // Wednesday
+  // ── April 16 (Wed) ──────────────────────────────────────────────────────────
   { id: "a7",  patientName: "Maria Santos",    patientEmail: "maria@example.com",   patientPhone: "(512) 555-0133", providerId: "p3", service: "Whitening Session",   status: "confirmed",   date: "2026-04-16", startTime: "10:00", endTime: "11:00", duration: 60, location: "Suite 308" },
   { id: "a8",  patientName: "James Okafor",    patientEmail: "james@example.com",   patientPhone: "(512) 555-0194", providerId: "p1", service: "Check-up & X-ray",   status: "cancelled",   date: "2026-04-16", startTime: "14:30", endTime: "15:00", duration: 30, location: "Suite 101", notes: "Patient requested reschedule." },
-  // Thursday
+  // ── April 17 (Thu) ──────────────────────────────────────────────────────────
   { id: "a9",  patientName: "Nina Petrov",     patientEmail: "nina@example.com",    patientPhone: "(512) 555-0161", providerId: "p4", service: "Implant Consult",     status: "confirmed",   date: "2026-04-17", startTime: "09:00", endTime: "09:30", duration: 30, location: "Suite 412" },
   { id: "a10", patientName: "Oliver Grant",    patientEmail: "oliver@example.com",  patientPhone: "(512) 555-0148", providerId: "p2", service: "Invisalign Check",    status: "requested",   date: "2026-04-17", startTime: "11:30", endTime: "12:00", duration: 30, location: "Suite 204" },
   { id: "a11", patientName: "Sophia Turner",   patientEmail: "sophia@example.com",  patientPhone: "(512) 555-0115", providerId: "p3", service: "Bonding",             status: "no_show",     date: "2026-04-17", startTime: "15:00", endTime: "15:45", duration: 45, location: "Suite 308" },
-  // Friday
+  // ── April 18 (Fri) ──────────────────────────────────────────────────────────
   { id: "a12", patientName: "Ben Nakamura",    patientEmail: "ben@example.com",     patientPhone: "(512) 555-0127", providerId: "p1", service: "Fluoride Treatment",  status: "confirmed",   date: "2026-04-18", startTime: "08:30", endTime: "09:00", duration: 30, location: "Suite 101" },
   { id: "a13", patientName: "Clara Hughes",    patientEmail: "clara@example.com",   patientPhone: "(512) 555-0188", providerId: "p3", service: "Scaling & Polish",    status: "completed",   date: "2026-04-18", startTime: "10:00", endTime: "10:45", duration: 45, location: "Suite 308" },
   { id: "a14", patientName: "Devon King",      patientEmail: "devon@example.com",   patientPhone: "(512) 555-0139", providerId: "p4", service: "Wisdom Tooth Eval",   status: "confirmed",   date: "2026-04-18", startTime: "13:30", endTime: "14:00", duration: 30, location: "Suite 412" },
-  // Saturday
+  // ── April 19 (Sat) ──────────────────────────────────────────────────────────
   { id: "a15", patientName: "Elena Watts",     patientEmail: "elena@example.com",   patientPhone: "(512) 555-0172", providerId: "p2", service: "Dental Emergency",    status: "confirmed",   date: "2026-04-19", startTime: "10:00", endTime: "11:00", duration: 60, location: "Suite 204" },
+  // ── May 1 (Today — by-doctor default view) ──────────────────────────────────
+  // Dr. Sarah Chen (p1) — General Dentistry
+  { id: "b1",  patientName: "Rachel Kim",      patientEmail: "rachel@example.com",  patientPhone: "(512) 555-0201", providerId: "p1", service: "Routine Check-up",    status: "confirmed",   date: "2026-05-01", startTime: "08:00", endTime: "08:45", duration: 45, location: "Suite 101" },
+  { id: "b2",  patientName: "Marcus Lee",      patientEmail: "marcus@example.com",  patientPhone: "(512) 555-0202", providerId: "p1", service: "Teeth Cleaning",      status: "confirmed",   date: "2026-05-01", startTime: "09:00", endTime: "09:45", duration: 45, location: "Suite 101" },
+  { id: "b3",  patientName: "Priya Kapoor",    patientEmail: "priya@example.com",   patientPhone: "(512) 555-0203", providerId: "p1", service: "Cavity Filling",      status: "in_progress", date: "2026-05-01", startTime: "10:00", endTime: "10:30", duration: 30, location: "Suite 101" },
+  { id: "b4",  patientName: "Tom Walsh",       patientEmail: "tomw@example.com",    patientPhone: "(512) 555-0204", providerId: "p1", service: "Root Canal – Stage 1", status: "confirmed",  date: "2026-05-01", startTime: "11:00", endTime: "12:30", duration: 90, location: "Suite 101" },
+  { id: "b5",  patientName: "Grace Nguyen",    patientEmail: "grace@example.com",   patientPhone: "(512) 555-0205", providerId: "p1", service: "Fluoride Treatment",  status: "requested",   date: "2026-05-01", startTime: "14:00", endTime: "14:30", duration: 30, location: "Suite 101" },
+  { id: "b6",  patientName: "Eli Thompson",    patientEmail: "eli@example.com",     patientPhone: "(512) 555-0206", providerId: "p1", service: "Extraction Consult",  status: "confirmed",   date: "2026-05-01", startTime: "15:00", endTime: "15:30", duration: 30, location: "Suite 101" },
+  // Dr. Marcus Webb (p2) — Orthodontics
+  { id: "b7",  patientName: "Isabelle Roy",    patientEmail: "isabelle@example.com",patientPhone: "(512) 555-0207", providerId: "p2", service: "Braces Fitting",      status: "confirmed",   date: "2026-05-01", startTime: "08:30", endTime: "09:30", duration: 60, location: "Suite 204" },
+  { id: "b8",  patientName: "Alex Chen",       patientEmail: "alexc@example.com",   patientPhone: "(512) 555-0208", providerId: "p2", service: "Invisalign Progress",  status: "confirmed",   date: "2026-05-01", startTime: "10:00", endTime: "10:30", duration: 30, location: "Suite 204" },
+  { id: "b9",  patientName: "Maya Patel",      patientEmail: "maya@example.com",    patientPhone: "(512) 555-0209", providerId: "p2", service: "Retainer Adjustment",  status: "completed",   date: "2026-05-01", startTime: "11:00", endTime: "11:30", duration: 30, location: "Suite 204" },
+  { id: "b10", patientName: "Liam Foster",     patientEmail: "liam@example.com",    patientPhone: "(512) 555-0210", providerId: "p2", service: "Braces Adjustment",   status: "confirmed",   date: "2026-05-01", startTime: "13:00", endTime: "13:30", duration: 30, location: "Suite 204" },
+  { id: "b11", patientName: "Sara Moon",       patientEmail: "sara@example.com",    patientPhone: "(512) 555-0211", providerId: "p2", service: "Invisalign Scan",     status: "requested",   date: "2026-05-01", startTime: "14:30", endTime: "15:00", duration: 30, location: "Suite 204" },
+  { id: "b12", patientName: "Jay Okonkwo",     patientEmail: "jay@example.com",     patientPhone: "(512) 555-0212", providerId: "p2", service: "Retainer Fitting",    status: "confirmed",   date: "2026-05-01", startTime: "15:30", endTime: "16:00", duration: 30, location: "Suite 204" },
+  // Dr. Priya Nair (p3) — Cosmetic Dentistry
+  { id: "b13", patientName: "Zoe Lambert",     patientEmail: "zoe@example.com",     patientPhone: "(512) 555-0213", providerId: "p3", service: "Veneer Consultation",  status: "confirmed",   date: "2026-05-01", startTime: "09:00", endTime: "09:45", duration: 45, location: "Suite 308" },
+  { id: "b14", patientName: "Ryan Cho",        patientEmail: "ryan@example.com",    patientPhone: "(512) 555-0214", providerId: "p3", service: "Teeth Whitening",     status: "confirmed",   date: "2026-05-01", startTime: "10:00", endTime: "11:00", duration: 60, location: "Suite 308" },
+  { id: "b15", patientName: "Nadia Flores",    patientEmail: "nadia@example.com",   patientPhone: "(512) 555-0215", providerId: "p3", service: "Composite Bonding",   status: "in_progress", date: "2026-05-01", startTime: "11:30", endTime: "12:15", duration: 45, location: "Suite 308" },
+  { id: "b16", patientName: "Owen Harris",     patientEmail: "owen@example.com",    patientPhone: "(512) 555-0216", providerId: "p3", service: "Smile Design Consult", status: "requested",   date: "2026-05-01", startTime: "13:30", endTime: "14:00", duration: 30, location: "Suite 308" },
+  { id: "b17", patientName: "Amy Reeves",      patientEmail: "amy@example.com",     patientPhone: "(512) 555-0217", providerId: "p3", service: "Scaling & Polish",    status: "confirmed",   date: "2026-05-01", startTime: "15:00", endTime: "15:45", duration: 45, location: "Suite 308" },
+  // Dr. James Osei (p4) — Oral Surgery
+  { id: "b18", patientName: "Victor Mensah",   patientEmail: "victor@example.com",  patientPhone: "(512) 555-0218", providerId: "p4", service: "Wisdom Tooth Removal", status: "confirmed",   date: "2026-05-01", startTime: "08:00", endTime: "09:00", duration: 60, location: "Suite 412" },
+  { id: "b19", patientName: "Chloe Dubois",    patientEmail: "chloe@example.com",   patientPhone: "(512) 555-0219", providerId: "p4", service: "Implant Placement",   status: "confirmed",   date: "2026-05-01", startTime: "09:30", endTime: "11:00", duration: 90, location: "Suite 412" },
+  { id: "b20", patientName: "Felix Torres",    patientEmail: "felix@example.com",   patientPhone: "(512) 555-0220", providerId: "p4", service: "Post-op Follow-up",   status: "completed",   date: "2026-05-01", startTime: "11:30", endTime: "12:00", duration: 30, location: "Suite 412" },
+  { id: "b21", patientName: "Hannah Scott",    patientEmail: "hannah@example.com",  patientPhone: "(512) 555-0221", providerId: "p4", service: "Biopsy Consult",      status: "confirmed",   date: "2026-05-01", startTime: "13:00", endTime: "13:45", duration: 45, location: "Suite 412" },
+  { id: "b22", patientName: "Leo Andrade",     patientEmail: "leo@example.com",     patientPhone: "(512) 555-0222", providerId: "p4", service: "Implant Consult",     status: "requested",   date: "2026-05-01", startTime: "14:30", endTime: "15:00", duration: 30, location: "Suite 412" },
+  { id: "b23", patientName: "Iris Wade",       patientEmail: "iris@example.com",    patientPhone: "(512) 555-0223", providerId: "p4", service: "Extraction – Molar",  status: "confirmed",   date: "2026-05-01", startTime: "15:30", endTime: "16:30", duration: 60, location: "Suite 412" },
+  // Dr. Ana Alvarado (p5) — Pediatric Dentistry
+  { id: "b24", patientName: "Noah Kim",        patientEmail: "noah@example.com",    patientPhone: "(512) 555-0224", providerId: "p5", service: "Kids Check-up",       status: "confirmed",   date: "2026-05-01", startTime: "08:30", endTime: "09:00", duration: 30, location: "Suite 105" },
+  { id: "b25", patientName: "Emma Tran",       patientEmail: "emmat@example.com",   patientPhone: "(512) 555-0225", providerId: "p5", service: "Sealants",            status: "confirmed",   date: "2026-05-01", startTime: "09:30", endTime: "10:00", duration: 30, location: "Suite 105" },
+  { id: "b26", patientName: "Lucas Diaz",      patientEmail: "lucas@example.com",   patientPhone: "(512) 555-0226", providerId: "p5", service: "First Visit Consult",  status: "requested",   date: "2026-05-01", startTime: "10:30", endTime: "11:00", duration: 30, location: "Suite 105" },
+  { id: "b27", patientName: "Mia Johansson",   patientEmail: "mia@example.com",     patientPhone: "(512) 555-0227", providerId: "p5", service: "Cavity Filling",      status: "confirmed",   date: "2026-05-01", startTime: "14:00", endTime: "14:30", duration: 30, location: "Suite 105" },
+  { id: "b28", patientName: "Aiden Brooks",    patientEmail: "aiden@example.com",   patientPhone: "(512) 555-0228", providerId: "p5", service: "Fluoride Varnish",    status: "confirmed",   date: "2026-05-01", startTime: "15:00", endTime: "15:30", duration: 30, location: "Suite 105" },
+  // Dr. Ben Foster (p6) — Periodontics
+  { id: "b29", patientName: "Ava Brennan",     patientEmail: "avab@example.com",    patientPhone: "(512) 555-0229", providerId: "p6", service: "Deep Cleaning",       status: "confirmed",   date: "2026-05-01", startTime: "08:00", endTime: "09:00", duration: 60, location: "Suite 210" },
+  { id: "b30", patientName: "Miles Obi",       patientEmail: "miles@example.com",   patientPhone: "(512) 555-0230", providerId: "p6", service: "Gum Evaluation",      status: "in_progress", date: "2026-05-01", startTime: "09:30", endTime: "10:00", duration: 30, location: "Suite 210" },
+  { id: "b31", patientName: "Sophie Larsen",   patientEmail: "sophie@example.com",  patientPhone: "(512) 555-0231", providerId: "p6", service: "Perio Maintenance",   status: "confirmed",   date: "2026-05-01", startTime: "11:00", endTime: "11:30", duration: 30, location: "Suite 210" },
+  { id: "b32", patientName: "Daniel Yuen",     patientEmail: "daniel@example.com",  patientPhone: "(512) 555-0232", providerId: "p6", service: "Crown Lengthening",   status: "requested",   date: "2026-05-01", startTime: "14:00", endTime: "15:00", duration: 60, location: "Suite 210" },
+  { id: "b33", patientName: "Layla Hassan",    patientEmail: "layla@example.com",   patientPhone: "(512) 555-0233", providerId: "p6", service: "Scaling & Root Plan", status: "confirmed",   date: "2026-05-01", startTime: "15:30", endTime: "16:00", duration: 30, location: "Suite 210" },
+  // Dr. Diana Cruz (p7) — Endodontics
+  { id: "b34", patientName: "Ethan Moore",     patientEmail: "ethanm@example.com",  patientPhone: "(512) 555-0234", providerId: "p7", service: "Root Canal – Stage 1", status: "confirmed",  date: "2026-05-01", startTime: "08:00", endTime: "09:30", duration: 90, location: "Suite 315" },
+  { id: "b35", patientName: "Clara Reid",      patientEmail: "clarareid@example.com",patientPhone: "(512) 555-0235", providerId: "p7", service: "Post & Core Follow-up",status: "completed",  date: "2026-05-01", startTime: "10:00", endTime: "10:30", duration: 30, location: "Suite 315" },
+  { id: "b36", patientName: "Jack Navarro",    patientEmail: "jack@example.com",    patientPhone: "(512) 555-0236", providerId: "p7", service: "Root Canal – Stage 2", status: "confirmed",  date: "2026-05-01", startTime: "11:00", endTime: "12:00", duration: 60, location: "Suite 315" },
+  { id: "b37", patientName: "Amara Okafor",    patientEmail: "amara@example.com",   patientPhone: "(512) 555-0237", providerId: "p7", service: "Cracked Tooth Consult",status: "requested",  date: "2026-05-01", startTime: "14:00", endTime: "14:30", duration: 30, location: "Suite 315" },
+  { id: "b38", patientName: "Sam Whitfield",   patientEmail: "sam@example.com",     patientPhone: "(512) 555-0238", providerId: "p7", service: "Retreatment Eval",    status: "confirmed",   date: "2026-05-01", startTime: "15:00", endTime: "15:30", duration: 30, location: "Suite 315" },
+  // Dr. Ethan Park (p8) — Prosthodontics
+  { id: "b39", patientName: "Olivia Shaw",     patientEmail: "olivia@example.com",  patientPhone: "(512) 555-0239", providerId: "p8", service: "Crown Fitting",       status: "confirmed",   date: "2026-05-01", startTime: "09:00", endTime: "09:45", duration: 45, location: "Suite 420" },
+  { id: "b40", patientName: "Ryan Mack",       patientEmail: "ryanm@example.com",   patientPhone: "(512) 555-0240", providerId: "p8", service: "Denture Adjustment",  status: "confirmed",   date: "2026-05-01", startTime: "10:30", endTime: "11:00", duration: 30, location: "Suite 420" },
+  { id: "b41", patientName: "Zara Patel",      patientEmail: "zara@example.com",    patientPhone: "(512) 555-0241", providerId: "p8", service: "Bridge Consultation",  status: "requested",   date: "2026-05-01", startTime: "13:00", endTime: "13:45", duration: 45, location: "Suite 420" },
+  { id: "b42", patientName: "Finn Gallagher",  patientEmail: "finn@example.com",    patientPhone: "(512) 555-0242", providerId: "p8", service: "Implant Crown",       status: "confirmed",   date: "2026-05-01", startTime: "14:30", endTime: "15:30", duration: 60, location: "Suite 420" },
+  { id: "b43", patientName: "Leah Castillo",   patientEmail: "leah@example.com",    patientPhone: "(512) 555-0243", providerId: "p8", service: "Full Denture Fit",    status: "confirmed",   date: "2026-05-01", startTime: "16:00", endTime: "17:00", duration: 60, location: "Suite 420" },
 ];
 
 /* ─── Status config ─── */
@@ -138,39 +187,116 @@ function providerById(id: string): Provider {
   return PROVIDERS.find((p) => p.id === id)!;
 }
 
-function isToday(iso: string): boolean {
-  return iso === "2026-04-14"; // Monday = "today" in our mock
+function dateToIso(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function startOfLocalDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+/** Monday 00:00 local for the ISO week that contains `d`. */
+function startOfWeekMonday(d: Date): Date {
+  const x = startOfLocalDay(d);
+  const day = x.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  x.setDate(x.getDate() + diff);
+  return x;
+}
+
+function addDays(d: Date, n: number): Date {
+  const x = new Date(d);
+  x.setDate(x.getDate() + n);
+  return x;
+}
+
+function weekIsoDatesFromMonday(monday: Date): string[] {
+  return Array.from({ length: 7 }, (_, i) => dateToIso(addDays(monday, i)));
+}
+
+function isTodayIso(iso: string): boolean {
+  return iso === dateToIso(startOfLocalDay(new Date()));
+}
+
+const APPOINTMENT_STATUS_FILTER_OPTIONS: { value: AppointmentStatusFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "confirmed", label: "Confirmed" },
+  { value: "requested", label: "Requested" },
+  { value: "completed", label: "Completed" },
+  { value: "cancelled", label: "Cancelled" },
+  { value: "no_show", label: "No show" },
+  { value: "in_progress", label: "In progress" },
+];
+
+/* ─── Shared calendar helpers ─── */
+const TIME_SLOTS_24H: string[] = [];
+for (let h = 0; h < 24; h++) {
+  TIME_SLOTS_24H.push(`${h.toString().padStart(2, "0")}:00`);
+  TIME_SLOTS_24H.push(`${h.toString().padStart(2, "0")}:30`);
+}
+
+function useCurrentTime(): Date {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  return now;
+}
+
+/** Greedily distributes appointments into non-overlapping columns for side-by-side rendering. */
+function buildCollisionColumns(appts: Appointment[]): Appointment[][] {
+  const cols: { appts: Appointment[]; lastEndMin: number }[] = [];
+  for (const a of appts) {
+    const startMin = timeToMinutes(a.startTime);
+    const endMin = startMin + a.duration;
+    let placed = false;
+    for (const col of cols) {
+      if (startMin >= col.lastEndMin) {
+        col.appts.push(a);
+        col.lastEndMin = endMin;
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) cols.push({ appts: [a], lastEndMin: endMin });
+  }
+  return cols.map((c) => c.appts);
 }
 
 /* ─── Appointment card (calendar cell) ─── */
-function ApptCard({
+export function ApptCard({
   appt,
   onClick,
   compact = false,
+  hideDoctor = false,
 }: {
   appt: Appointment;
   onClick: (a: Appointment) => void;
   compact?: boolean;
+  hideDoctor?: boolean;
 }) {
   const provider = providerById(appt.providerId);
-  const statusCfg = STATUS_CONFIG[appt.status];
 
   return (
     <button
       onClick={() => onClick(appt)}
       className="w-full text-left rounded-lg border border-border overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
-      style={{ borderLeftColor: provider.color, borderLeftWidth: 3 }}
     >
       <div className="px-2.5 py-2 bg-card group-hover:bg-muted/30 transition-colors">
-        <div className="flex items-start justify-between gap-1">
-          <p className={`font-medium text-foreground leading-tight ${compact ? "text-[11px]" : "text-xs"}`}>
-            {appt.patientName}
+        <p className={`font-semibold text-foreground leading-tight ${compact ? "text-[11px]" : "text-xs"}`}>
+          {appt.patientName}
+        </p>
+        {!hideDoctor && (
+          <p className="text-[10px] font-medium mt-0.5 leading-tight" style={{ color: provider.color }}>
+            {provider.name}
           </p>
-          <span
-            className="w-1.5 h-1.5 rounded-full shrink-0 mt-0.5"
-            style={{ background: statusCfg.dotColor }}
-          />
-        </div>
+        )}
         {!compact && (
           <>
             <p className="text-[10px] text-muted-foreground mt-0.5">{appt.service}</p>
@@ -198,31 +324,36 @@ function WeekCalendar({
   appointments: Appointment[];
   onApptClick: (a: Appointment) => void;
 }) {
+  const now = useCurrentTime();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const todayIso = dateToIso(startOfLocalDay(new Date()));
+
   const byDate = useMemo(() => {
     const map: Record<string, Appointment[]> = {};
     for (const d of dates) map[d] = [];
     for (const a of appointments) {
       if (map[a.date]) map[a.date].push(a);
     }
-    // sort by start time
     for (const d of dates) {
       map[d].sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
     }
     return map;
   }, [dates, appointments]);
 
-  const TIME_SLOTS: string[] = [];
-  for (let h = 8; h <= 18; h++) {
-    TIME_SLOTS.push(`${h.toString().padStart(2, "0")}:00`);
-    if (h < 18) TIME_SLOTS.push(`${h.toString().padStart(2, "0")}:30`);
-  }
+  const TIME_SLOTS = TIME_SLOTS_24H;
+  const nowTopPx40 = (currentMinutes / 30) * 40;
+  const weekScrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    weekScrollRef.current?.scrollTo({ top: Math.max(0, nowTopPx40 - 80) });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex min-h-0 flex-1 overflow-hidden">
       {/* Gutter + time column */}
-      <div className="flex flex-col shrink-0">
+      <div className="flex flex-col shrink-0 pl-4">
         {/* Header spacer */}
-        <div className="h-12 border-b border-r border-border" style={{ width: 52 }} />
+        <div className="h-10 border-b border-r border-border" style={{ width: 52 }} />
         {/* Time labels */}
         <div className="overflow-y-auto flex-1 border-r border-border" style={{ width: 52 }}>
           {TIME_SLOTS.map((t) => (
@@ -241,66 +372,84 @@ function WeekCalendar({
       <div className="flex-1 overflow-x-auto overflow-y-hidden flex flex-col min-w-0">
         {/* Day headers */}
         <div className="flex border-b border-border shrink-0">
-          {dates.map((d, i) => {
-            const { day, num, month } = fmtDateHeader(d);
-            const today = isToday(d);
-            const count = (byDate[d] ?? []).length;
+          {dates.map((d) => {
+            const { day, num } = fmtDateHeader(d);
+            const today = isTodayIso(d);
             return (
               <div
                 key={d}
-                className={`flex-1 min-w-[120px] h-12 flex flex-col items-center justify-center border-r border-border last:border-r-0 ${today ? "bg-primary/5" : ""}`}
+                className={`flex-1 min-w-[120px] h-10 flex items-center justify-center gap-1.5 border-r border-border last:border-r-0 ${today ? "bg-primary/5" : ""}`}
               >
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] text-muted-foreground font-medium">{day}</span>
-                  <span
-                    className={`text-sm font-semibold ${today ? "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs" : "text-foreground"}`}
-                  >
-                    {num}
-                  </span>
-                </div>
-                {count > 0 && (
-                  <span className="text-[10px] text-muted-foreground mt-0.5">{count} appt{count > 1 ? "s" : ""}</span>
-                )}
+                <span className="text-[11px] text-muted-foreground font-medium">{day}</span>
+                <span
+                  className={`text-sm font-semibold ${today ? "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs" : "text-foreground"}`}
+                >
+                  {num}
+                </span>
               </div>
             );
           })}
         </div>
 
         {/* Time grid */}
-        <div className="flex flex-1 overflow-y-auto">
+        <div ref={weekScrollRef} className="flex flex-1 overflow-y-auto">
           {dates.map((d) => {
-            const today = isToday(d);
+            const isToday = isTodayIso(d);
+            const isPastDate = d < todayIso;
             const dayAppts = byDate[d] ?? [];
+            const allGroups = buildCollisionColumns(dayAppts);
+            const MAX_WEEK_COLS = 2;
+            const colGroups = allGroups.slice(0, MAX_WEEK_COLS);
+            const hiddenCount = allGroups.slice(MAX_WEEK_COLS).flat().length;
+            const numCols = Math.max(colGroups.length, 1);
             return (
               <div
                 key={d}
-                className={`flex-1 min-w-[120px] border-r border-border last:border-r-0 relative ${today ? "bg-primary/[0.02]" : ""}`}
+                className={`flex-1 min-w-[120px] border-r border-border last:border-r-0 relative ${isToday ? "bg-primary/[0.02]" : ""}`}
               >
-                {/* Grid rows */}
-                {TIME_SLOTS.map((t) => (
-                  <div
-                    key={t}
-                    className={`border-b ${t.endsWith(":30") ? "border-dashed border-border/40" : "border-border/60"}`}
-                    style={{ height: 40 }}
-                  />
-                ))}
+                {/* Grid rows with past dimming */}
+                {TIME_SLOTS.map((t) => {
+                  const slotMin = timeToMinutes(t);
+                  const past = isPastDate || (isToday && slotMin < currentMinutes);
+                  return (
+                    <div
+                      key={t}
+                      className={cn(
+                        `border-b ${t.endsWith(":30") ? "border-dashed border-border/40" : "border-border/60"}`,
+                        past && "bg-muted/25",
+                      )}
+                      style={{ height: 40 }}
+                    />
+                  );
+                })}
 
-                {/* Appointments overlaid */}
-                <div className="absolute inset-0 p-1 flex flex-col gap-1 pointer-events-none">
-                  {dayAppts.map((a) => {
-                    const startMin = timeToMinutes(a.startTime) - 8 * 60;
-                    const topPx = (startMin / 30) * 40;
-                    const heightPx = Math.max((a.duration / 30) * 40 - 4, 36);
-                    return (
-                      <div
-                        key={a.id}
-                        className="absolute left-1 right-1 pointer-events-auto"
-                        style={{ top: topPx + 2, height: heightPx }}
-                      >
-                        <ApptCard appt={a} onClick={onApptClick} compact={a.duration <= 30} />
+                {/* Appointments — collision columns (capped at MAX_WEEK_COLS) */}
+                <div className="absolute inset-0 pointer-events-none">
+                  {colGroups.flatMap((colAppts, colIdx) =>
+                    colAppts.map((a) => {
+                      const topPx = (timeToMinutes(a.startTime) / 30) * 40;
+                      const heightPx = Math.max((a.duration / 30) * 40 - 4, 36);
+                      const leftPct = (colIdx / numCols) * 100;
+                      const widthPct = (1 / numCols) * 100;
+                      const pastAppt = isPastDate || (isToday && timeToMinutes(a.endTime) < currentMinutes);
+                      return (
+                        <div
+                          key={a.id}
+                          className={cn("absolute pointer-events-auto", pastAppt && "opacity-60")}
+                          style={{ top: topPx + 2, height: heightPx, left: `${leftPct}%`, width: `${widthPct}%`, padding: "0 2px" }}
+                        >
+                          <ApptCard appt={a} onClick={onApptClick} compact={a.duration <= 30} />
+                        </div>
+                      );
+                    })
+                  )}
+                  {hiddenCount > 0 && (
+                    <div className="absolute bottom-2 left-1 right-1 pointer-events-auto">
+                      <div className="rounded-md bg-muted/80 px-2 py-0.5 text-center text-[10px] text-muted-foreground">
+                        +{hiddenCount} more
                       </div>
-                    );
-                  })}
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -321,37 +470,44 @@ function DayCalendar({
   appointments: Appointment[];
   onApptClick: (a: Appointment) => void;
 }) {
+  const now = useCurrentTime();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const todayIso = dateToIso(startOfLocalDay(new Date()));
+  const isToday = isTodayIso(date);
+  const isPastDate = date < todayIso;
+
   const dayAppts = appointments
     .filter((a) => a.date === date)
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
-  const TIME_SLOTS: string[] = [];
-  for (let h = 8; h <= 18; h++) {
-    TIME_SLOTS.push(`${h.toString().padStart(2, "0")}:00`);
-    if (h < 18) TIME_SLOTS.push(`${h.toString().padStart(2, "0")}:30`);
-  }
+  const colGroups = buildCollisionColumns(dayAppts);
+  const numCols = Math.max(colGroups.length, 1);
+  const nowTopPx56 = (currentMinutes / 30) * 56;
+  const TIME_SLOTS = TIME_SLOTS_24H;
+  const dayScrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    dayScrollRef.current?.scrollTo({ top: Math.max(0, nowTopPx56 - 100) });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { day, num, month } = fmtDateHeader(date);
-  const today = isToday(date);
+  const today = isTodayIso(date);
 
   return (
-    <div className="flex flex-col min-h-0 flex-1 overflow-hidden">
-      {/* Day header */}
-      <div className={`h-12 border-b border-border flex items-center justify-center gap-2 ${today ? "bg-primary/5" : ""}`}>
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className={`flex h-12 items-center justify-center gap-2 border-b border-border ${today ? "bg-primary/5" : ""}`}>
         <span className="text-sm text-muted-foreground">{day}, {month}</span>
-        <span className={`text-lg font-semibold ${today ? "bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center text-sm" : "text-foreground"}`}>
+        <span className={`text-lg font-semibold ${today ? "flex size-8 items-center justify-center rounded-full bg-primary text-sm text-primary-foreground" : "text-foreground"}`}>
           {num}
         </span>
       </div>
 
-      {/* Time grid + appointments */}
-      <div className="flex flex-1 overflow-y-auto min-h-0">
-        {/* Time column */}
-        <div className="shrink-0 border-r border-border" style={{ width: 64 }}>
+      <div ref={dayScrollRef} className="flex min-h-0 flex-1 overflow-y-auto">
+        <div className="shrink-0 border-r border-border ml-4" style={{ width: 64 }}>
           {TIME_SLOTS.map((t) => (
             <div
               key={t}
-              className="flex items-start justify-end pr-3 text-[10px] text-muted-foreground"
+              className="flex items-start justify-end pr-2 text-[10px] text-muted-foreground"
               style={{ height: 56 }}
             >
               <span className="-translate-y-1.5">{t.endsWith(":00") ? fmtTime12(t) : ""}</span>
@@ -359,54 +515,62 @@ function DayCalendar({
           ))}
         </div>
 
-        {/* Content column */}
-        <div className="flex-1 relative">
-          {TIME_SLOTS.map((t) => (
-            <div
-              key={t}
-              className={`border-b ${t.endsWith(":30") ? "border-dashed border-border/40" : "border-border/60"}`}
-              style={{ height: 56 }}
-            />
-          ))}
-          {/* Appointment cards */}
-          <div className="absolute inset-0 p-2 pointer-events-none">
-            {dayAppts.map((a) => {
-              const startMin = timeToMinutes(a.startTime) - 8 * 60;
-              const topPx = (startMin / 30) * 56;
-              const heightPx = Math.max((a.duration / 30) * 56 - 6, 44);
-              const provider = providerById(a.providerId);
-              const statusCfg = STATUS_CONFIG[a.status];
-              return (
-                <div
-                  key={a.id}
-                  className="absolute left-2 right-2 pointer-events-auto"
-                  style={{ top: topPx + 2, height: heightPx }}
-                >
-                  <button
-                    onClick={() => onApptClick(a)}
-                    className="w-full h-full text-left rounded-lg border border-border overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
-                    style={{ borderLeftColor: provider.color, borderLeftWidth: 3 }}
+        <div className="relative flex-1">
+          {/* Slot rows with past dimming */}
+          {TIME_SLOTS.map((t) => {
+            const slotMin = timeToMinutes(t);
+            const past = isPastDate || (isToday && slotMin < currentMinutes);
+            return (
+              <div
+                key={t}
+                className={cn(
+                  `border-b ${t.endsWith(":30") ? "border-dashed border-border/40" : "border-border/60"}`,
+                  past && "bg-muted/25",
+                )}
+                style={{ height: 56 }}
+              />
+            );
+          })}
+
+          {/* Appointments — collision columns */}
+          <div className="pointer-events-none absolute inset-0">
+            {colGroups.flatMap((colAppts, colIdx) =>
+              colAppts.map((a) => {
+                const topPx = (timeToMinutes(a.startTime) / 30) * 56;
+                const heightPx = Math.max((a.duration / 30) * 56 - 6, 44);
+                const leftPct = (colIdx / numCols) * 100;
+                const widthPct = (1 / numCols) * 100;
+                const provider = providerById(a.providerId);
+                const pastAppt = isPastDate || (isToday && timeToMinutes(a.endTime) < currentMinutes);
+                return (
+                  <div
+                    key={a.id}
+                    className={cn("pointer-events-auto absolute", pastAppt && "opacity-60")}
+                    style={{ top: topPx + 2, height: heightPx, left: `${leftPct}%`, width: `${widthPct}%`, padding: "0 4px 0 8px" }}
                   >
-                    <div className="px-3 py-1.5 bg-card group-hover:bg-muted/30 transition-colors flex items-start justify-between gap-2 h-full">
-                      <div className="flex flex-col gap-0.5 min-w-0">
-                        <p className="text-xs font-medium text-foreground leading-tight truncate">{a.patientName}</p>
-                        <p className="text-[11px] text-muted-foreground truncate">{a.service}</p>
-                        <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                          <Clock size={9} strokeWidth={1.6} absoluteStrokeWidth />
-                          {fmtTime12(a.startTime)} – {fmtTime12(a.endTime)}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground truncate">{provider.name}</p>
+                    <button
+                      type="button"
+                      onClick={() => onApptClick(a)}
+                      className="group flex h-full w-full cursor-pointer overflow-hidden rounded-lg border border-border text-left transition-shadow hover:shadow-md"
+                    >
+                      <div className="flex h-full flex-1 items-start justify-between gap-2 bg-card px-3 py-1.5 transition-colors group-hover:bg-muted/30 min-w-0">
+                        <div className="flex min-w-0 flex-col gap-0.5">
+                          <p className="truncate text-xs font-medium leading-tight text-foreground">{a.patientName}</p>
+                          <p className="truncate text-[11px] text-muted-foreground">{a.service}</p>
+                          <p className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <Clock size={9} strokeWidth={1.6} absoluteStrokeWidth />
+                            {fmtTime12(a.startTime)} – {fmtTime12(a.endTime)}
+                          </p>
+                          <p className="truncate text-[11px] text-muted-foreground">{provider.name}</p>
+                        </div>
                       </div>
-                      <Badge variant="outline" className={`shrink-0 ${statusCfg.className}`}>
-                        {statusCfg.label}
-                      </Badge>
-                    </div>
-                  </button>
-                </div>
-              );
-            })}
+                    </button>
+                  </div>
+                );
+              })
+            )}
             {dayAppts.length === 0 && (
-              <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                 No appointments today
               </div>
             )}
@@ -417,202 +581,173 @@ function DayCalendar({
   );
 }
 
-/* ─── Schedule list view ─── */
-function ScheduleList({
+const COL_W = 160; // px per doctor column
+
+
+/* ─── By-doctor single-day view ─── */
+export function ByDoctorCalendar({
+  date,
   appointments,
-  search,
-  onSearch,
   onApptClick,
 }: {
+  date: string;
   appointments: Appointment[];
-  search: string;
-  onSearch: (s: string) => void;
   onApptClick: (a: Appointment) => void;
 }) {
-  const filtered = appointments.filter((a) => {
-    const q = search.toLowerCase();
-    return (
-      a.patientName.toLowerCase().includes(q) ||
-      a.service.toLowerCase().includes(q) ||
-      providerById(a.providerId).name.toLowerCase().includes(q)
-    );
-  });
+  const now = useCurrentTime();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const todayIso = dateToIso(startOfLocalDay(new Date()));
+  const isToday = isTodayIso(date);
+  const isPastDate = date < todayIso;
+  const nowTopPx = (currentMinutes / 30) * 40;
 
-  const handleRowClick = useCallback(
-    (a: Appointment) => {
-      onApptClick(a);
-    },
-    [onApptClick],
-  );
+  const byProvider = useMemo(() => {
+    const dayAppts = appointments.filter((a) => a.date === date);
+    const map: Record<string, Appointment[]> = {};
+    for (const p of PROVIDERS) map[p.id] = [];
+    for (const a of dayAppts) if (map[a.providerId]) map[a.providerId].push(a);
+    for (const id in map) map[id].sort((x, y) => timeToMinutes(x.startTime) - timeToMinutes(y.startTime));
+    return map;
+  }, [date, appointments]);
 
-  const scheduleColumns = useMemo(
-    () => [
-      appointmentColumnHelper.accessor("date", {
-        id: "when",
-        header: "Date & Time",
-        meta: { settingsLabel: "Date & time" },
-        size: 168,
-        enableSorting: true,
-        cell: ({ row }) => {
-          const a = row.original;
-          const { day, num, month } = fmtDateHeader(a.date);
-          return (
-            <div className="flex flex-col gap-0.5">
-              <span className="font-medium text-foreground">
-                {day}, {month} {num}
-              </span>
-              <span className="flex items-center gap-1 text-muted-foreground">
-                <Clock size={9} strokeWidth={1.6} absoluteStrokeWidth />
-                {fmtTime12(a.startTime)} · {a.duration}m
-              </span>
-            </div>
-          );
-        },
-      }),
-      appointmentColumnHelper.accessor("patientName", {
-        id: "patient",
-        header: "Patient",
-        meta: { settingsLabel: "Patient" },
-        size: 168,
-        enableSorting: true,
-        cell: (info) => <span className="text-foreground">{info.getValue()}</span>,
-      }),
-      appointmentColumnHelper.accessor((row) => providerById(row.providerId).name, {
-        id: "provider",
-        header: "Provider",
-        meta: { settingsLabel: "Provider" },
-        size: 168,
-        enableSorting: true,
-        cell: ({ row }) => {
-          const a = row.original;
-          const provider = providerById(a.providerId);
-          return (
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: provider.color }} />
-              <span className="truncate text-foreground">{provider.name}</span>
-            </div>
-          );
-        },
-      }),
-      appointmentColumnHelper.accessor("service", {
-        id: "service",
-        header: "Service",
-        meta: { settingsLabel: "Service" },
-        size: 200,
-        enableSorting: true,
-        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
-      }),
-      appointmentColumnHelper.accessor("status", {
-        id: "status",
-        header: "Status",
-        meta: { settingsLabel: "Status" },
-        size: 120,
-        enableSorting: true,
-        cell: (info) => {
-          const statusCfg = STATUS_CONFIG[info.getValue()];
-          return (
-            <Badge variant="outline" className={statusCfg.className}>
-              {statusCfg.label}
-            </Badge>
-          );
-        },
-      }),
-      appointmentColumnHelper.accessor("location", {
-        id: "location",
-        header: "Location",
-        meta: { settingsLabel: "Location" },
-        size: 112,
-        enableSorting: true,
-        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
-      }),
-      appointmentColumnHelper.display({
-        id: "actions",
-        header: "",
-        meta: { settingsLabel: "Actions" },
-        size: 52,
-        enableSorting: false,
-        enableResizing: false,
-        enableHiding: false,
-        cell: ({ row }) => (
-          <div className="text-left">
-            <ApptRowActions appt={row.original} onAction={() => {}} />
-          </div>
-        ),
-      }),
-    ],
-    [],
-  );
+  const TIME_SLOTS = TIME_SLOTS_24H;
 
-  const scheduleEmpty = (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
-      <p className="text-sm text-muted-foreground">No appointments match your search.</p>
-    </div>
-  );
+  // Sync vertical scroll: gutter follows the single grid scroll container
+  const gutterRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const handleGridScroll = useCallback(() => {
+    if (gutterRef.current && gridRef.current) {
+      gutterRef.current.scrollTop = gridRef.current.scrollTop;
+    }
+  }, []);
+  useEffect(() => {
+    const top = Math.max(0, nowTopPx - 80);
+    gridRef.current?.scrollTo({ top });
+    if (gutterRef.current) gutterRef.current.scrollTop = top;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const HEADER_H = 80; // px — taller to fit avatar + name + specialty
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="min-h-0 flex-1 overflow-y-auto border-b border-border">
-        <AppDataTable<Appointment>
-          tableId="appointments.schedule"
-          data={filtered}
-          columns={scheduleColumns}
-          initialSorting={[{ id: "when", desc: false }]}
-          getRowId={(a) => a.id}
-          onRowClick={handleRowClick}
-          emptyState={scheduleEmpty}
-          columnSheetTitle="Appointment columns"
-          className="min-h-0 min-w-0"
-          toolbarLeft={
-            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
-              <div className="relative max-w-sm flex-1">
-                <Search
-                  size={13}
-                  strokeWidth={1.6}
-                  absoluteStrokeWidth
-                  className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground"
-                />
-                <Input
-                  placeholder="Search appointments…"
-                  value={search}
-                  onChange={(e) => onSearch(e.target.value)}
-                  className="h-8 pl-8 text-xs"
+    <div className="flex min-h-0 flex-1 overflow-hidden">
+      {/* ── Sticky time gutter (left) ── */}
+      <div className="flex flex-col shrink-0 pl-4">
+        {/* corner spacer — matches header height */}
+        <div className="shrink-0 border-b border-r border-border" style={{ width: 52, height: HEADER_H }} />
+        {/* time labels — overflow hidden, scrollTop driven by grid */}
+        <div ref={gutterRef} className="flex-1 overflow-hidden border-r border-border" style={{ width: 52 }}>
+          {TIME_SLOTS.map((t) => (
+            <div
+              key={t}
+              className="flex items-start justify-end pr-2 text-[10px] text-muted-foreground"
+              style={{ height: 40 }}
+            >
+              <span className="-translate-y-1.5">{t.endsWith(":00") ? fmtTime12(t) : ""}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Single scroll container (handles both X and Y) ── */}
+      <div
+        ref={gridRef}
+        className="flex-1 min-w-0 overflow-auto"
+        onScroll={handleGridScroll}
+      >
+        {/* Sticky header row — sticks to top, scrolls with X */}
+        <div
+          className="sticky top-0 z-10 flex bg-card border-b border-border"
+          style={{ minWidth: PROVIDERS.length * COL_W }}
+        >
+          {PROVIDERS.map((p) => (
+            <div
+              key={p.id}
+              className="flex flex-col items-center justify-center gap-1.5 px-3"
+              style={{ width: COL_W, minWidth: COL_W, height: HEADER_H }}
+            >
+              {/* Avatar: doctor photo */}
+              <div
+                className="rounded-full overflow-hidden shrink-0"
+                style={{
+                  width: 40,
+                  height: 40,
+                  boxShadow: `0 0 0 2px ${p.color}66`,
+                }}
+              >
+                <img
+                  src={p.avatar}
+                  alt={p.name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               </div>
-              <span className="ml-auto text-xs text-muted-foreground">{filtered.length} appointments</span>
+              <div className="text-center min-w-0 w-full">
+                <p className="text-[11px] font-semibold text-foreground truncate">{p.name}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{p.specialty}</p>
+              </div>
             </div>
-          }
-        />
+          ))}
+        </div>
+
+        {/* Time grid columns */}
+        <div
+          className="flex relative"
+          style={{ minWidth: PROVIDERS.length * COL_W }}
+        >
+          {PROVIDERS.map((p) => {
+            const rawAppts = byProvider[p.id] ?? [];
+            const colGroups = buildCollisionColumns(rawAppts);
+            const numCols = Math.max(colGroups.length, 1);
+            return (
+              <div
+                key={p.id}
+                className="relative"
+                style={{ width: COL_W, minWidth: COL_W }}
+              >
+                {/* Slot rows with past dimming */}
+                {TIME_SLOTS.map((t) => {
+                  const slotMin = timeToMinutes(t);
+                  const past = isPastDate || (isToday && slotMin < currentMinutes);
+                  return (
+                    <div
+                      key={t}
+                      className={cn(
+                        `border-b ${t.endsWith(":30") ? "border-dashed border-border/40" : "border-border/60"}`,
+                        past && "bg-muted/25",
+                      )}
+                      style={{ height: 40 }}
+                    />
+                  );
+                })}
+
+                {/* Appointments — collision columns */}
+                <div className="absolute inset-0 pointer-events-none">
+                  {colGroups.flatMap((colAppts, colIdx) =>
+                    colAppts.map((a) => {
+                      const topPx = (timeToMinutes(a.startTime) / 30) * 40;
+                      const heightPx = Math.max((a.duration / 30) * 40 - 4, 36);
+                      const leftPct = (colIdx / numCols) * 100;
+                      const widthPct = (1 / numCols) * 100;
+                      const pastAppt = isPastDate || (isToday && timeToMinutes(a.endTime) < currentMinutes);
+                      return (
+                        <div
+                          key={a.id}
+                          className={cn("absolute pointer-events-auto", pastAppt && "opacity-60")}
+                          style={{ top: topPx + 2, height: heightPx, left: `${leftPct}%`, width: `${widthPct}%`, padding: "0 2px" }}
+                        >
+                          <ApptCard appt={a} onClick={onApptClick} compact hideDoctor />
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
-  );
-}
-
-function ApptRowActions({ appt, onAction }: { appt: Appointment; onAction: () => void }) {
-  const canCancel = appt.status === "confirmed" || appt.status === "requested";
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground cursor-pointer">
-          <MoreHorizontal size={15} strokeWidth={1.6} absoluteStrokeWidth />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-40">
-        <DropdownMenuItem className="text-xs cursor-pointer">
-          <Bell size={13} strokeWidth={1.6} absoluteStrokeWidth className="mr-2" />
-          Send reminder
-        </DropdownMenuItem>
-        <DropdownMenuItem className="text-xs cursor-pointer">
-          <Calendar size={13} strokeWidth={1.6} absoluteStrokeWidth className="mr-2" />
-          Reschedule
-        </DropdownMenuItem>
-        {canCancel && (
-          <DropdownMenuItem className="text-xs text-destructive cursor-pointer focus:text-destructive">
-            <X size={13} strokeWidth={1.6} absoluteStrokeWidth className="mr-2" />
-            Cancel
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }
 
@@ -630,7 +765,7 @@ function ApptDetailSheet({
   const provider = providerById(appt.providerId);
   const statusCfg = STATUS_CONFIG[appt.status];
   const statusTextClass = STATUS_TEXT_CLASS[appt.status];
-  const { day, num, month } = fmtDateHeader(appt.date);
+  const { num, month } = fmtDateHeader(appt.date);
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
@@ -746,161 +881,192 @@ function ApptDetailSheet({
 }
 
 /* ─── Main view ─── */
-export function AppointmentsView() {
-  const [viewMode, setViewMode] = useState<ViewMode>("calendar");
-  const [calendarView, setCalendarView] = useState<CalendarView>("week");
-  const [currentDateIdx, setCurrentDateIdx] = useState(0); // for day view: index into WEEK_DATES
-  const [search, setSearch] = useState("");
+export function AppointmentsView({ defaultCalendarView }: { defaultCalendarView?: CalendarView } = {}) {
+  const [calendarView, setCalendarView] = useState<CalendarView>(defaultCalendarView ?? "by-doctor");
+  const [anchorDate, setAnchorDate] = useState(() => startOfLocalDay(parseDate("2026-05-01")));
+  const [statusFilter, setStatusFilter] = useState<AppointmentStatusFilter>("all");
   const [selectedAppt, setSelectedAppt] = useState<Appointment | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-
-  const currentDayDate = WEEK_DATES[currentDateIdx];
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const handleApptClick = (a: Appointment) => {
     setSelectedAppt(a);
     setSheetOpen(true);
   };
 
-  // Week range label
-  const startDate = parseDate(WEEK_DATES[0]);
-  const endDate = parseDate(WEEK_DATES[6]);
-  const weekLabel = `${MONTH_NAMES[startDate.getMonth()]} ${startDate.getDate()} – ${startDate.getMonth() !== endDate.getMonth() ? MONTH_NAMES[endDate.getMonth()] + " " : ""}${endDate.getDate()}, ${endDate.getFullYear()}`;
+  const weekMonday = useMemo(() => startOfWeekMonday(anchorDate), [anchorDate]);
+  const weekDates = useMemo(() => weekIsoDatesFromMonday(weekMonday), [weekMonday]);
+  const anchorIso = useMemo(() => dateToIso(startOfLocalDay(anchorDate)), [anchorDate]);
 
-  // Day label
-  const dayLabel = (() => {
-    const { day, num, month } = fmtDateHeader(currentDayDate);
-    return `${day}, ${month} ${num}`;
-  })();
+  const visibleAppointments = useMemo(() => {
+    if (statusFilter === "all") return APPOINTMENTS;
+    return APPOINTMENTS.filter((a) => a.status === statusFilter);
+  }, [statusFilter]);
+
+  const weekRangeLabel = useMemo(() => {
+    const start = parseDate(weekDates[0]);
+    const end = parseDate(weekDates[6]);
+    return `${MONTH_NAMES[start.getMonth()]} ${start.getDate()} – ${start.getMonth() !== end.getMonth() ? `${MONTH_NAMES[end.getMonth()]} ` : ""}${end.getDate()}, ${end.getFullYear()}`;
+  }, [weekDates]);
+
+  const dayNavLabel = useMemo(() => {
+    const d = startOfLocalDay(anchorDate);
+    const idx = d.getDay() === 0 ? 6 : d.getDay() - 1;
+    return `${DAY_FULL[idx]}, ${MONTH_NAMES[d.getMonth()]} ${d.getDate()}`;
+  }, [anchorDate]);
+
+  const goPrev = () => {
+    if (calendarView === "week") setAnchorDate(addDays(weekMonday, -7));
+    else setAnchorDate(addDays(anchorDate, -1));
+  };
+
+  const goNext = () => {
+    if (calendarView === "week") setAnchorDate(addDays(weekMonday, 7));
+    else setAnchorDate(addDays(anchorDate, 1));
+  };
+
+  const goToday = () => {
+    setAnchorDate(startOfLocalDay(new Date()));
+  };
+
+  const todayIso = dateToIso(startOfLocalDay(new Date()));
+  const isAnchorToday = anchorIso === todayIso;
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-full overflow-hidden">
-        {/* ── Header ── */}
+      <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
         <MainCanvasViewHeader
-          title="Appointments"
-          description="Schedule, manage, and track patient appointments."
+          titleClassName="font-normal"
+          title={
+            <>
+              <span className="sr-only">Appointments · </span>
+              <span className="flex min-w-0 flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0 font-normal text-muted-foreground hover:text-foreground"
+                  onClick={goPrev}
+                  aria-label={calendarView === "week" ? "Previous week" : "Previous day"}
+                >
+                  <ChevronLeft className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                </Button>
+                <span
+                  className="min-w-0 max-w-[min(100%,18rem)] shrink truncate px-1 text-center text-base font-medium text-foreground tabular-nums sm:max-w-[24rem]"
+                  aria-live="polite"
+                >
+                  {calendarView === "week" ? weekRangeLabel : dayNavLabel}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0 font-normal text-muted-foreground hover:text-foreground"
+                  onClick={goNext}
+                  aria-label={calendarView === "week" ? "Next week" : "Next day"}
+                >
+                  <ChevronRight className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={goToday}
+                  disabled={isAnchorToday}
+                  className="ml-1 shrink-0 px-2 text-lg font-medium text-primary hover:bg-primary/10 disabled:pointer-events-none disabled:opacity-50"
+                >
+                  Today
+                </Button>
+              </span>
+            </>
+          }
           actions={
-            <div className="flex flex-wrap items-center gap-2">
-              <SegmentedToggle<ViewMode>
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-[8.5rem] justify-between gap-2 font-normal"
+                    aria-label="Status"
+                  >
+                    <span className="truncate">
+                      {APPOINTMENT_STATUS_FILTER_OPTIONS.find((o) => o.value === statusFilter)?.label ?? "All"}
+                    </span>
+                    <ChevronDown
+                      className="size-4 shrink-0 text-muted-foreground"
+                      strokeWidth={1.6}
+                      absoluteStrokeWidth
+                      aria-hidden
+                    />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[8.5rem]">
+                  {APPOINTMENT_STATUS_FILTER_OPTIONS.map((o) => (
+                    <DropdownMenuItem
+                      key={o.value}
+                      className={cn(
+                        "font-normal",
+                        o.value === statusFilter && "bg-primary/10 text-primary",
+                      )}
+                      onSelect={() => setStatusFilter(o.value)}
+                    >
+                      {o.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <SegmentedToggle<CalendarView>
                 iconOnly
-                ariaLabel="Appointments layout"
-                value={viewMode}
-                onChange={setViewMode}
+                ariaLabel="Calendar range"
+                value={calendarView}
+                onChange={setCalendarView}
                 items={[
                   {
-                    value: "calendar",
-                    label: "Calendar view",
+                    value: "day",
+                    label: "Day",
                     icon: (
                       <Calendar className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
                     ),
                   },
                   {
-                    value: "schedule",
-                    label: "Schedule list",
-                    icon: <List className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />,
+                    value: "by-doctor",
+                    label: "By doctor",
+                    icon: (
+                      <Users className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                    ),
                   },
                 ]}
               />
-              {viewMode === "calendar" && (
-                <>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-[var(--button-height)] w-[var(--button-height)] shrink-0 cursor-pointer"
-                      disabled={
-                        calendarView === "week" || (calendarView === "day" && currentDateIdx === 0)
-                      }
-                      onClick={() => {
-                        if (calendarView === "day") setCurrentDateIdx((i) => Math.max(0, i - 1));
-                      }}
-                      aria-label="Previous day"
-                    >
-                      <ChevronLeft className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
-                    </Button>
-                    <span className="max-w-[min(100%,14rem)] truncate px-2 text-center text-xs font-medium text-foreground tabular-nums sm:max-w-[20rem]">
-                      {calendarView === "week" ? weekLabel : dayLabel}
-                    </span>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-[var(--button-height)] w-[var(--button-height)] shrink-0 cursor-pointer"
-                      disabled={
-                        calendarView === "week" ||
-                        (calendarView === "day" && currentDateIdx === WEEK_DATES.length - 1)
-                      }
-                      onClick={() => {
-                        if (calendarView === "day") setCurrentDateIdx((i) => Math.min(WEEK_DATES.length - 1, i + 1));
-                      }}
-                      aria-label="Next day"
-                    >
-                      <ChevronRight className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
-                    </Button>
-                  </div>
-                  <SegmentedToggle<CalendarView>
-                    iconOnly
-                    ariaLabel="Calendar range"
-                    value={calendarView}
-                    onChange={setCalendarView}
-                    items={[
-                      {
-                        value: "day",
-                        label: "Day",
-                        icon: (
-                          <Calendar className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
-                        ),
-                      },
-                      {
-                        value: "week",
-                        label: "Week",
-                        icon: (
-                          <CalendarRange className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
-                        ),
-                      },
-                    ]}
-                  />
-                </>
-              )}
-            </div>
+
+              <FilterPaneTriggerButton open={filtersOpen} onOpenChange={setFiltersOpen} />
+            </>
           }
         />
 
-        {/* ── Main content area ── */}
-        <div
-          className={cn(
-            "mx-6 mb-6 flex min-h-0 flex-1 flex-col overflow-hidden",
-            viewMode === "calendar"
-              ? "rounded-xl border border-border bg-card"
-              : "border-0 bg-background",
-          )}
-        >
-          {viewMode === "calendar" ? (
-            calendarView === "week" ? (
-              <WeekCalendar
-                dates={WEEK_DATES}
-                appointments={APPOINTMENTS}
-                onApptClick={handleApptClick}
-              />
-            ) : (
-              <DayCalendar
-                date={currentDayDate}
-                appointments={APPOINTMENTS}
-                onApptClick={handleApptClick}
-              />
-            )
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-card">
+          {calendarView === "week" ? (
+            <WeekCalendar
+              dates={weekDates}
+              appointments={visibleAppointments}
+              onApptClick={handleApptClick}
+            />
+          ) : calendarView === "by-doctor" ? (
+            <ByDoctorCalendar
+              date={anchorIso}
+              appointments={visibleAppointments}
+              onApptClick={handleApptClick}
+            />
           ) : (
-            <ScheduleList
-              appointments={APPOINTMENTS}
-              search={search}
-              onSearch={setSearch}
+            <DayCalendar
+              date={anchorIso}
+              appointments={visibleAppointments}
               onApptClick={handleApptClick}
             />
           )}
         </div>
 
-        {/* ── Detail sheet ── */}
         <ApptDetailSheet
           open={sheetOpen}
           appt={selectedAppt}
