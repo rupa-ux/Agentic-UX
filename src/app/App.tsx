@@ -503,11 +503,11 @@ export default function App() {
           )}
           {/* Surveys L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "surveys" && (
-            <SurveysL2NavPanel />
+            <AppShellL2Placeholder caption="Surveys is not hosted in this shell — secondary nav is a preview only." />
           )}
           {/* Ticketing L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "ticketing" && (
-            <TicketingL2NavPanel />
+            <AppShellL2Placeholder caption="Ticketing is not hosted in this shell — secondary nav is a preview only." />
           )}
           {/* Campaigns L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "campaigns" && (
@@ -593,9 +593,9 @@ export default function App() {
             ) : currentView === "listings" ? (
               <ListingsView l2ActiveItem={journeysL2ActiveKey} />
             ) : currentView === "surveys" ? (
-              <SurveysView />
+              <AppShellContentPlaceholder view="surveys" productLabel="Surveys" />
             ) : currentView === "ticketing" ? (
-              <TicketingView />
+              <AppShellContentPlaceholder view="ticketing" productLabel="Ticketing" />
             ) : currentView === "campaigns" ? (
               <CampaignsView />
             ) : currentView === "insights" ? (

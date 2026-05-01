@@ -3,7 +3,9 @@ import {
   Clock, User, Calendar, Users, X, Bell,
   MapPin, Phone, Mail,
   ChevronLeft, ChevronRight, ChevronDown,
+  Search,
 } from "lucide-react";
+import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 import { cn } from "@/app/components/ui/utils";
 import { FilterPaneTriggerButton } from "@/app/components/FilterPane.v1";
 import { Button } from "@/app/components/ui/button";
@@ -52,14 +54,18 @@ interface Appointment {
 /* ─── Mock data ─── */
 const PROVIDERS: Provider[] = [
   // sorted A → Z by last name
-  { id: "p5", name: "Dr. Ana Alvarado",  specialty: "Pediatric Dentistry", color: "#dc2626", avatar: "https://randomuser.me/api/portraits/women/44.jpg" },
-  { id: "p1", name: "Dr. Sarah Chen",    specialty: "General Dentistry",   color: "#4f46e5", avatar: "https://randomuser.me/api/portraits/women/25.jpg" },
-  { id: "p7", name: "Dr. Diana Cruz",    specialty: "Endodontics",         color: "#be185d", avatar: "https://randomuser.me/api/portraits/women/67.jpg" },
-  { id: "p6", name: "Dr. Ben Foster",    specialty: "Periodontics",        color: "#7c3aed", avatar: "https://randomuser.me/api/portraits/men/32.jpg"   },
-  { id: "p3", name: "Dr. Priya Nair",    specialty: "Cosmetic Dentistry",  color: "#059669", avatar: "https://randomuser.me/api/portraits/women/56.jpg" },
-  { id: "p4", name: "Dr. James Osei",    specialty: "Oral Surgery",        color: "#d97706", avatar: "https://randomuser.me/api/portraits/men/76.jpg"   },
-  { id: "p8", name: "Dr. Ethan Park",    specialty: "Prosthodontics",      color: "#0d9488", avatar: "https://randomuser.me/api/portraits/men/48.jpg"   },
-  { id: "p2", name: "Dr. Marcus Webb",   specialty: "Orthodontics",        color: "#0891b2", avatar: "https://randomuser.me/api/portraits/men/85.jpg"   },
+  { id: "p5",  name: "Dr. Ana Alvarado",   specialty: "Pediatric Dentistry",    color: "#dc2626", avatar: "https://randomuser.me/api/portraits/women/44.jpg" },
+  { id: "p1",  name: "Dr. Sarah Chen",     specialty: "General Dentistry",      color: "#4f46e5", avatar: "https://randomuser.me/api/portraits/women/25.jpg" },
+  { id: "p7",  name: "Dr. Diana Cruz",     specialty: "Endodontics",            color: "#be185d", avatar: "https://randomuser.me/api/portraits/women/67.jpg" },
+  { id: "p6",  name: "Dr. Ben Foster",     specialty: "Periodontics",           color: "#7c3aed", avatar: "https://randomuser.me/api/portraits/men/32.jpg"   },
+  { id: "p9",  name: "Dr. Carlos Gutierrez", specialty: "Oral Medicine",        color: "#0369a1", avatar: "https://randomuser.me/api/portraits/men/55.jpg"   },
+  { id: "p10", name: "Dr. Emily Harrison", specialty: "Dental Anesthesiology",  color: "#9333ea", avatar: "https://randomuser.me/api/portraits/women/33.jpg" },
+  { id: "p3",  name: "Dr. Priya Nair",     specialty: "Cosmetic Dentistry",     color: "#059669", avatar: "https://randomuser.me/api/portraits/women/56.jpg" },
+  { id: "p4",  name: "Dr. James Osei",     specialty: "Oral Surgery",           color: "#d97706", avatar: "https://randomuser.me/api/portraits/men/76.jpg"   },
+  { id: "p8",  name: "Dr. Ethan Park",     specialty: "Prosthodontics",         color: "#0d9488", avatar: "https://randomuser.me/api/portraits/men/48.jpg"   },
+  { id: "p11", name: "Dr. Kevin Patel",    specialty: "Implant Dentistry",      color: "#15803d", avatar: "https://randomuser.me/api/portraits/men/41.jpg"   },
+  { id: "p12", name: "Dr. Yuki Tanaka",    specialty: "TMJ & Sleep Dentistry",  color: "#c2410c", avatar: "https://randomuser.me/api/portraits/women/79.jpg" },
+  { id: "p2",  name: "Dr. Marcus Webb",    specialty: "Orthodontics",           color: "#0891b2", avatar: "https://randomuser.me/api/portraits/men/85.jpg"   },
 ];
 
 const APPOINTMENTS: Appointment[] = [
@@ -84,6 +90,21 @@ const APPOINTMENTS: Appointment[] = [
   { id: "a14", patientName: "Devon King",      patientEmail: "devon@example.com",   patientPhone: "(512) 555-0139", providerId: "p4", service: "Wisdom Tooth Eval",   status: "confirmed",   date: "2026-04-18", startTime: "13:30", endTime: "14:00", duration: 30, location: "Suite 412" },
   // ── April 19 (Sat) ──────────────────────────────────────────────────────────
   { id: "a15", patientName: "Elena Watts",     patientEmail: "elena@example.com",   patientPhone: "(512) 555-0172", providerId: "p2", service: "Dental Emergency",    status: "confirmed",   date: "2026-04-19", startTime: "10:00", endTime: "11:00", duration: 60, location: "Suite 204" },
+  // ── April 7–10 (prior week — past) ─────────────────────────────────────────
+  { id: "p1",  patientName: "Greta Lind",      patientEmail: "greta@example.com",   patientPhone: "(512) 555-0301", providerId: "p1", service: "Routine Exam",        status: "completed",   date: "2026-04-07", startTime: "09:00", endTime: "09:30", duration: 30, location: "Suite 101" },
+  { id: "p2",  patientName: "Hugo Vance",      patientEmail: "hugo@example.com",    patientPhone: "(512) 555-0302", providerId: "p3", service: "Whitening Touch-up",  status: "completed",   date: "2026-04-08", startTime: "11:00", endTime: "11:45", duration: 45, location: "Suite 308" },
+  { id: "p3",  patientName: "Ines Morales",    patientEmail: "ines@example.com",    patientPhone: "(512) 555-0303", providerId: "p2", service: "Wire Change",         status: "confirmed",   date: "2026-04-09", startTime: "14:00", endTime: "14:30", duration: 30, location: "Suite 204" },
+  { id: "p4",  patientName: "Jared Pike",      patientEmail: "jared@example.com",   patientPhone: "(512) 555-0304", providerId: "p4", service: "Suture Removal",      status: "completed",   date: "2026-04-10", startTime: "10:30", endTime: "11:00", duration: 30, location: "Suite 412" },
+  // ── April 21–26 (week after Easter week) ───────────────────────────────────
+  { id: "p5",  patientName: "Kira Bloom",      patientEmail: "kira@example.com",    patientPhone: "(512) 555-0305", providerId: "p1", service: "Deep Cleaning",       status: "confirmed",   date: "2026-04-21", startTime: "08:30", endTime: "09:30", duration: 60, location: "Suite 101" },
+  { id: "p6",  patientName: "Logan Pierce",    patientEmail: "logan@example.com",   patientPhone: "(512) 555-0306", providerId: "p5", service: "Pediatric Exam",      status: "confirmed",   date: "2026-04-22", startTime: "10:00", endTime: "10:30", duration: 30, location: "Suite 105" },
+  { id: "p7",  patientName: "Mira Santos",     patientEmail: "mira@example.com",    patientPhone: "(512) 555-0307", providerId: "p7", service: "Root Canal Follow-up",status: "requested",   date: "2026-04-23", startTime: "13:00", endTime: "13:30", duration: 30, location: "Suite 315" },
+  { id: "p8",  patientName: "Nico Brand",      patientEmail: "nico@example.com",    patientPhone: "(512) 555-0308", providerId: "p8", service: "Temp Crown Check",    status: "confirmed",   date: "2026-04-24", startTime: "09:00", endTime: "09:30", duration: 30, location: "Suite 420" },
+  { id: "p9",  patientName: "Opal Trent",      patientEmail: "opal@example.com",    patientPhone: "(512) 555-0309", providerId: "p6", service: "Perio Charting",      status: "in_progress", date: "2026-04-25", startTime: "15:00", endTime: "15:45", duration: 45, location: "Suite 210" },
+  // ── April 28–30 (bridge to May) ────────────────────────────────────────────
+  { id: "p10", patientName: "Pia North",       patientEmail: "pia@example.com",     patientPhone: "(512) 555-0310", providerId: "p3", service: "Veneer Prep",         status: "confirmed",   date: "2026-04-28", startTime: "10:00", endTime: "11:00", duration: 60, location: "Suite 308" },
+  { id: "p11", patientName: "Quinn Ellis",     patientEmail: "quinn@example.com",   patientPhone: "(512) 555-0311", providerId: "p1", service: "Filling",             status: "cancelled",   date: "2026-04-29", startTime: "11:30", endTime: "12:00", duration: 30, location: "Suite 101", notes: "Rescheduled to May." },
+  { id: "p12", patientName: "Rosa Klein",      patientEmail: "rosa@example.com",    patientPhone: "(512) 555-0312", providerId: "p2", service: "Invisalign Attach",   status: "confirmed",   date: "2026-04-30", startTime: "14:00", endTime: "14:45", duration: 45, location: "Suite 204" },
   // ── May 1 (Today — by-doctor default view) ──────────────────────────────────
   // Dr. Sarah Chen (p1) — General Dentistry
   { id: "b1",  patientName: "Rachel Kim",      patientEmail: "rachel@example.com",  patientPhone: "(512) 555-0201", providerId: "p1", service: "Routine Check-up",    status: "confirmed",   date: "2026-05-01", startTime: "08:00", endTime: "08:45", duration: 45, location: "Suite 101" },
@@ -135,7 +156,41 @@ const APPOINTMENTS: Appointment[] = [
   { id: "b40", patientName: "Ryan Mack",       patientEmail: "ryanm@example.com",   patientPhone: "(512) 555-0240", providerId: "p8", service: "Denture Adjustment",  status: "confirmed",   date: "2026-05-01", startTime: "10:30", endTime: "11:00", duration: 30, location: "Suite 420" },
   { id: "b41", patientName: "Zara Patel",      patientEmail: "zara@example.com",    patientPhone: "(512) 555-0241", providerId: "p8", service: "Bridge Consultation",  status: "requested",   date: "2026-05-01", startTime: "13:00", endTime: "13:45", duration: 45, location: "Suite 420" },
   { id: "b42", patientName: "Finn Gallagher",  patientEmail: "finn@example.com",    patientPhone: "(512) 555-0242", providerId: "p8", service: "Implant Crown",       status: "confirmed",   date: "2026-05-01", startTime: "14:30", endTime: "15:30", duration: 60, location: "Suite 420" },
-  { id: "b43", patientName: "Leah Castillo",   patientEmail: "leah@example.com",    patientPhone: "(512) 555-0243", providerId: "p8", service: "Full Denture Fit",    status: "confirmed",   date: "2026-05-01", startTime: "16:00", endTime: "17:00", duration: 60, location: "Suite 420" },
+  { id: "b43", patientName: "Leah Castillo",   patientEmail: "leah@example.com",    patientPhone: "(512) 555-0243", providerId: "p8",  service: "Full Denture Fit",          status: "confirmed",   date: "2026-05-01", startTime: "16:00", endTime: "17:00", duration: 60, location: "Suite 420" },
+  // Dr. Carlos Gutierrez (p9) — Oral Medicine
+  { id: "c1",  patientName: "Omar Vasquez",    patientEmail: "omar@example.com",    patientPhone: "(512) 555-0301", providerId: "p9",  service: "New Patient Oral Eval",     status: "confirmed",   date: "2026-05-01", startTime: "08:00", endTime: "09:00", duration: 60, location: "Suite 110", notes: "Interpreter needed — Spanish" },
+  { id: "c2",  patientName: "Lisa Park",       patientEmail: "lisap@example.com",   patientPhone: "(512) 555-0302", providerId: "p9",  service: "Aphthous Ulcer Treatment",  status: "in_progress", date: "2026-05-01", startTime: "09:30", endTime: "10:00", duration: 30, location: "Suite 110" },
+  { id: "c3",  patientName: "Danny Reyes",     patientEmail: "danny@example.com",   patientPhone: "(512) 555-0303", providerId: "p9",  service: "Burning Mouth Consult",     status: "confirmed",   date: "2026-05-01", startTime: "10:30", endTime: "11:30", duration: 60, location: "Suite 110" },
+  { id: "c4",  patientName: "Mia Stern",       patientEmail: "mia2@example.com",    patientPhone: "(512) 555-0304", providerId: "p9",  service: "Oral Cancer Screening",     status: "requested",   date: "2026-05-01", startTime: "13:00", endTime: "13:30", duration: 30, location: "Suite 110" },
+  { id: "c5",  patientName: "Paul Chang",      patientEmail: "paul@example.com",    patientPhone: "(512) 555-0305", providerId: "p9",  service: "Salivary Gland Disorder",   status: "confirmed",   date: "2026-05-01", startTime: "14:00", endTime: "14:45", duration: 45, location: "Suite 110" },
+  // Dr. Emily Harrison (p10) — Dental Anesthesiology
+  { id: "c6",  patientName: "Aria Collins",    patientEmail: "aria@example.com",    patientPhone: "(512) 555-0306", providerId: "p10", service: "IV Sedation Consult",       status: "confirmed",   date: "2026-05-01", startTime: "08:30", endTime: "09:00", duration: 30, location: "Suite 220", notes: "First-time sedation — anxious patient" },
+  { id: "c7",  patientName: "Henry Burke",     patientEmail: "henry@example.com",   patientPhone: "(512) 555-0307", providerId: "p10", service: "Deep Sedation Procedure",   status: "confirmed",   date: "2026-05-01", startTime: "10:00", endTime: "11:30", duration: 90, location: "Suite 220", notes: "Pre-auth approved. NPO confirmed." },
+  { id: "c8",  patientName: "Jenny Li",        patientEmail: "jenny@example.com",   patientPhone: "(512) 555-0308", providerId: "p10", service: "Nitrous Oxide Visit",       status: "completed",   date: "2026-05-01", startTime: "11:30", endTime: "12:00", duration: 30, location: "Suite 220" },
+  { id: "c9",  patientName: "Tom Reynolds",    patientEmail: "tomr@example.com",    patientPhone: "(512) 555-0309", providerId: "p10", service: "Post-Sedation Check",       status: "confirmed",   date: "2026-05-01", startTime: "14:00", endTime: "14:30", duration: 30, location: "Suite 220" },
+  { id: "c10", patientName: "Cora Banks",      patientEmail: "cora@example.com",    patientPhone: "(512) 555-0310", providerId: "p10", service: "Anxiety Assessment",        status: "requested",   date: "2026-05-01", startTime: "15:00", endTime: "15:45", duration: 45, location: "Suite 220" },
+  // Dr. Kevin Patel (p11) — Implant Dentistry
+  { id: "c11", patientName: "Andre Williams",  patientEmail: "andre@example.com",   patientPhone: "(512) 555-0311", providerId: "p11", service: "Implant Planning CT Scan",  status: "confirmed",   date: "2026-05-01", startTime: "08:00", endTime: "09:00", duration: 60, location: "Suite 318" },
+  { id: "c12", patientName: "Susan Carter",    patientEmail: "susan@example.com",   patientPhone: "(512) 555-0312", providerId: "p11", service: "Bone Graft Follow-up",      status: "completed",   date: "2026-05-01", startTime: "09:30", endTime: "10:00", duration: 30, location: "Suite 318" },
+  { id: "c13", patientName: "Mark Johnston",   patientEmail: "mark@example.com",    patientPhone: "(512) 555-0313", providerId: "p11", service: "Implant Placement",         status: "in_progress", date: "2026-05-01", startTime: "10:30", endTime: "12:00", duration: 90, location: "Suite 318", notes: "Requires wheelchair access" },
+  { id: "c14", patientName: "Tina Lopez",      patientEmail: "tina@example.com",    patientPhone: "(512) 555-0314", providerId: "p11", service: "Implant Uncovering",        status: "confirmed",   date: "2026-05-01", startTime: "14:00", endTime: "14:30", duration: 30, location: "Suite 318" },
+  { id: "c15", patientName: "Victor Chen",     patientEmail: "victorc@example.com", patientPhone: "(512) 555-0315", providerId: "p11", service: "Implant Crown Delivery",    status: "confirmed",   date: "2026-05-01", startTime: "15:00", endTime: "15:45", duration: 45, location: "Suite 318" },
+  // Dr. Yuki Tanaka (p12) — TMJ & Sleep Dentistry
+  { id: "c16", patientName: "Brianna Moore",   patientEmail: "brianna@example.com", patientPhone: "(512) 555-0316", providerId: "p12", service: "TMJ Evaluation",            status: "confirmed",   date: "2026-05-01", startTime: "08:30", endTime: "09:30", duration: 60, location: "Suite 425" },
+  { id: "c17", patientName: "Carlos Espinoza", patientEmail: "carlose@example.com", patientPhone: "(512) 555-0317", providerId: "p12", service: "Sleep Apnea Device Fitting", status: "confirmed",  date: "2026-05-01", startTime: "10:00", endTime: "10:45", duration: 45, location: "Suite 425" },
+  { id: "c18", patientName: "Rachel Green",    patientEmail: "rachelg@example.com", patientPhone: "(512) 555-0318", providerId: "p12", service: "Bruxism Guard Delivery",    status: "confirmed",   date: "2026-05-01", startTime: "11:30", endTime: "12:00", duration: 30, location: "Suite 425" },
+  { id: "c19", patientName: "Kevin Moss",      patientEmail: "kevinm@example.com",  patientPhone: "(512) 555-0319", providerId: "p12", service: "TMJ Splint Follow-up",      status: "completed",   date: "2026-05-01", startTime: "13:30", endTime: "14:00", duration: 30, location: "Suite 425" },
+  { id: "c20", patientName: "Amber Patel",     patientEmail: "amberp@example.com",  patientPhone: "(512) 555-0320", providerId: "p12", service: "Sleep Study Review",        status: "requested",   date: "2026-05-01", startTime: "15:00", endTime: "15:45", duration: 45, location: "Suite 425" },
+  // ── May 4–8 (following week) ───────────────────────────────────────────────
+  { id: "f1",  patientName: "Tara Singh",      patientEmail: "tara@example.com",    patientPhone: "(512) 555-0401", providerId: "p1", service: "New Patient Exam",    status: "confirmed",   date: "2026-05-04", startTime: "09:00", endTime: "10:00", duration: 60, location: "Suite 101" },
+  { id: "f2",  patientName: "Uma Price",       patientEmail: "uma@example.com",     patientPhone: "(512) 555-0402", providerId: "p4", service: "Implant Review",      status: "requested",   date: "2026-05-05", startTime: "10:30", endTime: "11:00", duration: 30, location: "Suite 412" },
+  { id: "f3",  patientName: "Vik Rao",         patientEmail: "vik@example.com",     patientPhone: "(512) 555-0403", providerId: "p2", service: "Braces Emergency",    status: "confirmed",   date: "2026-05-06", startTime: "08:00", endTime: "08:30", duration: 30, location: "Suite 204" },
+  { id: "f4",  patientName: "Willa Hart",      patientEmail: "willa@example.com",   patientPhone: "(512) 555-0404", providerId: "p3", service: "Cosmetic Consult",    status: "confirmed",   date: "2026-05-07", startTime: "15:00", endTime: "15:30", duration: 30, location: "Suite 308" },
+  { id: "f5",  patientName: "Xavier Cole",     patientEmail: "xavier@example.com",  patientPhone: "(512) 555-0405", providerId: "p5", service: "Fluoride",            status: "confirmed",   date: "2026-05-08", startTime: "11:00", endTime: "11:30", duration: 30, location: "Suite 105" },
+  // ── May 11–15 & June (future) ───────────────────────────────────────────────
+  { id: "f6",  patientName: "Yara Bloom",      patientEmail: "yara@example.com",    patientPhone: "(512) 555-0406", providerId: "p6", service: "Gum Graft Consult",   status: "requested",   date: "2026-05-12", startTime: "09:30", endTime: "10:30", duration: 60, location: "Suite 210" },
+  { id: "f7",  patientName: "Zeke Murray",     patientEmail: "zeke@example.com",    patientPhone: "(512) 555-0407", providerId: "p7", service: "RCT Completion",      status: "confirmed",   date: "2026-05-14", startTime: "13:30", endTime: "14:30", duration: 60, location: "Suite 315" },
+  { id: "f8",  patientName: "Ada Frost",       patientEmail: "ada@example.com",     patientPhone: "(512) 555-0408", providerId: "p8", service: "Denture Reline",      status: "confirmed",   date: "2026-06-02", startTime: "10:00", endTime: "11:00", duration: 60, location: "Suite 420" },
 ];
 
 /* ─── Status config ─── */
@@ -219,8 +274,8 @@ function weekIsoDatesFromMonday(monday: Date): string[] {
   return Array.from({ length: 7 }, (_, i) => dateToIso(addDays(monday, i)));
 }
 
-function isTodayIso(iso: string): boolean {
-  return iso === dateToIso(startOfLocalDay(new Date()));
+function isTodayIso(iso: string, todayIso: string): boolean {
+  return iso === todayIso;
 }
 
 const APPOINTMENT_STATUS_FILTER_OPTIONS: { value: AppointmentStatusFilter; label: string }[] = [
@@ -319,14 +374,16 @@ function WeekCalendar({
   dates,
   appointments,
   onApptClick,
+  todayIso,
 }: {
   dates: string[];
   appointments: Appointment[];
   onApptClick: (a: Appointment) => void;
+  /** yyyy-mm-dd — real today or Storybook `mockTodayIso`. */
+  todayIso: string;
 }) {
   const now = useCurrentTime();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const todayIso = dateToIso(startOfLocalDay(new Date()));
 
   const byDate = useMemo(() => {
     const map: Record<string, Appointment[]> = {};
@@ -374,11 +431,11 @@ function WeekCalendar({
         <div className="flex border-b border-border shrink-0">
           {dates.map((d) => {
             const { day, num } = fmtDateHeader(d);
-            const today = isTodayIso(d);
+            const today = isTodayIso(d, todayIso);
             return (
               <div
                 key={d}
-                className={`flex-1 min-w-[120px] h-10 flex items-center justify-center gap-1.5 border-r border-border last:border-r-0 ${today ? "bg-primary/5" : ""}`}
+                className={`flex-1 min-w-[120px] h-10 flex items-center justify-center gap-2 border-r border-border last:border-r-0 ${today ? "bg-primary/5" : ""}`}
               >
                 <span className="text-[11px] text-muted-foreground font-medium">{day}</span>
                 <span
@@ -394,7 +451,7 @@ function WeekCalendar({
         {/* Time grid */}
         <div ref={weekScrollRef} className="flex flex-1 overflow-y-auto">
           {dates.map((d) => {
-            const isToday = isTodayIso(d);
+            const isToday = isTodayIso(d, todayIso);
             const isPastDate = d < todayIso;
             const dayAppts = byDate[d] ?? [];
             const allGroups = buildCollisionColumns(dayAppts);
@@ -460,112 +517,99 @@ function WeekCalendar({
   );
 }
 
-/* ─── Day single-column view ─── */
+/* ─── Day schedule list view ─── */
 function DayCalendar({
   date,
   appointments,
   onApptClick,
+  todayIso,
 }: {
   date: string;
   appointments: Appointment[];
   onApptClick: (a: Appointment) => void;
+  todayIso: string;
 }) {
   const now = useCurrentTime();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const todayIso = dateToIso(startOfLocalDay(new Date()));
-  const isToday = isTodayIso(date);
+  const isToday = isTodayIso(date, todayIso);
   const isPastDate = date < todayIso;
 
-  const dayAppts = appointments
-    .filter((a) => a.date === date)
-    .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+  // Sort and group appointments by start time
+  const timeGroups = useMemo(() => {
+    const sorted = appointments
+      .filter((a) => a.date === date)
+      .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+    const groups: { time: string; appts: Appointment[] }[] = [];
+    for (const a of sorted) {
+      const last = groups[groups.length - 1];
+      if (last && last.time === a.startTime) {
+        last.appts.push(a);
+      } else {
+        groups.push({ time: a.startTime, appts: [a] });
+      }
+    }
+    return groups;
+  }, [date, appointments]);
 
-  const colGroups = buildCollisionColumns(dayAppts);
-  const numCols = Math.max(colGroups.length, 1);
-  const nowTopPx56 = (currentMinutes / 30) * 56;
-  const TIME_SLOTS = TIME_SLOTS_24H;
   const dayScrollRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to first future group on today
   useEffect(() => {
-    dayScrollRef.current?.scrollTo({ top: Math.max(0, nowTopPx56 - 100) });
+    if (!isToday || !dayScrollRef.current) return;
+    const el = dayScrollRef.current.querySelector<HTMLElement>("[data-future]");
+    if (el) el.scrollIntoView({ block: "start" });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  if (timeGroups.length === 0) {
+    return (
+      <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+        No appointments
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div ref={dayScrollRef} className="flex min-h-0 flex-1 overflow-y-auto">
-        <div className="shrink-0 border-r border-border ml-4" style={{ width: 64 }}>
-          {TIME_SLOTS.map((t) => (
+    <div ref={dayScrollRef} className="flex-1 min-h-0 overflow-y-auto">
+      <div className="py-3 px-4 flex flex-col gap-1">
+        {timeGroups.map(({ time, appts }) => {
+          const isPast = isPastDate || (isToday && timeToMinutes(time) < currentMinutes);
+          const isFuture = isToday && timeToMinutes(time) >= currentMinutes;
+          return (
             <div
-              key={t}
-              className="flex items-start justify-end pr-2 text-[10px] text-muted-foreground"
-              style={{ height: 56 }}
+              key={time}
+              data-future={isFuture ? "" : undefined}
+              className={cn("flex gap-4 py-2 border-b border-border/40 last:border-b-0", isPast && "opacity-60")}
             >
-              <span className="-translate-y-1.5">{t.endsWith(":00") ? fmtTime12(t) : ""}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="relative flex-1">
-          {/* Slot rows with past dimming */}
-          {TIME_SLOTS.map((t) => {
-            const slotMin = timeToMinutes(t);
-            const past = isPastDate || (isToday && slotMin < currentMinutes);
-            return (
-              <div
-                key={t}
-                className={cn(
-                  `border-b ${t.endsWith(":30") ? "border-dashed border-border/40" : "border-border/60"}`,
-                  past && "bg-muted/25",
-                )}
-                style={{ height: 56 }}
-              />
-            );
-          })}
-
-          {/* Appointments — collision columns */}
-          <div className="pointer-events-none absolute inset-0">
-            {colGroups.flatMap((colAppts, colIdx) =>
-              colAppts.map((a) => {
-                const topPx = (timeToMinutes(a.startTime) / 30) * 56;
-                const heightPx = Math.max((a.duration / 30) * 56 - 6, 44);
-                const leftPct = (colIdx / numCols) * 100;
-                const widthPct = (1 / numCols) * 100;
-                const provider = providerById(a.providerId);
-                const pastAppt = isPastDate || (isToday && timeToMinutes(a.endTime) < currentMinutes);
-                return (
-                  <div
-                    key={a.id}
-                    className={cn("pointer-events-auto absolute", pastAppt && "opacity-60")}
-                    style={{ top: topPx + 2, height: heightPx, left: `${leftPct}%`, width: `${widthPct}%`, padding: "0 4px 0 8px" }}
-                  >
+              {/* Time label */}
+              <div className="w-16 shrink-0 pt-1 text-right">
+                <span className="text-[11px] text-muted-foreground tabular-nums">{fmtTime12(time)}</span>
+              </div>
+              {/* Appointment cards — side by side if same start time */}
+              <div className="flex flex-1 flex-wrap gap-2">
+                {appts.map((a) => {
+                  const provider = providerById(a.providerId);
+                  return (
                     <button
+                      key={a.id}
                       type="button"
                       onClick={() => onApptClick(a)}
-                      className="group flex h-full w-full cursor-pointer overflow-hidden rounded-lg border border-border text-left"
+                      className="flex flex-col gap-0.5 rounded-lg border border-border bg-card px-3 py-2.5 text-left min-w-[180px] flex-1 hover:bg-muted transition-colors cursor-pointer"
                     >
-                      <div className="flex h-full flex-1 items-start justify-between gap-2 bg-card px-3 py-1.5 transition-colors group-hover:bg-muted min-w-0">
-                        <div className="flex min-w-0 flex-col gap-0.5">
-                          <p className="truncate text-xs font-medium leading-tight text-foreground">{a.patientName}</p>
-                          <p className="truncate text-[11px] text-muted-foreground">{a.service}</p>
-                          <p className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
-                            <Clock size={9} strokeWidth={1.6} absoluteStrokeWidth />
-                            {fmtTime12(a.startTime)} – {fmtTime12(a.endTime)}
-                          </p>
-                          <p className="truncate text-[11px] text-muted-foreground">{provider.name}</p>
-                        </div>
-                      </div>
+                      <p className="text-[13px] font-semibold text-foreground">{a.patientName}</p>
+                      <p className="text-[12px] text-muted-foreground">{a.service}</p>
+                      <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <Clock size={9} strokeWidth={1.6} absoluteStrokeWidth />
+                        {fmtTime12(a.startTime)} – {fmtTime12(a.endTime)}
+                      </p>
+                      <p className="text-[11px] font-medium mt-0.5" style={{ color: provider.color }}>{provider.name}</p>
                     </button>
-                  </div>
-                );
-              })
-            )}
-            {dayAppts.length === 0 && (
-              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                No appointments today
+                  );
+                })}
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -579,15 +623,16 @@ export function ByDoctorCalendar({
   date,
   appointments,
   onApptClick,
+  todayIso,
 }: {
   date: string;
   appointments: Appointment[];
   onApptClick: (a: Appointment) => void;
+  todayIso: string;
 }) {
   const now = useCurrentTime();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const todayIso = dateToIso(startOfLocalDay(new Date()));
-  const isToday = isTodayIso(date);
+  const isToday = isTodayIso(date, todayIso);
   const isPastDate = date < todayIso;
   const nowTopPx = (currentMinutes / 30) * 40;
 
@@ -870,14 +915,33 @@ function ApptDetailSheet({
   );
 }
 
+export type AppointmentsViewProps = {
+  defaultCalendarView?: CalendarView;
+  /** Initial anchor day (yyyy-mm-dd). Default `2026-05-01` matches dense mock day. */
+  initialAnchorDateIso?: string;
+  /**
+   * Pin “today” for highlights + **Today** button (Storybook / tests). In the live app, omit to use the real clock.
+   */
+  mockTodayIso?: string;
+};
+
 /* ─── Main view ─── */
-export function AppointmentsView({ defaultCalendarView }: { defaultCalendarView?: CalendarView } = {}) {
+export function AppointmentsView({
+  defaultCalendarView,
+  initialAnchorDateIso,
+  mockTodayIso,
+}: AppointmentsViewProps = {}) {
   const [calendarView, setCalendarView] = useState<CalendarView>(defaultCalendarView ?? "by-doctor");
-  const [anchorDate, setAnchorDate] = useState(() => startOfLocalDay(parseDate("2026-05-01")));
+  const [anchorDate, setAnchorDate] = useState(() =>
+    startOfLocalDay(parseDate(initialAnchorDateIso ?? "2026-05-01")),
+  );
   const [statusFilter, setStatusFilter] = useState<AppointmentStatusFilter>("all");
   const [selectedAppt, setSelectedAppt] = useState<Appointment | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const handleApptClick = (a: Appointment) => {
     setSelectedAppt(a);
@@ -889,9 +953,21 @@ export function AppointmentsView({ defaultCalendarView }: { defaultCalendarView?
   const anchorIso = useMemo(() => dateToIso(startOfLocalDay(anchorDate)), [anchorDate]);
 
   const visibleAppointments = useMemo(() => {
-    if (statusFilter === "all") return APPOINTMENTS;
-    return APPOINTMENTS.filter((a) => a.status === statusFilter);
-  }, [statusFilter]);
+    let list =
+      statusFilter === "all"
+        ? APPOINTMENTS
+        : APPOINTMENTS.filter((a) => a.status === statusFilter);
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter((a) => {
+      const provider = providerById(a.providerId);
+      return (
+        a.patientName.toLowerCase().includes(q) ||
+        a.service.toLowerCase().includes(q) ||
+        provider.name.toLowerCase().includes(q)
+      );
+    });
+  }, [statusFilter, searchQuery]);
 
   const weekRangeLabel = useMemo(() => {
     const start = parseDate(weekDates[0]);
@@ -915,11 +991,13 @@ export function AppointmentsView({ defaultCalendarView }: { defaultCalendarView?
     else setAnchorDate(addDays(anchorDate, 1));
   };
 
+  const liveTodayIso = dateToIso(startOfLocalDay(new Date()));
+  const todayIso = mockTodayIso ?? liveTodayIso;
+
   const goToday = () => {
-    setAnchorDate(startOfLocalDay(new Date()));
+    setAnchorDate(startOfLocalDay(mockTodayIso != null ? parseDate(mockTodayIso) : new Date()));
   };
 
-  const todayIso = dateToIso(startOfLocalDay(new Date()));
   const isAnchorToday = anchorIso === todayIso;
 
   return (
@@ -971,6 +1049,53 @@ export function AppointmentsView({ defaultCalendarView }: { defaultCalendarView?
           }
           actions={
             <>
+              {searchOpen ? (
+                <div className="relative h-[var(--button-height)] w-[min(100%,240px)] min-w-[200px] shrink">
+                  <Search
+                    className="pointer-events-none absolute left-2 top-1/2 size-[14px] -translate-y-1/2 text-[#303030] dark:text-muted-foreground"
+                    strokeWidth={L1_STRIP_ICON_STROKE_PX}
+                    absoluteStrokeWidth
+                    aria-hidden
+                  />
+                  <input
+                    ref={searchInputRef}
+                    type="search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onBlur={() => {
+                      if (searchQuery === "") setSearchOpen(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        setSearchQuery("");
+                        setSearchOpen(false);
+                      }
+                    }}
+                    autoFocus
+                    placeholder="Doctor, patient, or service"
+                    className="h-full w-full rounded-[8px] border border-[#e5e9f0] bg-white py-0 pr-2 pl-8 text-[14px] text-[#212121] outline-none transition-colors placeholder:text-[#757575] focus:border-[#2552ED] focus:ring-1 focus:ring-[#2552ED] dark:border-border dark:bg-muted dark:text-foreground dark:placeholder:text-[#8b92a5]"
+                    aria-label="Search appointments by doctor, patient, or service"
+                  />
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label="Open search"
+                  aria-expanded={false}
+                  title="Search appointments"
+                  onClick={() => setSearchOpen(true)}
+                >
+                  <Search
+                    className="size-[14px] text-[#303030] dark:text-muted-foreground"
+                    strokeWidth={L1_STRIP_ICON_STROKE_PX}
+                    absoluteStrokeWidth
+                    aria-hidden
+                  />
+                </Button>
+              )}
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -1041,18 +1166,21 @@ export function AppointmentsView({ defaultCalendarView }: { defaultCalendarView?
               dates={weekDates}
               appointments={visibleAppointments}
               onApptClick={handleApptClick}
+              todayIso={todayIso}
             />
           ) : calendarView === "by-doctor" ? (
             <ByDoctorCalendar
               date={anchorIso}
               appointments={visibleAppointments}
               onApptClick={handleApptClick}
+              todayIso={todayIso}
             />
           ) : (
             <DayCalendar
               date={anchorIso}
               appointments={visibleAppointments}
               onApptClick={handleApptClick}
+              todayIso={todayIso}
             />
           )}
         </div>

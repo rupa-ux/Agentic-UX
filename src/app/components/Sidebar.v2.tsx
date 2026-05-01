@@ -113,8 +113,14 @@ const sidebarSections: SidebarNavSection[] = [
       { label: "Inbox", Icon: FigmaIconInbox, view: "inbox" },
       { label: "Appointments", Icon: FigmaIconAppointments, view: "appointments" },
       { label: "Contacts", Icon: FigmaIconContacts, view: "contacts" },
-      { label: "Ticketing", Icon: FigmaIconTicketing, view: "ticketing" },
       { label: "Payments", Icon: FigmaIconPayments, view: "payments" },
+    ],
+  },
+  {
+    title: "Customer experience",
+    items: [
+      { label: "Ticketing", Icon: FigmaIconTicketing, view: "ticketing" },
+      { label: "Surveys", Icon: FigmaIconSurveys, view: "surveys" },
     ],
   },
   {
@@ -1577,7 +1583,21 @@ const inboxConfig = {
   sections: [
     {
       label: "Human actions",
-      children: ["All", "Messages", "Assigned to me", "Leads", "Spam"],
+      children: ["All", "Assigned to me", "Leads", "Messages", "Reviews", "Spam", "Surveys"],
+    },
+    {
+      label: "Status",
+      children: [
+        "Follow up",
+        "Lost",
+        "Missed call",
+        "New lead",
+        "New voicemails",
+        "Scheduling request",
+        "Service",
+        "Unqualified",
+        "Won",
+      ],
     },
     {
       label: "Saved filter",
@@ -1585,7 +1605,7 @@ const inboxConfig = {
     },
     {
       label: "Agents",
-      children: ["Tagging & routing agent", "Lead generation agents"],
+      children: ["Lead generation agents", "Tagging & routing agent"],
     },
     {
       label: "Resources",
