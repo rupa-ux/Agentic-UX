@@ -62,6 +62,8 @@ export function getAppViewTitle(view: AppView): string {
       return "Listings";
     case "aeo-search-ai":
       return "Search AI";
+    case "resources":
+      return "Resources";
     default:
       return "Reports";
   }

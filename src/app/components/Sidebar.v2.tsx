@@ -11,6 +11,7 @@ import {
   ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Plus, Info, MessageSquare,
   MoreHorizontal,
   Search,
+  BookOpen,
 } from "lucide-react";
 import {
   FigmaIconBirdAI, FigmaIconOverview, FigmaIconInbox,
@@ -90,6 +91,17 @@ function AeoSearchAiL1Icon({ size, className }: { size?: number; className?: str
   );
 }
 
+function ResourcesL1Icon({ size, className }: { size?: number; className?: string }) {
+  return (
+    <BookOpen
+      size={size}
+      className={className}
+      strokeWidth={L1_STRIP_ICON_STROKE_PX}
+      absoluteStrokeWidth
+    />
+  );
+}
+
 const sidebarSections: SidebarNavSection[] = [
   {
     items: [
@@ -100,10 +112,11 @@ const sidebarSections: SidebarNavSection[] = [
   {
     title: "Marketing",
     items: [
+      { label: "Search AI", Icon: AeoSearchAiL1Icon, view: "aeo-search-ai" },
+      { label: "Listings", Icon: FigmaIconListings, view: "aeo-product-listing-1" },
       { label: "Reviews", Icon: FigmaIconReviews, view: "reviews" },
       { label: "Social", Icon: FigmaIconSocial, view: "social" },
       { label: "Referrals", Icon: FigmaIconReferrals, view: "referrals" },
-      { label: "Contacts", Icon: FigmaIconContacts, view: "contacts" },
       { label: "Marketing automations", Icon: FigmaIconCampaigns, view: "campaigns" },
     ],
   },
@@ -111,9 +124,11 @@ const sidebarSections: SidebarNavSection[] = [
     title: "Operations",
     items: [
       { label: "Inbox", Icon: FigmaIconInbox, view: "inbox" },
-      { label: "Payments", Icon: FigmaIconPayments, view: "payments" },
+      { label: "Resources", Icon: ResourcesL1Icon, view: "resources" },
       { label: "Appointments", Icon: FigmaIconAppointments, view: "appointments" },
-      { label: "Chatbot", Icon: MessageSquare, view: "searchai" },
+      { label: "Contacts", Icon: FigmaIconContacts, view: "contacts" },
+      { label: "Ticketing", Icon: FigmaIconTicketing, view: "ticketing" },
+      { label: "Payments", Icon: FigmaIconPayments, view: "payments" },
     ],
   },
   {
@@ -121,20 +136,6 @@ const sidebarSections: SidebarNavSection[] = [
     items: [
       { label: "Reports", Icon: FigmaIconReports, view: "dashboard" },
       { label: "Insights", Icon: FigmaIconInsights, view: "insights" },
-    ],
-  },
-  {
-    title: "Customer experience",
-    items: [
-      { label: "Ticketing", Icon: FigmaIconTicketing, view: "ticketing" },
-      { label: "Surveys", Icon: FigmaIconSurveys, view: "surveys" },
-    ],
-  },
-  {
-    title: "AEO/SEO experience",
-    items: [
-      { label: "Listings", Icon: FigmaIconListings, view: "aeo-product-listing-1" },
-      { label: "Search AI", Icon: AeoSearchAiL1Icon, view: "aeo-search-ai" },
     ],
   },
 ];
@@ -259,6 +260,7 @@ export function IconStrip({
     else if (currentView === "social") setActiveIcon("Social");
     else if (currentView === "searchai" || currentView === "conversation-stream") setActiveIcon("Chatbot");
     else if (currentView === "contacts") setActiveIcon("Contacts");
+    else if (currentView === "resources") setActiveIcon("Resources");
     else if (currentView === "surveys") setActiveIcon("Surveys");
     else if (currentView === "ticketing") setActiveIcon("Ticketing");
     else if (currentView === "campaigns") setActiveIcon("Campaigns");
@@ -315,6 +317,7 @@ export function IconStrip({
     else if (label === "Inbox") onViewChange("inbox");
     else if (label === "Payments") onViewChange("payments");
     else if (label === "Appointments") onViewChange("appointments");
+    else if (label === "Resources") onViewChange("resources");
     else if (label === "Chatbot") onViewChange("searchai");
     else if (label === "Reports") onViewChange("dashboard");
     else if (label === "Insights") onViewChange("insights");
@@ -1543,6 +1546,24 @@ const appointmentsConfig = {
 
 export function AppointmentsL2NavPanel() {
   return <L2NavLayout {...appointmentsConfig} storageKey="nav:l2:appointments" data-no-print />;
+}
+
+/* ═══════════════════════════════════════════
+   Resources L2 Nav Panel
+   ═══════════════════════════════════════════ */
+const resourcesConfig = {
+  flatNavItems: [
+    { label: "Knowledge base", key: "knowledge-base" },
+    { label: "Providers", key: "providers" },
+    { label: "Intake forms", key: "intake-forms" },
+    { label: "Phone numbers", key: "phone-numbers" },
+    { label: "Widgets", key: "widgets" },
+  ],
+  sections: [],
+};
+
+export function ResourcesL2NavPanel() {
+  return <L2NavLayout {...resourcesConfig} storageKey="nav:l2:resources" data-no-print />;
 }
 
 /* ═══════════════════════════════════════════

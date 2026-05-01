@@ -9,6 +9,7 @@ import {
   PAYMENTS_L2_DEFAULT_ACTIVE_KEY,
   AeoProductListing1L2NavPanel,
   AeoSearchAiL2NavPanel,
+  ResourcesL2NavPanel,
 } from "./components/Sidebar";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { usePersistedState } from "./hooks/usePersistedState";
@@ -122,7 +123,8 @@ export type AppView =
   | "agent-activity"
   | "agent-config"
   | "aeo-product-listing-1"
-  | "aeo-search-ai";
+  | "aeo-search-ai"
+  | "resources";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => readDemoAuthenticated());
@@ -408,7 +410,8 @@ export default function App() {
     v === "payments" ||
     v === "appointments" ||
     v === "aeo-product-listing-1" ||
-    v === "aeo-search-ai";
+    v === "aeo-search-ai" ||
+    v === "resources";
 
   return (
     <MonitorNotificationsProvider
@@ -538,6 +541,10 @@ export default function App() {
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "aeo-search-ai" && (
             <AeoSearchAiL2NavPanel />
           )}
+          {/* Resources L2 nav panel */}
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "resources" && (
+            <ResourcesL2NavPanel />
+          )}
           {/* Inbox L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "inbox" && (
             <InboxL2NavPanel />
@@ -600,6 +607,8 @@ export default function App() {
               <AppShellContentPlaceholder view="aeo-product-listing-1" productLabel="Listings" />
             ) : currentView === "aeo-search-ai" ? (
               <AppShellContentPlaceholder view="aeo-search-ai" productLabel="Search AI" />
+            ) : currentView === "resources" ? (
+              <AppShellContentPlaceholder view="resources" productLabel="Resources" />
             ) : currentView === "conversation-stream" ? (
               <ConversationStream />
             ) : currentView === "agent-activity" ? (
