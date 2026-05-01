@@ -231,16 +231,15 @@ function CreateTicketSheet({
         <FloatingSheetFrame
           title="Create Support Ticket"
           description="Pre-filled from this conversation"
-          primaryAction={
-            <Button onClick={handleSubmit} disabled={submitting}>
-              {submitting ? "Creating…" : "Create Ticket"}
-            </Button>
-          }
-          secondaryAction={
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-          }
+          primaryAction={{
+            label: submitting ? "Creating…" : "Create Ticket",
+            onClick: handleSubmit,
+            disabled: submitting,
+          }}
+          secondaryAction={{
+            label: "Cancel",
+            onClick: () => onOpenChange(false),
+          }}
         >
           <div className="flex flex-col gap-6 p-6">
             <div className="flex flex-col gap-1.5">

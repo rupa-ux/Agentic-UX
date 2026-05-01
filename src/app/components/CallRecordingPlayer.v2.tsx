@@ -16,7 +16,6 @@ import {
 } from "@/app/components/ui/select";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
-import { Button } from "@/app/components/ui/button";
 import { cn } from "@/app/components/ui/utils";
 import type {
   CallRecord, CallMarker, CallTranscriptMessage, Language, CallOutcome,
@@ -612,14 +611,15 @@ function CreateTicketSheet({
         <FloatingSheetFrame
           title="Create Support Ticket"
           description="Pre-filled from call recording"
-          primaryAction={
-            <Button onClick={handleSubmit} disabled={submitting}>
-              {submitting ? "Creating…" : "Create Ticket"}
-            </Button>
-          }
-          secondaryAction={
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          }
+          primaryAction={{
+            label: submitting ? "Creating…" : "Create Ticket",
+            onClick: handleSubmit,
+            disabled: submitting,
+          }}
+          secondaryAction={{
+            label: "Cancel",
+            onClick: () => onOpenChange(false),
+          }}
         >
           <div className="flex flex-col gap-6 p-6">
             <div className="flex flex-col gap-1.5">
