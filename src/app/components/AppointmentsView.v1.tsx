@@ -286,9 +286,9 @@ export function ApptCard({
   return (
     <button
       onClick={() => onClick(appt)}
-      className="w-full text-left rounded-lg border border-border overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
+      className="w-full text-left rounded-lg border border-border overflow-hidden transition-colors cursor-pointer group"
     >
-      <div className="px-2.5 py-2 bg-card group-hover:bg-muted/30 transition-colors">
+      <div className="px-2.5 py-2 bg-card group-hover:bg-muted transition-colors">
         <p className={`font-semibold text-foreground leading-tight ${compact ? "text-[11px]" : "text-xs"}`}>
           {appt.patientName}
         </p>
@@ -490,18 +490,8 @@ function DayCalendar({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { day, num, month } = fmtDateHeader(date);
-  const today = isTodayIso(date);
-
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className={`flex h-12 items-center justify-center gap-2 border-b border-border ${today ? "bg-primary/5" : ""}`}>
-        <span className="text-sm text-muted-foreground">{day}, {month}</span>
-        <span className={`text-lg font-semibold ${today ? "flex size-8 items-center justify-center rounded-full bg-primary text-sm text-primary-foreground" : "text-foreground"}`}>
-          {num}
-        </span>
-      </div>
-
       <div ref={dayScrollRef} className="flex min-h-0 flex-1 overflow-y-auto">
         <div className="shrink-0 border-r border-border ml-4" style={{ width: 64 }}>
           {TIME_SLOTS.map((t) => (
@@ -551,9 +541,9 @@ function DayCalendar({
                     <button
                       type="button"
                       onClick={() => onApptClick(a)}
-                      className="group flex h-full w-full cursor-pointer overflow-hidden rounded-lg border border-border text-left transition-shadow hover:shadow-md"
+                      className="group flex h-full w-full cursor-pointer overflow-hidden rounded-lg border border-border text-left"
                     >
-                      <div className="flex h-full flex-1 items-start justify-between gap-2 bg-card px-3 py-1.5 transition-colors group-hover:bg-muted/30 min-w-0">
+                      <div className="flex h-full flex-1 items-start justify-between gap-2 bg-card px-3 py-1.5 transition-colors group-hover:bg-muted min-w-0">
                         <div className="flex min-w-0 flex-col gap-0.5">
                           <p className="truncate text-xs font-medium leading-tight text-foreground">{a.patientName}</p>
                           <p className="truncate text-[11px] text-muted-foreground">{a.service}</p>
