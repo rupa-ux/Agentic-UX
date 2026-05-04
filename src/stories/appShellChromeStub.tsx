@@ -9,9 +9,9 @@ import { APP_SHELL_BELOW_TOPBAR_CARD_CLASS } from "@/app/components/layout/appSh
  */
 export function AppShellChromeStub({ children }: { children: ReactNode }) {
   return (
-    <div className="mx-auto w-full max-w-6xl p-4">
+    <div className="h-[min(720px,85vh)] w-full min-w-0 px-2 py-2 sm:px-4">
       <div
-        className={`${APP_SHELL_BELOW_TOPBAR_CARD_CLASS} min-h-[min(560px,70vh)] shadow-sm`}
+        className={`${APP_SHELL_BELOW_TOPBAR_CARD_CLASS} h-full min-h-0 min-w-0 shadow-sm`}
       >
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-lg bg-app-shell-main">
           {children}

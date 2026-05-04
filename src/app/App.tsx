@@ -483,7 +483,11 @@ export default function App() {
 
         {/* Below TopBar: L2 nav + main content side by side */}
         <div
-          className={`flex-1 flex min-h-0 overflow-hidden pr-[10px] pb-[10px] pl-0 ${APP_SHELL_GUTTER_SURFACE_CLASS}`}
+          className={
+            contactsBulkImportActive && currentView === "contacts"
+              ? `flex-1 flex min-h-0 overflow-hidden pl-0 pr-0 pb-0 ${APP_SHELL_GUTTER_SURFACE_CLASS}`
+              : `flex-1 flex min-h-0 overflow-hidden pr-[10px] pb-[10px] pl-0 ${APP_SHELL_GUTTER_SURFACE_CLASS}`
+          }
         >
           <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
 
@@ -597,7 +601,11 @@ export default function App() {
           >
             {!mynaWorkspaceExpanded ? (
             <div
-              className={`${APP_MAIN_CONTENT_SHELL_CLASS} min-h-0 min-w-[60%]`}
+              className={
+                contactsBulkImportActive && currentView === "contacts"
+                  ? `${APP_MAIN_CONTENT_SHELL_CLASS} min-h-0 min-w-0 flex-1`
+                  : `${APP_MAIN_CONTENT_SHELL_CLASS} min-h-0 min-w-[60%]`
+              }
             >
             {currentView === "business-overview" ? (
               <BusinessOverviewDashboard />

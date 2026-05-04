@@ -2,6 +2,7 @@
 
 /**
  * Bulk import shell: vertical stepper + pane. Spacing on 8px / 4px dense grid (no gap-3 / px-3 layout).
+ * **Back** and sidebar steps jump within unlocked progress; **Next** still advances the flow.
  * Cancel returns to the More options menu (parent closes bulk + reopens dialog).
  */
 
@@ -12,9 +13,12 @@ import {
   Check,
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
+  FileSpreadsheet,
   Info,
   Trash2,
   Upload,
+  X,
 } from "lucide-react";
 
 import { L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
@@ -62,6 +66,8 @@ import type {
   ContactsBulkImportStep,
 } from "@/app/components/contacts/bulkImportTypes";
 
+const BULK_IMPORT_STEP_ORDER: ContactsBulkImportStep[] = ["upload", "match", "import"];
+
 const FILE_INPUT_ACCEPT =
   "text/csv,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.xlsx,application/vnd.ms-excel,.xls";
 
@@ -74,6 +80,46 @@ function hasFileDrag(e: React.DragEvent): boolean {
   return (
     e.dataTransfer.types.includes("Files") ||
     Array.from(e.dataTransfer.items).some((i) => i.kind === "file")
+  );
+}
+
+function formatFileSize(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes < 0) return "";
+  if (bytes < 1024) return `${Math.round(bytes)} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(bytes < 10 * 1024 ? 1 : 0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/** White check on a filled green disc — success affordance; uses emerald scale (light + dark), not raw hex. */
+function BulkImportSuccessTick({
+  size = "lg",
+  className,
+}: {
+  size?: "lg" | "sm" | "xs";
+  className?: string;
+}) {
+  const shell = size === "lg" ? "size-10" : size === "sm" ? "size-6" : "size-4";
+  const iconBox =
+    size === "lg" ? "size-[1.125rem]" : size === "sm" ? "size-2.5" : "size-2";
+  /** Slightly heavier stroke so the glyph reads like a filled success badge, not outline UI chrome. */
+  const strokePx = size === "lg" ? 3 : size === "sm" ? 2.75 : 2.25;
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white dark:bg-emerald-500",
+        shell,
+        className,
+      )}
+      aria-hidden
+    >
+      <Check
+        className={cn(iconBox, "text-white")}
+        strokeWidth={strokePx}
+        absoluteStrokeWidth
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </span>
   );
 }
 
@@ -169,6 +215,12 @@ export function ContactsBulkImportWorkspace({
   const [addToExisting, setAddToExisting] = useState(false);
   const [listOptionsOpen, setListOptionsOpen] = useState(true);
 
+  /** Furthest step unlocked via Next (or initial story step). Sidebar can jump only up to here unless going back. */
+  const [furthestStepIndex, setFurthestStepIndex] = useState(() =>
+    BULK_IMPORT_STEP_ORDER.indexOf(step),
+  );
+  const prevUploadFileRef = useRef<File | null>(null);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
   const dragDepth = useRef(0);
@@ -242,6 +294,13 @@ export function ContactsBulkImportWorkspace({
     el.addEventListener("paste", onPaste);
     return () => el.removeEventListener("paste", onPaste);
   }, [applyFile]);
+
+  useEffect(() => {
+    if (prevUploadFileRef.current !== null && uploadFile === null) {
+      setFurthestStepIndex(0);
+    }
+    prevUploadFileRef.current = uploadFile;
+  }, [uploadFile]);
 
   const pendingImportHistoryRow = useMemo(
     () => historyRows.find((r) => r.id === importHistoryPendingDeleteId) ?? null,
@@ -337,12 +396,29 @@ export function ContactsBulkImportWorkspace({
     step === "import" ? "Finish import" : "Next";
 
   const handlePrimary = () => {
-    if (step === "upload") onStepChange("match");
-    else if (step === "match") onStepChange("import");
-    else {
+    if (step === "upload") {
+      setFurthestStepIndex((f) => Math.max(f, 1));
+      onStepChange("match");
+    } else if (step === "match") {
+      setFurthestStepIndex((f) => Math.max(f, 2));
+      onStepChange("import");
+    } else {
       toast.success("Import queued (prototype).");
       onFinish();
     }
+  };
+
+  const handleBack = () => {
+    const i = BULK_IMPORT_STEP_ORDER.indexOf(step);
+    if (i <= 0) return;
+    onStepChange(BULK_IMPORT_STEP_ORDER[i - 1]!);
+  };
+
+  const goToStep = (target: ContactsBulkImportStep) => {
+    const idx = BULK_IMPORT_STEP_ORDER.indexOf(target);
+    if (idx > furthestStepIndex) return;
+    if (target !== "upload" && !uploadFile && step !== target) return;
+    onStepChange(target);
   };
 
   const stepTitle =
@@ -358,17 +434,35 @@ export function ContactsBulkImportWorkspace({
     { id: "import", label: "Import", n: 3 },
   ];
 
-  const stepOrder = steps.map((x) => x.id);
+  const stepOrder = BULK_IMPORT_STEP_ORDER;
   const currentStepIndex = stepOrder.indexOf(step);
+
+  const stepNavDisabled = (targetId: ContactsBulkImportStep): boolean => {
+    const idx = stepOrder.indexOf(targetId);
+    if (idx > furthestStepIndex) return true;
+    if (targetId !== "upload" && !uploadFile && step !== targetId) return true;
+    return false;
+  };
 
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden bg-app-shell-main transition-opacity duration-200 motion-reduce:transition-none">
-      <header className="flex shrink-0 flex-wrap items-center justify-between gap-4 px-6 py-4">
+      <header className="flex shrink-0 flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <h1 className={MAIN_VIEW_PRIMARY_HEADING_CLASS}>Bulk import</h1>
         <div className="flex flex-wrap items-center gap-2">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
+          {currentStepIndex > 0 ? (
+            <Button type="button" variant="outline" onClick={handleBack}>
+              <ChevronLeft
+                className="size-4"
+                strokeWidth={L1_STRIP_ICON_STROKE_PX}
+                absoluteStrokeWidth
+                aria-hidden
+              />
+              Back
+            </Button>
+          ) : null}
           <Button
             type="button"
             disabled={nextDisabled}
@@ -388,43 +482,46 @@ export function ContactsBulkImportWorkspace({
             const active = step === s.id;
             const stepIndex = stepOrder.indexOf(s.id);
             const completed = stepIndex < currentStepIndex;
+            const disabled = stepNavDisabled(s.id);
             return (
-              <div
+              <button
                 key={s.id}
+                type="button"
+                disabled={disabled}
+                onClick={() => goToStep(s.id)}
                 className={cn(
-                  "mx-2 mb-1 flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] transition-colors duration-200 motion-reduce:transition-none",
+                  "mx-2 mb-1 flex w-[calc(100%-16px)] items-center gap-2 rounded-lg px-4 py-2 text-left text-[13px] transition-colors duration-200 motion-reduce:transition-none",
                   active
                     ? "bg-muted text-foreground font-medium"
                     : "text-muted-foreground font-normal",
+                  disabled
+                    ? "cursor-not-allowed opacity-50"
+                    : cn("cursor-pointer", !active && "hover:bg-muted/60"),
                 )}
                 aria-current={active ? "step" : undefined}
               >
-                <span
-                  className="flex size-4 shrink-0 items-center justify-center"
-                  aria-hidden
-                >
-                  {completed ? (
-                    <Check
-                      className="size-4 text-primary"
-                      strokeWidth={L1_STRIP_ICON_STROKE_PX}
-                      absoluteStrokeWidth
-                    />
-                  ) : (
+                {completed ? (
+                  <BulkImportSuccessTick size="xs" className="shrink-0" />
+                ) : (
+                  <span
+                    className="flex size-4 shrink-0 items-center justify-center"
+                    aria-hidden
+                  >
                     <span className="tabular-nums text-muted-foreground">{s.n}</span>
-                  )}
-                </span>
+                  </span>
+                )}
                 <span className={cn(active && "text-foreground")}>{s.label}</span>
-              </div>
+              </button>
             );
           })}
         </nav>
 
         <div
           key={step}
-          className="min-h-0 min-w-0 flex-1 overflow-auto px-6 py-6 animate-in fade-in-0 duration-200 motion-reduce:animate-none"
+          className="min-h-0 min-w-0 flex-1 overflow-auto px-4 py-6 sm:px-6 lg:px-8 animate-in fade-in-0 duration-200 motion-reduce:animate-none"
         >
           {step === "upload" ? (
-            <div className="flex max-w-3xl flex-col gap-6">
+            <div className="flex w-full min-w-0 flex-col gap-6">
               <h2 className={MAIN_VIEW_PRIMARY_HEADING_CLASS}>{stepTitle}</h2>
 
               <input
@@ -442,39 +539,97 @@ export function ContactsBulkImportWorkspace({
                 aria-label="Drop spreadsheet file"
                 tabIndex={-1}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-border bg-muted/40 px-6 py-12 text-center transition-colors duration-200 motion-reduce:transition-none",
-                  dropActive && "border-primary/40 bg-muted ring-2 ring-ring ring-offset-2 ring-offset-background",
+                  "flex w-full min-w-0 flex-col items-center justify-center gap-4 rounded-lg border px-4 py-10 text-center transition-colors duration-200 motion-reduce:transition-none sm:px-6 sm:py-12",
+                  uploadFile
+                    ? "border-solid border-primary/35 bg-primary/5 shadow-sm"
+                    : "border-dashed border-border bg-muted/40",
+                  dropActive &&
+                    "border-primary/50 bg-muted ring-2 ring-ring ring-offset-2 ring-offset-background",
                 )}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
               >
-                <Upload
-                  className="size-10 text-muted-foreground"
-                  strokeWidth={L1_STRIP_ICON_STROKE_PX}
-                  absoluteStrokeWidth
-                  aria-hidden
-                />
-                <div className="flex max-w-md flex-col gap-2 text-[13px]">
-                  <p className="text-foreground">
-                    Drag and drop a file to upload, or use the button below.
-                  </p>
+                {uploadFile ? (
+                  <BulkImportSuccessTick size="lg" />
+                ) : (
+                  <Upload
+                    className="size-10 text-muted-foreground"
+                    strokeWidth={L1_STRIP_ICON_STROKE_PX}
+                    absoluteStrokeWidth
+                    aria-hidden
+                  />
+                )}
+                <div className="flex w-full max-w-2xl flex-col gap-2 text-[13px]">
+                  {uploadFile ? null : (
+                    <p className="text-foreground">
+                      Drag and drop a file to upload, or use the button below.
+                    </p>
+                  )}
                   <p className="text-muted-foreground">
                     Supported: .csv, .xlsx, .xls
                   </p>
                   {uploadFile ? (
-                    <p className="font-medium text-foreground">{uploadFile.name}</p>
+                    <div
+                      className="mt-2 flex w-full items-stretch gap-4 rounded-lg border border-border bg-card px-6 py-4 text-left text-card-foreground shadow"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                        <FileSpreadsheet
+                          className="size-5"
+                          strokeWidth={L1_STRIP_ICON_STROKE_PX}
+                          absoluteStrokeWidth
+                          aria-hidden
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-medium text-foreground">
+                          File ready for import
+                        </p>
+                        <p
+                          className="mt-1 break-all text-[13px] font-normal text-muted-foreground"
+                          title={uploadFile.name}
+                        >
+                          {uploadFile.name}
+                        </p>
+                        {uploadFile.size > 0 ? (
+                          <p className="mt-1 text-xs text-muted-foreground tabular-nums">
+                            {formatFileSize(uploadFile.size)}
+                          </p>
+                        ) : null}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
+                        aria-label="Remove selected file"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setUploadFile(null);
+                        }}
+                      >
+                        <X
+                          className="size-4"
+                          strokeWidth={L1_STRIP_ICON_STROKE_PX}
+                          absoluteStrokeWidth
+                        />
+                      </Button>
+                    </div>
                   ) : null}
                 </div>
                 <Button
                   type="button"
+                  variant={uploadFile ? "outline" : "default"}
+                  aria-label={uploadFile ? "Replace spreadsheet file" : undefined}
                   onClick={() => inputRef.current?.click()}
                 >
-                  Upload spreadsheet
+                  {uploadFile ? "Replace" : "Upload spreadsheet"}
                 </Button>
 
-                <div className="w-full max-w-md rounded-lg bg-muted/60 px-4 py-4 text-left text-[13px] text-foreground">
+                <div className="w-full max-w-2xl rounded-lg bg-muted/60 px-4 py-4 text-left text-[13px] text-foreground">
                   <span className="text-muted-foreground">Download a </span>
                   <a
                     href="/contacts-import-sample.csv"
@@ -552,7 +707,7 @@ export function ContactsBulkImportWorkspace({
           ) : null}
 
           {step === "match" ? (
-            <div className="flex max-w-4xl flex-col gap-4">
+            <div className="flex w-full min-w-0 flex-col gap-4">
               <h2 className={MAIN_VIEW_PRIMARY_HEADING_CLASS}>{stepTitle}</h2>
               <Alert>
                 <Info
@@ -608,7 +763,7 @@ export function ContactsBulkImportWorkspace({
                               )
                             }
                           >
-                            <SelectTrigger className="h-8 w-[min(100%,200px)] text-[13px] font-normal">
+                            <SelectTrigger className="h-8 w-full max-w-[min(100%,280px)] text-[13px] font-normal">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -629,7 +784,7 @@ export function ContactsBulkImportWorkspace({
           ) : null}
 
           {step === "import" ? (
-            <div className="flex max-w-2xl flex-col gap-6">
+            <div className="flex w-full min-w-0 flex-col gap-6">
               <h2 className={MAIN_VIEW_PRIMARY_HEADING_CLASS}>{stepTitle}</h2>
 
               <Collapsible open={listOptionsOpen} onOpenChange={setListOptionsOpen}>

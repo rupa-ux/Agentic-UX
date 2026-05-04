@@ -24,7 +24,7 @@ const meta: Meta<typeof ContactsMoreOptionsDropdown> = {
     docs: {
       description: {
         component:
-          "Contacts **More options** is a **dropdown** on the three-dot control (`ContactsMoreOptionsDropdown`). **Bulk import** opens `ContactsBulkImportWorkspace` in the app shell. Bulk stories wrap **`AppShellChromeStub`**; use the **theme** toolbar for Light/Dark smoke.",
+          "Contacts **More options** is a **dropdown** on the three-dot control (`ContactsMoreOptionsDropdown`). **Bulk import** opens `ContactsBulkImportWorkspace` in the app shell — use **Back** or the sidebar to revisit earlier steps (forward steps unlock after **Next**; removing the file resets progress). Bulk stories wrap **`AppShellChromeStub`**; use the **theme** toolbar for Light/Dark smoke.",
       },
     },
   },
@@ -72,7 +72,7 @@ export const BulkImportUploadPopulated: StoryObj = {
     docs: {
       description: {
         story:
-          "Uses **`AppShellChromeStub`** (`src/stories/appShellChromeStub.tsx`) for shell-width context.",
+          "Uses **`AppShellChromeStub`** for shell-width context. After you pick a file, Upload shows a **white check on an emerald disc** (`bg-emerald-600` / `dark:bg-emerald-500`, `text-white` check) — no raw hex.",
       },
     },
   },
