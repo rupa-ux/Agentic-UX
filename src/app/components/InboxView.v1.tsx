@@ -41,6 +41,7 @@ import {
   maxInboxListWidth,
   useInboxListPanelWidth,
 } from "@/app/hooks/useInboxListPanelWidth";
+import { ConversationDetailHeader } from "@/app/components/inbox/ConversationDetailHeader";
 
 /* ─── Types ─── */
 interface Conversation {
@@ -74,6 +75,12 @@ interface ConversationDetail {
   assignedAvatar: string;
   dateSeparator: string;
   messages: ChatMessage[];
+  /** Detail header row: timestamp · duration · agent (sentence case fragments). */
+  headerMetaLine?: string;
+  /** Outline pill in header (sentence case). */
+  categoryTag?: string;
+  /** Default “Select status” classification id before user overrides per thread. */
+  defaultClassificationId?: string;
 }
 
 /* ─── Mock data ─── */
@@ -410,6 +417,9 @@ const conversationDetails: Record<string, ConversationDetail> = {
       "https://images.unsplash.com/photo-1655249493799-9cee4fe983bb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB3b21hbiUyMGhlYWRzaG90JTIwcG9ydHJhaXR8ZW58MXx8fHwxNzczMjE3MDIwfDA&ixlib=rb-4.1.0&q=80&w=1080",
     dateSeparator: "Today · Call Recording",
     messages: [],
+    headerMetaLine: "Today, 2:14 PM · 3:30 · Agent: Sarah M.",
+    categoryTag: "Wrong item",
+    defaultClassificationId: "service",
   },
   "3": {
     contactName: "Cameron Williamson",
@@ -948,9 +958,16 @@ export function InboxView() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailLoadNonce, setDetailLoadNonce] = useState(0);
   const [statusOpen, setStatusOpen] = useState(false);
+  /** Per-thread classification id for detail “Select status” (mock-only; not persisted). */
+  const [classificationByConversationId, setClassificationByConversationId] = useState<
+    Record<string, string>
+  >({});
   const [chatHeaderElevated, setChatHeaderElevated] = useState(false);
   const [listScrollShimmer, setListScrollShimmer] = useState(false);
   const detail = getDetail(selectedId);
+  const selectedConv = conversations.find((c) => c.id === selectedId);
+  const effectiveClassificationId =
+    classificationByConversationId[selectedId] ?? detail.defaultClassificationId ?? "";
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
   const listShimmerClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1191,49 +1208,19 @@ export function InboxView() {
 
       {/* ═══ RIGHT: Conversation detail ═══ */}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-[#f5f6f8] transition-colors duration-300 dark:bg-app-shell-gutter">
-        <div
-          className={`relative z-10 flex h-[60px] shrink-0 items-center justify-between bg-[#f5f6f8] px-5 transition-[box-shadow,colors] duration-200 dark:bg-app-shell-gutter ${
-            chatHeaderElevated
-              ? "shadow-[0_2px_10px_-4px_rgba(15,23,42,0.1)] dark:shadow-[0_2px_12px_-4px_rgba(0,0,0,0.28)]"
-              : "shadow-none"
-          }`}
-        >
-          <h2
-            className="text-[16px] text-[#212121] dark:text-foreground"
-            style={{ fontWeight: 400 }}
-          >
-            {detail.contactName}
-          </h2>
-
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 rounded-[8px] px-2 py-1 transition-colors hover:bg-[#f5f5f5] dark:hover:bg-muted">
-              <div className="size-6 overflow-hidden rounded-full ring-1 ring-[#e8eaed] dark:ring-[#3d4555]">
-                <img
-                  src={detail.assignedAvatar}
-                  alt={detail.assignedTo}
-                  className="size-full object-cover"
-                />
-              </div>
-              <span
-                className="text-[13px] text-[#212121] dark:text-foreground"
-                style={{ fontWeight: 400 }}
-              >
-                {detail.assignedTo}
-              </span>
-              <ChevronDown className="size-3.5 text-[#999] dark:text-muted-foreground" />
-            </button>
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-muted"
-              aria-label="More options"
-            >
-              <MoreVertical className="h-[14px] w-[14px] text-[#212121] dark:text-muted-foreground" />
-            </Button>
-          </div>
-        </div>
+        <ConversationDetailHeader
+          contactName={detail.contactName}
+          assignedTo={detail.assignedTo}
+          assignedAvatar={detail.assignedAvatar}
+          headerMetaLine={detail.headerMetaLine}
+          categoryTag={detail.categoryTag}
+          callOutcome={selectedConv?.callOutcome}
+          classificationId={effectiveClassificationId}
+          onClassificationChange={(id) =>
+            setClassificationByConversationId((prev) => ({ ...prev, [selectedId]: id }))
+          }
+          chatHeaderElevated={chatHeaderElevated}
+        />
 
         {/* Chat messages */}
         <div ref={chatMessagesRef} className="min-h-0 flex-1 overflow-y-auto">

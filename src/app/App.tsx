@@ -34,6 +34,8 @@ import {
   type ContactsAppBridge,
   type ContactsSheetMode,
 } from "./components/ContactsView";
+import { ContactsBulkImportWorkspace } from "./components/contacts/ContactsBulkImportWorkspace";
+import type { ContactsBulkImportStep } from "./components/contacts/bulkImportTypes";
 import { SEARCH_AI_L2_DEFAULT_ACTIVE } from "./components/searchai/searchAIL2Keys";
 import { ScheduledDeliveriesView } from "./components/ScheduledDeliveriesView";
 import { ScheduleBuilderView } from "./components/ScheduleBuilderView";
@@ -187,6 +189,30 @@ export default function App() {
   const [contactsSheetMode, setContactsSheetMode] = useState<ContactsSheetMode>("none");
   const [contactsDetailId, setContactsDetailId] = useState<number | null>(null);
   const [contactsQuickViewId, setContactsQuickViewId] = useState<number | null>(null);
+  const [contactsBulkImportActive, setContactsBulkImportActive] = useState(false);
+  const [contactsBulkImportStep, setContactsBulkImportStep] =
+    useState<ContactsBulkImportStep>("upload");
+
+  const handleContactsChooseBulkImport = useCallback(() => {
+    setContactsBulkImportStep("upload");
+    setContactsBulkImportActive(true);
+  }, []);
+
+  const handleContactsBulkCancel = useCallback(() => {
+    setContactsBulkImportActive(false);
+  }, []);
+
+  const handleContactsBulkFinish = useCallback(() => {
+    setContactsBulkImportActive(false);
+    setContactsBulkImportStep("upload");
+  }, []);
+
+  useEffect(() => {
+    if (currentView !== "contacts") {
+      setContactsBulkImportActive(false);
+      setContactsBulkImportStep("upload");
+    }
+  }, [currentView]);
 
   const handleContactsL2Change = useCallback((key: string) => {
     setContactsL2Active(key);
@@ -218,6 +244,7 @@ export default function App() {
       onDetailContactIdChange: setContactsDetailId,
       quickViewContactId: contactsQuickViewId,
       onQuickViewContactIdChange: setContactsQuickViewId,
+      onChooseBulkImport: handleContactsChooseBulkImport,
     }),
     [
       contactsL2Active,
@@ -225,6 +252,7 @@ export default function App() {
       contactsSheetMode,
       contactsDetailId,
       contactsQuickViewId,
+      handleContactsChooseBulkImport,
     ],
   );
 
@@ -487,7 +515,10 @@ export default function App() {
             <AppShellL2Placeholder />
           )}
           {/* Contacts L2 nav panel */}
-          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "contacts" && (
+          {!aiPanelOpen &&
+            !mynaWorkspaceExpanded &&
+            currentView === "contacts" &&
+            !contactsBulkImportActive && (
             <ContactsL2NavPanel
               activeItem={contactsL2Active}
               onActiveItemChange={handleContactsL2Change}
@@ -584,6 +615,13 @@ export default function App() {
               <AppShellContentPlaceholder view="searchai" />
             ) : birdAiShellShowsMainPlaceholder(currentView) ? (
               <AppShellContentPlaceholder view={currentView} />
+            ) : currentView === "contacts" && contactsBulkImportActive ? (
+              <ContactsBulkImportWorkspace
+                step={contactsBulkImportStep}
+                onStepChange={setContactsBulkImportStep}
+                onCancel={handleContactsBulkCancel}
+                onFinish={handleContactsBulkFinish}
+              />
             ) : currentView === "contacts" ? (
               <ContactsView app={contactsApp} />
             ) : currentView === "scheduled-deliveries" ? (

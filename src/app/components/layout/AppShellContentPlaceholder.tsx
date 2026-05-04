@@ -12,17 +12,6 @@ export type AppShellContentPlaceholderProps = {
  * ship product UI in the shell yet (e.g. Chatbot / `searchai`, Insights).
  */
 export function AppShellContentPlaceholder({ view, productLabel }: AppShellContentPlaceholderProps) {
-  if (view === "business-overview") {
-    return (
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center gap-2 overflow-hidden bg-app-shell-main px-8 transition-colors duration-300">
-        <p className="text-sm font-medium text-foreground">Overview</p>
-        <p className="max-w-sm text-center text-[13px] text-muted-foreground">
-          Empty state — content is shown on the real Overview page in the app.
-        </p>
-      </div>
-    );
-  }
-
   const label = productLabel ?? getAppViewTitle(view);
 
   return (

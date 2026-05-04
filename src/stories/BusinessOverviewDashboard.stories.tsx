@@ -7,6 +7,13 @@ const meta: Meta<typeof BusinessOverviewDashboard> = {
   parameters: {
     layout: "fullscreen",
   },
+  decorators: [
+    (Story) => (
+      <div className="flex h-screen min-h-0 w-full flex-col bg-background">
+        <Story />
+      </div>
+    ),
+  ],
 };
 
 export default meta;

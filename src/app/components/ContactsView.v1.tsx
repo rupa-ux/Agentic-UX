@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { ContactsMoreOptionsDropdown } from "@/app/components/contacts/ContactsMoreOptionsDropdown";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { TooltipContent, TooltipProvider } from "@/app/components/ui/tooltip";
@@ -82,6 +83,8 @@ export type ContactsAppBridge = {
   onDetailContactIdChange: (id: number | null) => void;
   quickViewContactId: number | null;
   onQuickViewContactIdChange: (id: number | null) => void;
+  /** Starts bulk import workspace (App shell). */
+  onChooseBulkImport?: () => void;
 };
 
 export type ContactsViewProps = {
@@ -731,6 +734,7 @@ function useContactsShell(app?: ContactsAppBridge) {
     app?.onDetailContactIdChange,
     app?.quickViewContactId,
     app?.onQuickViewContactIdChange,
+    app?.onChooseBulkImport,
     l2,
     sheet,
     detailId,
@@ -1950,9 +1954,7 @@ export function ContactsView({ app }: ContactsViewProps) {
                 sheetTitle="Contact columns"
                 onClick={() => setDirectoryColumnSheetOpen(true)}
               />
-              <Button type="button" variant="outline" size="icon" aria-label="More options">
-                <MoreVertical className="size-4" />
-              </Button>
+              <ContactsMoreOptionsDropdown onChooseBulkImport={app?.onChooseBulkImport} />
             </>
           }
         />
