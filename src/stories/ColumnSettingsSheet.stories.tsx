@@ -14,8 +14,8 @@ const referralStyleColumns: ColumnSettingsSheetColumn[] = [
   { id: "sentOn", label: "Sent on", visible: true, canHide: true },
 ];
 
-const manualDnDChecklist =
-  "Manual QA: (1) Open sheet. (2) Drag a **grip** vertically — dashed **DropSlot** and dimmed sibling rows should track. (3) Release over another row — order updates. (4) Drag across **switches** — insert line should not disappear mid-drag. (5) Drop at **end of list** (below last row). (6) Release **outside** the sheet — order unchanged. (7) **Alt+Arrow** on focused grip still moves a row.";
+const manualSortableChecklist =
+  "Manual QA: (1) Open sheet. (2) Drag a **grip** vertically with pointer or touch — row should lift and reorder. (3) Release on another row — order updates. (4) Drag across **switches** — reorder should still complete. (5) Reorder **last row** upward. (6) **Keyboard:** focus a grip, Space to pick up, arrows to move, Space to drop (see @dnd-kit sortable). (7) **Screen reader:** live region announces pick up / move / cancel.";
 
 const reorderSpy = fn<(ids: string[]) => void>();
 
@@ -28,8 +28,8 @@ const meta: Meta<typeof ColumnSettingsSheet> = {
     docs: {
       description: {
         component:
-          "Column visibility + **HTML5 drag reorder** used by **`AppDataTable`** (Columns sheet). Pure reorder helper: [`columnSettingsReorder.ts`](../app/components/ui/columnSettingsReorder.ts). " +
-          manualDnDChecklist,
+          "Column visibility + **@dnd-kit sortable** reorder (pointer, touch, keyboard) used by **`AppDataTable`** (Columns sheet). Pure reorder helper (legacy / tests): [`columnSettingsReorder.ts`](../app/components/ui/columnSettingsReorder.ts). " +
+          manualSortableChecklist,
       },
     },
   },
@@ -86,6 +86,6 @@ function ColumnSettingsSheetPlayground() {
 }
 
 export const ReferralsStyleReorder: Story = {
-  name: "Referrals-style columns (DnD)",
+  name: "Referrals-style columns (sortable)",
   render: () => <ColumnSettingsSheetPlayground />,
 };
