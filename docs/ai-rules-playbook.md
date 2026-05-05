@@ -155,7 +155,7 @@ The flat files (`CLAUDE.md` etc.) are short summaries. The skill file is the ful
 
 ### What it is
 
-`@balajik-cmyk/aero-ds` is the published design system package. It lives at [github.com/balajik-cmyk/aero-ds](https://github.com/balajik-cmyk/aero-ds) and is published to GitHub Package Registry.
+`@balajik-cmyk/aero-ds` is the published design system package. It lives at [github.com/balajik-cmyk/aero-ds](https://github.com/balajik-cmyk/aero-ds) and is published to npm.
 
 ### What it exports
 
@@ -173,14 +173,13 @@ The flat files (`CLAUDE.md` etc.) are short summaries. The skill file is the ful
 1. Make changes in the `aero-ds` repo
 2. Bump version in `aero-ds/package.json`
 3. `git tag v1.x.y && git push origin v1.x.y`
-4. GitHub Actions auto-publishes to GPR
+4. GitHub Actions publishes to npm
 5. In `birdeyev2`: `npm install @balajik-cmyk/aero-ds@1.x.y`
 6. Commit the updated `package.json` + `package-lock.json`
 
 ### Installing (first time / new machine)
 
 ```bash
-export GITHUB_TOKEN=$(gh auth token)
 npm install
 ```
 
@@ -254,5 +253,5 @@ Create `.claude/skills/<skill-name>/SKILL.md` with deep reference content. Refer
 | Add or change a rule | Edit `CLAUDE.md` → commit (hook auto-syncs) |
 | Add a Cursor-specific rule | Add `.mdc` file to `.cursor/rules/` |
 | Update the deep reference | Edit `.claude/skills/aero-ds/SKILL.md` directly |
-| New teammate setup | `gh auth login` → `gh auth refresh -h github.com -s read:packages` → add `GITHUB_TOKEN` to shell → `npm install` |
+| New teammate setup | Clone repo → `npm install` |
 | Update aero-ds package | PR in aero-ds repo → tag → publish → bump version pin in birdeyev2 |

@@ -263,7 +263,7 @@ export function IconStrip({
     else if (currentView === "aeo-product-listing-1") setActiveIcon("Listings");
     else if (currentView === "aeo-search-ai") setActiveIcon("Search AI");
     else if (currentView === "dashboard" || currentView === "shared-by-me") setActiveIcon("Reports");
-    else if (currentView === "agent-config") setActiveIcon("Settings");
+    else if (currentView === "agent-config" || currentView === "settings") setActiveIcon("Settings");
     else if (currentView === "agents-monitor" || currentView === "agents-analyze-performance" || currentView === "agents-builder" || currentView === "agent-detail" || currentView === "agents-onboarding" || currentView === "birdai-reports" || currentView === "birdai-journeys") setActiveIcon("Agents");
     // scheduled-deliveries / schedule-builder: no icon mapping
   }, [currentView]);
@@ -590,14 +590,15 @@ export function IconStrip({
             <button
               type="button"
               aria-label="Settings"
-              className={`group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent ${navHoverBg} hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail`}
+              onClick={() => onViewChange("settings")}
+              className={`group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent ${currentView === "settings" ? navActiveBg : `${navHoverBg} hover:scale-110 active:scale-95`} focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail`}
             >
               <Settings
                 width={L1_STRIP_ICON_SIZE}
                 height={L1_STRIP_ICON_SIZE}
                 strokeWidth={L1_STRIP_ICON_STROKE_PX}
                 absoluteStrokeWidth
-                className="text-muted-foreground transition-all duration-200 group-hover:scale-110"
+                className={`transition-all duration-200 ${currentView === "settings" ? "text-primary" : "text-muted-foreground group-hover:scale-110"}`}
               />
             </button>
           );
@@ -716,7 +717,8 @@ export function IconStrip({
                       </button>
                       <button
                         type="button"
-                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-foreground transition-colors duration-150 hover:bg-accent dark:hover:bg-white/[0.06]"
+                        onClick={() => { onViewChange("settings"); setProfileOpen(false); setShowAppearance(false); }}
+                        className={`w-full rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150 ${currentView === "settings" ? "text-primary bg-accent dark:bg-white/[0.06]" : "text-foreground hover:bg-accent dark:hover:bg-white/[0.06]"}`}
                       >
                         Settings
                       </button>
@@ -868,17 +870,18 @@ export function IconStrip({
             <button
               type="button"
               aria-label="Settings"
-              className={`group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent ${navHoverBg} hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail`}
+              onClick={() => onViewChange("settings")}
+              className={`group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent ${currentView === "settings" ? navActiveBg : `${navHoverBg} hover:scale-110 active:scale-95`} focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail`}
             >
               <Settings
                 width={L1_STRIP_ICON_SIZE}
                 height={L1_STRIP_ICON_SIZE}
                 strokeWidth={L1_STRIP_ICON_STROKE_PX}
                 absoluteStrokeWidth
-                className="text-muted-foreground transition-colors"
+                className={`transition-colors ${currentView === "settings" ? "text-primary" : "text-muted-foreground"}`}
               />
             </button>
-            <span className="text-[13px] font-normal leading-none text-foreground whitespace-nowrap">
+            <span className={`text-[13px] font-normal leading-none whitespace-nowrap ${currentView === "settings" ? "text-primary" : "text-foreground"}`}>
               Settings
             </span>
           </div>

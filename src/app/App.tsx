@@ -72,6 +72,8 @@ import { useShortcuts } from "./shortcuts/useShortcuts";
 import { ConversationStream } from "./components/ConversationStream";
 import { AgentActivityView } from "./components/AgentActivityView";
 import { AgentConfigView } from "./components/AgentConfigView";
+import { SettingsView } from "./components/SettingsView.v1";
+import { SettingsL2NavPanel } from "./components/SettingsL2NavPanel.v1";
 import { BirdAILoginPage } from "./components/auth/BirdAILoginPage";
 import { AppEntryWithSplash } from "./components/layout/AppEntryWithSplash";
 import { MobileWebAppGate } from "./components/layout/MobileWebAppGate";
@@ -129,7 +131,8 @@ export type AppView =
   | "agent-activity"
   | "agent-config"
   | "aeo-product-listing-1"
-  | "aeo-search-ai";
+  | "aeo-search-ai"
+  | "settings";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => readDemoAuthenticated());
@@ -186,6 +189,14 @@ export default function App() {
     "nav:l2:appointments",
     APPOINTMENTS_L2_CALENDAR_KEY,
   );
+  const [settingsL2Active, setSettingsL2Active] = usePersistedState<string>("settings:l2-active", "Business info");
+  const [settingsScrollTarget, setSettingsScrollTarget] = useState<string | null>(null);
+
+  const handleSettingsSectionClick = useCallback((label: string) => {
+    setSettingsL2Active(label);
+    setSettingsScrollTarget(label);
+  }, []);
+
   const [contactsSheetMode, setContactsSheetMode] = useState<ContactsSheetMode>("none");
   const [contactsDetailId, setContactsDetailId] = useState<number | null>(null);
   const [contactsQuickViewId, setContactsQuickViewId] = useState<number | null>(null);
@@ -445,7 +456,8 @@ export default function App() {
     v === "payments" ||
     v === "appointments" ||
     v === "aeo-product-listing-1" ||
-    v === "aeo-search-ai";
+    v === "aeo-search-ai" ||
+    v === "settings";
 
   return (
     <MonitorNotificationsProvider
@@ -579,6 +591,12 @@ export default function App() {
               onActiveItemChange={setAppointmentsL2Active}
             />
           )}
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "settings" && (
+            <SettingsL2NavPanel
+              activeSection={settingsL2Active}
+              onSectionClick={handleSettingsSectionClick}
+            />
+          )}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "aeo-product-listing-1" && (
             <AeoProductListing1L2NavPanel />
           )}
@@ -671,6 +689,13 @@ export default function App() {
               <AgentActivityView onConfigure={() => handleViewChange("agent-config")} />
             ) : currentView === "agent-config" ? (
               <AgentConfigView />
+            ) : currentView === "settings" ? (
+              <SettingsView
+                scrollTarget={settingsScrollTarget}
+                onScrollTargetConsumed={() => setSettingsScrollTarget(null)}
+                activeSection={settingsL2Active}
+                onActiveSectionChange={setSettingsL2Active}
+              />
             ) : (
               <Dashboard
                 aiPanelOpen={aiPanelOpen}
