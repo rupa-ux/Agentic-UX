@@ -44,8 +44,6 @@ import {
   PANEL,
   ROW,
   L2_ROW_SELECTED_BG,
-  PANEL_INBOX_L2,
-  HOVER,
   CHILD_ACTIVE,
   CHILD_INACTIVE,
   FOOTER_ROW_CLS,
@@ -54,6 +52,7 @@ import {
   L2_HEADER_PLUS_GLYPH_BLUE,
   L2_HEADER_PLUS_STROKE_PX,
 } from "./L2NavLayout";
+import { APPOINTMENTS_L2_CALENDAR_KEY } from "@/app/components/appointmentsL2Nav";
 
 /** How long to show the Reports-row shimmer before opening the tab (~sub-second “micro” handoff). */
 export const REPORTS_EXTERNAL_SHIMMER_MS = 480;
@@ -100,10 +99,11 @@ const sidebarSections: SidebarNavSection[] = [
   {
     title: "Marketing",
     items: [
+      { label: "Search AI", Icon: AeoSearchAiL1Icon, view: "aeo-search-ai" },
+      { label: "Listings", Icon: FigmaIconListings, view: "aeo-product-listing-1" },
       { label: "Reviews", Icon: FigmaIconReviews, view: "reviews" },
       { label: "Social", Icon: FigmaIconSocial, view: "social" },
       { label: "Referrals", Icon: FigmaIconReferrals, view: "referrals" },
-      { label: "Contacts", Icon: FigmaIconContacts, view: "contacts" },
       { label: "Marketing automations", Icon: FigmaIconCampaigns, view: "campaigns" },
     ],
   },
@@ -111,11 +111,9 @@ const sidebarSections: SidebarNavSection[] = [
     title: "Operations",
     items: [
       { label: "Inbox", Icon: FigmaIconInbox, view: "inbox" },
-      { label: "Payments", Icon: FigmaIconPayments, view: "payments" },
       { label: "Appointments", Icon: FigmaIconAppointments, view: "appointments" },
-      { label: "Chatbot", Icon: MessageSquare, view: "searchai" },
-      { label: "Reports", Icon: FigmaIconReports, view: "dashboard" },
-      { label: "Insights", Icon: FigmaIconInsights, view: "insights" },
+      { label: "Contacts", Icon: FigmaIconContacts, view: "contacts" },
+      { label: "Payments", Icon: FigmaIconPayments, view: "payments" },
     ],
   },
   {
@@ -126,10 +124,10 @@ const sidebarSections: SidebarNavSection[] = [
     ],
   },
   {
-    title: "AEO/SEO experience",
+    title: "Analytics",
     items: [
-      { label: "Listings", Icon: FigmaIconListings, view: "aeo-product-listing-1" },
-      { label: "Search AI", Icon: AeoSearchAiL1Icon, view: "aeo-search-ai" },
+      { label: "Reports", Icon: FigmaIconReports, view: "dashboard" },
+      { label: "Insights", Icon: FigmaIconInsights, view: "insights" },
     ],
   },
 ];
@@ -265,7 +263,7 @@ export function IconStrip({
     else if (currentView === "aeo-product-listing-1") setActiveIcon("Listings");
     else if (currentView === "aeo-search-ai") setActiveIcon("Search AI");
     else if (currentView === "dashboard" || currentView === "shared-by-me") setActiveIcon("Reports");
-    else if (currentView === "agent-config") setActiveIcon("Settings");
+    else if (currentView === "agent-config" || currentView === "settings") setActiveIcon("Settings");
     else if (currentView === "agents-monitor" || currentView === "agents-analyze-performance" || currentView === "agents-builder" || currentView === "agent-detail" || currentView === "agents-onboarding" || currentView === "birdai-reports" || currentView === "birdai-journeys") setActiveIcon("Agents");
     // scheduled-deliveries / schedule-builder: no icon mapping
   }, [currentView]);
@@ -592,14 +590,15 @@ export function IconStrip({
             <button
               type="button"
               aria-label="Settings"
-              className={`group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent ${navHoverBg} hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail`}
+              onClick={() => onViewChange("settings")}
+              className={`group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent ${currentView === "settings" ? navActiveBg : `${navHoverBg} hover:scale-110 active:scale-95`} focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail`}
             >
               <Settings
                 width={L1_STRIP_ICON_SIZE}
                 height={L1_STRIP_ICON_SIZE}
                 strokeWidth={L1_STRIP_ICON_STROKE_PX}
                 absoluteStrokeWidth
-                className="text-muted-foreground transition-all duration-200 group-hover:scale-110"
+                className={`transition-all duration-200 ${currentView === "settings" ? "text-primary" : "text-muted-foreground group-hover:scale-110"}`}
               />
             </button>
           );
@@ -718,7 +717,8 @@ export function IconStrip({
                       </button>
                       <button
                         type="button"
-                        className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-foreground transition-colors duration-150 hover:bg-accent dark:hover:bg-white/[0.06]"
+                        onClick={() => { onViewChange("settings"); setProfileOpen(false); setShowAppearance(false); }}
+                        className={`w-full rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150 ${currentView === "settings" ? "text-primary bg-accent dark:bg-white/[0.06]" : "text-foreground hover:bg-accent dark:hover:bg-white/[0.06]"}`}
                       >
                         Settings
                       </button>
@@ -870,17 +870,18 @@ export function IconStrip({
             <button
               type="button"
               aria-label="Settings"
-              className={`group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent ${navHoverBg} hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail`}
+              onClick={() => onViewChange("settings")}
+              className={`group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent ${currentView === "settings" ? navActiveBg : `${navHoverBg} hover:scale-110 active:scale-95`} focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1 focus-visible:ring-offset-app-shell-rail`}
             >
               <Settings
                 width={L1_STRIP_ICON_SIZE}
                 height={L1_STRIP_ICON_SIZE}
                 strokeWidth={L1_STRIP_ICON_STROKE_PX}
                 absoluteStrokeWidth
-                className="text-muted-foreground transition-colors"
+                className={`transition-colors ${currentView === "settings" ? "text-primary" : "text-muted-foreground"}`}
               />
             </button>
-            <span className="text-[13px] font-normal leading-none text-foreground whitespace-nowrap">
+            <span className={`text-[13px] font-normal leading-none whitespace-nowrap ${currentView === "settings" ? "text-primary" : "text-foreground"}`}>
               Settings
             </span>
           </div>
@@ -1529,183 +1530,96 @@ export function CompetitorsL2NavPanel() {
    ═══════════════════════════════════════════ */
 const appointmentsConfig = {
   headerAction: { label: "Book an appointment" },
-  defaultExpandedSections: ["Actions", "Settings"],
+  defaultExpandedSections: ["Human actions"],
+  flatNavItems: [{ label: "Outcomes", key: "outcomes" }],
   sections: [
-    { label: "Actions", children: ["View calendar", "View schedule"] },
-    { label: "Settings", children: ["Widget", "Notifications & alerts"] },
+    { label: "Human actions", children: ["Calendar", "Schedule", "Waitlist", "Providers"] },
+    {
+      label: "Agents",
+      children: [
+        "Frontdesk agent",
+        "Scheduling agent",
+        "Reminder agent",
+        "Outreach agent",
+        "Insurance verification agent",
+        "Rx Management agent",
+      ],
+    },
+    {
+      label: "Resources",
+      children: [
+        "Knowledge base",
+        "Intake forms",
+        "Phone numbers",
+        "Widgets",
+      ],
+    },
   ],
 };
 
-export function AppointmentsL2NavPanel() {
-  return <L2NavLayout {...appointmentsConfig} storageKey="nav:l2:appointments" data-no-print />;
+export type AppointmentsL2NavPanelProps = {
+  activeItem: string;
+  onActiveItemChange: (key: string) => void;
+};
+
+export function AppointmentsL2NavPanel({ activeItem, onActiveItemChange }: AppointmentsL2NavPanelProps) {
+  return (
+    <L2NavLayout
+      {...appointmentsConfig}
+      defaultActive={APPOINTMENTS_L2_CALENDAR_KEY}
+      activeItem={activeItem}
+      onActiveItemChange={onActiveItemChange}
+      data-no-print
+    />
+  );
 }
 
+export { APPOINTMENTS_L2_CALENDAR_KEY } from "@/app/components/appointmentsL2Nav";
+
 /* ═══════════════════════════════════════════
-   Inbox L2 Nav Panel – custom (not using L2NavLayout)
+   Inbox L2 Nav Panel – uses L2NavLayout
    ═══════════════════════════════════════════ */
-
-
-const inboxSections = [
-  {
-    label: "Assignment",
-    children: ["Assigned to me", "Assigned to AI Agents", "Assigned to others", "Unassigned", "Spam"],
-  },
-  {
-    label: "Leads",
-    children: ["Inquiries", "Missed calls", "Voicemails", "Appointments", "Service inquiry", "Insurance", "Billing", "Lost"],
-  },
-  {
-    label: "Feedback",
-    children: ["Reviews", "Surveys"],
-  },
-  {
-    label: "Saved filters",
-    children: ["My Filter 1", "My Filter 2", "My Filter 3"],
-  },
-  {
-    label: "Reports",
-    children: ["Over time", "Location", "Users", "Channels"],
-  },
-  {
-    label: "Agents",
-    children: ["Lead generation agents"],
-  },
-  {
-    label: "Settings",
-    children: ["Chatbot", "Receptionist"],
-  },
-];
-
-const teamSections = [
-  {
-    label: "Sales Team",
-    children: ["Assigned to me", "Assigned to AI Agents", "Assigned to others", "Unassigned", "Spam"],
-  },
-  {
-    label: "Customer Service Team",
-    children: ["Assigned to me", "Assigned to AI Agents", "Assigned to others", "Unassigned", "Spam"],
-  },
-];
+const inboxConfig = {
+  headerAction: { label: "New message" },
+  defaultExpandedSections: ["Human actions"],
+  flatNavItems: [{ label: "Outcomes", key: "outcomes" }],
+  sections: [
+    {
+      label: "Human actions",
+      children: ["All", "Assigned to me", "Leads", "Messages", "Reviews", "Spam", "Surveys"],
+    },
+    {
+      label: "Status",
+      children: [
+        "Follow up",
+        "Lost",
+        "Missed call",
+        "New lead",
+        "New voicemails",
+        "Scheduling request",
+        "Service",
+        "Unqualified",
+        "Won",
+      ],
+    },
+    {
+      label: "Saved filter",
+      children: ["Missed calls today", "New patient inquiries"],
+    },
+    {
+      label: "Agents",
+      children: ["Lead generation agents", "Tagging & routing agent"],
+    },
+    {
+      label: "Resources",
+      children: ["Knowledge base"],
+    },
+    { label: "Settings", children: ["Chatbot", "Receptionist"] },
+  ],
+};
 
 export function InboxL2NavPanel() {
-  const [activeItem, setActiveItem] = usePersistedState("nav:l2:inbox", "standalone/All messages");
-
-  const activate = (key: string) => setActiveItem(key);
-
-  // Inbox sections: "Assignment" expanded by default
-  const [inboxExpanded, setInboxExpanded] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(inboxSections.map(s => [s.label, s.label === "Assignment"]))
-  );
-  // Team sections: all expanded by default
-  const [teamExpanded, setTeamExpanded] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(teamSections.map(s => [s.label, false]))
-  );
-
-  const toggleInbox = (label: string) =>
-    setInboxExpanded(prev => ({ ...prev, [label]: !prev[label] }));
-  const toggleTeam = (label: string) =>
-    setTeamExpanded(prev => ({ ...prev, [label]: !prev[label] }));
-
-  const renderChildren = (sectionLabel: string, children: string[], prefix: string) =>
-    children.map(child => {
-      const key = `${prefix}/${sectionLabel}/${child}`;
-      const isActive = activeItem === key;
-      return (
-        <button
-          key={key}
-          onClick={() => activate(key)}
-          className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
-          style={{ fontWeight: isActive ? 400 : 300 }}
-        >
-          {child}
-        </button>
-      );
-    });
-
-  return (
-    <div className={PANEL_INBOX_L2} data-no-print>
-      <div className="flex-1 overflow-y-auto px-[8px] pt-3 pb-4">
-
-        {/* Header: New message */}
-        <button className={`${FOOTER_ROW_CLS} mb-[6px]`} style={{ fontSize: 14 }}>
-          <span className="text-[14px]">New message</span>
-          <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
-            <Plus
-              className={L2_HEADER_PLUS_GLYPH_BLUE}
-              strokeWidth={L2_HEADER_PLUS_STROKE_PX}
-              absoluteStrokeWidth
-              aria-hidden
-            />
-          </div>
-        </button>
-
-        {/* Flat item: All messages */}
-        {(() => {
-          const key = "standalone/All messages";
-          const isActive = activeItem === key;
-          return (
-            <button
-              onClick={() => activate(key)}
-              className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
-              style={{ fontWeight: isActive ? 400 : 300 }}
-            >
-              All messages
-            </button>
-          );
-        })()}
-
-        {/* Inbox sections */}
-        {inboxSections.map(section => (
-          <div key={section.label}>
-            <button
-              onClick={() => toggleInbox(section.label)}
-              className={SECTION_HEADER}
-              style={{ fontWeight: 400 }}
-            >
-              <span>{section.label}</span>
-              {inboxExpanded[section.label]
-                ? <ChevronUp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                : <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-              }
-            </button>
-            {inboxExpanded[section.label] && renderChildren(section.label, section.children, "inbox")}
-          </div>
-        ))}
-
-        {/* Internal team chat header */}
-        <button className={`${FOOTER_ROW_CLS} mb-[6px]`} style={{ fontSize: 14 }}>
-          <span className="text-[14px]">Internal team chat</span>
-          <div className={L2_HEADER_PLUS_WRAPPER_BLUE}>
-            <Plus
-              className={L2_HEADER_PLUS_GLYPH_BLUE}
-              strokeWidth={L2_HEADER_PLUS_STROKE_PX}
-              absoluteStrokeWidth
-              aria-hidden
-            />
-          </div>
-        </button>
-
-        {/* Team sections */}
-        {teamSections.map(section => (
-          <div key={section.label}>
-            <button
-              onClick={() => toggleTeam(section.label)}
-              className={SECTION_HEADER}
-              style={{ fontWeight: 400 }}
-            >
-              <span>{section.label}</span>
-              {teamExpanded[section.label]
-                ? <ChevronUp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                : <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-              }
-            </button>
-            {teamExpanded[section.label] && renderChildren(section.label, section.children, "team")}
-          </div>
-        ))}
-
-      </div>
-    </div>
-  );
+  return <L2NavLayout {...inboxConfig} storageKey="nav:l2:inbox" data-no-print />;
 }
 
 /* ═══════════════════════════════════════════

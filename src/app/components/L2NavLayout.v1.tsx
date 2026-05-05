@@ -5,8 +5,10 @@
  *   • L1 rail / expanded Birdeye nav — selected + hover pill: `bg-app-shell-l1-nav-highlight`; pressed:
  *     `bg-app-shell-l1-nav-pressed`; selected icon/label: `text-primary` (`Sidebar.v2` `IconStrip`).
  *   • L2 tree child (neutral selection) — `CHILD_ACTIVE` / `--app-shell-l2-row-active` + `text-foreground`.
- *   • L2 flat accent rows (tabs, overflow flyout, profile pickers) — `CHILD_FLAT_ACCENT_ACTIVE`: `bg-primary/10` +
- *     `text-primary` (+ optional `ring-primary/15`).
+ *   • L2 flat accent rows (optional: Journeys **Outcomes**, overflow flyout, profile pickers) —
+ *     `CHILD_FLAT_ACCENT_ACTIVE`: `bg-primary/10` + `text-primary` (+ `ring-primary/15`). **Do not** pass
+ *     `flatNavAccentKeys` for standard product L2 (Appointments, Inbox, …) — flat rows use the same neutral
+ *     `CHILD_ACTIVE` as section children.
  *
  * APP SHELL — L2 COLUMN (required for new products):
  *   The exported `PANEL` class string includes `rounded-tl-lg` (8px top-left) and `border-r` (1px seam vs
@@ -96,16 +98,23 @@ export const L2_HEADER_PLUS_STROKE_PX = L1_STRIP_ICON_STROKE_PX;
 /* ─────────────────────────────────────────────────────
    Types
    ───────────────────────────────────────────────────── */
-/** String = label and key are the same (legacy panels). Object = visible label + stable key (e.g. conversation id). */
-export type L2SectionChild = string | { label: string; key: string };
+/**
+ * String = label and key are the same (legacy panels).
+ * Object = visible label + optional stable key (defaults to label) and optional `external` flag
+ * which renders a trailing external-link arrow icon next to the row.
+ */
+export type L2SectionChild =
+  | string
+  | { label: string; key?: string; external?: boolean };
 
 export interface L2Section {
   label: string;
   children: L2SectionChild[];
 }
 
-function l2ChildParts(c: L2SectionChild): { label: string; key: string } {
-  return typeof c === "string" ? { label: c, key: c } : c;
+function l2ChildParts(c: L2SectionChild): { label: string; key: string; external?: boolean } {
+  if (typeof c === "string") return { label: c, key: c };
+  return { label: c.label, key: c.key ?? c.label, external: c.external };
 }
 
 export interface L2HeaderAction {
@@ -304,7 +313,7 @@ export function L2NavLayout({
           </button>
 
           {expanded[section.label] && section.children.map(child => {
-            const { label: childLabel, key: childKey } = l2ChildParts(child);
+            const { label: childLabel, key: childKey, external } = l2ChildParts(child);
             const compoundKey = `${section.label}/${childKey}`;
             const isActive = active === compoundKey;
             return (
@@ -314,7 +323,10 @@ export function L2NavLayout({
                 className={isActive ? CHILD_ACTIVE : CHILD_INACTIVE}
                 style={{ fontWeight: isActive ? 400 : 300 }}
               >
-                {childLabel}
+                <span>{childLabel}</span>
+                {external && (
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+                )}
               </button>
             );
           })}

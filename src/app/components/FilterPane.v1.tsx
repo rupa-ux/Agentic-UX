@@ -71,7 +71,11 @@ export function FilterPane({
   );
 }
 
-/** Funnel control; active styles match Reviews filter toggle. */
+/**
+ * Funnel control; active styles match Reviews filter toggle.
+ * In {@link MainCanvasViewHeader} toolbars, render this **after** other `actions` so it stays **rightmost**
+ * (see `MAIN_VIEW_HEADER_ACTIONS_CLUSTER_CLASS` in `mainViewTitleClasses.ts`).
+ */
 export function FilterPaneTriggerButton({
   open,
   onOpenChange,

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import {
+  MAIN_VIEW_HEADER_ACTIONS_CLUSTER_CLASS,
   MAIN_VIEW_HEADER_BAND_CLASS,
   MAIN_VIEW_PRIMARY_HEADING_CLASS,
   MAIN_VIEW_SUBHEADING_CLASS,
@@ -23,6 +24,10 @@ export interface MainCanvasViewHeaderProps {
 /**
  * Shared title row for main canvas views — matches Appointments / Payments / Listings chrome
  * (`px-6 pt-5 pb-4`, title + optional subline + optional right actions).
+ *
+ * **Actions policy:** pass controls in source order; **`FilterPaneTriggerButton` / Filter icon must be last**
+ * (extreme right). The actions slot uses {@link MAIN_VIEW_HEADER_ACTIONS_CLUSTER_CLASS}. See Storybook
+ * **Layout/Main canvas view header → Filter rightmost (policy)**.
  */
 export function MainCanvasViewHeader({
   title,
@@ -42,7 +47,9 @@ export function MainCanvasViewHeader({
           <p className={MAIN_VIEW_SUBHEADING_CLASS}>{description}</p>
         ) : null}
       </div>
-      {actions != null ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+      {actions != null ? (
+        <div className={MAIN_VIEW_HEADER_ACTIONS_CLUSTER_CLASS}>{actions}</div>
+      ) : null}
     </div>
   );
 }

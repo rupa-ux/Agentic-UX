@@ -6,34 +6,139 @@ globs: src/app/**/*.{tsx,ts}, src/stories/**/*.{tsx,ts,mdx}, .storybook/**/*.{ts
 
 # Aero DS — SaaS product + Storybook
 
-**Scope:** This rule is **glob-scoped** (see YAML `globs`)—Cursor attaches it when you work under `src/app`, `src/stories`, Storybook preview, theme/token CSS, `src/config`, or root `src/*.{ts,tsx}` (e.g. `main.tsx`). It is **not** `alwaysApply`; open a matching file or keep one in context so Aero DS guidance is included without `@` tags.
+**Scope:** Glob-scoped (see YAML `globs`) — attaches when you work under `src/app`, `src/stories`, Storybook preview, theme/token CSS, `src/config`, or root `src/*.{ts,tsx}`. Not `alwaysApply`; open a matching file so guidance is included without `@` tags.
 
-This workspace is **one SaaS product** (ShareConsolidated / Bird AI shell): dashboards, agents, tasks, settings, workflows, in-app data views. **Do not** default to marketing landing pages, portfolio layouts, or generic “website” patterns unless the user explicitly asks for out-of-app marketing UI.
+This workspace is **one SaaS product** (ShareConsolidated / Bird AI shell): dashboards, agents, tasks, settings, workflows, in-app data views. Do not default to marketing landing pages, portfolio layouts, or generic "website" patterns unless explicitly requested.
+
+---
 
 ## Sources of truth
 
-- **Colours and semantics:** [`src/styles/theme.css`](src/styles/theme.css). Use Tailwind semantic classes (`bg-primary`, `text-muted-foreground`, `border-border`, chart/sidebar tokens).
-- **Dark Mode Rhythm:** strictly follow the 6-level Blue-Grey scale in dark mode. **Never use hardcoded hex values** (e.g. `dark:bg-[#...]`)—map to `bg-background`, `bg-muted`, etc. per the `aero-ds` skill guidelines.
-- **Visual check:** Storybook **Design System/Tokens** ([`src/stories/DesignTokens.stories.tsx`](src/stories/DesignTokens.stories.tsx)). Run `npm run storybook` (port 6006) when validating token or layout changes.
-- **Preview:** [`.storybook/preview.tsx`](.storybook/preview.tsx) — theme toolbar, `DESIGN_VERSION` tokens + app styles; keep stories consistent with the Vite app.
-- **Spacing:** [spacing-grid.mdc](./spacing-grid.mdc) — especially for `src/stories/` and layout wrappers.
+| What | Where |
+|------|-------|
+| Colours & semantics | [`src/styles/theme.css`](src/styles/theme.css) |
+| Token quick-ref | Storybook **Design System/Tokens** → run `npm run storybook` (port 6006) |
+| Shell layout classes | [`src/app/components/layout/appShellClasses.ts`](src/app/components/layout/appShellClasses.ts) |
+| Canvas title tokens | [`src/app/components/layout/mainViewTitleClasses.ts`](src/app/components/layout/mainViewTitleClasses.ts) |
+| Spacing grid | [`.cursor/rules/spacing-grid.mdc`](./spacing-grid.mdc) |
+| Storybook preview | [`.storybook/preview.tsx`](.storybook/preview.tsx) |
 
-## Main canvas + bordered widgets (dashboard-style)
+---
 
-When a view combines **`MainCanvasViewHeader`** (or the same `MAIN_VIEW_*` title tokens) with **one or more bordered cards** (charts, KPI bands, tables):
+## Color rules
 
-1. **One horizontal band** — Use the **same** horizontal padding on the sticky header row and the scroll body below (e.g. **`px-8`**). On `MainCanvasViewHeader`, override the default band `px-6` with **`className="!px-8"`** when this wider gutter is required (see [`Dashboard.v1.tsx`](src/app/components/Dashboard.v1.tsx)).
-2. **Titles** — Page title: `MainCanvasViewHeader` / `MAIN_VIEW_PRIMARY_HEADING_CLASS`. Card titles: same **`MAIN_VIEW_PRIMARY_HEADING_CLASS`** on an **`h3`** (or equivalent). Card sublines: **`MAIN_VIEW_SUBHEADING_CLASS`** from [`mainViewTitleClasses.ts`](src/app/components/layout/mainViewTitleClasses.ts).
-3. **Card interior** — Bordered shell + **`px-6`** (and vertical padding as needed) so content does not sit on the border; matches the **Elevation → Card** pattern in **Design System/Tokens**.
-4. **Flex** — Card column: **`flex flex-col items-stretch`** so header rows span full width (avoid **`items-center`**, which shrinks children and breaks alignment with the page title).
+### Use semantic tokens, never raw hex in UI components
 
-**Storybook:** **Design System/Tokens → Main canvas + bordered widgets** ([`DesignTokens.stories.tsx`](src/stories/DesignTokens.stories.tsx)).
+**Wrong:**
+```tsx
+// ❌ hardcoded hex in component styling
+<div className="bg-[#f5f6f8] dark:bg-[#1a1f2e] text-[#212121]" />
+<div style={{ background: "#4f46e5", color: "#fff" }} />
+```
+
+**Right:**
+```tsx
+// ✓ semantic tokens from theme.css
+<div className="bg-card text-foreground border-border" />
+<div className="bg-primary text-primary-foreground" />
+<div className="bg-muted text-muted-foreground" />
+```
+
+### Dark mode — never hardcode dark variants
+
+```tsx
+// ❌
+<div className="dark:bg-[#1e2533]" />
+
+// ✓ — the token already handles dark mode
+<div className="bg-background" />
+```
+
+### Exception: data-driven colors (inline styles only)
+
+Hardcoded hex is **only acceptable** in `style={{ ... }}` when the color comes from user/config data and cannot be known at design time — for example, chart series colors from an API, or provider/tag colors stored in a database.
+
+```tsx
+// ✓ — runtime data color, no Tailwind alternative
+<div style={{ borderLeftColor: provider.color, borderLeftWidth: 3 }} />
+```
+
+Do not use data-driven hex in `className` (Tailwind can't JIT-compile dynamic hex strings).
+
+### Token palette (quick reference)
+
+| Use case | Token |
+|----------|-------|
+| Page / canvas background | `bg-background` |
+| Card surface | `bg-card` / `text-card-foreground` |
+| Muted surface (L2 nav) | `bg-app-shell-l2-surface` |
+| Sidebar | `bg-sidebar` |
+| Primary action | `bg-primary` / `text-primary-foreground` |
+| Muted text | `text-muted-foreground` |
+| Borders | `border-border` / `border-app-shell-border` |
+| Hover rows | `hover:bg-app-shell-l2-row-hover` |
+| Selected rows | `bg-app-shell-l2-row-active` |
+| Destructive | `bg-destructive` / `text-destructive` |
+
+---
+
+## Main canvas + bordered widgets
+
+When combining **`MainCanvasViewHeader`** with bordered cards (charts, KPI bands, tables):
+
+1. **Horizontal band** — same `px-*` on header and scroll body (e.g. `px-8`). Override header default with `className="!px-8"` when needed (see [`Dashboard.v1.tsx`](src/app/components/Dashboard.v1.tsx)).
+2. **No `border-b`** on the header band — the title row stays open into the body; use inner cards/toolbars for dividers.
+3. **Titles** — page title: `MAIN_VIEW_PRIMARY_HEADING_CLASS`; card titles: same class on `<h3>`; card sublines: `MAIN_VIEW_SUBHEADING_CLASS`.
+4. **Card interior** — bordered shell + `px-6` so content doesn't sit on the border.
+5. **Flex column** — `flex flex-col items-stretch` (not `items-center`) so header rows span full width.
+
+Same primary heading tokens apply to Dialog / Sheet / Drawer / AlertDialog titles.
+
+**Storybook:** Design System/Tokens → **Main canvas + bordered widgets**.
+
+---
+
+## Modal + floating surfaces
+
+- **No perimeter border** on `Dialog`, `Sheet`, `AlertDialog`, `Drawer` content, or `FLOATING_PANEL_SURFACE_CLASSNAME` (Popover, DropdownMenu, Select, profile popover) — use shadow for depth.
+- Modal scrims: use `MODAL_OVERLAY_VISUAL_CLASS` from `modalOverlayClasses.ts`.
+- Floating panels: use `FLOATING_PANEL_SURFACE_CLASSNAME` from `floatingPanelSurface.ts`.
+
+---
+
+## L2 navigation panels
+
+All L2 panels must use `L2NavLayout` from [`L2NavLayout.v1.tsx`](src/app/components/L2NavLayout.v1.tsx). Do not build custom L2 scroll panels unless the product explicitly requires it (and even then, mirror the token classes exported from L2NavLayout).
+
+- `PANEL` — standard L2 column with `border-r`
+- `CHILD_ACTIVE` / `CHILD_INACTIVE` — section child rows
+- `CHILD_FLAT_ACCENT_ACTIVE` — accent flat-nav rows (e.g. Agents → Outcomes)
+- `SECTION_HEADER` — collapsible section headers
+- `FOOTER_ROW_CLS` — header-action row (e.g. "New message")
+- Section `children` accept `string | { label: string; key?: string; external?: boolean }` — pass `external: true` to render a trailing `ExternalLink` icon (visual only unless `onClick` is also wired).
+
+---
+
+## Icon stroke
+
+All Lucide icons: `strokeWidth={1.6}` + `absoluteStrokeWidth` when the icon is not rendered at exactly 24 × 24 px. See [`.cursor/rules/icon-stroke-lucide.mdc`](./icon-stroke-lucide.mdc).
+
+---
+
+## Storybook-first
+
+Every new component under `src/app/components/` **must** ship with a story in `src/stories/` in the same PR/response. Modified components must update their story. Do not consider a component task complete without a story. See [`.cursor/rules/storybook-story-required.mdc`](./storybook-story-required.mdc).
+
+---
 
 ## Out of scope by default
 
 - Hero-led marketing sites, campaign landings, blog/portfolio templates.
-- Suggesting ad hoc hex palettes instead of `theme.css` for in-repo components.
+- Ad hoc hex palettes for static UI styling (use `theme.css` tokens).
+- Inline `dark:` class variants using raw hex — always use token classes instead.
 
-## Optional deep reference
+---
 
-The project skill [`.claude/skills/aero-ds/SKILL.md`](.claude/skills/aero-ds/SKILL.md) has Storybook-first workflows, guardrails, and designer-facing **How it works** / **Compatibility** sections (no CSV/BM25 tooling—tokens come from Storybook and theme files).
+## Deep reference
+
+[`.claude/skills/aero-ds/SKILL.md`](.claude/skills/aero-ds/SKILL.md) — Storybook-first workflows, full shell architecture diagram, all token quick-refs, component-specific patterns (AppDataTable, FloatingSheetFrame, BootInsightsLoader, SegmentedToggle, L2NavLayout, etc.), copy-paste prompts, and pre-delivery checklist.

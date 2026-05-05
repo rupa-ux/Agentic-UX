@@ -528,7 +528,16 @@ function SocialMonthGrid({
 /* ═══════════════════════════════════════════
    Social View – Main export
    ═══════════════════════════════════════════ */
-export function SocialView() {
+export interface SocialViewProps {
+  /** L2 selection from the shell — reserved for future workspace routing; calendar is self-contained today. */
+  activeItem?: string;
+  onActiveItemChange?: (_key: string) => void;
+}
+
+export function SocialView({ activeItem: _activeItem, onActiveItemChange: _onChange }: SocialViewProps = {}) {
+  void _activeItem;
+  void _onChange;
+
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [currentMonth] = useState("April 2024");
   const [previewPost, setPreviewPost] = useState<SocialCalendarPost | null>(null);

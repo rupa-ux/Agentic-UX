@@ -189,13 +189,23 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
         {/* Settings gear */}
         <button
           type="button"
-          className="group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none bg-transparent hover:bg-sidebar-accent dark:hover:bg-sidebar-accent active:opacity-90 hover:scale-110 active:scale-95 motion-reduce:hover:scale-100 motion-reduce:active:scale-100 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar"
+          aria-label="Settings"
+          onClick={() => onViewChange("settings")}
+          className={`group relative w-[32px] h-[32px] flex items-center justify-center rounded-[10px] shrink-0 transition-all duration-200 ease-out outline-none active:opacity-90 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar ${
+            currentView === "settings"
+              ? "bg-sidebar-accent dark:bg-sidebar-accent"
+              : "bg-transparent hover:bg-sidebar-accent dark:hover:bg-sidebar-accent hover:scale-110 active:scale-95 motion-reduce:hover:scale-100 motion-reduce:active:scale-100"
+          }`}
         >
           <Settings
             width={L1_STRIP_ICON_SIZE}
             height={L1_STRIP_ICON_SIZE}
             strokeWidth={L1_STRIP_ICON_STROKE_PX}
-            className="text-muted-foreground transition-all duration-200 group-hover:text-primary group-active:text-primary group-hover:scale-110 motion-reduce:group-hover:scale-100"
+            className={`transition-all duration-200 group-hover:text-primary group-active:text-primary ${
+              currentView === "settings"
+                ? "text-primary"
+                : "text-muted-foreground group-hover:scale-110 motion-reduce:group-hover:scale-100"
+            }`}
           />
         </button>
 
@@ -258,8 +268,8 @@ export function IconStrip({ currentView, onViewChange, iconSize = L1_STRIP_ICON_
                       <button onClick={() => { onViewChange("scheduled-deliveries"); setProfileOpen(false); setShowAppearance(false); }} className={`w-full flex items-center gap-3 px-4 py-2 text-[13px] transition-colors ${currentView === "scheduled-deliveries" ? "text-primary bg-accent dark:bg-accent" : "text-foreground hover:bg-muted"}`}>
                         <Clock className={`w-4 h-4 ${currentView === "scheduled-deliveries" ? "text-primary" : "text-muted-foreground"}`} /> Scheduled deliveries
                       </button>
-                      <button className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-foreground hover:bg-muted transition-colors">
-                        <Settings className="w-4 h-4 text-muted-foreground" /> Settings
+                      <button onClick={() => { onViewChange("settings"); setProfileOpen(false); setShowAppearance(false); }} className={`w-full flex items-center gap-3 px-4 py-2 text-[13px] transition-colors ${currentView === "settings" ? "text-primary bg-accent dark:bg-accent" : "text-foreground hover:bg-muted"}`}>
+                        <Settings className={`w-4 h-4 ${currentView === "settings" ? "text-primary" : "text-muted-foreground"}`} /> Settings
                       </button>
                       {onOpenKeyboardShortcuts && (
                         <button type="button" onClick={() => { onOpenKeyboardShortcuts(); setProfileOpen(false); setShowAppearance(false); }} className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-foreground hover:bg-muted transition-colors">

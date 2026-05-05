@@ -7,6 +7,7 @@ import {
   REFERRALS_L2_DEFAULT_ACTIVE_KEY,
   PaymentsL2NavPanel,
   PAYMENTS_L2_DEFAULT_ACTIVE_KEY,
+  APPOINTMENTS_L2_CALENDAR_KEY,
   AeoProductListing1L2NavPanel,
   AeoSearchAiL2NavPanel,
 } from "./components/Sidebar";
@@ -33,12 +34,18 @@ import {
   type ContactsAppBridge,
   type ContactsSheetMode,
 } from "./components/ContactsView";
+import { ContactsBulkImportWorkspace } from "./components/contacts/ContactsBulkImportWorkspace";
+import type { ContactsBulkImportStep } from "./components/contacts/bulkImportTypes";
 import { SEARCH_AI_L2_DEFAULT_ACTIVE } from "./components/searchai/searchAIL2Keys";
 import { ScheduledDeliveriesView } from "./components/ScheduledDeliveriesView";
 import { ScheduleBuilderView } from "./components/ScheduleBuilderView";
 import { ReferralsView, referralsL2KeyToSection } from "./components/ReferralsView";
 import { PaymentsView, paymentsL2KeyToStatusFilter } from "./components/PaymentsView";
 import { AppointmentsView } from "./components/AppointmentsView";
+import {
+  appointmentsL2PlaceholderProductLabel,
+  appointmentsL2ShowsCalendarCanvas,
+} from "./components/appointmentsL2Nav";
 import { SurveysView } from "./components/SurveysView";
 import { TicketingView } from "./components/TicketingView";
 import { ListingsView } from "./components/ListingsView";
@@ -65,6 +72,8 @@ import { useShortcuts } from "./shortcuts/useShortcuts";
 import { ConversationStream } from "./components/ConversationStream";
 import { AgentActivityView } from "./components/AgentActivityView";
 import { AgentConfigView } from "./components/AgentConfigView";
+import { SettingsView } from "./components/SettingsView.v1";
+import { SettingsL2NavPanel } from "./components/SettingsL2NavPanel.v1";
 import { BirdAILoginPage } from "./components/auth/BirdAILoginPage";
 import { AppEntryWithSplash } from "./components/layout/AppEntryWithSplash";
 import { MobileWebAppGate } from "./components/layout/MobileWebAppGate";
@@ -122,7 +131,8 @@ export type AppView =
   | "agent-activity"
   | "agent-config"
   | "aeo-product-listing-1"
-  | "aeo-search-ai";
+  | "aeo-search-ai"
+  | "settings";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => readDemoAuthenticated());
@@ -175,9 +185,45 @@ export default function App() {
     "nav:l2:payments",
     PAYMENTS_L2_DEFAULT_ACTIVE_KEY,
   );
+  const [appointmentsL2Active, setAppointmentsL2Active] = usePersistedState(
+    "nav:l2:appointments",
+    APPOINTMENTS_L2_CALENDAR_KEY,
+  );
+  const [settingsL2Active, setSettingsL2Active] = usePersistedState<string>("settings:l2-active", "Business info");
+  const [settingsScrollTarget, setSettingsScrollTarget] = useState<string | null>(null);
+
+  const handleSettingsSectionClick = useCallback((label: string) => {
+    setSettingsL2Active(label);
+    setSettingsScrollTarget(label);
+  }, []);
+
   const [contactsSheetMode, setContactsSheetMode] = useState<ContactsSheetMode>("none");
   const [contactsDetailId, setContactsDetailId] = useState<number | null>(null);
   const [contactsQuickViewId, setContactsQuickViewId] = useState<number | null>(null);
+  const [contactsBulkImportActive, setContactsBulkImportActive] = useState(false);
+  const [contactsBulkImportStep, setContactsBulkImportStep] =
+    useState<ContactsBulkImportStep>("upload");
+
+  const handleContactsChooseBulkImport = useCallback(() => {
+    setContactsBulkImportStep("upload");
+    setContactsBulkImportActive(true);
+  }, []);
+
+  const handleContactsBulkCancel = useCallback(() => {
+    setContactsBulkImportActive(false);
+  }, []);
+
+  const handleContactsBulkFinish = useCallback(() => {
+    setContactsBulkImportActive(false);
+    setContactsBulkImportStep("upload");
+  }, []);
+
+  useEffect(() => {
+    if (currentView !== "contacts") {
+      setContactsBulkImportActive(false);
+      setContactsBulkImportStep("upload");
+    }
+  }, [currentView]);
 
   const handleContactsL2Change = useCallback((key: string) => {
     setContactsL2Active(key);
@@ -209,6 +255,7 @@ export default function App() {
       onDetailContactIdChange: setContactsDetailId,
       quickViewContactId: contactsQuickViewId,
       onQuickViewContactIdChange: setContactsQuickViewId,
+      onChooseBulkImport: handleContactsChooseBulkImport,
     }),
     [
       contactsL2Active,
@@ -216,6 +263,7 @@ export default function App() {
       contactsSheetMode,
       contactsDetailId,
       contactsQuickViewId,
+      handleContactsChooseBulkImport,
     ],
   );
 
@@ -408,7 +456,8 @@ export default function App() {
     v === "payments" ||
     v === "appointments" ||
     v === "aeo-product-listing-1" ||
-    v === "aeo-search-ai";
+    v === "aeo-search-ai" ||
+    v === "settings";
 
   return (
     <MonitorNotificationsProvider
@@ -446,7 +495,11 @@ export default function App() {
 
         {/* Below TopBar: L2 nav + main content side by side */}
         <div
-          className={`flex-1 flex min-h-0 overflow-hidden pr-[10px] pb-[10px] pl-0 ${APP_SHELL_GUTTER_SURFACE_CLASS}`}
+          className={
+            contactsBulkImportActive && currentView === "contacts"
+              ? `flex-1 flex min-h-0 overflow-hidden pl-0 pr-0 pb-0 ${APP_SHELL_GUTTER_SURFACE_CLASS}`
+              : `flex-1 flex min-h-0 overflow-hidden pr-[10px] pb-[10px] pl-0 ${APP_SHELL_GUTTER_SURFACE_CLASS}`
+          }
         >
           <div className={APP_SHELL_BELOW_TOPBAR_CARD_CLASS}>
 
@@ -478,7 +531,10 @@ export default function App() {
             <AppShellL2Placeholder />
           )}
           {/* Contacts L2 nav panel */}
-          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "contacts" && (
+          {!aiPanelOpen &&
+            !mynaWorkspaceExpanded &&
+            currentView === "contacts" &&
+            !contactsBulkImportActive && (
             <ContactsL2NavPanel
               activeItem={contactsL2Active}
               onActiveItemChange={handleContactsL2Change}
@@ -494,11 +550,11 @@ export default function App() {
           )}
           {/* Surveys L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "surveys" && (
-            <SurveysL2NavPanel />
+            <AppShellL2Placeholder caption="Surveys is not hosted in this shell — secondary nav is a preview only." />
           )}
           {/* Ticketing L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "ticketing" && (
-            <TicketingL2NavPanel />
+            <AppShellL2Placeholder caption="Ticketing is not hosted in this shell — secondary nav is a preview only." />
           )}
           {/* Campaigns L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "campaigns" && (
@@ -530,7 +586,16 @@ export default function App() {
           )}
           {/* Appointments L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "appointments" && (
-            <AppointmentsL2NavPanel />
+            <AppointmentsL2NavPanel
+              activeItem={appointmentsL2Active}
+              onActiveItemChange={setAppointmentsL2Active}
+            />
+          )}
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "settings" && (
+            <SettingsL2NavPanel
+              activeSection={settingsL2Active}
+              onSectionClick={handleSettingsSectionClick}
+            />
           )}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "aeo-product-listing-1" && (
             <AeoProductListing1L2NavPanel />
@@ -554,7 +619,11 @@ export default function App() {
           >
             {!mynaWorkspaceExpanded ? (
             <div
-              className={`${APP_MAIN_CONTENT_SHELL_CLASS} min-h-0 min-w-[60%]`}
+              className={
+                contactsBulkImportActive && currentView === "contacts"
+                  ? `${APP_MAIN_CONTENT_SHELL_CLASS} min-h-0 min-w-0 flex-1`
+                  : `${APP_MAIN_CONTENT_SHELL_CLASS} min-h-0 min-w-[60%]`
+              }
             >
             {currentView === "business-overview" ? (
               <BusinessOverviewDashboard />
@@ -572,6 +641,13 @@ export default function App() {
               <AppShellContentPlaceholder view="searchai" />
             ) : birdAiShellShowsMainPlaceholder(currentView) ? (
               <AppShellContentPlaceholder view={currentView} />
+            ) : currentView === "contacts" && contactsBulkImportActive ? (
+              <ContactsBulkImportWorkspace
+                step={contactsBulkImportStep}
+                onStepChange={setContactsBulkImportStep}
+                onCancel={handleContactsBulkCancel}
+                onFinish={handleContactsBulkFinish}
+              />
             ) : currentView === "contacts" ? (
               <ContactsView app={contactsApp} />
             ) : currentView === "scheduled-deliveries" ? (
@@ -581,9 +657,9 @@ export default function App() {
             ) : currentView === "listings" ? (
               <ListingsView l2ActiveItem={journeysL2ActiveKey} />
             ) : currentView === "surveys" ? (
-              <SurveysView />
+              <AppShellContentPlaceholder view="surveys" productLabel="Surveys" />
             ) : currentView === "ticketing" ? (
-              <TicketingView />
+              <AppShellContentPlaceholder view="ticketing" productLabel="Ticketing" />
             ) : currentView === "campaigns" ? (
               <CampaignsView />
             ) : currentView === "insights" ? (
@@ -595,7 +671,14 @@ export default function App() {
             ) : currentView === "payments" ? (
               <PaymentsView statusFilter={paymentsL2KeyToStatusFilter(paymentsL2Active)} />
             ) : currentView === "appointments" ? (
-              <AppointmentsView />
+              appointmentsL2ShowsCalendarCanvas(appointmentsL2Active) ? (
+                <AppointmentsView />
+              ) : (
+                <AppShellContentPlaceholder
+                  view="appointments"
+                  productLabel={appointmentsL2PlaceholderProductLabel(appointmentsL2Active)}
+                />
+              )
             ) : currentView === "aeo-product-listing-1" ? (
               <AppShellContentPlaceholder view="aeo-product-listing-1" productLabel="Listings" />
             ) : currentView === "aeo-search-ai" ? (
@@ -606,6 +689,13 @@ export default function App() {
               <AgentActivityView onConfigure={() => handleViewChange("agent-config")} />
             ) : currentView === "agent-config" ? (
               <AgentConfigView />
+            ) : currentView === "settings" ? (
+              <SettingsView
+                scrollTarget={settingsScrollTarget}
+                onScrollTargetConsumed={() => setSettingsScrollTarget(null)}
+                activeSection={settingsL2Active}
+                onActiveSectionChange={setSettingsL2Active}
+              />
             ) : (
               <Dashboard
                 aiPanelOpen={aiPanelOpen}
