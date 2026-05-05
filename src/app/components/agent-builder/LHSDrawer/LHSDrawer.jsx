@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Input } from '@/app/components/ui/input';
 import NodeType from '../Organisms/Accordion/NodeType/NodeType';
+import AIChatBubble from '../Molecules/AIChatBubble/AIChatBubble';
+import AIPromptBox from '../Molecules/AIPromptBox/AIPromptBox';
 import LHSEntityGroup from '../Molecules/LHS/LHSEntityGroup/LHSEntityGroup';
 import LHSTwoLevelGroup from '../Molecules/LHS/LHSTwoLevelGroup/LHSTwoLevelGroup';
 import './LHSDrawer.css';
@@ -219,6 +221,15 @@ export const CONTROL_CARDS = [
 const ALL_SUB_ITEMS = { ...TRIGGER_SUB_ITEMS, ...TASK_SUB_ITEMS };
 const SECTION_SUB_ITEMS = { trigger: TRIGGER_SUB_ITEMS, task: TASK_SUB_ITEMS };
 
+const TABS = ['Create with AI', 'Create manually'];
+
+const AI_OPTIONS = [
+  'Replying using templates',
+  'Replying autonomously',
+  'Replying after human approval',
+  'Suggesting replies in dashboard',
+];
+
 /* ─── Card Row ─── */
 
 export function CardRow({ label, icon, action, isActive, onClick, onHover, cardRef, nodeType }) {
@@ -256,8 +267,11 @@ export function CardRow({ label, icon, action, isActive, onClick, onHover, cardR
 }
 
 export default function LHSDrawer({
+  defaultTab = 'Create manually',
   defaultOpenSection = 'Trigger',
+  aiOptions = AI_OPTIONS,
 }) {
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [openSection, setOpenSection] = useState(defaultOpenSection);
   const toggleSection = (section) => setOpenSection(section);
   const [search, setSearch] = useState('');
@@ -326,27 +340,56 @@ export default function LHSDrawer({
 
   return (
     <div className="lhs-drawer" ref={panelRef} onMouseLeave={closeDropdown}>
-      <div className="lhs-drawer__body">
-        <div className="lhs-drawer__search">
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <span className="material-symbols-outlined" style={{ position: 'absolute', left: 8, fontSize: 18, color: '#8f8f8f', pointerEvents: 'none' }}>search</span>
-            <Input
-              name="search"
-              type="text"
-              placeholder="Search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{ paddingLeft: 32 }}
-            />
+      <div className="lhs-drawer__tabs">
+        {TABS.map((tab) => (
+          <button
+            key={tab}
+            className={`lhs-drawer__tab${activeTab === tab ? ' lhs-drawer__tab--active' : ''}`}
+            onClick={() => setActiveTab(tab)}
+          >
+            <span className="lhs-drawer__tab-label">
+              {tab === 'Create with AI' ? (
+                <>Create with <span className="material-symbols-outlined lhs-drawer__tab-ai-icon">auto_awesome</span></>
+              ) : tab}
+            </span>
+            <span className="lhs-drawer__tab-underline" />
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'Create manually' ? (
+        <div className="lhs-drawer__body">
+          <div className="lhs-drawer__search">
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <span className="material-symbols-outlined" style={{ position: 'absolute', left: 8, fontSize: 18, color: '#8f8f8f', pointerEvents: 'none' }}>search</span>
+              <Input
+                name="search"
+                type="text"
+                placeholder="Search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                style={{ paddingLeft: 32 }}
+              />
+            </div>
+          </div>
+
+          <div className="lhs-drawer__sections">
+            <NodeType title="Trigger" content={triggerContent} isOpen={openSection === 'Trigger'} onToggle={() => toggleSection('Trigger')} />
+            <NodeType title="Tasks" content={tasksContent} isOpen={openSection === 'Tasks'} onToggle={() => toggleSection('Tasks')} />
+            <NodeType title="Controls" content={controlsContent} isOpen={openSection === 'Controls'} onToggle={() => toggleSection('Controls')} />
           </div>
         </div>
-
-        <div className="lhs-drawer__sections">
-          <NodeType title="Trigger" content={triggerContent} isOpen={openSection === 'Trigger'} onToggle={() => toggleSection('Trigger')} />
-          <NodeType title="Tasks" content={tasksContent} isOpen={openSection === 'Tasks'} onToggle={() => toggleSection('Tasks')} />
-          <NodeType title="Controls" content={controlsContent} isOpen={openSection === 'Controls'} onToggle={() => toggleSection('Controls')} />
+      ) : (
+        <div className="lhs-drawer__ai-body">
+          <div className="lhs-drawer__ai-chat-area">
+            <AIChatBubble
+              message="Hi! I'm here to help you build your agent. Tell me what you'd like to build"
+              options={aiOptions}
+            />
+          </div>
+          <AIPromptBox onSend={() => {}} />
         </div>
-      </div>
+      )}
 
       {activeSubItems && (
         <div

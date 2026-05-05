@@ -73,10 +73,11 @@
 }
 
 .lhs-drawer__tab-ai-icon {
-  width: 24px;
-  height: 24px;
-  display: block;
+  font-size: 18px !important;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
+  color: #1976d2;
 }
 
 .lhs-drawer__tab-underline {

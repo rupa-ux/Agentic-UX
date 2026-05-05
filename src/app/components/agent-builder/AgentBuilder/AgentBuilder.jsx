@@ -7,8 +7,6 @@ import RHS from '../Organisms/Panels/RHS/RHS';
 import RHSStart from '../Molecules/RHS/Start/RHSStart';
 import ScheduleBased from '../Molecules/RHS/Trigger/ScheduleBased/ScheduleBased';
 import AddNodeModal from '../Organisms/Modals/AddNodeModal/AddNodeModal';
-import AIChatBubble from '../Molecules/AIChatBubble/AIChatBubble';
-import AIPromptBox from '../Molecules/AIPromptBox/AIPromptBox';
 import './AgentBuilder.css';
 
 const START_NODE_ID = '__start__';
@@ -177,7 +175,6 @@ export default function AgentBuilder({
   const [addAfterNodeId, setAddAfterNodeId] = useState(null);
   const [addAfterPosition, setAddAfterPosition] = useState(null);
   const [userEdges, setUserEdges] = useState([]);
-  const [aiChatOpen, setAiChatOpen] = useState(false);
   const handleDeleteNode = useCallback((nodeId) => {
     // Check if this node lives inside a branch path
     let branchPathKey = null;
@@ -862,7 +859,7 @@ export default function AgentBuilder({
     >
       <div className="agent-builder">
         <div className="agent-builder__lhs">
-          <LHSDrawer triggerOpen tasksOpen={false} controlsOpen={false} />
+          <LHSDrawer triggerOpen tasksOpen={false} controlsOpen={false} aiOptions={aiOptions} />
         </div>
         <div className={`agent-builder__canvas ${drawerOpen ? 'agent-builder__canvas--with-rhs' : ''}`}>
           <FlowCanvas
@@ -874,35 +871,6 @@ export default function AgentBuilder({
             selectedNodeId={selectedNodeId}
             orientation="vertical"
           />
-          {/* Floating AI chat button */}
-          <button
-            className="agent-builder__ai-fab"
-            onClick={() => setAiChatOpen((o) => !o)}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>auto_awesome</span>
-            Create with AI
-          </button>
-          {/* AI chat panel */}
-          {aiChatOpen && (
-            <div className="agent-builder__ai-chat-panel">
-              <div className="agent-builder__ai-chat-header">
-                <span>Create with AI</span>
-                <button
-                  className="agent-builder__ai-chat-close"
-                  onClick={() => setAiChatOpen(false)}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>close</span>
-                </button>
-              </div>
-              <div className="agent-builder__ai-chat-body">
-                <AIChatBubble
-                  message="Hi! I'm here to help you build your agent. Tell me what you'd like to build."
-                  options={aiOptions}
-                />
-              </div>
-              <AIPromptBox onSend={() => {}} />
-            </div>
-          )}
         </div>
         {drawerOpen && (
           <div className="agent-builder__rhs">
