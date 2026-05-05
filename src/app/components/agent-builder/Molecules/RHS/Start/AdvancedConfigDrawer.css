@@ -1,0 +1,150 @@
+/* ── Overlay ── */
+.adv-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(33, 33, 33, 0.64);
+  z-index: 200;
+}
+
+/* ── Drawer panel ── */
+.adv-drawer {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 598px;
+  background: #fff;
+  box-shadow: 0px 4px 8px 0px rgba(33, 33, 33, 0.18);
+  display: flex;
+  flex-direction: column;
+  font-family: "Roboto", arial, sans-serif;
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.adv-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px 4px;
+  background: #fff;
+}
+
+.adv-header__left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adv-back-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #212121;
+}
+
+.adv-back-btn .material-symbols-outlined {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+.adv-title {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #1f2328;
+}
+
+/* ── Tab bar ── */
+.adv-tabs-wrapper {
+  flex-shrink: 0;
+  padding: 0 24px;
+}
+
+/* ── Body ── */
+.adv-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Compact SingleSelect override ──
+   className="el-compact-select" is passed directly to SingleSelect, so it lands
+   on the dropdown-box root element itself — NOT a parent. Target with no space
+   (same-element selector) or target its children with the descendant combinator. */
+
+/* Fix the root container height */
+.el-compact-select {
+  min-height: 36px !important;
+  height: 36px !important;
+  margin-bottom: 0 !important;
+}
+
+/* Fix the visible closed-state box (default-filter is a direct child) */
+.el-compact-select [class*="default-filter"]:not([class*="dropdown-open"]) {
+  min-height: 36px !important;
+  height: 36px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Allow placeholder text (label-top) and selected value wrapper to fill space */
+.el-compact-select [class*="default-filter"]:not([class*="dropdown-open"]) [class*="label-top"],
+.el-compact-select [class*="default-filter"]:not([class*="dropdown-open"]) [class*="tooltip-inner-wrapper"] {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+/* ── Accordion overrides (scoped to drawer body) ── */
+.adv-body .accordionContentWrap {
+  padding: 0;
+}
+
+.adv-body .accordionContentWrap ul {
+  padding-left: 0;
+}
+
+.adv-body .accordionHeadingContent span:empty {
+  display: none;
+}
+
+.adv-body .accordionHeadingContent h2 {
+  margin: 0;
+}
+
+.adv-body .accordionContentWrap li {
+  margin-bottom: 24px;
+}
+
+.adv-body .accordionInnerContent {
+  background-color: transparent !important;
+  padding: 8px 0 0 !important;
+  margin-top: 0 !important;
+}
+
+/* Large enough max-height so content never overflows the box */
+.adv-body li.open .accordionBelowContent {
+  max-height: 3000px !important;
+  overflow: visible !important;
+}
+
+
+/* ── Footer ── */
+.adv-footer {
+  flex-shrink: 0;
+  padding: 12px 24px;
+  border-top: 1px solid #e5e9f0;
+  display: flex;
+  justify-content: flex-end;
+}

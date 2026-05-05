@@ -1,0 +1,20 @@
+.el-compact-select {
+  min-height: 36px !important;
+  height: 36px !important;
+  margin-bottom: 0 !important;
+}
+
+.el-compact-select [class*="default-filter"]:not([class*="dropdown-open"]) {
+  min-height: 36px !important;
+  height: 36px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.el-compact-select [class*="default-filter"]:not([class*="dropdown-open"]) [class*="label-top"],
+.el-compact-select [class*="default-filter"]:not([class*="dropdown-open"]) [class*="tooltip-inner-wrapper"] {
+  flex: 1 !important;
+  min-width: 0 !important;
+}

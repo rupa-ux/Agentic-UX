@@ -1,0 +1,4 @@
+.performance-table tbody td,
+.performance-table thead th {
+  text-align: left !important;
+}

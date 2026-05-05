@@ -1,0 +1,87 @@
+/* Remove intermediate scroll containers so position:sticky on thead th
+   can reach the actual scroll ancestor (parent div with overflow:auto) */
+.agents-table div[class*="scroll-wrap"] {
+  overflow: visible !important;
+}
+.agents-table div[class*="fixed-table-wrap"] {
+  overflow: visible !important;
+}
+
+/* Hide the upper-table overlay that makes column 1 appear stuck */
+.agents-table #uppertable {
+  display: none !important;
+}
+
+.agents-table tbody td,
+.agents-table thead th {
+  text-align: left !important;
+}
+
+/* Sticky column headers */
+.agents-table thead th {
+  position: sticky !important;
+  top: 0;
+  background: #fff;
+  z-index: 10;
+}
+
+/* Consistent hover across all columns including column 1 */
+.agents-table tbody tr:hover td {
+  background-color: #f5f5f5 !important;
+}
+
+/* Actions cell */
+.actions-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actions-cell-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.actions-cell-btn:hover {
+  background: #f5f5f5;
+}
+
+/* Dropdown — positioning handled via portal inline styles */
+.actions-dropdown {
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0px 4px 8px 0px rgba(33, 33, 33, 0.18);
+  padding: 12px 0;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.actions-dropdown-item {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: -0.28px;
+  color: #555;
+  padding: 8px 16px 8px 12px;
+  border-radius: 4px;
+}
+
+.actions-dropdown-item:hover {
+  background: #f5f5f5;
+}
