@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+} from "react";
 import {
   REVIEWS_SHORTCUT_EVENT,
   type ReviewsShortcutAction,
@@ -7,16 +14,32 @@ import {
   Search,
   MoreVertical,
   Star,
+  Check,
   ChevronLeft,
   ChevronRight,
-  Send,
-  Pencil,
-  MessageCircle,
+  ThumbsDown,
+  ThumbsUp,
   List,
   Columns2,
+  Eye,
+  ListChecks,
+  MessageSquareOff,
+  ShieldCheck,
+  ShieldX,
 } from "lucide-react";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
+import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/app/components/ui/dialog";
+import { Textarea } from "@/app/components/ui/textarea";
+import { cn } from "@/app/components/ui/utils";
 import { ManusToolbarIconHit } from "@/app/components/ManusToolbarIconHit";
 import { L1_STRIP_ICON_SIZE, L1_STRIP_ICON_STROKE_PX } from "@/app/components/l1StripIconTokens";
 import svgPaths from "../../imports/svg-k7qrt1366a";
@@ -49,6 +72,7 @@ import {
 import {
   createInitialReviewsFilters,
 } from "@/app/data/reviewsFilters";
+import { additionalMockReviews, sortReviewsByRecency } from "@/app/data/additionalReviews";
 import { SegmentedToggle } from "@/app/components/ui/segmented-toggle";
 import type { ReviewsViewMode } from "./ReviewsView";
 
@@ -67,6 +91,30 @@ interface Review {
   text: string;
   replyStatus: "post" | "edit";
   hasReplyDots?: boolean;
+  sentiment?: "positive" | "neutral" | "negative";
+  responseWorkflow?: "none" | "agent_draft_pending_approval" | "reply_rejected" | "responded";
+  suggestedReply?: string;
+  existingReply?: { text: string; author: string; date: string; platform: string };
+  priorityOrder?: number;
+}
+
+const REVIEWS_L2_RESPOND_TO_REVIEWS_KEY = "Human actions/Respond to reviews";
+type RespondQuickFilter = "all" | "negative" | "agent-drafts" | "rejected" | "no-reply";
+const RESPOND_QUICK_FILTERS: { key: RespondQuickFilter; label: string; icon?: React.ReactNode }[] = [
+  { key: "all", label: "All", icon: <ListChecks className="h-3.5 w-3.5" strokeWidth={1.6} absoluteStrokeWidth /> },
+  { key: "negative", label: "Negative" },
+  { key: "agent-drafts", label: "Agent drafts", icon: <Eye className="h-3.5 w-3.5" strokeWidth={1.6} absoluteStrokeWidth /> },
+  { key: "rejected", label: "Rejected", icon: <ShieldX className="h-3.5 w-3.5" strokeWidth={1.6} absoluteStrokeWidth /> },
+  { key: "no-reply", label: "No reply", icon: <MessageSquareOff className="h-3.5 w-3.5" strokeWidth={1.6} absoluteStrokeWidth /> },
+];
+
+function isRespondToReviewsCandidate(review: Review): boolean {
+  const hasNoResponse = review.responseWorkflow === "none";
+  const hasAgentDraftPendingApproval = review.responseWorkflow === "agent_draft_pending_approval";
+  const hasRejectedReply = review.responseWorkflow === "reply_rejected";
+  const isLowRatingNegative = review.rating <= 2 && review.sentiment === "negative";
+
+  return hasNoResponse || hasAgentDraftPendingApproval || hasRejectedReply || isLowRatingNegative;
 }
 
 /** Parses `review.date` strings like `Jan 7, 2023`; falls back to the raw string if invalid. */
@@ -88,6 +136,21 @@ export function formatReviewDateRelative(dateStr: string, nowMs: number = Date.n
   if (months < 12) return rtf.format(-months, "month");
   const years = Math.floor(days / 365);
   return rtf.format(-years, "year");
+}
+
+function formatReviewDateExact(dateStr: string): string {
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return dateStr;
+  const formatted = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
+
+  return formatted;
 }
 
 const REVIEW_BODY_LINE_HEIGHT_PX = 18;
@@ -233,6 +296,8 @@ const mockReviews: Review[] = [
     photos: GALLERY_FULL,
     text: "I had a great time here, the place is situated near Wagle circle. It has top notch ambience and a really cool vibe. The food and drinks were pretty good and I would definitely recommend this to all the non veg lovers. The restaurant is pretty big and can accommodate a huge crowd with indoor as well as outdoor seating. The prices for the dishes are reasonable and totally worth it.\n\nMy personal favorites were the desserts, especially the DIY cake station where you pick toppings and sauces. The staff explained every course without rushing us, and water refills were constant without having to wave someone down. We also tried the chef’s special grill platter: smoky, tender, and seasoned well without hiding the ingredients.\n\nIf I had to nitpick, the music near the bar was a touch loud for conversation, but tables farther in were perfect. Parking nearby can fill up on weekends, so plan a few extra minutes. Overall this was one of the better dining experiences I have had in the area, and I would gladly return with friends or family. Would definitely visit again! ❤️",
     replyStatus: "post",
+    sentiment: "positive",
+    responseWorkflow: "none",
   },
   {
     id: 2,
@@ -259,6 +324,8 @@ const mockReviews: Review[] = [
     text: "This is a huge place where you can hang out with friends or relatives without feeling cramped. There are several seating zones, from quieter corners to a livelier central area, so you can match the mood to your group. We visited on a Saturday evening and still found a comfortable table within ten minutes.\n\nThe portions are generous and easy to share. We ordered a mix of appetizers and mains and everything arrived hot. Staff checked in at the right moments and cleared plates promptly. The only minor issue was a short wait for the first round of drinks while the bar caught up with the rush.\n\nIf you are planning a birthday or casual reunion, this spot works well because you can linger without pressure to turn the table. I would come back for the relaxed atmosphere and the variety on the menu.",
     replyStatus: "edit",
     hasReplyDots: true,
+    sentiment: "positive",
+    responseWorkflow: "agent_draft_pending_approval",
   },
   {
     id: 4,
@@ -298,6 +365,8 @@ const mockReviews: Review[] = [
     text: "The food itself was fine: flavors were balanced and plating looked thoughtful. Unfortunately we waited almost forty minutes past our reservation time before we were seated, and the host stand updates were vague. Noise near the bar carried into the dining area, which made it harder to talk without leaning in.\n\nWhen mains arrived they were lukewarm, as if they had sat under a lamp too long. The server apologized and offered to reheat, but at this price point I expected tighter pacing and hotter plates on the first try. Starters and drinks were stronger than the entrees on this visit.\n\nI am not writing the place off entirely because the menu shows ambition, but management should look at timing on busy nights. If you go, ask for a table away from the bar and confirm your reservation buffer if you have tickets afterward.",
     replyStatus: "edit",
     hasReplyDots: true,
+    sentiment: "neutral",
+    responseWorkflow: "reply_rejected",
   },
   {
     id: 7,
@@ -310,6 +379,8 @@ const mockReviews: Review[] = [
     photos: GALLERY_FULL.slice(1, 5),
     text: "Our order was wrong twice in one meal, which is hard to excuse when the restaurant was not at full capacity. It took three separate asks to get water refills, and empty plates sat on the edge of the table for a long time. I understand everyone can have an off night, but the basics slipped repeatedly.\n\nWhen the correct dishes finally arrived, taste was average and temperature was acceptable. The manager offered a small discount after we flagged the issues, which helped a little, but we still left frustrated because the experience felt careless. Communication between the kitchen and the floor seemed disjointed from where we sat.\n\nI hope this was an outlier service night. Until I hear that staffing or training improved, I would hesitate to recommend this location for time sensitive plans or guests you want to impress without risk.",
     replyStatus: "post",
+    sentiment: "negative",
+    responseWorkflow: "none",
   },
   {
     id: 8,
@@ -363,6 +434,8 @@ const mockReviews: Review[] = [
     text: "We found a hair in the appetizer, which immediately killed our appetite for the rest of the round. The manager apologized, but we were still charged for the dish, which felt dismissive given the circumstances. I am not usually someone who leaves one star reviews, but the response did not match the seriousness of the issue.\n\nOther tables around us seemed to be having a normal night, so this may have been an isolated kitchen slip. Still, how a restaurant recovers matters. A comped appetizer or a sincere follow up would have gone a long way.\n\nI hope the team retrains on quality checks and guest recovery. Until then I cannot recommend this location based on our visit.",
     replyStatus: "edit",
     hasReplyDots: true,
+    sentiment: "negative",
+    responseWorkflow: "reply_rejected",
   },
   {
     id: 12,
@@ -425,8 +498,12 @@ const mockReviews: Review[] = [
     photos: [imgRectangle2435, imgRectangle2432],
     text: "Our delivery order arrived cold and missing sides, which is frustrating when you are ordering for a group at home. In app support offered a partial credit only, and the back and forth took longer than remaking the meal would have. In person visits have been better in the past, so this felt like a different standard.\n\nWhen we have dined inside, food was hot and accurate, which makes the delivery gap more noticeable. Packaging may need a rethink for anything saucy, and checklists should confirm sides before drivers leave.\n\nI am leaving two stars instead of one because I know this brand can do better based on prior experiences. I hope operations tighten delivery QA soon.",
     replyStatus: "post",
+    sentiment: "negative",
+    responseWorkflow: "none",
   },
 ];
+
+const reviewDataset: Review[] = sortReviewsByRecency([...mockReviews, ...additionalMockReviews]);
 
 /* ─── Star rating — gold fill + gold outline on empty (review reference) ─── */
 function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
@@ -452,38 +529,246 @@ function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
   );
 }
 
-/* ─── BirdAI Suggested Reply ─── */
-function MynaAIReply({ hasThreeDots }: { hasThreeDots?: boolean }) {
+/* ─── Agent reply block ─── */
+const RESPONSE_FEEDBACK_REASONS = [
+  "Better understanding",
+  "Improve brand voice",
+  "Improve professionalism",
+  "More empathy",
+  "Improve accuracy",
+];
+
+function MynaAIReply({
+  responseKind = "drafted",
+  text = "We appreciate your feedback! Thank you for taking the time to share your experience with us.",
+  platform,
+  date,
+  onViewFeedbackProgress,
+}: {
+  responseKind?: "posted" | "drafted";
+  text?: string;
+  platform?: string;
+  date?: string;
+  onViewFeedbackProgress?: () => void;
+}) {
+  const isPosted = responseKind === "posted";
+  const [selectedFeedback, setSelectedFeedback] = useState<"up" | "down" | null>(null);
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
+  const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
+  const [feedbackDetails, setFeedbackDetails] = useState("");
+  const [feedbackToastVisible, setFeedbackToastVisible] = useState(false);
+  const [feedbackToastVariant, setFeedbackToastVariant] = useState<"thanks" | "working">("thanks");
+  const feedbackToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const toggleReason = (reason: string) => {
+    setSelectedReasons((current) =>
+      current.includes(reason)
+        ? current.filter((item) => item !== reason)
+        : [...current, reason],
+    );
+  };
+
+  const showFeedbackToast = (variant: "thanks" | "working") => {
+    if (feedbackToastTimerRef.current) {
+      window.clearTimeout(feedbackToastTimerRef.current);
+    }
+    setFeedbackToastVariant(variant);
+    setFeedbackToastVisible(true);
+    const durationMs = variant === "working" ? 6000 : 2200;
+    feedbackToastTimerRef.current = window.setTimeout(() => {
+      setFeedbackToastVisible(false);
+      feedbackToastTimerRef.current = null;
+    }, durationMs);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (feedbackToastTimerRef.current) {
+        window.clearTimeout(feedbackToastTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleThumbsUp = () => {
+    setSelectedFeedback("up");
+    showFeedbackToast("thanks");
+  };
+
+  const handleThumbsDown = () => {
+    setSelectedFeedback("down");
+    setFeedbackDialogOpen(true);
+  };
+
+  const handleSubmitFeedback = () => {
+    setFeedbackDialogOpen(false);
+    showFeedbackToast("working");
+  };
+
+  const handleViewProgressClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    if (feedbackToastTimerRef.current) {
+      window.clearTimeout(feedbackToastTimerRef.current);
+      feedbackToastTimerRef.current = null;
+    }
+    setFeedbackToastVisible(false);
+    onViewFeedbackProgress?.();
+  };
+
   return (
-    <div className="relative bg-[#f9f7fd] dark:bg-background rounded-[8px] p-5 w-full">
-      <div className="flex flex-col gap-[6px]">
-        {/* Header row */}
-        <div className="flex items-center gap-2">
-          <span className="text-[12px] text-[#555] dark:text-muted-foreground">BirdAI suggested reply</span>
-          <div className="size-[4px] rounded-full bg-[#555] dark:bg-[#8b92a5]" />
-          <div className="flex items-center">
-            <span className="text-[12px] text-[#555] dark:text-muted-foreground">Reply as</span>
-            <div className="flex items-center gap-[2px] px-1 rounded-full">
-              <span className="text-[12px] text-[#1976d2]">Sampada (me)</span>
-              <svg className="w-[7.5px] h-[3.75px]" viewBox="0 0 7.5 3.75" fill="none">
-                <path d="M0 0L3.75 3.75L7.5 0H0Z" fill="#49454F" />
-              </svg>
+    <div className="flex w-full flex-col gap-2">
+      <div className="relative w-full rounded-[8px] border border-border/60 bg-[#f9f7fd] p-5 dark:bg-background">
+        <div className="flex flex-col gap-[6px]">
+          {/* Header row */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={isPosted ? "success" : "warning"} className="font-normal">
+                {isPosted ? "Agent posted" : "Agent drafted"}
+              </Badge>
+              {platform ? (
+                <span className="text-[12px] text-muted-foreground">
+                  via {platform}
+                </span>
+              ) : null}
             </div>
+            {date ? (
+              <span className="shrink-0 text-[12px] text-muted-foreground">
+                {formatReviewDateExact(date)}
+              </span>
+            ) : null}
           </div>
+          <p className="text-[13px] leading-[18px] text-muted-foreground">
+            {text}
+          </p>
+          {!isPosted ? (
+            <div className="flex items-center">
+              <span className="text-[12px] text-muted-foreground">Reply as</span>
+              <div className="flex items-center gap-[2px] px-1 rounded-full">
+                <span className="text-[12px] text-primary">Sampada (me)</span>
+                <svg className="w-[7.5px] h-[3.75px] text-muted-foreground" viewBox="0 0 7.5 3.75" fill="none">
+                  <path d="M0 0L3.75 3.75L7.5 0H0Z" fill="currentColor" />
+                </svg>
+              </div>
+            </div>
+          ) : null}
         </div>
-        {/* Reply text */}
-        <p className="text-[13px] text-[#212121] dark:text-muted-foreground leading-[18px]">
-          We appreciate your feedback! Thank you for taking the time to share your experience with us.
-        </p>
       </div>
-      {/* Optional 3-dot menu on reply */}
-      {hasThreeDots && (
-        <div className="absolute right-3 top-2 bg-[#f9f7fd] dark:bg-background rounded-full size-[24px] flex items-center justify-center">
-          <svg className="w-[12px] h-[3px] rotate-90" viewBox="0 0 12 3" fill="none">
-            <path clipRule="evenodd" d={svgPaths.p2d3a0500} fill="#757575" fillRule="evenodd" />
-          </svg>
+      {isPosted ? (
+        <div className="flex justify-end gap-1">
+            <ManusToolbarIconHit
+              title="Good response"
+              aria-label="Good response"
+              aria-pressed={selectedFeedback === "up"}
+              onClick={handleThumbsUp}
+              className={cn(
+                "rounded-md",
+                selectedFeedback === "up" &&
+                  "border border-[#138a36] bg-[#f1faf0] text-[#138a36] hover:bg-[#e8f6eb] hover:text-[#138a36] dark:bg-[#1a3d1f] dark:text-[#6fcf74]",
+              )}
+            >
+              <ThumbsUp {...reviewActionLucideProps} />
+            </ManusToolbarIconHit>
+            <ManusToolbarIconHit
+              title="Poor response"
+              aria-label="Poor response"
+              aria-pressed={selectedFeedback === "down"}
+              onClick={handleThumbsDown}
+              className={cn(
+                "rounded-md",
+                selectedFeedback === "down" &&
+                  "border border-destructive bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive",
+              )}
+            >
+              <ThumbsDown {...reviewActionLucideProps} />
+            </ManusToolbarIconHit>
+            <ManusToolbarIconHit title="More actions" aria-label="More actions">
+              <MoreVertical {...reviewActionLucideProps} />
+            </ManusToolbarIconHit>
         </div>
-      )}
+      ) : null}
+      {feedbackToastVisible ? (
+        <div
+          className={cn(
+            "fixed bottom-6 z-[100] flex min-h-11 max-w-[min(420px,calc(100vw-2rem))] -translate-x-1/2 items-center justify-center gap-2.5 rounded-lg bg-foreground px-4 py-2.5 text-background shadow-lg",
+            feedbackToastVariant === "working" ? "pointer-events-auto" : "pointer-events-none",
+          )}
+          style={{ left: "var(--reviews-feedback-center-x, 50%)" }}
+          role="status"
+          aria-live="polite"
+        >
+          <Check className="h-4 w-4 shrink-0 text-emerald-500" strokeWidth={1.8} absoluteStrokeWidth aria-hidden />
+          {feedbackToastVariant === "thanks" ? (
+            <span className="text-[14px] font-medium leading-5">
+              Thanks for the feedback!
+            </span>
+          ) : (
+            <span className="text-center text-[14px] font-medium leading-5">
+              Working on your feedback.{" "}
+              <a
+                href="#"
+                className="underline underline-offset-2 hover:opacity-90"
+                onClick={handleViewProgressClick}
+              >
+                View progress
+              </a>
+            </span>
+          )}
+        </div>
+      ) : null}
+      <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
+        <DialogContent
+          className="h-[420px] w-[480px] max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-md p-0 shadow-lg sm:max-w-[480px]"
+          style={{ left: "var(--reviews-feedback-center-x, 50%)" }}
+        >
+          <DialogHeader className="w-full px-6 pb-3 pt-6 pr-14">
+            <DialogTitle className="text-[16px] font-medium leading-6 tracking-[-0.01em]">
+              Share feedback
+            </DialogTitle>
+            <DialogDescription className="mt-1 max-w-[460px] text-[12px] leading-[18px] text-muted-foreground">
+              Give an instruction to improve the review response. The agent will return an updated version for future responses.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-4 px-6 py-3">
+            <div className="flex flex-wrap gap-2.5">
+              {RESPONSE_FEEDBACK_REASONS.map((reason) => {
+                const selected = selectedReasons.includes(reason);
+                return (
+                  <button
+                    key={reason}
+                    type="button"
+                    onClick={() => toggleReason(reason)}
+                    className={cn(
+                    "h-9 rounded-full border border-border bg-card px-4 text-[14px] font-normal leading-5 text-foreground shadow-sm transition-colors hover:border-primary/40 hover:bg-muted",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35",
+                    selected && "border-primary bg-primary/10 text-primary",
+                    )}
+                  >
+                    {reason}
+                  </button>
+                );
+              })}
+            </div>
+
+            <Textarea
+              value={feedbackDetails}
+              onChange={(event) => setFeedbackDetails(event.target.value)}
+              placeholder="Please provide feedback on what to improve about this response."
+              className="min-h-[136px] rounded-md border border-border bg-background px-3 py-2 text-[14px] leading-5 shadow-sm focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            />
+          </div>
+
+          <DialogFooter className="items-center gap-2 px-6 pb-6 pt-3 sm:justify-end">
+            <div className="flex gap-2.5">
+              <Button type="button" variant="ghost" className="h-9 px-3 text-[14px] font-medium text-primary hover:bg-transparent" onClick={() => setFeedbackDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="button" className="h-9 rounded-md px-4 text-[14px] font-medium" onClick={handleSubmitFeedback}>
+                Submit feedback
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -499,28 +784,6 @@ const reviewActionLucideProps = {
   className: "shrink-0",
   "aria-hidden": true as const,
 };
-
-/* ─── Action row — plain toolbar; glyphs match L1 IconStrip stroke + colors ─── */
-function ActionRow({ replyStatus }: { replyStatus: "post" | "edit" }) {
-  const primaryLabel = replyStatus === "post" ? "Post reply" : "Edit reply";
-  return (
-    <div className="flex w-full flex-wrap items-center gap-1">
-      <ManusToolbarIconHit title={primaryLabel} aria-label={primaryLabel}>
-        {replyStatus === "post" ? (
-          <Send {...reviewActionLucideProps} />
-        ) : (
-          <Pencil {...reviewActionLucideProps} />
-        )}
-      </ManusToolbarIconHit>
-      <ManusToolbarIconHit title="Open chat" aria-label="Open chat">
-        <MessageCircle {...reviewActionLucideProps} />
-      </ManusToolbarIconHit>
-      <ManusToolbarIconHit title="More actions" aria-label="More actions">
-        <MoreVertical {...reviewActionLucideProps} />
-      </ManusToolbarIconHit>
-    </div>
-  );
-}
 
 /* ─── Blur-up progressive image (Pinterest / Instagram style) ─── *
  *
@@ -766,7 +1029,19 @@ function PhotoCarousel({ photos }: { photos: string[] }) {
 }
 
 /* ─── Review Card ─── */
-function ReviewCard({ review }: { review: Review }) {
+function ReviewCard({
+  review,
+  onViewFeedbackProgress,
+}: {
+  review: Review;
+  onViewFeedbackProgress?: () => void;
+}) {
+  const agentReply = review.existingReply ?? (review.suggestedReply ? {
+    text: review.suggestedReply,
+    platform: review.site === "tripadvisor" ? "TripAdvisor" : review.site[0].toUpperCase() + review.site.slice(1),
+    date: review.date,
+  } : null);
+
   return (
     <div className="flex flex-col gap-5 w-full">
       {/* Header: left — logo + name + stars/date/photos/featured; right — employees + location (same meta colours as date) */}
@@ -779,18 +1054,18 @@ function ReviewCard({ review }: { review: Review }) {
             </span>
             <div className="flex flex-wrap items-center gap-2 text-[12px]">
               <StarRating rating={review.rating} size={14} />
-              <span className="text-[#555] dark:text-muted-foreground" title={review.date}>
+              <span className="text-muted-foreground" title={review.date}>
                 {formatReviewDateRelative(review.date)}
               </span>
               {review.photoCount != null && review.photoCount > 0 && (
                 <>
-                  <div className="size-[3px] shrink-0 rounded-full bg-[#555] dark:bg-[#8b92a5]" />
-                  <span className="text-[#555] dark:text-muted-foreground">{review.photoCount} photos</span>
+                  <div className="size-[3px] shrink-0 rounded-full bg-muted-foreground/50" />
+                  <span className="text-muted-foreground">{review.photoCount} photos</span>
                 </>
               )}
               {review.featured && (
                 <>
-                  <div className="size-[3px] shrink-0 rounded-full bg-[#555] dark:bg-[#8b92a5]" />
+                  <div className="size-[3px] shrink-0 rounded-full bg-muted-foreground/50" />
                   <div className="rounded-[4px] bg-[#eaeaea] px-2 py-0.5 dark:bg-muted">
                     <span className="text-[12px] text-[#212121] dark:text-foreground">Featured</span>
                   </div>
@@ -799,11 +1074,11 @@ function ReviewCard({ review }: { review: Review }) {
             </div>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2 text-[12px] text-[#555] dark:text-muted-foreground">
+        <div className="flex shrink-0 items-center gap-2 text-[12px] text-muted-foreground">
           <span className="whitespace-nowrap">
             {review.employees} {review.employees === 1 ? "employee" : "employees"}
           </span>
-          <div className="size-[3px] shrink-0 rounded-full bg-[#555] dark:bg-[#8b92a5]" />
+          <div className="size-[3px] shrink-0 rounded-full bg-muted-foreground/50" />
           <span className="whitespace-nowrap">{review.location}</span>
         </div>
       </div>
@@ -814,11 +1089,17 @@ function ReviewCard({ review }: { review: Review }) {
       {/* Photo carousel */}
       {review.photos.length > 0 && <PhotoCarousel photos={review.photos} />}
 
-      {/* BirdAI suggested reply */}
-      <MynaAIReply hasThreeDots={review.hasReplyDots} />
+      {/* Agent response */}
+      {agentReply ? (
+        <MynaAIReply
+          responseKind={review.existingReply ? "posted" : "drafted"}
+          text={agentReply.text}
+          platform={agentReply.platform}
+          date={agentReply.date}
+          onViewFeedbackProgress={onViewFeedbackProgress}
+        />
+      ) : null}
 
-      {/* Action row */}
-      <ActionRow replyStatus={review.replyStatus} />
     </div>
   );
 }
@@ -866,18 +1147,24 @@ const PAGE_SIZE = 3;
 export function ReviewsViewList({
   viewMode,
   onViewModeChange,
+  reviewsL2ActiveItem,
+  onViewFeedbackProgress,
 }: {
   viewMode?: ReviewsViewMode;
   onViewModeChange?: (mode: ReviewsViewMode) => void;
+  reviewsL2ActiveItem?: string;
+  onViewFeedbackProgress?: () => void;
 } = {}) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [respondQuickFilter, setRespondQuickFilter] = useState<RespondQuickFilter>("all");
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const [filters, setFilters] = useState<FilterItem[]>(() =>
     createInitialReviewsFilters(),
   );
   const searchInputRef = useRef<HTMLInputElement>(null);
   const aiReplyButtonRef = useRef<HTMLButtonElement>(null);
+  const reviewsFeedRef = useRef<HTMLDivElement>(null);
 
   // Infinite scroll state
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -907,18 +1194,62 @@ export function ReviewsViewList({
     return () => window.removeEventListener(REVIEWS_SHORTCUT_EVENT, onShortcut);
   }, []);
 
-  const filteredReviews = mockReviews.filter((review) =>
-    searchQuery
+  useLayoutEffect(() => {
+    const el = reviewsFeedRef.current;
+    if (!el) return;
+
+    const updateOverlayCenter = () => {
+      const rect = el.getBoundingClientRect();
+      document.documentElement.style.setProperty(
+        "--reviews-feedback-center-x",
+        `${rect.left + rect.width / 2}px`,
+      );
+    };
+
+    updateOverlayCenter();
+    const resizeObserver = new ResizeObserver(updateOverlayCenter);
+    resizeObserver.observe(el);
+    window.addEventListener("resize", updateOverlayCenter);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateOverlayCenter);
+      document.documentElement.style.removeProperty("--reviews-feedback-center-x");
+    };
+  }, []);
+
+  const filteredReviews = reviewDataset.filter((review) => {
+    const matchesSearch = searchQuery
       ? review.reviewer.toLowerCase().includes(searchQuery.toLowerCase()) ||
         review.text.toLowerCase().includes(searchQuery.toLowerCase())
-      : true
-  );
+      : true;
+
+    if (!matchesSearch) return false;
+    if (reviewsL2ActiveItem === REVIEWS_L2_RESPOND_TO_REVIEWS_KEY) {
+      if (!isRespondToReviewsCandidate(review)) return false;
+      if (respondQuickFilter === "negative") return review.rating <= 2 && review.sentiment === "negative";
+      if (respondQuickFilter === "agent-drafts") return review.responseWorkflow === "agent_draft_pending_approval";
+      if (respondQuickFilter === "rejected") return review.responseWorkflow === "reply_rejected";
+      if (respondQuickFilter === "no-reply") return review.responseWorkflow === "none";
+      return true;
+    }
+    return true;
+  });
+  const averageRating = filteredReviews.length
+    ? filteredReviews.reduce((total, review) => total + review.rating, 0) / filteredReviews.length
+    : 0;
 
   // Reset pagination when search changes
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
     setFreshIds(new Set());
-  }, [searchQuery]);
+  }, [searchQuery, respondQuickFilter, reviewsL2ActiveItem]);
+
+  useEffect(() => {
+    if (reviewsL2ActiveItem !== REVIEWS_L2_RESPOND_TO_REVIEWS_KEY) {
+      setRespondQuickFilter("all");
+    }
+  }, [reviewsL2ActiveItem]);
 
   // Intersection observer — fires when sentinel scrolls into view
   useEffect(() => {
@@ -949,28 +1280,13 @@ export function ReviewsViewList({
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         <MainCanvasViewHeader
-          title="All reviews"
+          title={reviewsL2ActiveItem === REVIEWS_L2_RESPOND_TO_REVIEWS_KEY ? "Respond to reviews" : "All reviews"}
           description={
-            <span className="inline-flex flex-wrap items-center gap-1">
-              <span>{mockReviews.length} reviews</span>
-              <span className="mx-0.5 size-[3px] shrink-0 rounded-full bg-muted-foreground/70" aria-hidden />
-              <span>4.1</span>
-              <span className="inline-flex items-center">
-                {[...Array(5)].map((_, i) => {
-                  const filled = i < 4;
-                  return (
-                    <Star
-                      key={i}
-                      aria-hidden
-                      className={`h-2.5 w-2.5 ${
-                        filled ? "fill-[#D4A017] stroke-[#D4A017]" : "fill-none stroke-[#D4A017]"
-                      }`}
-                      strokeWidth={filled ? 0 : L1_STRIP_ICON_STROKE_PX}
-                      absoluteStrokeWidth={!filled}
-                    />
-                  );
-                })}
-              </span>
+            <span className="flex items-center gap-2">
+              <span>{filteredReviews.length} reviews</span>
+              <span className="text-muted-foreground" aria-hidden>·</span>
+              <StarRating rating={Math.round(averageRating)} size={13} />
+              <span className="tabular-nums text-foreground">{averageRating.toFixed(1)}</span>
             </span>
           }
           actions={
@@ -1054,8 +1370,33 @@ export function ReviewsViewList({
           }
         />
 
+        {reviewsL2ActiveItem === REVIEWS_L2_RESPOND_TO_REVIEWS_KEY ? (
+          <div className="shrink-0 px-6 pb-3">
+            <div className="flex flex-wrap items-center gap-2">
+              {RESPOND_QUICK_FILTERS.map((filter) => {
+                const isActive = respondQuickFilter === filter.key;
+                return (
+                  <button
+                    key={filter.key}
+                    type="button"
+                    onClick={() => setRespondQuickFilter(filter.key)}
+                    className={
+                      isActive
+                        ? "inline-flex h-8 items-center gap-1.5 rounded-full border border-primary bg-background px-3 text-[12px] font-medium text-primary transition-colors"
+                        : "inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-[12px] font-medium text-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                    }
+                  >
+                    {filter.icon ? <span className="text-current">{filter.icon}</span> : null}
+                    {filter.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+
         {/* Reviews feed */}
-        <div className="flex-1 overflow-y-auto px-5 pb-6">
+        <div ref={reviewsFeedRef} className="flex-1 overflow-y-auto px-6 pb-6">
           <style>{`
             @keyframes reviewFadeUp {
               from { opacity: 0; transform: translateY(12px); }
@@ -1065,13 +1406,13 @@ export function ReviewsViewList({
               animation: reviewFadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
             }
           `}</style>
-          <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-10 pt-6">
             {filteredReviews.slice(0, visibleCount).map((review) => (
               <div
                 key={review.id}
                 className={freshIds.has(review.id) ? "review-fade-in" : undefined}
               >
-                <ReviewCard review={review} />
+                <ReviewCard review={review} onViewFeedbackProgress={onViewFeedbackProgress} />
               </div>
             ))}
 

@@ -24,6 +24,7 @@ import {
 } from "@/app/components/ui/dropdown-menu";
 import { ReviewBody, formatReviewDateRelative } from "./ReviewsView.v1";
 import { SegmentedToggle } from "@/app/components/ui/segmented-toggle";
+import { additionalMockReviews, sortReviewsByRecency } from "@/app/data/additionalReviews";
 import type { ReviewsViewMode } from "./ReviewsView";
 import svgPaths from "../../imports/svg-k7qrt1366a";
 import { ReviewSiteLogo, type ReviewPlatformSite } from "@/app/components/reviewPlatformLogos";
@@ -368,6 +369,8 @@ const mockReviews: Review[] = [
     suggestedReply: "We're very sorry about your delivery experience, Alex. This is not acceptable and we want to make it right for you.",
   },
 ];
+
+const reviewDataset: Review[] = sortReviewsByRecency([...mockReviews, ...additionalMockReviews]);
 
 // ─── Star rating ───────────────────────────────────────────────────────────────
 
@@ -1290,11 +1293,11 @@ export function ReviewsViewConversation({
   viewMode?: ReviewsViewMode;
   onViewModeChange?: (mode: ReviewsViewMode) => void;
 } = {}) {
-  const [selectedId, setSelectedId] = useState<number>(mockReviews[0].id);
+  const [selectedId, setSelectedId] = useState<number>(reviewDataset[0].id);
   const [rightPaneMode, setRightPaneMode] = useState<"detail" | "conversation">("detail");
   const [replyEditing, setReplyEditing] = useState(false);
 
-  const selectedReview = mockReviews.find((r) => r.id === selectedId) ?? mockReviews[0];
+  const selectedReview = reviewDataset.find((r) => r.id === selectedId) ?? reviewDataset[0];
 
   const handleSelectReview = (id: number) => {
     setSelectedId(id);
@@ -1394,7 +1397,7 @@ export function ReviewsViewConversation({
           onDoubleClick={onResizeHandleDoubleClick}
         />
         <ReviewListPanel
-          reviews={mockReviews}
+          reviews={reviewDataset}
           selectedId={selectedId}
           onSelect={handleSelectReview}
           viewMode={viewMode}

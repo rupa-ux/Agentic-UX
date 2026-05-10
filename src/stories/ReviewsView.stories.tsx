@@ -19,3 +19,21 @@ export default meta;
 type Story = StoryObj<typeof ReviewsView>;
 
 export const Default: Story = {};
+
+export const GenerateReview: Story = {
+  args: {
+    reviewsL2ActiveItem: "Human actions/Generate review",
+  },
+};
+
+export const RespondToReviews: Story = {
+  args: {
+    reviewsL2ActiveItem: "Human actions/Respond to reviews",
+  },
+};
+
+export const ResponseAgent: Story = {
+  args: {
+    reviewsL2ActiveItem: "Agents/Response agent",
+  },
+};

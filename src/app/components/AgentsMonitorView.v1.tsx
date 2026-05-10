@@ -1,410 +1,271 @@
-import { useState, useRef, useCallback, useMemo, useEffect, useLayoutEffect } from "react";
+import { useMemo, useState } from "react";
 import {
-  Search,
-  CheckCircle2,
-  Clock,
-  Activity,
-  X,
-  RotateCcw,
-  UserCheck,
-  PauseCircle,
-  Pencil,
-  Sparkles,
-  Zap,
-  ArrowRight,
-  Star,
+  ChevronDown,
+  GripVertical,
+  Info,
+  LayoutGrid,
+  List,
+  MoreHorizontal,
 } from "lucide-react";
+import { Button, buttonVariants } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
-import { Button } from "@/app/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/app/components/ui/tooltip";
+import { FLOATING_PANEL_LIST_PADDING_CLASSNAME } from "@/app/components/ui/floatingPanelSurface";
 import { cn } from "@/app/components/ui/utils";
-import {
-  monitorActivities,
-  type MonitorActivity,
-  type ActivityStatus,
-  type ActivityCategory,
-} from "@/app/data/agentsMonitorMock";
-import {
-  AGENTS_MONITOR_FILTER_IDS,
-  AGENTS_MONITOR_FILTERS_STORAGE_KEY,
-  createInitialAgentsMonitorFilters,
-} from "@/app/data/agentsMonitorFilters";
-import { filterValue } from "@/app/data/filterUtils";
-import { useMonitorNotifications } from "@/app/context/MonitorNotificationsContext";
-import {
-  FilterPane,
-  FilterPaneTriggerButton,
-} from "@/app/components/FilterPane";
-import { L2_CONTENT_MUTED_BAND } from "@/app/components/L2NavLayout";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
+import { usePersistedState } from "@/app/hooks/usePersistedState";
 
-/** Selected activity row: blue highlight on the title (agent name) only. */
-const ACTIVITY_ROW_TITLE_SELECTED =
-  "text-[#1E44CC] dark:text-[#6b9bff]";
+type Persona = "Marketing persona" | "Operations persona" | "Customer experience";
+type SortMode = "performance" | "persona" | "custom";
+type ViewMode = "grid" | "list";
 
-/** Default share of the feed/detail row for the activity list (~⅓ list, ~⅔ detail). */
-const DEFAULT_ACTIVITY_LIST_FRACTION = 1 / 3;
+type AgentDirectoryItem = {
+  id: string;
+  name: string;
+  product: string;
+  description: string;
+  firstMetricLabel: string;
+  persona: Persona;
+  runs: number;
+  timeSavedHours: number;
+  costSavedK: number;
+  runState: "running" | "needs_attention";
+  queueLabel: string;
+};
 
-function clampActivityListDividerLeft(
-  containerWidth: number,
-  leftPx: number,
-  minLeft: number,
-  minRight: number,
-): number {
-  const maxLeft = containerWidth - minRight;
-  return Math.min(maxLeft, Math.max(minLeft, leftPx));
-}
+type PersonaSummary = {
+  label: Persona;
+  products: string;
+};
 
-/* ─── Mock Data ─── */
-const monitorMetrics = [
-  { label: "Agent actions today", value: "342", icon: Activity, color: "#2552ED" },
-  { label: "Successful actions", value: "318", icon: CheckCircle2, color: "#4caf50" },
-  { label: "Automation rate", value: "93%", icon: Zap, color: "#9970D7" },
-  { label: "Avg response time", value: "4.2s", icon: Clock, color: "#F59E0B" },
+const AGENT_DIRECTORY: AgentDirectoryItem[] = [
+  { id: "inbox-triage",         name: "Inbox triage agent",          product: "Inbox",                description: "Classifies incoming messages and routes them to the right team and priority.",                          firstMetricLabel: "Messages routed",      persona: "Operations persona",    runs: 1900, timeSavedHours: 97, costSavedK: 6.8, runState: "running",          queueLabel: "12 tasks ongoing" },
+  { id: "mktg-workflow",        name: "Workflow agent",               product: "Marketing Automation", description: "Builds automations and multi-step flows tuned to conversion outcomes.",                                firstMetricLabel: "Workflows created",    persona: "Marketing persona",     runs: 1200, timeSavedHours: 68, costSavedK: 4.8, runState: "running",          queueLabel: "8 tasks ongoing" },
+  { id: "mktg-template",        name: "Template agent",               product: "Marketing Automation", description: "Creates personalized email and SMS templates optimized for open and click rates.",                     firstMetricLabel: "Templates created",    persona: "Marketing persona",     runs: 960,  timeSavedHours: 54, costSavedK: 3.8, runState: "running",          queueLabel: "13 tasks ongoing" },
+  { id: "reviews-generation",   name: "Review generation agent",      product: "Reviews",              description: "Sends review requests to customers after transactions via SMS and email.",                             firstMetricLabel: "New reviews",          persona: "Marketing persona",     runs: 868,  timeSavedHours: 41, costSavedK: 2.9, runState: "needs_attention", queueLabel: "9 issues identified" },
+  { id: "reviews-response",     name: "Review response agent",        product: "Reviews",              description: "Drafts replies to incoming reviews based on sentiment, tone and location context.",                    firstMetricLabel: "Reviews responded",    persona: "Marketing persona",     runs: 609,  timeSavedHours: 51, costSavedK: 3.6, runState: "needs_attention", queueLabel: "3 issues identified" },
+  { id: "mktg-lead-scoring",    name: "Lead scoring agent",           product: "Marketing Automation", description: "Scores inbound leads against your ICP and enriches records with firmographic context.",                firstMetricLabel: "Leads scored",         persona: "Marketing persona",     runs: 434,  timeSavedHours: 18, costSavedK: 1.3, runState: "running",          queueLabel: "5 tasks ongoing" },
+  { id: "mktg-segmentation",    name: "Contact segmentation agent",   product: "Marketing Automation", description: "Builds and refreshes smart contact segments — inactive customers, high-value leads, churn-risk.",     firstMetricLabel: "Segments created",     persona: "Marketing persona",     runs: 396,  timeSavedHours: 34, costSavedK: 2.4, runState: "running",          queueLabel: "4 tasks ongoing" },
+  { id: "social-publishing",    name: "Social publishing agent",      product: "Social",               description: "Schedules and publishes social posts across Instagram, Facebook and LinkedIn.",                        firstMetricLabel: "Social posts published", persona: "Marketing persona",   runs: 392,  timeSavedHours: 32, costSavedK: 2.2, runState: "running",          queueLabel: "3 tasks ongoing" },
+  { id: "listings-optimization",name: "Listing optimization agent",   product: "Listings",             description: "Monitors and updates business listings for accuracy, completeness and SEO impact.",                    firstMetricLabel: "Listings optimized",   persona: "Marketing persona",     runs: 301,  timeSavedHours: 40, costSavedK: 2.8, runState: "running",          queueLabel: "2 tasks ongoing" },
+  { id: "mktg-campaign",        name: "Campaign agent",               product: "Marketing Automation", description: "Builds, launches and adjusts marketing campaigns based on live performance signals.",                  firstMetricLabel: "Campaigns launched",   persona: "Marketing persona",     runs: 147,  timeSavedHours: 28, costSavedK: 2.0, runState: "running",          queueLabel: "2 tasks ongoing" },
+  { id: "listings-sync",        name: "Listing sync agent",           product: "Listings",             description: "Keeps hours, services and photos in sync across 60+ directories automatically.",                      firstMetricLabel: "Listings synced",      persona: "Marketing persona",     runs: 126,  timeSavedHours: 18, costSavedK: 1.3, runState: "running",          queueLabel: "1 tasks ongoing" },
 ];
 
-/* ─── Status / category labels (text badges; design tokens via UI Badge) ─── */
-function statusLabel(status: ActivityStatus) {
-  if (status === "success") return "Success";
-  if (status === "warning") return "Needs review";
-  if (status === "processing") return "Processing";
-  return "Failed";
+const PERSONA_ORDER: Persona[] = ["Marketing persona", "Operations persona", "Customer experience"];
+const PERSONA_SUMMARY: PersonaSummary[] = [
+  { label: "Marketing persona", products: "Reviews, Listings, Social, Referrals" },
+  { label: "Operations persona", products: "Inbox, Tickets, Campaigns, Insights" },
+  { label: "Customer experience", products: "Surveys, Contacts" },
+];
+
+type AgentFilterKey = "all" | "Listings" | "Reviews" | "Social" | "Inbox" | "Contacts" | "Surveys" | "Tickets" | "Marketing" | "Payments" | "Insights";
+type TimeRangeKey = "last-week" | "last-month" | "custom";
+
+const AGENT_FILTER_OPTIONS: { key: AgentFilterKey; label: string; hasAttention?: boolean }[] = [
+  { key: "all", label: "All agents" },
+  { key: "Listings", label: "Listings" },
+  { key: "Reviews", label: "Reviews", hasAttention: true },
+  { key: "Social", label: "Social" },
+  { key: "Inbox", label: "Inbox" },
+  { key: "Contacts", label: "Contacts" },
+  { key: "Surveys", label: "Surveys" },
+  { key: "Tickets", label: "Tickets" },
+  { key: "Marketing", label: "Marketing automation AI" },
+  { key: "Payments", label: "Payments" },
+  { key: "Insights", label: "Insights" },
+];
+
+const TIME_RANGE_OPTIONS: { key: TimeRangeKey; label: string }[] = [
+  { key: "last-week", label: "Last week" },
+  { key: "last-month", label: "Last month" },
+  { key: "custom", label: "Custom" },
+];
+
+function formatRunCount(runs: number): string {
+  return runs >= 1000 ? `${(runs / 1000).toFixed(1)}K` : String(runs);
 }
 
-function ActivityCategoryBadge({ category }: { category: ActivityCategory }) {
-  return (
-    <Badge
-      variant="outline"
-      className="border-transparent bg-muted text-muted-foreground h-5 min-h-0 px-2 py-0 text-[10px] font-normal tracking-tight shrink-0 rounded-md"
-    >
-      {category}
-    </Badge>
-  );
+function formatCostSaved(costSavedK: number): string {
+  return `$${costSavedK.toFixed(1)}K`;
 }
 
-function ActivityStatusBadge({ status }: { status: ActivityStatus }) {
-  const label = statusLabel(status);
-  if (status === "warning") {
-    return (
-      <Badge
-        variant="outline"
-        className="border-transparent h-5 min-h-0 bg-amber-100 text-amber-950 dark:bg-amber-950/40 dark:text-amber-200 px-2 py-0 text-[10px] font-normal shrink-0 rounded-md"
-      >
-        {label}
-      </Badge>
-    );
-  }
-  if (status === "error") {
-    return (
-      <Badge
-        variant="destructive"
-        className="h-5 min-h-0 px-2 py-0 text-[10px] font-normal shrink-0 rounded-md"
-      >
-        {label}
-      </Badge>
-    );
-  }
-  return (
-    <Badge
-      variant="outline"
-      className="border-transparent bg-muted text-muted-foreground h-5 min-h-0 px-2 py-0 text-[10px] font-normal shrink-0 rounded-md"
-    >
-      {label}
-    </Badge>
-  );
+function getRunningInstanceLabel(queueLabel: string): string {
+  const matchedCount = queueLabel.match(/\d+/);
+  if (!matchedCount) return "Running";
+  const count = Number.parseInt(matchedCount[0], 10);
+  if (!Number.isFinite(count) || count <= 0) return "Running";
+  return `${count} Running`;
 }
 
-/* ─── Confidence Meter ─── */
-function ConfidenceMeter({ value }: { value: number }) {
-  const pct = Math.round(value * 100);
-  const color = pct >= 80 ? "#4caf50" : pct >= 50 ? "#F59E0B" : "#ef5350";
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 h-[4px] bg-[#f0f1f5] dark:bg-muted rounded-full overflow-hidden">
-        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color }} />
-      </div>
-      <span className="text-[12px] tabular-nums" style={{ fontWeight: 400, color }}>{pct}%</span>
-    </div>
-  );
-}
+const AGENT_RUNNING_PILL_CLASS = "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400";
 
-/* ═══════════════════════════════════════════
-   Inspection Panel (Right Side)
-   ═══════════════════════════════════════════ */
-function StarRating({ rating }: { rating: number }) {
-  return (
-    <span className="flex items-center gap-0.5">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Star
-          key={i}
-          className={cn("w-2.5 h-2.5", i < rating ? "fill-amber-400 text-amber-400" : "text-[#ddd] dark:text-[#444]")}
-        />
-      ))}
-    </span>
-  );
-}
-
-function InspectionPanel({ activity, onClose, onNavigateToReviews }: {
-  activity: MonitorActivity;
-  onClose: () => void;
-  onNavigateToReviews?: () => void;
+export function MetricCard({
+  value,
+  label,
+  delta,
+  tooltip,
+  deltaVariant = "positive",
+  valueVariant = "default",
+}: {
+  value: string;
+  label: string;
+  delta?: string;
+  tooltip?: string;
+  deltaVariant?: "positive" | "negative";
+  valueVariant?: "default" | "destructive";
 }) {
-  const [explainOpen, setExplainOpen] = useState(false);
-
   return (
-    <div className="flex-1 min-w-0 bg-white dark:bg-background flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center justify-end px-5 py-3.5 shrink-0">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="shrink-0 rounded-[4px] text-[#999] dark:text-muted-foreground"
-          aria-label="Close activity details"
+    <div className="flex flex-col rounded-lg border border-border bg-card p-4">
+      <div className="flex items-baseline gap-1">
+        <p
+          className={cn(
+            "font-medium tabular-nums tracking-[-0.48px] text-[24px] leading-[36px]",
+            valueVariant === "destructive" ? "text-destructive" : "text-foreground",
+          )}
         >
-          <X className="w-3.5 h-3.5" />
-        </Button>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
-
-        {/* Summary */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <ActivityCategoryBadge category={activity.category} />
-            <ActivityStatusBadge status={activity.status} />
-          </div>
-          <p className="text-[14px] text-[#212121] dark:text-foreground tracking-[-0.28px]" style={{ fontWeight: 400 }}>
-            {activity.agentName}
-          </p>
-          <p className="text-[13px] text-[#555] dark:text-muted-foreground" style={{ fontWeight: 300 }}>
-            {activity.action}
-          </p>
-          {activity.detail && (
-            <p className="text-[11px] text-[#999] dark:text-muted-foreground" style={{ fontWeight: 300 }}>{activity.detail}</p>
-          )}
-        </div>
-
-        {/* Conversation Timeline */}
-        {activity.timeline && activity.timeline.length > 0 && (
-          <div>
-            <h4 className="text-[12px] text-[#888] dark:text-muted-foreground mb-3 tracking-[-0.24px]" style={{ fontWeight: 400 }}>Timeline</h4>
-            <div className="relative pl-4">
-              {/* Vertical line */}
-              <div className="absolute left-[5px] top-1 bottom-1 w-px bg-[#E5E7EB] dark:bg-muted" />
-              <div className="space-y-3">
-                {activity.timeline.map((step, i) => (
-                  <div key={i} className="relative">
-                    {/* Dot */}
-                    <div className={`absolute -left-4 top-[5px] w-[10px] h-[10px] rounded-full border-2 ${
-                      i === activity.timeline!.length - 1
-                        ? "border-[#2552ED] bg-[#2552ED]"
-                        : "border-[#E5E7EB] dark:border-[#4d5568] bg-white dark:bg-background"
-                    }`} />
-                    <div>
-                      <span className="text-[10px] text-[#999] dark:text-muted-foreground tabular-nums" style={{ fontWeight: 300 }}>{step.time}</span>
-                      <p className="text-[12px] text-[#212121] dark:text-foreground mt-0.5" style={{ fontWeight: 400 }}>{step.label}</p>
-                      {step.detail && (
-                        <p className="text-[11px] text-[#777] dark:text-muted-foreground mt-0.5 italic" style={{ fontWeight: 300 }}>{step.detail}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Agent Reasoning */}
-        {activity.reasoning && (
-          <div>
-            <h4 className="text-[12px] text-[#888] dark:text-muted-foreground mb-2 tracking-[-0.24px]" style={{ fontWeight: 400 }}>Agent reasoning</h4>
-            <div className="bg-[#f8f9fa] dark:bg-[#1a1e26] border border-[#E5E7EB] dark:border-border rounded-[8px] px-4 py-3 space-y-2">
-              {activity.reasoning.sentiment && (
-                <div className="flex justify-between">
-                  <span className="text-[11px] text-[#888] dark:text-muted-foreground" style={{ fontWeight: 400 }}>Sentiment</span>
-                  <span className="text-[11px] text-[#212121] dark:text-foreground" style={{ fontWeight: 400 }}>{activity.reasoning.sentiment}</span>
-                </div>
-              )}
-              {activity.reasoning.topic && (
-                <div className="flex justify-between">
-                  <span className="text-[11px] text-[#888] dark:text-muted-foreground" style={{ fontWeight: 400 }}>Topic detected</span>
-                  <span className="text-[11px] text-[#212121] dark:text-foreground" style={{ fontWeight: 400 }}>{activity.reasoning.topic}</span>
-                </div>
-              )}
-              {activity.reasoning.customerHistory && (
-                <div className="flex justify-between">
-                  <span className="text-[11px] text-[#888] dark:text-muted-foreground" style={{ fontWeight: 400 }}>Customer history</span>
-                  <span className="text-[11px] text-[#212121] dark:text-foreground" style={{ fontWeight: 400 }}>{activity.reasoning.customerHistory}</span>
-                </div>
-              )}
-              <div className="pt-1">
-                <span className="text-[11px] text-[#888] dark:text-muted-foreground block mb-1" style={{ fontWeight: 400 }}>Confidence score</span>
-                <ConfidenceMeter value={activity.reasoning.confidence} />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Draft Preview */}
-        {activity.hasDraft && activity.draftText && (
-          <div>
-            <h4 className="text-[12px] text-[#888] dark:text-muted-foreground mb-2 tracking-[-0.24px]" style={{ fontWeight: 400 }}>Response draft</h4>
-            <div className="bg-[#fffbf0] dark:bg-[#2a2618] border border-[#f0e6c8] dark:border-[#4a3f20] rounded-[8px] px-4 py-3">
-              <p className="text-[12px] text-[#555] dark:text-muted-foreground italic" style={{ fontWeight: 300 }}>
-                "{activity.draftText}"
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Linked Review */}
-        {activity.reviewLink && (
-          <div>
-            <h4 className="text-[12px] text-[#888] dark:text-muted-foreground mb-2 tracking-[-0.24px]" style={{ fontWeight: 400 }}>
-              Linked review
-            </h4>
-            <div className="border border-[#E5E7EB] dark:border-border rounded-[8px] overflow-hidden">
-              {/* Review content */}
-              <div className="px-4 py-3 space-y-2 bg-[#f8f9fa] dark:bg-[#1a1e26]">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] px-1.5 py-0.5 bg-[#e8f0fe] text-[#2552ED] dark:bg-[#1e2d5e] dark:text-[#6b9bff] rounded-[3px] font-medium">
-                    {activity.reviewLink.platform}
-                  </span>
-                  <StarRating rating={activity.reviewLink.rating} />
-                </div>
-                <p className="text-[11px] text-[#555] dark:text-muted-foreground italic" style={{ fontWeight: 300 }}>
-                  "{activity.reviewLink.reviewText}"
-                </p>
-              </div>
-              {/* Generated response */}
-              <div className="px-4 py-3 border-t border-[#E5E7EB] dark:border-border bg-white dark:bg-background space-y-1.5">
-                <p className="text-[10px] text-[#888] dark:text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 400 }}>
-                  {activity.status === "warning" ? "Drafted response" : "Response sent"}
-                </p>
-                <p className="text-[11px] text-[#212121] dark:text-foreground" style={{ fontWeight: 300 }}>
-                  "{activity.reviewLink.generatedResponse}"
-                </p>
-              </div>
-              {/* Navigate link */}
-              {onNavigateToReviews && (
-                <button
-                  onClick={onNavigateToReviews}
-                  className="w-full flex items-center justify-between px-4 py-2.5 border-t border-[#E5E7EB] dark:border-border bg-white dark:bg-background hover:bg-[#f0f4ff] dark:hover:bg-[#1a2040] transition-colors group"
-                >
-                  <span className="text-[11px] text-[#2552ED] dark:text-[#6b9bff]" style={{ fontWeight: 400 }}>
-                    View in Reviews
-                  </span>
-                  <ArrowRight className="w-3 h-3 text-[#2552ED] dark:text-[#6b9bff] group-hover:translate-x-0.5 transition-transform" />
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* AI Explain */}
-        <div>
-          <button
-            onClick={() => setExplainOpen(!explainOpen)}
-            className="flex items-center gap-1.5 text-[12px] text-[#2552ED] dark:text-[#6b9bff] hover:underline transition-colors"
-            style={{ fontWeight: 400 }}
+          {value}
+        </p>
+        {delta ? (
+          <p
+            className={cn(
+              "font-medium text-[12px] leading-[18px]",
+              deltaVariant === "positive" ? "text-emerald-600" : "text-destructive",
+            )}
           >
-            <Sparkles className="w-3 h-3" />
-            Explain this activity
-          </button>
-          {explainOpen && (
-            <div className="mt-2 bg-[#f0f4ff] dark:bg-[#1a2040] border border-[#d0dbf8] dark:border-[#2e3a5e] rounded-[8px] px-4 py-3 space-y-1">
-              {activity.status === "success" && activity.reasoning && activity.reasoning.confidence >= 0.85 && (
-                <>
-                  <p className="text-[11px] text-[#555] dark:text-muted-foreground" style={{ fontWeight: 300 }}>This action was auto-approved because:</p>
-                  <ul className="text-[11px] text-[#555] dark:text-muted-foreground list-disc pl-4 space-y-0.5" style={{ fontWeight: 300 }}>
-                    {activity.reasoning.sentiment && <li>Sentiment was {activity.reasoning.sentiment.toLowerCase()}</li>}
-                    <li>Response confidence {">"} 0.85 ({Math.round(activity.reasoning.confidence * 100)}%)</li>
-                    <li>Auto-reply policy enabled for this agent</li>
-                  </ul>
-                </>
-              )}
-              {activity.status === "warning" && (
-                <>
-                  <p className="text-[11px] text-[#555] dark:text-muted-foreground" style={{ fontWeight: 300 }}>This action was flagged for review because:</p>
-                  <ul className="text-[11px] text-[#555] dark:text-muted-foreground list-disc pl-4 space-y-0.5" style={{ fontWeight: 300 }}>
-                    <li>Confidence score below auto-approval threshold</li>
-                    {activity.reasoning && <li>Current confidence: {Math.round(activity.reasoning.confidence * 100)}%</li>}
-                    <li>Human review required per policy</li>
-                  </ul>
-                </>
-              )}
-              {activity.status === "error" && (
-                <>
-                  <p className="text-[11px] text-[#555] dark:text-muted-foreground" style={{ fontWeight: 300 }}>This action failed because:</p>
-                  <ul className="text-[11px] text-[#555] dark:text-muted-foreground list-disc pl-4 space-y-0.5" style={{ fontWeight: 300 }}>
-                    <li>External API returned an authentication error</li>
-                    <li>Retry attempts exhausted</li>
-                    <li>Manual intervention is required to resolve</li>
-                  </ul>
-                </>
-              )}
-              {activity.status === "success" && activity.reasoning && activity.reasoning.confidence < 0.85 && (
-                <p className="text-[11px] text-[#555] dark:text-muted-foreground" style={{ fontWeight: 300 }}>
-                  This action completed successfully. The agent processed the task according to its configured workflow rules.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+            {delta}
+          </p>
+        ) : null}
       </div>
-
-      {/* Intervention Controls */}
-      <div className="px-5 py-3 shrink-0">
-        {activity.status === "warning" && activity.hasDraft ? (
-          <div className="flex items-center gap-2">
-            <button className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[12px] text-[#212121] dark:text-foreground border border-[#e5e9f0] dark:border-border rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-muted transition-colors" style={{ fontWeight: 400 }}>
-              <Pencil className="w-3 h-3" />
-              Edit
+      <div className="mt-2 flex items-center gap-1">
+        <p className="text-[13px] leading-[18px] text-muted-foreground">{label}</p>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button type="button" className="flex items-center text-muted-foreground hover:text-foreground transition-colors">
+              <Info className="h-4 w-4 shrink-0" strokeWidth={1.6} absoluteStrokeWidth />
             </button>
-            <button className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[12px] text-white bg-[#4caf50] hover:bg-[#43a047] rounded-[8px] transition-colors" style={{ fontWeight: 400 }}>
-              <CheckCircle2 className="w-3 h-3" />
-              Approve
-            </button>
-          </div>
-        ) : activity.status === "error" ? (
-          <div className="flex items-center gap-2">
-            <button className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[12px] text-[#212121] dark:text-foreground border border-[#e5e9f0] dark:border-border rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-muted transition-colors" style={{ fontWeight: 400 }}>
-              <RotateCcw className="w-3 h-3" />
-              Retry
-            </button>
-            <button className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[12px] text-[#212121] dark:text-foreground border border-[#e5e9f0] dark:border-border rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-muted transition-colors" style={{ fontWeight: 400 }}>
-              <UserCheck className="w-3 h-3" />
-              Escalate
-            </button>
-          </div>
-        ) : activity.status === "warning" ? (
-          <div className="flex items-center gap-2">
-            <button className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[12px] text-[#212121] dark:text-foreground border border-[#e5e9f0] dark:border-border rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-muted transition-colors" style={{ fontWeight: 400 }}>
-              <UserCheck className="w-3 h-3" />
-              Escalate
-            </button>
-            <button className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[12px] text-white bg-[#4caf50] hover:bg-[#43a047] rounded-[8px] transition-colors" style={{ fontWeight: 400 }}>
-              <CheckCircle2 className="w-3 h-3" />
-              Approve
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <button className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[12px] text-[#212121] dark:text-foreground border border-[#e5e9f0] dark:border-border rounded-[8px] hover:bg-[#f5f5f5] dark:hover:bg-muted transition-colors" style={{ fontWeight: 400 }}>
-              <PauseCircle className="w-3 h-3" />
-              Pause agent
-            </button>
-          </div>
-        )}
+          </TooltipTrigger>
+          {tooltip ? <TooltipContent side="top" className="max-w-[140px] text-left text-balance">{tooltip}</TooltipContent> : null}
+        </Tooltip>
       </div>
     </div>
   );
 }
 
+function AgentDirectoryCard({
+  agent,
+  isCustomOrder,
+  isDragging,
+}: {
+  agent: AgentDirectoryItem;
+  isCustomOrder: boolean;
+  isDragging: boolean;
+}) {
+  const isRunning = agent.runState === "running";
+
+  return (
+    <article
+      className={cn(
+        "group flex flex-col gap-4 rounded-xl border bg-card p-5 transition-colors hover:bg-muted/20",
+        "border-border",
+        isDragging && "opacity-60",
+      )}
+    >
+      {/* Header */}
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-muted-foreground">{agent.product}</p>
+          <button
+            type="button"
+            className="mt-0.5 block w-full truncate text-left text-[15px] font-medium text-foreground transition-colors group-hover:text-primary"
+          >
+            {agent.name}
+          </button>
+        </div>
+        <div className="ml-auto flex shrink-0 items-center justify-end gap-1.5">
+          {isCustomOrder ? (
+            <button type="button" className="rounded-md p-1 text-muted-foreground hover:bg-muted" title="Drag to reorder">
+              <GripVertical className="size-4" strokeWidth={1.6} absoluteStrokeWidth />
+            </button>
+          ) : null}
+          <button type="button" className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted hover:text-foreground">
+            <MoreHorizontal className="size-4" strokeWidth={1.6} absoluteStrokeWidth />
+          </button>
+          <Badge
+            variant="outline"
+            className={cn("tabular-nums", AGENT_RUNNING_PILL_CLASS)}
+          >
+            {isRunning ? getRunningInstanceLabel(agent.queueLabel) : "Running"}
+          </Badge>
+        </div>
+      </div>
+      <p className="truncate text-xs leading-[18px] text-muted-foreground">{agent.description}</p>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { value: formatRunCount(agent.runs), label: agent.firstMetricLabel },
+          { value: `${agent.timeSavedHours}h`, label: "Time saved" },
+          { value: formatCostSaved(agent.costSavedK), label: "Cost saved" },
+        ].map(({ value, label }) => (
+          <div key={label} className="flex flex-col gap-0.5">
+            <p className="text-[13px] font-medium text-foreground tabular-nums">{value}</p>
+            <p className="text-xs text-muted-foreground">{label}</p>
+          </div>
+        ))}
+      </div>
+
+      {isRunning ? (
+        <div className="rounded-lg bg-muted/45 px-3 py-2">
+          <p className="text-xs text-muted-foreground">{agent.queueLabel}</p>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between gap-2 rounded-lg bg-destructive/6 px-3 py-2">
+          <p className="text-xs text-destructive/85">{agent.queueLabel}</p>
+          <button type="button" className="shrink-0 text-xs font-medium text-primary hover:underline">
+            Show details
+          </button>
+        </div>
+      )}
+    </article>
+  );
+}
+
+function AgentDirectoryListTable({ agents }: { agents: AgentDirectoryItem[] }) {
+  return (
+    <div className="min-w-0 overflow-hidden bg-background">
+      <div className="grid grid-cols-[minmax(300px,2.3fr)_minmax(190px,1.25fr)_120px_120px_120px] items-center border-b border-border px-3 py-2 text-xs text-muted-foreground">
+        <p className="px-1">Agent</p>
+        <p className="px-1">Product</p>
+        <p className="px-1 text-right">Tasks</p>
+        <p className="px-1 text-right">Time saved</p>
+        <p className="px-1 text-right">Cost saved</p>
+      </div>
+      {agents.map((agent, index) => (
+        <div
+          key={agent.id}
+          className={cn(
+            "group grid grid-cols-[minmax(300px,2.3fr)_minmax(190px,1.25fr)_120px_120px_120px] items-center px-3 py-2.5 transition-colors hover:bg-muted/30",
+            index !== agents.length - 1 && "border-b border-border",
+          )}
+        >
+          <div className="min-w-0 px-1">
+            <p className="truncate text-[13px] text-foreground transition-colors group-hover:text-primary">{agent.name}</p>
+            <p className="truncate text-xs text-muted-foreground">{agent.description}</p>
+          </div>
+          <p className="truncate px-1 text-[13px] text-muted-foreground">{agent.product}</p>
+          <p className="px-1 text-right text-[13px] tabular-nums text-foreground">{formatRunCount(agent.runs)}</p>
+          <p className="px-1 text-right text-[13px] tabular-nums text-foreground">{agent.timeSavedHours}h</p>
+          <p className="px-1 text-right text-[13px] tabular-nums text-emerald-600">{formatCostSaved(agent.costSavedK)}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════
-   Monitor View
+   Agents landing (L1 → Agents)
    ═══════════════════════════════════════════ */
 
 const DEFAULT_MONITOR_USER_DISPLAY_NAME = "John";
@@ -412,7 +273,6 @@ const DEFAULT_MONITOR_USER_DISPLAY_NAME = "John";
 export type AgentsMonitorViewProps = {
   onBack: () => void;
   onNavigateToReviews?: () => void;
-  /** First name or short name for the greeting row (demo default matches shell profile). */
   userDisplayName?: string;
 };
 
@@ -422,309 +282,373 @@ export function AgentsMonitorView({
   userDisplayName = DEFAULT_MONITOR_USER_DISPLAY_NAME,
 }: AgentsMonitorViewProps) {
   void onBack;
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [appliedFilters, setAppliedFilters] = useState(() =>
-    createInitialAgentsMonitorFilters(),
+  void onNavigateToReviews;
+  void userDisplayName;
+  const [agentFilter, setAgentFilter] = useState<AgentFilterKey>("all");
+  const [timeRange, setTimeRange] = useState<TimeRangeKey>("last-week");
+  const [sortMode, setSortMode] = usePersistedState<SortMode>("agents:directory:sort-mode", "performance");
+  const [viewMode, setViewMode] = usePersistedState<ViewMode>("agents:directory:view-mode", "grid");
+  const [sortMenuOpen, setSortMenuOpen] = useState(false);
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [customOrder, setCustomOrder] = usePersistedState<string[]>(
+    "agents:directory:custom-order",
+    AGENT_DIRECTORY.map((agent) => agent.id),
   );
-  const [searchExpanded, setSearchExpanded] = useState(false);
 
-  const { selectedActivityId, setSelectedActivityId } = useMonitorNotifications();
+  const orderIndex = useMemo(() => {
+    const map = new Map<string, number>();
+    customOrder.forEach((id, idx) => map.set(id, idx));
+    return map;
+  }, [customOrder]);
 
-  /** On landing with no selection (e.g. from L2 Monitor), highlight the top feed row and open the details pane. Preserve ID when coming from notifications. */
-  useEffect(() => {
-    setSelectedActivityId(prev => (prev == null ? monitorActivities[0]?.id ?? null : prev));
-  }, [setSelectedActivityId]);
+  const filteredAgents = useMemo(() => {
+    const base = AGENT_DIRECTORY;
 
-  const selectedActivity = useMemo((): MonitorActivity | null => {
-    if (!selectedActivityId) return null;
-    return monitorActivities.find(a => a.id === selectedActivityId) ?? null;
-  }, [selectedActivityId]);
+    if (sortMode === "custom") {
+      return [...base].sort((a, b) => {
+        const aIdx = orderIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+        const bIdx = orderIndex.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+        if (aIdx === bIdx) return b.runs - a.runs;
+        return aIdx - bIdx;
+      });
+    }
 
-  /* ── Resizable pane state ── */
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dividerPos, setDividerPos] = useState<number | null>(null);
-  const [isResizing, setIsResizing] = useState(false);
-  const isDragging = useRef(false);
-  const startX = useRef(0);
-  const startPos = useRef(0);
+    if (sortMode === "performance") {
+      return [...base].sort((a, b) => b.runs - a.runs);
+    }
 
-  const MIN_LEFT = 320;
-  const MIN_RIGHT = 300;
+    return [...base].sort((a, b) => {
+      const personaRank = PERSONA_ORDER.indexOf(a.persona) - PERSONA_ORDER.indexOf(b.persona);
+      if (personaRank !== 0) return personaRank;
+      return b.runs - a.runs;
+    });
+  }, [sortMode, orderIndex]);
 
-  /** When a row is selected and there is no explicit split yet (or reset via double-click), default list ≈⅓ width. */
-  useLayoutEffect(() => {
-    if (!selectedActivity || dividerPos !== null) return;
-    const container = containerRef.current;
-    if (!container) return;
-    const apply = () => {
-      const w = container.getBoundingClientRect().width;
-      if (w <= 0) return;
-      const target = Math.round(w * DEFAULT_ACTIVITY_LIST_FRACTION);
-      setDividerPos(clampActivityListDividerLeft(w, target, MIN_LEFT, MIN_RIGHT));
+  const groupedByPersona = useMemo(() => {
+    const buckets: Record<Persona, AgentDirectoryItem[]> = {
+      "Marketing persona": [],
+      "Operations persona": [],
+      "Customer experience": [],
     };
-    apply();
-    const id = requestAnimationFrame(apply);
-    return () => cancelAnimationFrame(id);
-  }, [selectedActivity, dividerPos]);
+    filteredAgents.forEach((agent) => buckets[agent.persona].push(agent));
+    return buckets;
+  }, [filteredAgents]);
 
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    e.preventDefault();
-    isDragging.current = true;
-    setIsResizing(true);
-    startX.current = e.clientX;
-    const container = containerRef.current;
-    if (!container) return;
-    const containerRect = container.getBoundingClientRect();
-    const w = containerRect.width;
-    const fallback = clampActivityListDividerLeft(
-      w,
-      Math.round(w * DEFAULT_ACTIVITY_LIST_FRACTION),
-      MIN_LEFT,
-      MIN_RIGHT,
-    );
-    startPos.current = dividerPos ?? fallback;
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  }, [dividerPos]);
-
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!isDragging.current || !containerRef.current) return;
-    const containerRect = containerRef.current.getBoundingClientRect();
-    const maxLeft = containerRect.width - MIN_RIGHT;
-    const delta = e.clientX - startX.current;
-    const newPos = Math.min(maxLeft, Math.max(MIN_LEFT, startPos.current + delta));
-    setDividerPos(newPos);
+  const filterCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: AGENT_DIRECTORY.length };
+    for (const opt of AGENT_FILTER_OPTIONS) {
+      if (opt.key !== "all") {
+        counts[opt.key] = AGENT_DIRECTORY.filter((a) => a.product === opt.key).length;
+      }
+    }
+    return counts;
   }, []);
 
-  const handlePointerUp = useCallback(() => {
-    isDragging.current = false;
-    setIsResizing(false);
+  const metrics = useMemo(() => {
+    const running = AGENT_DIRECTORY.filter((item) => item.runState === "running").length;
+    const totalHours = AGENT_DIRECTORY.reduce((sum, item) => sum + item.timeSavedHours, 0);
+    const totalCost = AGENT_DIRECTORY.reduce((sum, item) => sum + item.costSavedK, 0);
+    const attention = AGENT_DIRECTORY.filter((item) => item.runState === "needs_attention").length;
+    return {
+      running,
+      totalHours,
+      totalCost,
+      attention,
+    };
   }, []);
 
-  const handleDoubleClick = useCallback(() => {
-    setDividerPos(null);
-  }, []);
-
-  const agentFilter =
-    filterValue(appliedFilters, AGENTS_MONITOR_FILTER_IDS.agent) ?? "All agents";
-  const statusFilter =
-    filterValue(appliedFilters, AGENTS_MONITOR_FILTER_IDS.status) ?? "All statuses";
-  const categoryFilter =
-    filterValue(appliedFilters, AGENTS_MONITOR_FILTER_IDS.category) ??
-    "All categories";
-
-  const filteredActivities = monitorActivities.filter((a) => {
-    if (
-      searchQuery &&
-      !a.action.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !a.agentName.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-      return false;
-    if (agentFilter !== "All agents" && a.agentName !== agentFilter) return false;
-    if (statusFilter === "Success" && a.status !== "success") return false;
-    if (statusFilter === "Needs review" && a.status !== "warning") return false;
-    if (statusFilter === "Failed" && a.status !== "error") return false;
-    if (statusFilter === "Processing" && a.status !== "processing") return false;
-    if (categoryFilter !== "All categories" && a.category !== categoryFilter)
-      return false;
-    return true;
-  });
+  const reorderCustomOrder = (sourceId: string, targetId: string) => {
+    setCustomOrder((prev) => {
+      const next = [...prev];
+      const from = next.indexOf(sourceId);
+      const to = next.indexOf(targetId);
+      if (from < 0 || to < 0 || from === to) return prev;
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-app-shell-gutter transition-colors duration-300">
-      {/* ─── Greeting + hero (metrics) ─── */}
-      <div className="flex shrink-0 flex-col gap-6 px-6 pb-0 pt-5">
+    <div className="flex flex-1 flex-col overflow-y-auto bg-background">
+      <div className="sticky top-0 z-10 bg-background">
         <MainCanvasViewHeader
-          title="Monitor"
+          title="Agents"
+          description="Manage and monitor AI agents across your business."
           actions={
             <div className="flex flex-wrap items-center justify-end gap-2">
-              {searchExpanded ? (
-                <div className="flex w-[220px] min-w-0 items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 transition-all">
-                  <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  <input
-                    autoFocus
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onBlur={() => {
-                      if (!searchQuery) setSearchExpanded(false);
-                    }}
-                    placeholder="Search activities..."
-                    className="min-w-0 flex-1 bg-transparent text-[13px] text-foreground outline-none placeholder:text-muted-foreground"
-                    style={{ fontWeight: 400 }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setSearchExpanded(false);
-                    }}
-                    className="shrink-0"
-                  >
-                    <X className="h-3 w-3 text-muted-foreground" />
-                  </button>
-                </div>
-              ) : (
-                <Button
-                  type="button"
-                  onClick={() => setSearchExpanded(true)}
-                  variant="outline"
-                  size="icon"
+              {/* Agent filter */}
+              <Popover>
+                <PopoverTrigger className={cn(buttonVariants({ variant: "outline" }), "h-9 rounded-lg text-sm")}>
+                  {AGENT_FILTER_OPTIONS.find((o) => o.key === agentFilter)?.label ?? "All agents"}
+                  <ChevronDown className="ml-1 h-4 w-4" strokeWidth={1.6} absoluteStrokeWidth />
+                </PopoverTrigger>
+                <PopoverContent
+                  align="end"
+                  className={cn(
+                    FLOATING_PANEL_LIST_PADDING_CLASSNAME,
+                    "w-[260px] p-2 data-[state=open]:duration-150 data-[state=closed]:duration-150",
+                  )}
                 >
-                  <Search className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              )}
-              <FilterPaneTriggerButton
-                open={filterOpen}
-                onOpenChange={setFilterOpen}
-              />
-            </div>
-          }
-        />
-
-        <div className={cn("rounded-xl p-6", L2_CONTENT_MUTED_BAND)}>
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
-            <div className="min-w-0 max-w-md shrink-0 space-y-2">
-              <p className="text-base text-foreground/80" style={{ fontWeight: 300 }}>
-                Hi, {userDisplayName}!
-              </p>
-              <p className="text-sm text-muted-foreground" style={{ fontWeight: 400 }}>
-                Track what your agents did today, spot items that need review, and dig into each run from one place.
-              </p>
-            </div>
-            <div className="grid min-w-0 flex-1 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {monitorMetrics.map((m) => (
-                <div
-                  key={m.label}
-                  className="rounded-lg border border-border bg-card px-6 py-4 transition-colors"
-                >
-                  <div className="mb-1 flex items-baseline gap-2">
-                    <p className="text-2xl tabular-nums tracking-tight text-foreground" style={{ fontWeight: 400 }}>
-                      {m.value}
-                    </p>
-                    <m.icon className="h-4 w-4 self-center" style={{ color: m.color }} />
-                  </div>
-                  <span className="text-xs text-muted-foreground" style={{ fontWeight: 400 }}>
-                    {m.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ─── Feed / details + right filter pane ─── */}
-      <div className="flex min-h-0 flex-1 flex-row overflow-hidden">
-        <div
-          className={`flex min-h-0 flex-1 overflow-hidden ${isResizing ? "select-none" : ""}`}
-          ref={containerRef}
-        >
-        {/* Activity Feed (Left) */}
-        <div
-          className="overflow-y-auto min-w-0"
-          style={
-            selectedActivity && dividerPos !== null
-              ? { width: `${dividerPos}px`, flexShrink: 0 }
-              : { flex: 1 }
-          }
-        >
-          <div className="px-6 pt-4 pb-4">
-            <div className="rounded-lg p-2">
-              {filteredActivities.map((item) => {
-                const isSelected = selectedActivity?.id === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setSelectedActivityId(isSelected ? null : item.id)}
-                    className={cn(
-                      "group w-full flex cursor-pointer items-start gap-2 rounded-[4px] px-2 py-4 text-left",
-                      "transition-colors duration-200",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E44CC]/40 focus-visible:ring-offset-1 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#13161b]",
-                    )}
-                  >
-                    <span
-                      className="text-[11px] text-[#999] dark:text-muted-foreground whitespace-nowrap mt-0.5 w-[65px] shrink-0 tabular-nums"
-                      style={{ fontWeight: 300 }}
-                    >
-                      {item.time}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                  {AGENT_FILTER_OPTIONS.map((opt) => {
+                    const count = filterCounts[opt.key] ?? 0;
+                    const active = agentFilter === opt.key;
+                    return (
+                      <button
+                        key={opt.key}
+                        type="button"
+                        onClick={() => setAgentFilter(opt.key)}
+                        className={cn(
+                          "flex w-full items-center justify-between rounded-lg px-4 py-2 text-left text-[13px] transition-colors duration-150",
+                          active ? "bg-muted text-foreground" : "text-foreground hover:bg-muted",
+                        )}
+                      >
+                        <span className="min-w-0 truncate pr-3">
+                          <span className="truncate">{opt.label}</span>
+                        </span>
                         <span
                           className={cn(
-                            "text-[13px] transition-colors duration-200",
-                            isSelected
-                              ? ACTIVITY_ROW_TITLE_SELECTED
-                              : "text-[#212121] dark:text-foreground group-hover:text-[#1E44CC] dark:group-hover:text-[#6b9bff] group-focus-visible:text-[#1E44CC] dark:group-focus-visible:text-[#6b9bff]",
+                            "min-w-[24px] rounded-md px-1.5 py-0.5 text-center text-xs tabular-nums",
+                            active
+                              ? "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400"
+                              : "bg-slate-50 text-slate-600 dark:bg-slate-800/40 dark:text-slate-400",
                           )}
-                          style={{ fontWeight: 400 }}
                         >
-                          {item.agentName}
+                          {count}
                         </span>
-                        <ActivityCategoryBadge category={item.category} />
-                        <ActivityStatusBadge status={item.status} />
-                      </div>
-                      <span className="text-[13px] text-[#555] dark:text-muted-foreground block" style={{ fontWeight: 300 }}>
-                        {item.action}
-                      </span>
-                      {item.detail && (
-                        <p className="text-[11px] text-[#999] dark:text-muted-foreground mt-0.5" style={{ fontWeight: 300 }}>
-                          {item.detail}
-                        </p>
+                      </button>
+                    );
+                  })}
+                </PopoverContent>
+              </Popover>
+
+              {/* Time range */}
+              <Popover>
+                <PopoverTrigger className={cn(buttonVariants({ variant: "outline" }), "h-9 rounded-lg text-sm")}>
+                  {TIME_RANGE_OPTIONS.find((o) => o.key === timeRange)?.label ?? "Last week"}
+                  <ChevronDown className="ml-1 h-4 w-4" strokeWidth={1.6} absoluteStrokeWidth />
+                </PopoverTrigger>
+                <PopoverContent
+                  align="end"
+                  className={cn(
+                    FLOATING_PANEL_LIST_PADDING_CLASSNAME,
+                    "w-[200px] p-2 data-[state=open]:duration-150 data-[state=closed]:duration-150",
+                  )}
+                >
+                  {TIME_RANGE_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => setTimeRange(opt.key)}
+                      className={cn(
+                        "flex w-full items-center rounded-lg px-4 py-2 text-left text-[13px] transition-colors duration-150",
+                        timeRange === opt.key ? "bg-muted text-foreground" : "text-foreground hover:bg-muted",
                       )}
-                    </div>
-                  </button>
-                );
-              })}
-              {filteredActivities.length === 0 && (
-                <div className="text-center py-12 text-[13px] text-[#999] dark:text-muted-foreground" style={{ fontWeight: 300 }}>No activities match your filters</div>
-              )}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </PopoverContent>
+              </Popover>
+
+              <Button type="button" className="h-9 rounded-lg text-sm">
+                Create agent
+              </Button>
             </div>
-          </div>
-        </div>
-
-        {/* Figma-style resize handle */}
-        {selectedActivity && (
-          <div
-            className="relative shrink-0 group"
-            style={{ width: '9px' }}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onDoubleClick={handleDoubleClick}
-          >
-            {/* Visible line with vertical gradient fade */}
-            <div
-              className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px transition-all duration-150 group-hover:w-[3px] group-hover:rounded-full group-active:w-[3px] group-active:rounded-full"
-              style={{
-                background: "linear-gradient(to bottom, transparent 0%, rgba(229,231,235,0.8) 12%, rgba(229,231,235,1) 25%, rgba(229,231,235,1) 75%, rgba(229,231,235,0.8) 88%, transparent 100%)",
-              }}
-            />
-            {/* Invisible grab area */}
-            <div className="absolute inset-0 cursor-col-resize z-10" />
-          </div>
-        )}
-
-        {/* Inspection Panel (Right) */}
-        {selectedActivity && (
-          <InspectionPanel
-            activity={selectedActivity}
-            onClose={() => setSelectedActivityId(null)}
-            onNavigateToReviews={selectedActivity.reviewLink ? onNavigateToReviews : undefined}
-          />
-        )}
-        </div>
-        <FilterPane
-          initialFilters={appliedFilters}
-          open={filterOpen}
-          onOpenChange={setFilterOpen}
-          onFiltersChange={setAppliedFilters}
-          motion="static"
-          dock="right"
-          storageKey={AGENTS_MONITOR_FILTERS_STORAGE_KEY}
+          }
         />
       </div>
+
+      <div className="grid grid-cols-4 gap-6 px-8 pb-6 pt-2">
+        <MetricCard
+          value={String(metrics.running)}
+          label="Running agents"
+          delta="+2.4%"
+          tooltip="Total agents currently active across all personas"
+        />
+        <MetricCard
+          value={`${metrics.totalHours}h`}
+          label="Time saved"
+          delta="+4.2%"
+          tooltip="Cumulative hours saved through agent automation this period"
+        />
+        <MetricCard
+          value={`$${metrics.totalCost.toFixed(1)}K`}
+          label="Cost saved"
+          delta="+8.1%"
+          tooltip="Estimated cost savings from automated agent runs this period"
+        />
+        <MetricCard
+          value={String(metrics.attention)}
+          label="Needs attention"
+          delta="+1"
+          deltaVariant="negative"
+          valueVariant="destructive"
+          tooltip="Agents requiring manual review or configuration changes"
+        />
+      </div>
+
+      <section className="px-8 pb-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 py-6">
+            <h2 className="text-xl text-foreground">Agent directory</h2>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-9 rounded-lg text-sm"
+                  onClick={() => setSortMenuOpen((prev) => !prev)}
+                >
+                  {sortMode === "performance"
+                    ? "Sort by agent runs"
+                    : sortMode === "persona"
+                      ? "Sort by persona"
+                      : "Sort by custom order"}
+                  <ChevronDown className="ml-1 h-4 w-4" strokeWidth={1.6} absoluteStrokeWidth />
+                </Button>
+                {sortMenuOpen ? (
+                  <div className="absolute right-0 top-11 z-20">
+                    <div className="w-[260px] rounded-xl border border-border bg-popover p-2">
+                    <button
+                      type="button"
+                      className={cn(
+                        "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm",
+                        sortMode === "performance" ? "bg-muted text-foreground" : "hover:bg-muted",
+                      )}
+                      onClick={() => {
+                        setSortMode("performance");
+                        setSortMenuOpen(false);
+                      }}
+                    >
+                      Sort by agent runs
+                      {sortMode === "performance" ? <span className="text-primary">✓</span> : null}
+                    </button>
+                    <button
+                      type="button"
+                      className={cn(
+                        "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm",
+                        sortMode === "persona" ? "bg-primary/10 text-primary" : "hover:bg-muted",
+                      )}
+                      onClick={() => setSortMode("persona")}
+                    >
+                      Sort by persona
+                      <ChevronDown className="h-4 w-4 -rotate-90" strokeWidth={1.6} absoluteStrokeWidth />
+                    </button>
+                    <button
+                      type="button"
+                      className={cn(
+                        "mt-1 flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm",
+                        sortMode === "custom" ? "bg-muted text-foreground" : "hover:bg-muted",
+                      )}
+                      onClick={() => {
+                        setSortMode("custom");
+                        setSortMenuOpen(false);
+                      }}
+                    >
+                      Sort by custom order
+                      {sortMode === "custom" ? <span className="text-primary">✓</span> : null}
+                    </button>
+                    </div>
+                    {sortMode === "persona" ? (
+                      <div className="absolute right-[calc(100%+8px)] top-[54px] w-[340px] rounded-xl border border-border bg-popover p-2">
+                        {PERSONA_SUMMARY.map((entry, index) => (
+                          <div
+                            key={entry.label}
+                            className={cn(
+                              "rounded-lg px-4 py-3",
+                              index === 0 ? "bg-primary/10" : "hover:bg-muted",
+                            )}
+                          >
+                            <p className={cn("text-sm", index === 0 ? "text-primary" : "text-foreground")}>{entry.label}</p>
+                            <p className="text-xs text-muted-foreground">{entry.products}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+              <div className="flex h-9 items-center rounded-lg border border-border bg-background p-1">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("grid")}
+                  className={cn(
+                    "rounded-md p-1.5",
+                    viewMode === "grid" ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted",
+                  )}
+                >
+                  <LayoutGrid className="h-4 w-4" strokeWidth={1.6} absoluteStrokeWidth />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("list")}
+                  className={cn(
+                    "rounded-md p-1.5",
+                    viewMode === "list" ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted",
+                  )}
+                >
+                  <List className="h-4 w-4" strokeWidth={1.6} absoluteStrokeWidth />
+                </button>
+              </div>
+            </div>
+        </div>
+        <div className="pt-2 pb-6">
+            {sortMode === "persona" ? (
+              <div className="space-y-6">
+                {PERSONA_ORDER.map((persona) =>
+                  groupedByPersona[persona].length > 0 ? (
+                    <div key={persona}>
+                      <h3 className="mb-3 text-sm text-muted-foreground">{persona}</h3>
+                      {viewMode === "grid" ? (
+                        <div className="grid grid-cols-3 gap-6 max-lg:grid-cols-2">
+                          {groupedByPersona[persona].map((agent) => (
+                            <div key={agent.id}>
+                              <AgentDirectoryCard agent={agent} isCustomOrder={false} isDragging={false} />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <AgentDirectoryListTable agents={groupedByPersona[persona]} />
+                      )}
+                    </div>
+                  ) : null,
+                )}
+              </div>
+            ) : (
+              viewMode === "grid" ? (
+                <div className="grid grid-cols-3 gap-6 max-lg:grid-cols-2">
+                  {filteredAgents.map((agent) => (
+                    <div
+                      key={agent.id}
+                      draggable={sortMode === "custom"}
+                      onDragStart={() => {
+                        if (sortMode !== "custom") return;
+                        setDraggedId(agent.id);
+                      }}
+                      onDragOver={(event) => {
+                        if (sortMode !== "custom") return;
+                        event.preventDefault();
+                      }}
+                      onDrop={() => {
+                        if (sortMode !== "custom" || !draggedId) return;
+                        reorderCustomOrder(draggedId, agent.id);
+                        setDraggedId(null);
+                      }}
+                    >
+                      <AgentDirectoryCard
+                        agent={agent}
+                        isCustomOrder={sortMode === "custom"}
+                        isDragging={draggedId === agent.id}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <AgentDirectoryListTable agents={filteredAgents} />
+              )
+            )}
+        </div>
+      </section>
     </div>
   );
 }

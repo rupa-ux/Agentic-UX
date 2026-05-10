@@ -46,6 +46,15 @@ export const AgentsMonitorPersonalized: Story = {
   render: (args) => <MonitorShell userDisplayName={args.userDisplayName} />,
 };
 
+export const AgentsMonitorAeroGrid: Story = {
+  name: "Agents monitor — Aero grid",
+  args: {
+    userDisplayName: "John",
+  },
+  argTypes: AgentsMonitor.argTypes,
+  render: (args) => <MonitorShell userDisplayName={args.userDisplayName} />,
+};
+
 export const AgentsBuilder: Story = {
   render: () => (
     <div className={`h-screen flex flex-col min-h-0 overflow-hidden ${APP_SHELL_GUTTER_SURFACE_CLASS}`}>

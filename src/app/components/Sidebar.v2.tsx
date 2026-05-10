@@ -300,7 +300,14 @@ export function IconStrip({
     setActiveIcon(label);
     if (label === "Overview") onViewChange("business-overview");
     else if (label === "Agents") onViewChange("agents-monitor");
-    else if (label === "Reviews") onViewChange("reviews");
+    else if (label === "Reviews") {
+      try {
+        sessionStorage.setItem("nav:l2:reviews", JSON.stringify("Human actions/View all reviews"));
+      } catch {
+        // Ignore storage write failures and continue navigation.
+      }
+      onViewChange("reviews");
+    }
     else if (label === "Social") onViewChange("social");
     else if (label === "Referrals") onViewChange("referrals");
     else if (label === "Contacts") onViewChange("contacts");
@@ -1104,62 +1111,62 @@ export function L2NavPanel({ currentView: _currentView, onViewChange }: L2NavPan
 
 const reviewsConfig = {
   headerAction: { label: "Send a review request" },
-  defaultExpandedSections: ["Actions"],
+  defaultExpandedSections: ["Human actions"],
   sections: [
     {
-      label: "Actions",
+      label: "Human actions",
       children: [
         "View all reviews",
+        "Generate review",
         "Respond to reviews",
-        "Approve replies",
-        "Fix rejected replies",
-        "View scheduled replies",
-        "Fix failed replies",
+        "Approve campaigns",
+        "Monitor agent replies",
       ],
-    },
-    {
-      label: "Reports",
-      children: [
-        "Overview",
-        "Volume and ratings",
-        "Leaderboard",
-        "Distribution",
-        "Responses",
-        "NPS",
-        "Tags",
-        "QR Codes",
-        "Review impressions",
-      ],
-    },
-    {
-      label: "Competitors",
-      children: ["Benchmarking", "Head to head", "Reviews"],
     },
     {
       label: "Agents",
-      children: ["Review generation agents", "Review response agents"],
+      children: [
+        "Response agent",
+        "Generation agent",
+        "Marketing agent",
+      ],
     },
     {
-      label: "Settings",
+      label: "Outcomes",
       children: [
-        "Review sites",
-        "Request templates",
-        "Reply templates",
-        "Approvals",
+        "Reviews & ratings",
+        "Response rate",
+        "Contacts reached",
+        { label: "All reports", external: true },
+      ],
+    },
+    {
+      label: "Resources",
+      children: [
+        "Templates",
         "QR codes",
         "Widgets",
-        "Rating display",
-        "Auto share rules",
-        "Auto reply rules",
-        "AI prompts",
       ],
     },
   ],
-  footerLink: { label: "Reports", external: true },
 };
 
-export function ReviewsL2NavPanel() {
-  return <L2NavLayout {...reviewsConfig} storageKey="nav:l2:reviews" data-no-print />;
+export function ReviewsL2NavPanel({
+  activeItem,
+  onActiveItemChange,
+}: {
+  activeItem?: string;
+  onActiveItemChange?: (key: string) => void;
+} = {}) {
+  return (
+    <L2NavLayout
+      {...reviewsConfig}
+      activeItem={activeItem}
+      onActiveItemChange={onActiveItemChange}
+      storageKey="nav:l2:reviews"
+      data-no-print
+    />
+  );
 }
 
 /** Default L2 selection when opening Referrals (matches `flatNavItems` key `sent`). */

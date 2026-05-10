@@ -72,6 +72,7 @@ import { useShortcuts } from "./shortcuts/useShortcuts";
 import { ConversationStream } from "./components/ConversationStream";
 import { AgentActivityView } from "./components/AgentActivityView";
 import { AgentConfigView } from "./components/AgentConfigView";
+import { AgentsMonitorView } from "./components/AgentsMonitorView";
 import { SettingsView } from "./components/SettingsView.v1";
 import { SettingsL2NavPanel } from "./components/SettingsL2NavPanel.v1";
 import { BirdAILoginPage } from "./components/auth/BirdAILoginPage";
@@ -177,6 +178,10 @@ export default function App() {
   );
 
   const [contactsL2Active, setContactsL2Active] = usePersistedState("nav:l2:contacts", CONTACTS_L2_KEY_ALL);
+  const [reviewsL2Active, setReviewsL2Active] = usePersistedState(
+    "nav:l2:reviews",
+    "Human actions/View all reviews",
+  );
   const [referralsL2Active, setReferralsL2Active] = usePersistedState(
     "nav:l2:referrals",
     REFERRALS_L2_DEFAULT_ACTIVE_KEY,
@@ -520,7 +525,7 @@ export default function App() {
 
           {/* Reviews L2 nav panel */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "reviews" && (
-            <ReviewsL2NavPanel />
+            <ReviewsL2NavPanel activeItem={reviewsL2Active} onActiveItemChange={setReviewsL2Active} />
           )}
           {/* Social L2 nav panel — hidden on Create post (full-width composer) */}
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "social" && socialL2Active !== "Create post" && (
@@ -607,8 +612,11 @@ export default function App() {
           {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "inbox" && (
             <InboxL2NavPanel />
           )}
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "agents-monitor" && (
+            <AppShellL2Placeholder caption=" " />
+          )}
           {/* BirdAI — shell L2 is preview only (same pattern as Chatbot); no rail on agents-builder */}
-          {!aiPanelOpen && !mynaWorkspaceExpanded && birdAiShellShowsL2Placeholder(currentView) && (
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView !== "agents-monitor" && birdAiShellShowsL2Placeholder(currentView) && (
             <AppShellL2Placeholder caption="BirdAI is not hosted in this shell — secondary nav is a preview only." />
           )}
 
@@ -634,11 +642,16 @@ export default function App() {
             ) : currentView === "storybook" ? (
               <ComponentShowcase />
             ) : currentView === "reviews" ? (
-              <ReviewsView />
+              <ReviewsView
+                reviewsL2ActiveItem={reviewsL2Active}
+                onViewFeedbackProgress={() => handleViewChange("agents-monitor")}
+              />
             ) : currentView === "social" ? (
               <SocialView activeItem={socialL2Active} onActiveItemChange={handleSocialL2Change} />
             ) : currentView === "searchai" ? (
               <AppShellContentPlaceholder view="searchai" />
+            ) : currentView === "agents-monitor" ? (
+              <AgentsMonitorView onBack={() => {}} />
             ) : birdAiShellShowsMainPlaceholder(currentView) ? (
               <AppShellContentPlaceholder view={currentView} />
             ) : currentView === "contacts" && contactsBulkImportActive ? (
