@@ -73,6 +73,7 @@ import { ConversationStream } from "./components/ConversationStream";
 import { AgentActivityView } from "./components/AgentActivityView";
 import { AgentConfigView } from "./components/AgentConfigView";
 import { AgentsMonitorView } from "./components/AgentsMonitorView";
+import { AgentsBuilderView } from "./components/AgentsBuilderView.v1";
 import { SettingsView } from "./components/SettingsView.v1";
 import { SettingsL2NavPanel } from "./components/SettingsL2NavPanel.v1";
 import { BirdAILoginPage } from "./components/auth/BirdAILoginPage";
@@ -170,6 +171,7 @@ export default function App() {
 
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [currentView, setCurrentView] = usePersistedState<AppView>("nav:l1", "reviews");
+  const [editingAgentName, setEditingAgentName] = useState<string | undefined>(undefined);
   const [editingDraft, setEditingDraft] = useState<DraftReport | null>(null);
   /** Journeys L2 compound key — synced when navigating via `l2:` slug prefix in handleViewChange. */
   const [journeysL2ActiveKey, setJourneysL2ActiveKey] = usePersistedState<string>(
@@ -645,11 +647,19 @@ export default function App() {
               <ReviewsView
                 reviewsL2ActiveItem={reviewsL2Active}
                 onViewFeedbackProgress={() => handleViewChange("agents-monitor")}
+                onCreateAgent={() => { setEditingAgentName(undefined); handleViewChange("agents-builder"); }}
+                onEditAgent={(name) => { setEditingAgentName(name); handleViewChange("agents-builder"); }}
               />
             ) : currentView === "social" ? (
               <SocialView activeItem={socialL2Active} onActiveItemChange={handleSocialL2Change} />
             ) : currentView === "searchai" ? (
               <AppShellContentPlaceholder view="searchai" />
+            ) : currentView === "agents-builder" ? (
+              <AgentsBuilderView
+                agentName={editingAgentName}
+                initialPhase={editingAgentName ? "building" : "library"}
+                onBack={() => { setEditingAgentName(undefined); handleViewChange("reviews"); }}
+              />
             ) : currentView === "agents-monitor" ? (
               <AgentsMonitorView onBack={() => {}} />
             ) : birdAiShellShowsMainPlaceholder(currentView) ? (

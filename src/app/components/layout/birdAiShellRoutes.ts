@@ -4,7 +4,6 @@ import type { AppView } from "@/app/App";
 const BIRDAI_MAIN_PLACEHOLDER: ReadonlySet<AppView> = new Set([
   "agents-monitor",
   "agents-analyze-performance",
-  "agents-builder",
   "agent-detail",
   "agents-onboarding",
   "birdai-reports",

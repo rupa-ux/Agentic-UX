@@ -15,7 +15,14 @@ const REVIEWS_L2_RESPONSE_AGENT_KEY = "Agents/Response agent";
 export function ReviewsView({
   reviewsL2ActiveItem,
   onViewFeedbackProgress,
-}: { reviewsL2ActiveItem?: string; onViewFeedbackProgress?: () => void } = {}) {
+  onCreateAgent,
+  onEditAgent,
+}: {
+  reviewsL2ActiveItem?: string;
+  onViewFeedbackProgress?: () => void;
+  onCreateAgent?: () => void;
+  onEditAgent?: (agentName: string) => void;
+} = {}) {
   const [mode, setMode] = useState<ReviewsViewMode>("list");
   if (reviewsL2ActiveItem === REVIEWS_L2_GENERATE_REVIEW_KEY) {
     return <GenerateReviewActionsPage />;
@@ -31,7 +38,7 @@ export function ReviewsView({
     );
   }
   if (reviewsL2ActiveItem === REVIEWS_L2_RESPONSE_AGENT_KEY) {
-    return <ReviewsResponseAgentsPage />;
+    return <ReviewsResponseAgentsPage onCreateAgent={onCreateAgent} onEditAgent={onEditAgent} />;
   }
 
   return mode === "list" ? (
