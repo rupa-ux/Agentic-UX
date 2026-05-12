@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useLayoutEffect, useMemo, useRef, type CSSProperties } from "react";
+import { useState, useCallback, useEffect, useLayoutEffect, useMemo, useRef, createContext, useContext, type CSSProperties, type MutableRefObject } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -44,6 +44,10 @@ import {
   Undo2,
   Redo2,
   Info,
+  CloudUpload,
+  Sparkles,
+  Wrench,
+  AlertCircle,
 } from "lucide-react";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
@@ -59,10 +63,21 @@ import {
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/app/components/ui/hover-card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
+import { NodeInsightCard, type NodeInsight } from "@/app/components/reviews/CoachingCopilotPanel";
+import {
+  COACHING_DIFFS,
+  type CoachingDiff,
+  type DiffSegment,
+} from "@/app/components/reviews/coachingDiffData";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import { RESPONSE_AGENT_LIBRARY_TEMPLATES } from "@/app/components/reviews/responseAgentLibraryTemplates";
 import { ResponseAgentLibraryTemplateCard } from "@/app/components/reviews/ResponseAgentLibraryTemplateCard";
 import { FLOATING_PANEL_DOCKED_SURFACE_CLASSNAME } from "@/app/components/ui/floatingPanelSurface";
+import {
+  AgentsBuilderCanvasPanelContext,
+  type WorkflowCanvasApi,
+} from "@/app/components/reviews/agentsBuilderCanvasPanelContext";
 
 /** Figma Review Response agent 2.0 — empty state illustration (exported from design). */
 const AGENTS_BUILDER_LIBRARY_EMPTY_ILLUSTRATION = "/agents-builder/library-empty-state-illustration.svg";
@@ -183,7 +198,23 @@ interface DraggableItemData {
 interface AgentsBuilderViewProps {
   onBack: () => void;
   agentName?: string;
+  /** When set (e.g. `north-autonomous`), loads the Review Response agent 2.0 flow for that agent. */
+  workflowPresetId?: string;
   initialPhase?: BuilderPhase;
+  /** Node IDs that should render with an amber coaching-highlight border. */
+  coachingHighlightNodeIds?: string[];
+  /**
+   * Node to select (open detail panel) when the canvas first mounts.
+   * Pass `null` explicitly to suppress the default selection (DEFAULT_AGENT_NODE_ID).
+   */
+  initialSelectedNodeId?: string | null;
+  /** Replaces the default ToolboxPanel in building phase (e.g. a coaching co-pilot panel). */
+  leftPanel?: React.ReactNode;
+  /** Coaching mode: primary header actions (replaces Publish / auto-save when `coachingHighlightNodeIds` is set). */
+  onCoachingAcceptChanges?: () => void;
+  onCoachingEditAgent?: () => void;
+  /** Coaching mode: items shown in the "Suggested changes (N)" header popover. */
+  coachingSuggestedChanges?: NodeInsight[];
 }
 
 interface CanvasTransform {
@@ -362,8 +393,6 @@ const REVIEW_TASK_ACTIONS: ReviewTaskAction[] = [
 
 const CANVAS_ZOOM_PRESETS = [50, 75, 100, 125, 150, 200] as const;
 
-/** Agent → first node: single vertical guide (unchanged visual weight). */
-const CANVAS_VERTICAL_GUIDE_AGENT_CLASS = "h-[60px] w-px bg-[#C5CAD3]";
 /** Between workflow nodes: segment height so two lines + `size-6` hub ≈ same total span as the agent guide. */
 const CANVAS_VERTICAL_GUIDE_NODE_SEGMENT_CLASS = "h-[18px] w-px bg-[#C5CAD3]";
 
@@ -911,6 +940,10 @@ function ToolboxPanel({
 const CARD_SHADOW = "shadow-[0_2px_6px_rgba(33,33,33,0.06)] transition-[border-color]";
 const CARD_DEFAULT = "border-2 border-transparent";
 const CARD_SELECTED = "border-2 border-[#1976d2]";
+const CARD_COACHING = "border-2 border-amber-400";
+
+/** Node IDs that should render with a coaching highlight border. Provided by AgentsBuilderView. */
+const CoachingHighlightContext = createContext<ReadonlySet<string>>(new Set());
 
 function AgentIdentityCard({
   node,
@@ -961,6 +994,7 @@ function NodeCard({
   onDelete,
   onDuplicate,
   onAddBranch,
+  displayOrder,
 }: {
   node: WorkflowNode;
   isSelected: boolean;
@@ -969,7 +1003,11 @@ function NodeCard({
   onDelete: () => void;
   onDuplicate: () => void;
   onAddBranch?: () => void;
+  displayOrder?: number;
 }) {
+  const coachingHighlightIds = useContext(CoachingHighlightContext);
+  const isCoachingHighlight = coachingHighlightIds.has(node.id);
+
   if (node.type === "agent") {
     return <AgentIdentityCard node={node} isSelected={isSelected} onSelect={onSelect} />;
   }
@@ -986,11 +1024,12 @@ function NodeCard({
   return (
     <button
       type="button"
+      data-workflow-node-id={node.id}
       onClick={onSelect}
       className={cn(
         "w-[400px] rounded-lg bg-white p-4 text-left",
         CARD_SHADOW,
-        isSelected ? CARD_SELECTED : CARD_DEFAULT,
+        isSelected ? CARD_SELECTED : isCoachingHighlight ? CARD_COACHING : CARD_DEFAULT,
       )}
     >
       {/* Header row — icon column aligns with `order.` below; type label aligns with headline */}
@@ -998,6 +1037,11 @@ function NodeCard({
         <div className="flex min-w-0 flex-1 items-center gap-0.5">
           <span className={NODE_CARD_GLYPH_COL_CLASS}>{nodeTypeIcon(node.type)}</span>
           <span className="text-[11px] leading-[18px] tracking-[-0.22px] text-[#8f8f8f]">{typeLabel}</span>
+          {isCoachingHighlight && !isSelected && (
+            <span className="ml-1.5 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium leading-none text-amber-700 ring-1 ring-amber-300">
+              Improve task
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {showToggle && (
@@ -1069,7 +1113,7 @@ function NodeCard({
             "shrink-0 tabular-nums",
           )}
         >
-          {node.order}.
+          {displayOrder ?? node.order}.
         </span>
         <div className="min-w-0 flex-1">
           <span className={cn("block min-w-0", NODE_CARD_BODY_PRIMARY_TEXT_CLASS)}>{node.title}</span>
@@ -1085,7 +1129,14 @@ function CanvasDropZone({ isDragActive }: { isDragActive: boolean }) {
   return <div ref={setNodeRef} className="absolute inset-0 pointer-events-none" aria-hidden={!isDragActive} />;
 }
 
-function InsertDropZone({ afterOrder }: { afterOrder: number }) {
+function InsertDropZone({
+  afterOrder,
+  emphasize,
+}: {
+  afterOrder: number;
+  /** Pulse / ring while dragging a trigger from the toolbox (drop is allowed here). */
+  emphasize?: boolean;
+}) {
   const { setNodeRef, isOver } = useDroppable({ id: `insert-after-${afterOrder}` });
   return (
     <div ref={setNodeRef} className="flex flex-col items-center">
@@ -1096,6 +1147,9 @@ function InsertDropZone({ afterOrder }: { afterOrder: number }) {
           isOver
             ? "scale-110 bg-[#1976d2] text-white shadow-md"
             : "bg-[#f4f6f7] text-[#555]",
+          emphasize &&
+            !isOver &&
+            "animate-pulse shadow-[0_0_0_3px_rgba(25,118,210,0.25)]",
         )}
       >
         <Plus className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
@@ -1110,6 +1164,181 @@ interface BranchPath {
   id: string;
   name: string;
   nodes: WorkflowNode[];
+  description?: string;
+  filters?: Array<{ field: string; operator: string; value: string }>;
+}
+
+/** Reference to a branch path that is currently selected for editing. */
+interface BranchPathSelection {
+  branchNodeId: string;
+  pathId: string;
+}
+
+function findWorkflowNodeById(nodes: WorkflowNode[], id: string | null): WorkflowNode | null {
+  if (!id) return null;
+  for (const n of nodes) {
+    if (n.id === id) return n;
+    if (n.type === "branch" && Array.isArray(n.config.paths)) {
+      for (const p of n.config.paths as BranchPath[]) {
+        const hit = findWorkflowNodeById(p.nodes, id);
+        if (hit) return hit;
+      }
+    }
+  }
+  return null;
+}
+
+function mapWorkflowNodeById(
+  nodes: WorkflowNode[],
+  id: string,
+  fn: (n: WorkflowNode) => WorkflowNode,
+): WorkflowNode[] {
+  return nodes.map((n) => {
+    if (n.id === id) return fn(n);
+    if (n.type === "branch" && Array.isArray(n.config.paths)) {
+      return {
+        ...n,
+        config: {
+          ...n.config,
+          paths: (n.config.paths as BranchPath[]).map((p) => ({
+            ...p,
+            nodes: mapWorkflowNodeById(p.nodes, id, fn),
+          })),
+        },
+      };
+    }
+    return n;
+  });
+}
+
+function removeWorkflowNodeFromTree(nodes: WorkflowNode[], id: string): WorkflowNode[] {
+  return nodes
+    .filter((n) => n.id !== id)
+    .map((n) => {
+      if (n.type === "branch" && Array.isArray(n.config.paths)) {
+        return {
+          ...n,
+          config: {
+            ...n.config,
+            paths: (n.config.paths as BranchPath[]).map((p) => ({
+              ...p,
+              nodes: removeWorkflowNodeFromTree(p.nodes, id),
+            })),
+          },
+        };
+      }
+      return n;
+    });
+}
+
+const BRANCH_COLUMN_WIDTH = 400;
+
+/**
+ * Gap varies by nesting depth so sub-branches never collide with each other:
+ *
+ *   depth=0 (branches of a top-level branch node): wide enough that each column's nested
+ *     BranchPaths (innerWidth = 2×400+NESTED_GAP) doesn't overflow into its sibling's space.
+ *     Required gap > (innerWidth − COLUMN_WIDTH) = (800+NESTED_GAP − 400) = 400+NESTED_GAP.
+ *     With NESTED_GAP=80 → required top gap > 480 → use 520.
+ *
+ *   depth≥1 (branches inside a branch column): compact, capped at the visible card width
+ *     to keep sub-branches legible without overflowing into sibling columns.
+ */
+const BRANCH_GAP_BY_DEPTH = [520, 80] as const;
+function branchGapForDepth(depth: number): number {
+  return BRANCH_GAP_BY_DEPTH[Math.min(depth, BRANCH_GAP_BY_DEPTH.length - 1)] ?? 80;
+}
+
+/**
+ * SVG connector that draws the horizontal split from trunk to branch columns,
+ * with 4px corner radii where horizontal meets each vertical arm.
+ * Each column's vertical arm (h-10 equivalent) is drawn here too, so
+ * BranchPathColumn no longer needs its own top connector div.
+ */
+function BranchConnectorSVG({
+  pathCount,
+  columnGap,
+  selectedPathIndex = -1,
+}: {
+  pathCount: number;
+  columnGap: number;
+  selectedPathIndex?: number;
+}) {
+  if (pathCount === 0) return null;
+
+  const W = BRANCH_COLUMN_WIDTH;
+  const G = columnGap;
+  const totalWidth = pathCount * W + (pathCount - 1) * G;
+  const H = 56;
+  const R = 4;
+  const COLOR_DEFAULT = "#C5CAD3";
+  const COLOR_SELECTED = "#1976d2";
+  const STROKE_DEFAULT = "1";
+  const STROKE_SELECTED = "1.5";
+
+  const cx = (i: number) => i * (W + G) + W / 2;
+
+  if (pathCount === 1) {
+    const isSel = selectedPathIndex === 0;
+    return (
+      <svg width={W} height={H} style={{ display: "block", overflow: "visible" }}>
+        <line
+          x1={W / 2}
+          y1={0}
+          x2={W / 2}
+          y2={H}
+          stroke={isSel ? COLOR_SELECTED : COLOR_DEFAULT}
+          strokeWidth={isSel ? STROKE_SELECTED : STROKE_DEFAULT}
+        />
+      </svg>
+    );
+  }
+
+  const leftX = cx(0);
+  const rightX = cx(pathCount - 1);
+  /** Where the parent trunk meets the horizontal bar (the bar's midpoint). */
+  const trunkCenterX = (leftX + rightX) / 2;
+
+  /** Builds the SVG path for ONE column's arm (with rounded corner). */
+  const armForColumn = (i: number): string => {
+    const x = cx(i);
+    if (i === 0) return `M ${x + R} 0 Q ${x} 0 ${x} ${R} L ${x} ${H}`;
+    if (i === pathCount - 1) return `M ${x - R} 0 Q ${x} 0 ${x} ${R} L ${x} ${H}`;
+    return `M ${x} 0 L ${x} ${H}`;
+  };
+
+  /**
+   * Full L-shaped path from the trunk centre, along the horizontal toward column `i`,
+   * around a 4-px rounded corner, then DOWN to the chip. This is the blue selection overlay.
+   */
+  const selectedRoute = (i: number): string => {
+    const x = cx(i);
+    if (Math.abs(x - trunkCenterX) < 0.5) return `M ${x} 0 L ${x} ${H}`;
+    if (x < trunkCenterX) {
+      // trunk → LEFT along horizontal → corner → DOWN
+      return `M ${trunkCenterX} 0 L ${x + R} 0 Q ${x} 0 ${x} ${R} L ${x} ${H}`;
+    }
+    // trunk → RIGHT along horizontal → corner → DOWN
+    return `M ${trunkCenterX} 0 L ${x - R} 0 Q ${x} 0 ${x} ${R} L ${x} ${H}`;
+  };
+
+  // Default: full horizontal bar + every column's arm, all grey
+  const defaultSegments: string[] = [`M ${leftX + R} 0 L ${rightX - R} 0`];
+  for (let i = 0; i < pathCount; i++) defaultSegments.push(armForColumn(i));
+
+  const selectedSegment =
+    selectedPathIndex >= 0 && selectedPathIndex < pathCount
+      ? selectedRoute(selectedPathIndex)
+      : null;
+
+  return (
+    <svg width={totalWidth} height={H} style={{ display: "block", overflow: "visible" }}>
+      <path d={defaultSegments.join(" ")} stroke={COLOR_DEFAULT} strokeWidth={STROKE_DEFAULT} fill="none" />
+      {selectedSegment && (
+        <path d={selectedSegment} stroke={COLOR_SELECTED} strokeWidth={STROKE_SELECTED} fill="none" />
+      )}
+    </svg>
+  );
 }
 
 /** Migrate old `branches: string[]` config to new `paths` format. */
@@ -1124,6 +1353,46 @@ function getOrMigratePaths(config: Record<string, unknown>): BranchPath[] {
     { id: "bp-default-0", name: "Branch 1", nodes: [] },
     { id: "bp-default-1", name: "Branch 2", nodes: [] },
   ];
+}
+
+/**
+ * Recursively inserts `newNode` into the branch path identified by `branchNodeId`+`pathId`,
+ * searching at any nesting depth inside the given node array.
+ * Returns a new array (structurally shared where unchanged) and whether the insert occurred.
+ */
+function insertNodeIntoBranchPath(
+  nodesArr: WorkflowNode[],
+  branchNodeId: string,
+  pathId: string,
+  newNode: WorkflowNode,
+): { nodes: WorkflowNode[]; inserted: boolean } {
+  let inserted = false;
+  const next = nodesArr.map((n) => {
+    // Direct match — insert into this branch node's path
+    if (n.id === branchNodeId) {
+      const paths = getOrMigratePaths(n.config);
+      const newPaths = paths.map((p) => {
+        if (p.id !== pathId) return p;
+        inserted = true;
+        const withNew = [...p.nodes, newNode].sort((a, b) => a.order - b.order);
+        return { ...p, nodes: withNew.map((nd, i) => ({ ...nd, order: i })) };
+      });
+      return { ...n, config: { ...n.config, paths: newPaths } };
+    }
+    // Recurse — check paths nested inside this branch node
+    if (n.type === "branch" && Array.isArray(n.config.paths)) {
+      const paths = n.config.paths as BranchPath[];
+      let changed = false;
+      const newPaths = paths.map((p) => {
+        const result = insertNodeIntoBranchPath(p.nodes, branchNodeId, pathId, newNode);
+        if (result.inserted) { inserted = true; changed = true; }
+        return result.inserted ? { ...p, nodes: result.nodes } : p;
+      });
+      return changed ? { ...n, config: { ...n.config, paths: newPaths } } : n;
+    }
+    return n;
+  });
+  return { nodes: next, inserted };
 }
 
 /** Inline `+` connector used between nodes and chips inside a branch column. */
@@ -1165,6 +1434,8 @@ function BranchPathZone({
   pathId: string;
   afterOrder: number;
   isDragActive: boolean;
+  /** Accepted for API compatibility; selection does NOT colour zones — blue line only spans from trunk to chip. */
+  isPathSelected?: boolean;
   onAddNode: (type: WorkflowNode["type"]) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({
@@ -1179,9 +1450,7 @@ function BranchPathZone({
         <div
           className={cn(
             "flex size-6 items-center justify-center rounded-full transition-all duration-150",
-            isOver
-              ? "scale-110 bg-[#1976d2] text-white shadow-md"
-              : "bg-[#f4f6f7] text-[#555]",
+            isOver ? "scale-110 bg-[#1976d2] text-white shadow-md" : "bg-[#f4f6f7] text-[#555]",
           )}
         >
           <Plus className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
@@ -1225,15 +1494,26 @@ function BranchPathColumn({
   onUpdatePaths,
   selectedNodeId,
   onSelectNode,
+  selectedBranchPath,
+  onSelectBranchPath,
   isDragActive,
+  startOrder,
+  depth,
 }: {
   branchNodeId: string;
   path: BranchPath;
   onUpdatePaths: (updater: (paths: BranchPath[]) => BranchPath[]) => void;
   selectedNodeId: string | null;
   onSelectNode: (id: string) => void;
+  selectedBranchPath: BranchPathSelection | null;
+  onSelectBranchPath: (sel: BranchPathSelection | null) => void;
   isDragActive: boolean;
+  startOrder: number;
+  depth: number;
 }) {
+  const isPathSelected =
+    selectedBranchPath?.branchNodeId === branchNodeId &&
+    selectedBranchPath?.pathId === path.id;
   const sortedNodes = [...path.nodes].sort((a, b) => a.order - b.order);
 
   const addNodeAfter = (afterOrder: number, type: WorkflowNode["type"] = "task") => {
@@ -1298,11 +1578,20 @@ function BranchPathColumn({
 
   return (
     <div className="flex w-[400px] shrink-0 flex-col items-center">
-      {/* Connector down from horizontal split to chip */}
-      <div className="h-10 w-px bg-[#C5CAD3]" />
-
-      {/* Branch path chip */}
-      <div className="flex items-center gap-1.5 rounded border border-[#E5E9F0] bg-white px-3 py-1.5 shadow-[0_2px_6px_rgba(33,33,33,0.06)]">
+      {/* Branch path chip — clickable, selects this branch path */}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelectBranchPath({ branchNodeId, pathId: path.id });
+        }}
+        className={cn(
+          "flex items-center gap-1.5 rounded border bg-white px-3 py-1.5 text-left shadow-[0_2px_6px_rgba(33,33,33,0.06)] transition-colors",
+          isPathSelected
+            ? "border-[#1976d2]"
+            : "border-[#E5E9F0] hover:border-[#1976d2]/40",
+        )}
+      >
         <span className="whitespace-nowrap text-[13px] leading-5 tracking-[-0.26px] text-[#212121]">
           {path.name}
         </span>
@@ -1311,6 +1600,7 @@ function BranchPathColumn({
           <DropdownMenuTrigger asChild>
             <button
               type="button"
+              onClick={(e) => e.stopPropagation()}
               className="flex size-4 items-center justify-center text-[#8f8f8f] hover:text-foreground"
             >
               <MoreVertical className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
@@ -1328,7 +1618,7 @@ function BranchPathColumn({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
+      </button>
 
       {/* Nodes — each preceded by a droppable zone */}
       {sortedNodes.map((node, idx) => (
@@ -1338,6 +1628,7 @@ function BranchPathColumn({
             pathId={path.id}
             afterOrder={zoneAfterOrder(idx)}
             isDragActive={isDragActive}
+            isPathSelected={isPathSelected}
             onAddNode={(type) => addNodeAfter(zoneAfterOrder(idx), type)}
           />
           <NodeCard
@@ -1347,24 +1638,62 @@ function BranchPathColumn({
             onToggle={() => toggleNode(node.id)}
             onDelete={() => removeNode(node.id)}
             onDuplicate={() => {}}
+            displayOrder={startOrder + node.order}
           />
+          {/* Nested branch: render its sub-paths immediately below */}
+          {node.type === "branch" && (
+            <BranchPaths
+              node={node}
+              onSaveConfig={(config) => {
+                onUpdatePaths((paths) =>
+                  paths.map((p) =>
+                    p.id !== path.id
+                      ? p
+                      : {
+                          ...p,
+                          nodes: p.nodes.map((n) =>
+                            n.id === node.id ? { ...n, config } : n,
+                          ),
+                        },
+                  ),
+                );
+              }}
+              selectedNodeId={selectedNodeId}
+              onSelectNode={onSelectNode}
+              selectedBranchPath={selectedBranchPath}
+              onSelectBranchPath={onSelectBranchPath}
+              isDragActive={isDragActive}
+              parentStartOrder={startOrder + node.order}
+              depth={depth + 1}
+            />
+          )}
         </div>
       ))}
 
-      {/* Final zone before End */}
-      <BranchPathZone
-        branchNodeId={branchNodeId}
-        pathId={path.id}
-        afterOrder={sortedNodes.length > 0 ? sortedNodes[sortedNodes.length - 1]!.order : -1}
-        isDragActive={isDragActive}
-        onAddNode={(type) =>
-          addNodeAfter(
-            sortedNodes.length > 0 ? sortedNodes[sortedNodes.length - 1]!.order : -1,
-            type,
-          )
-        }
-      />
-      <div className="rounded bg-[#eaeaea] px-2 py-0.5 text-[12px] leading-[18px] text-[#555]">End</div>
+      {/*
+        Final zone + End — only shown when the last node is NOT a branch.
+        When the last node IS a branch, its nested BranchPaths already provides
+        End chips for every sub-path; rendering another one here creates stranded nodes.
+        Users add nodes inside sub-paths via the + buttons within each branch column.
+      */}
+      {sortedNodes[sortedNodes.length - 1]?.type !== "branch" && (
+        <>
+          <BranchPathZone
+            branchNodeId={branchNodeId}
+            pathId={path.id}
+            afterOrder={sortedNodes.length > 0 ? sortedNodes[sortedNodes.length - 1]!.order : -1}
+            isDragActive={isDragActive}
+            isPathSelected={isPathSelected}
+            onAddNode={(type) =>
+              addNodeAfter(
+                sortedNodes.length > 0 ? sortedNodes[sortedNodes.length - 1]!.order : -1,
+                type,
+              )
+            }
+          />
+          <div className="rounded bg-[#eaeaea] px-2 py-0.5 text-[12px] leading-[18px] text-[#555]">End</div>
+        </>
+      )}
     </div>
   );
 }
@@ -1374,13 +1703,23 @@ function BranchPaths({
   onSaveConfig,
   selectedNodeId,
   onSelectNode,
+  selectedBranchPath,
+  onSelectBranchPath,
   isDragActive,
+  parentStartOrder,
+  depth = 0,
 }: {
   node: WorkflowNode;
   onSaveConfig: (config: Record<string, unknown>) => void;
   selectedNodeId: string | null;
   onSelectNode: (id: string) => void;
+  selectedBranchPath: BranchPathSelection | null;
+  onSelectBranchPath: (sel: BranchPathSelection | null) => void;
   isDragActive: boolean;
+  /** The display order of this branch node — path nodes continue sequentially from here. */
+  parentStartOrder?: number;
+  /** Nesting depth — controls column gap so branches at deeper levels stay compact. */
+  depth?: number;
 }) {
   const paths = getOrMigratePaths(node.config);
   if (paths.length === 0) return null;
@@ -1390,21 +1729,35 @@ function BranchPaths({
     onSaveConfig({ ...node.config, paths: newPaths });
   };
 
-  const COLUMN_WIDTH = 400;
-  const COLUMN_GAP = 80;
-  const HALF_COL = COLUMN_WIDTH / 2;
+  /** Each path's nodes start numbering after all previous paths' nodes. */
+  const base = parentStartOrder ?? node.order;
+  const pathStartOrders = paths.reduce<number[]>((acc, p, i) => {
+    const prevEnd = i === 0 ? 0 : acc[i - 1]! + paths[i - 1]!.nodes.length;
+    return [...acc, base + 1 + prevEnd];
+  }, []);
 
   return (
     <div className="flex flex-col items-center">
-      <div className="h-10 w-px bg-[#C5CAD3]" />
-      <div className="relative flex items-start" style={{ gap: `${COLUMN_GAP}px` }}>
-        {paths.length > 1 && (
-          <div
-            className="absolute top-0 h-px bg-[#C5CAD3]"
-            style={{ left: `${HALF_COL}px`, right: `${HALF_COL}px` }}
-          />
+      {/* Trunk from branch card down to the SVG connector — blue when any path of this branch is selected */}
+      <div
+        className={cn(
+          "h-16 w-px",
+          selectedBranchPath?.branchNodeId === node.id ? "bg-[#1976d2]" : "bg-[#C5CAD3]",
         )}
-        {paths.map((path) => (
+      />
+      {/* SVG draws the horizontal split with 4px rounded corners at each column */}
+      <BranchConnectorSVG
+        pathCount={paths.length}
+        columnGap={branchGapForDepth(depth)}
+        selectedPathIndex={
+          selectedBranchPath?.branchNodeId === node.id
+            ? paths.findIndex((p) => p.id === selectedBranchPath.pathId)
+            : -1
+        }
+      />
+      {/* Columns — no top connector div needed (SVG provides the vertical arms) */}
+      <div className="flex items-start" style={{ gap: `${branchGapForDepth(depth)}px` }}>
+        {paths.map((path, i) => (
           <BranchPathColumn
             key={path.id}
             branchNodeId={node.id}
@@ -1412,7 +1765,11 @@ function BranchPaths({
             onUpdatePaths={updatePaths}
             selectedNodeId={selectedNodeId}
             onSelectNode={onSelectNode}
+            selectedBranchPath={selectedBranchPath}
+            onSelectBranchPath={onSelectBranchPath}
             isDragActive={isDragActive}
+            startOrder={pathStartOrders[i]!}
+            depth={depth}
           />
         ))}
       </div>
@@ -1521,8 +1878,12 @@ function BuildingPhase({
   onInsertBetween,
   onAddBranch,
   onSaveBranchConfig,
+  selectedBranchPath,
+  onSelectBranchPath,
   isDragActive,
+  emphasizeTriggerDropZones,
   hasFloatingPropertyPanel,
+  workflowCanvasApiRef,
 }: {
   nodes: WorkflowNode[];
   selectedNodeId: string | null;
@@ -1533,9 +1894,15 @@ function BuildingPhase({
   onInsertBetween: (afterOrder: number) => void;
   onAddBranch: (id: string) => void;
   onSaveBranchConfig: (branchNodeId: string, config: Record<string, unknown>) => void;
+  selectedBranchPath: BranchPathSelection | null;
+  onSelectBranchPath: (sel: BranchPathSelection | null) => void;
   isDragActive: boolean;
+  /** Pulse trunk insert `+` controls while dragging a trigger (Review Response agent 2.0). */
+  emphasizeTriggerDropZones: boolean;
   /** When true, reserve trailing space for the absolute `PropertiesPanel` so pan/zoom content stays visually centered. */
   hasFloatingPropertyPanel: boolean;
+  /** When set (e.g. coaching co-pilot), exposes `focusWorkflowNode` to pan/zoom the canvas to a node. */
+  workflowCanvasApiRef?: MutableRefObject<WorkflowCanvasApi | null>;
 }) {
   type CanvasLayout = "vertical" | "horizontal";
 
@@ -1545,6 +1912,34 @@ function BuildingPhase({
   const panStart = useRef<{ mx: number; my: number; tx: number; ty: number } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const prevHadFloatingPanel = useRef(hasFloatingPropertyPanel);
+
+  const focusWorkflowNode = useCallback(
+    (nodeId: string) => {
+      onSelectNode(nodeId);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const canvas = canvasRef.current;
+          const el = canvas?.querySelector(`[data-workflow-node-id="${nodeId}"]`) as HTMLElement | null;
+          if (!canvas || !el) return;
+          const c = canvas.getBoundingClientRect();
+          const n = el.getBoundingClientRect();
+          const dx = (c.left + c.width / 2) - (n.left + n.width / 2);
+          const dy = (c.top + c.height / 2) - (n.top + n.height / 2);
+          setTransform((prev) => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
+        });
+      });
+    },
+    [onSelectNode],
+  );
+
+  useLayoutEffect(() => {
+    const ref = workflowCanvasApiRef;
+    if (!ref) return;
+    ref.current = { focusWorkflowNode };
+    return () => {
+      ref.current = null;
+    };
+  }, [workflowCanvasApiRef, focusWorkflowNode]);
 
   useEffect(() => {
     if (prevHadFloatingPanel.current && !hasFloatingPropertyPanel) {
@@ -1624,29 +2019,6 @@ function BuildingPhase({
     backgroundImage:
       "radial-gradient(circle, rgba(0,0,0,0.18) 1px, transparent 1px)",
     backgroundSize: "24px 24px",
-  };
-
-  const connectorVertical = (idx: number) => {
-    if (idx === 0) return null;
-    const prevNode = sortedNodes[idx - 1];
-    const isAfterAgent = prevNode?.type === "agent";
-    return isAfterAgent ? (
-      /* plain line between agent pill and first workflow node — no + button */
-      <div className={CANVAS_VERTICAL_GUIDE_AGENT_CLASS} />
-    ) : (
-      /* line + hub + line between workflow nodes — total span matches agent guide */
-      <div className="flex flex-col items-center">
-        <div className={CANVAS_VERTICAL_GUIDE_NODE_SEGMENT_CLASS} />
-        <button
-          type="button"
-          onClick={() => onInsertBetween(sortedNodes[idx - 1]!.order)}
-          className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#f4f6f7] text-[#555] transition-colors hover:bg-[#e8eaed]"
-        >
-          <Plus className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
-        </button>
-        <div className={CANVAS_VERTICAL_GUIDE_NODE_SEGMENT_CLASS} />
-      </div>
-    );
   };
 
   const connectorHorizontal = (idx: number) =>
@@ -1804,7 +2176,7 @@ function BuildingPhase({
         >
           <div
             className={cn(
-              "flex min-w-0 max-w-full shrink-0",
+              "flex shrink-0",
               canvasLayout === "vertical"
                 ? "flex-col items-center"
                 : "flex-row flex-nowrap items-start justify-center overflow-x-auto overflow-y-hidden px-6",
@@ -1819,9 +2191,14 @@ function BuildingPhase({
                 )}
                 data-node
               >
-                {isDragActive && idx > 0 && canvasLayout === "vertical" ? (
-                  <InsertDropZone afterOrder={sortedNodes[idx - 1]!.order} />
-                ) : canvasLayout === "vertical" ? connectorVertical(idx) : connectorHorizontal(idx)}
+                {canvasLayout === "vertical" && idx > 0 ? (
+                  <InsertDropZone
+                    afterOrder={sortedNodes[idx - 1]!.order}
+                    emphasize={emphasizeTriggerDropZones}
+                  />
+                ) : (
+                  connectorHorizontal(idx)
+                )}
                 <NodeCard
                   node={node}
                   isSelected={selectedNodeId === node.id}
@@ -1836,6 +2213,7 @@ function BuildingPhase({
 
             {(() => {
               if (sortedNodes.length === 0) return null;
+              const workflowNodes = sortedNodes.filter((n) => n.type !== "agent");
               const lastNode = sortedNodes[sortedNodes.length - 1]!;
               const isBranchTerminal = lastNode.type === "branch" && canvasLayout === "vertical";
               if (isBranchTerminal) {
@@ -1845,17 +2223,24 @@ function BuildingPhase({
                     onSaveConfig={(config) => onSaveBranchConfig(lastNode.id, config)}
                     selectedNodeId={selectedNodeId}
                     onSelectNode={onSelectNode}
+                    selectedBranchPath={selectedBranchPath}
+                    onSelectBranchPath={onSelectBranchPath}
                     isDragActive={isDragActive}
+                    parentStartOrder={lastNode.order}
+                    depth={0}
                   />
                 );
               }
+              const insertAfterOrder =
+                workflowNodes.length === 0
+                  ? (sortedNodes.find((n) => n.type === "agent")?.order ?? 0)
+                  : lastNode.order;
               return canvasLayout === "vertical" ? (
                 <div className="mt-0 flex flex-col items-center">
-                  {isDragActive ? (
-                    <InsertDropZone afterOrder={lastNode.order} />
-                  ) : (
-                    <div className={CANVAS_VERTICAL_GUIDE_NODE_SEGMENT_CLASS} />
-                  )}
+                  <InsertDropZone
+                    afterOrder={insertAfterOrder}
+                    emphasize={emphasizeTriggerDropZones}
+                  />
                   <div className="rounded bg-[#eaeaea] px-2 py-0.5 text-[12px] leading-[18px] text-[#555]">
                     End
                   </div>
@@ -1888,11 +2273,43 @@ function PanelFieldLabel({ children, required }: { children: React.ReactNode; re
   );
 }
 
-function PanelSaveButton({ onClick }: { onClick: () => void }) {
+/** Inline read-only diff renderer used in coaching mode to preview prompt edits. */
+function DiffText({ segments }: { segments: DiffSegment[] }) {
+  return (
+    <div
+      className={cn(
+        "min-h-[120px] w-full whitespace-pre-wrap px-3 py-2",
+        RRA20_FORM_FIELD_SURFACE,
+        RRA20_AGENT_DETAILS_VALUE_TEXT_CLASS,
+      )}
+    >
+      {segments.map((seg, i) => {
+        if (seg.kind === "removed") {
+          return (
+            <span key={i} className="text-red-500 line-through">
+              {seg.text}
+            </span>
+          );
+        }
+        if (seg.kind === "added") {
+          return (
+            <span key={i} className="text-emerald-600">
+              {seg.text}
+            </span>
+          );
+        }
+        return <span key={i}>{seg.text}</span>;
+      })}
+    </div>
+  );
+}
+
+
+function PanelSaveButton({ onClick, label = "Save" }: { onClick: () => void; label?: string }) {
   return (
     <div className="shrink-0 border-t border-border/60 px-4 py-3">
       <Button type="button" className="w-full" onClick={onClick}>
-        Save
+        {label}
       </Button>
     </div>
   );
@@ -1986,10 +2403,49 @@ function TriggerConfigPanel({
               </button>
             </div>
           </div>
+
+          <button type="button" className="self-start text-[13px] font-normal text-primary hover:underline">
+            Advanced filters
+          </button>
         </div>
       </div>
 
       <PanelSaveButton onClick={() => { onSave({ triggerName, description, conditions }); onClose(); }} />
+    </div>
+  );
+}
+
+function TaskConfigChipRow({
+  chips,
+  moreCount,
+}: {
+  chips: string[];
+  moreCount?: number;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex min-h-[40px] flex-wrap items-center gap-2 rounded-md border border-border bg-background p-2">
+        {chips.map((t, i) => (
+          <span
+            key={`${i}-${t}`}
+            className={cn(
+              "max-w-full break-all rounded-md border border-primary/25 bg-primary/5 px-2 py-1 text-[13px] leading-snug text-primary",
+              (t.startsWith("http") || t.startsWith("www.")) && "border-border bg-muted/30 text-foreground",
+            )}
+          >
+            {t}
+          </span>
+        ))}
+        {moreCount != null && moreCount > 0 ? (
+          <button type="button" className="text-[13px] font-normal text-primary hover:underline">
+            + {moreCount} more
+          </button>
+        ) : null}
+      </div>
+      <button type="button" className="flex w-fit items-center gap-1 text-[13px] text-primary hover:underline">
+        <Plus className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
+        Add
+      </button>
     </div>
   );
 }
@@ -1999,12 +2455,20 @@ function TaskConfigPanel({
   onSave,
   onClose,
   onCanvasPatch,
+  onAcceptCoachingChanges,
 }: {
   node: WorkflowNode;
   onSave: (config: Record<string, unknown>) => void;
   onClose: () => void;
   onCanvasPatch?: (patch: WorkflowNodeCanvasPatch) => void;
+  onAcceptCoachingChanges?: () => void;
 }) {
+  const toolOnlyTask = node.config.toolOnlyTask === true;
+  const toolNames = (node.config.toolNames as string[] | undefined) ?? [];
+  const promptStrength = node.config.promptStrength as string | undefined;
+  const syncTaskNameToTitle = node.config.syncTaskNameToTitle !== false;
+  const syncDescriptionToCard = node.config.syncDescriptionToCard !== false;
+
   const [taskName, setTaskName] = useState(
     (node.config.taskName as string) ?? node.title,
   );
@@ -2029,6 +2493,11 @@ function TaskConfigPanel({
     setUserPrompt((node.config.userPrompt as string) ?? "");
   }, [node.id]);
 
+  const coachingHighlightIds = useContext(CoachingHighlightContext);
+  const coachingDiff: CoachingDiff | undefined = coachingHighlightIds.has(node.id)
+    ? COACHING_DIFFS[node.id]
+    : undefined;
+
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto px-4 py-4">
@@ -2040,7 +2509,11 @@ function TaskConfigPanel({
               onChange={(e) => {
                 const v = e.target.value;
                 setTaskName(v);
-                onCanvasPatch?.({ title: v, config: { taskName: v } });
+                onCanvasPatch?.(
+                  syncTaskNameToTitle
+                    ? { title: v, config: { taskName: v } }
+                    : { config: { taskName: v } },
+                );
               }}
               className={rra20SingleLineInputClass}
             />
@@ -2053,79 +2526,294 @@ function TaskConfigPanel({
               onChange={(e) => {
                 const v = e.target.value;
                 setDescription(v);
-                onCanvasPatch?.({ description: v, config: { description: v } });
+                onCanvasPatch?.(
+                  syncDescriptionToCard
+                    ? { description: v, config: { description: v } }
+                    : { config: { description: v } },
+                );
               }}
               className={cn(rra20TextareaClass, "min-h-[80px]")}
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <PanelFieldLabel>LLM Model</PanelFieldLabel>
-            <Select value={llmModel} onValueChange={setLlmModel}>
-              <SelectTrigger className="h-9 border-border bg-background text-[13px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="fast">Fast</SelectItem>
-                <SelectItem value="balanced">Balanced</SelectItem>
-                <SelectItem value="powerful">Powerful</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <PanelFieldLabel>Context</PanelFieldLabel>
-            <div className="flex min-h-[52px] items-start rounded-md border border-border bg-background p-2">
-              <button type="button" className="flex items-center gap-1 text-[13px] text-primary hover:underline">
-                <Plus className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
-                Add
-              </button>
+          {toolOnlyTask ? (
+            <div className="flex flex-col gap-2">
+              <PanelFieldLabel>Tools</PanelFieldLabel>
+              <div className="flex flex-col gap-1">
+                {toolNames.map((tn) => (
+                  <button
+                    key={tn}
+                    type="button"
+                    className="flex h-10 w-full items-center gap-2 rounded-md border border-border bg-background px-3 text-left text-[14px] text-foreground hover:bg-muted/40"
+                  >
+                    <Wrench className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.6} absoluteStrokeWidth />
+                    <span className="min-w-0 flex-1 truncate">{tn}</span>
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.6} absoluteStrokeWidth />
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1">
+                  <PanelFieldLabel>LLM Model</PanelFieldLabel>
+                  <Info
+                    className="size-4 shrink-0 text-muted-foreground"
+                    strokeWidth={1.6}
+                    absoluteStrokeWidth
+                    aria-hidden
+                  />
+                </div>
+                <Select
+                  value={llmModel}
+                  onValueChange={(v) => {
+                    setLlmModel(v);
+                    onCanvasPatch?.({ config: { llmModel: v } });
+                  }}
+                >
+                  <SelectTrigger className="h-9 border-border bg-background text-[13px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fast">Fast</SelectItem>
+                    <SelectItem value="balanced">Balanced</SelectItem>
+                    <SelectItem value="thinking">Thinking</SelectItem>
+                    <SelectItem value="powerful">Powerful</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <div className="flex flex-col gap-1">
-            <PanelFieldLabel>Input fields</PanelFieldLabel>
-            <div className="flex min-h-[52px] items-start rounded-md border border-border bg-background p-2">
-              <button type="button" className="flex items-center gap-1 text-[13px] text-primary hover:underline">
-                <Plus className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
-                Add
-              </button>
-            </div>
-          </div>
+              <div className="flex flex-col gap-1">
+                <PanelFieldLabel>Context</PanelFieldLabel>
+                {(node.config.contextChips as string[] | undefined)?.length ? (
+                  <TaskConfigChipRow
+                    chips={node.config.contextChips as string[]}
+                    moreCount={node.config.contextMoreCount as number | undefined}
+                  />
+                ) : (
+                  <div className="flex min-h-[52px] items-start rounded-md border border-border bg-background p-2">
+                    <button type="button" className="flex items-center gap-1 text-[13px] text-primary hover:underline">
+                      <Plus className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
+                      Add
+                    </button>
+                  </div>
+                )}
+              </div>
 
-          <div className="flex flex-col gap-1">
-            <PanelFieldLabel required>System prompt</PanelFieldLabel>
-            <Textarea
-              value={systemPrompt}
-              onChange={(e) => setSystemPrompt(e.target.value)}
-              placeholder="Enter prompt"
-              className={cn(rra20TextareaClass, "min-h-[120px]")}
-            />
-          </div>
+              <div className="flex flex-col gap-1">
+                <PanelFieldLabel>Input fields</PanelFieldLabel>
+                {(() => {
+                  const existing = (node.config.inputFieldChips as string[] | undefined) ?? [];
+                  const added = coachingDiff?.addedInputFields ?? [];
+                  const hasAny = existing.length > 0 || added.length > 0;
+                  if (!hasAny) {
+                    return (
+                      <div className="flex min-h-[52px] items-start rounded-md border border-border bg-background p-2">
+                        <button type="button" className="flex items-center gap-1 text-[13px] text-primary hover:underline">
+                          <Plus className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
+                          Add
+                        </button>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="flex flex-col gap-2">
+                      <div className="flex min-h-[40px] flex-wrap items-center gap-2 rounded-md border border-border bg-background p-2">
+                        {existing.map((t, i) => (
+                          <span
+                            key={`existing-${i}-${t}`}
+                            className="max-w-full break-all rounded-md border border-primary/25 bg-primary/5 px-2 py-1 text-[13px] leading-snug text-primary"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                        {added.map((t, i) => (
+                          <span
+                            key={`added-${i}-${t}`}
+                            className="max-w-full break-all rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1 text-[13px] leading-snug text-emerald-700"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                      <button type="button" className="flex w-fit items-center gap-1 text-[13px] text-primary hover:underline">
+                        <Plus className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
+                        Add
+                      </button>
+                    </div>
+                  );
+                })()}
+              </div>
 
-          <div className="flex flex-col gap-1">
-            <PanelFieldLabel required>User prompt</PanelFieldLabel>
-            <Textarea
-              value={userPrompt}
-              onChange={(e) => setUserPrompt(e.target.value)}
-              placeholder="Enter prompt"
-              className={cn(rra20TextareaClass, "min-h-[120px]")}
-            />
-          </div>
+              <div className="flex flex-col gap-1">
+                <PanelFieldLabel required>System prompt</PanelFieldLabel>
+                {coachingDiff?.systemPromptDiff ? (
+                  <DiffText segments={coachingDiff.systemPromptDiff} />
+                ) : (
+                  <Textarea
+                    value={systemPrompt}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setSystemPrompt(v);
+                      onCanvasPatch?.({ config: { systemPrompt: v } });
+                    }}
+                    placeholder="Enter prompt"
+                    className={cn(rra20TextareaClass, "min-h-[120px]")}
+                  />
+                )}
+              </div>
 
-          <div className="flex flex-col gap-1">
-            <PanelFieldLabel>Output fields</PanelFieldLabel>
-            <div className="flex min-h-[56px] items-start rounded-md border border-border bg-background p-2">
-              <button type="button" className="flex items-center gap-1 text-[13px] text-primary hover:underline">
-                <Plus className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
-                Add
-              </button>
-            </div>
-          </div>
+              <div className="flex flex-col gap-1">
+                <PanelFieldLabel required>User prompt</PanelFieldLabel>
+                {coachingDiff?.userPromptDiff ? (
+                  <DiffText segments={coachingDiff.userPromptDiff} />
+                ) : (
+                  <Textarea
+                    value={userPrompt}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setUserPrompt(v);
+                      onCanvasPatch?.({ config: { userPrompt: v } });
+                    }}
+                    placeholder="Enter prompt"
+                    className={cn(rra20TextareaClass, "min-h-[120px]")}
+                  />
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <PanelFieldLabel>Output fields</PanelFieldLabel>
+                {(() => {
+                  const existing = (node.config.outputFieldChips as string[] | undefined) ?? [];
+                  const added = coachingDiff?.addedOutputFields ?? [];
+                  const hasAny = existing.length > 0 || added.length > 0;
+                  if (!hasAny) {
+                    return (
+                      <div className="flex min-h-[56px] items-start rounded-md border border-border bg-background p-2">
+                        <button type="button" className="flex items-center gap-1 text-[13px] text-primary hover:underline">
+                          <Plus className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
+                          Add
+                        </button>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="flex flex-col gap-2">
+                      <div className="flex min-h-[40px] flex-wrap items-center gap-2 rounded-md border border-border bg-background p-2">
+                        {existing.map((t, i) => (
+                          <span
+                            key={`existing-${i}-${t}`}
+                            className="max-w-full break-all rounded-md border border-primary/25 bg-primary/5 px-2 py-1 text-[13px] leading-snug text-primary"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                        {added.map((t, i) => (
+                          <span
+                            key={`added-${i}-${t}`}
+                            className="max-w-full break-all rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1 text-[13px] leading-snug text-emerald-700"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <button type="button" className="flex items-center gap-1 text-[13px] text-primary hover:underline">
+                          <Plus className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
+                          Add
+                        </button>
+                        <button type="button" className="flex items-center gap-1 text-[13px] text-primary hover:underline">
+                          <Sparkles className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
+                          Generate from prompt
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {promptStrength === "weak" ? (
+                <div className="flex flex-col gap-2">
+                  <PanelFieldLabel>Prompt strength</PanelFieldLabel>
+                  <div className="flex flex-col gap-1.5 rounded-md border border-border bg-background p-3">
+                    {coachingDiff ? (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[13px] font-medium text-emerald-600">Very good</span>
+                        <div className="h-2 flex-1 max-w-[200px] overflow-hidden rounded-full bg-muted">
+                          <div className="h-full w-[88%] rounded-full bg-emerald-500" />
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[13px] font-medium text-destructive">Weak</span>
+                          <div className="h-2 flex-1 max-w-[200px] overflow-hidden rounded-full bg-muted">
+                            <div className="h-full w-[28%] rounded-full bg-destructive" />
+                          </div>
+                        </div>
+                        <button type="button" className="self-start text-[13px] text-primary hover:underline">
+                          View suggestions
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+            </>
+          )}
         </div>
       </div>
 
-      <PanelSaveButton onClick={() => { onSave({ taskName, description, llmModel, systemPrompt, userPrompt }); onClose(); }} />
+      <PanelSaveButton
+        label={coachingDiff ? "Accept changes" : "Save"}
+        onClick={() => {
+          if (coachingDiff) {
+            const nextConfig: Record<string, unknown> = {
+              ...node.config,
+              taskName,
+              description,
+              llmModel,
+            };
+            if (coachingDiff.acceptedSystemPrompt) {
+              nextConfig.systemPrompt = coachingDiff.acceptedSystemPrompt;
+            } else {
+              nextConfig.systemPrompt = systemPrompt;
+            }
+            if (coachingDiff.acceptedUserPrompt) {
+              nextConfig.userPrompt = coachingDiff.acceptedUserPrompt;
+            } else {
+              nextConfig.userPrompt = userPrompt;
+            }
+            if (coachingDiff.acceptedInputFieldChips?.length) {
+              const existing = (node.config.inputFieldChips as string[] | undefined) ?? [];
+              nextConfig.inputFieldChips = [...existing, ...coachingDiff.acceptedInputFieldChips];
+            }
+            if (coachingDiff.acceptedOutputFieldChips?.length) {
+              const existing = (node.config.outputFieldChips as string[] | undefined) ?? [];
+              nextConfig.outputFieldChips = [...existing, ...coachingDiff.acceptedOutputFieldChips];
+            }
+            onSave(nextConfig);
+            onAcceptCoachingChanges?.();
+          } else if (toolOnlyTask) {
+            onSave({
+              ...node.config,
+              taskName,
+              description,
+            });
+          } else {
+            onSave({
+              ...node.config,
+              taskName,
+              description,
+              llmModel,
+              systemPrompt,
+              userPrompt,
+            });
+          }
+          onClose();
+        }}
+      />
     </div>
   );
 }
@@ -2356,16 +3044,197 @@ function AgentDetailsConfigPanel({
   );
 }
 
+/**
+ * Right-side floating panel for editing a single Branch Path (Branch 1, Respond, etc.).
+ * Renders Branch name, Description, Filter conditions, and a Save button.
+ * Matches Figma "Branch spline RHS".
+ */
+function BranchPathDetailsPanel({
+  branchNode,
+  pathId,
+  onClose,
+  onSavePath,
+}: {
+  branchNode: WorkflowNode;
+  pathId: string;
+  onClose: () => void;
+  onSavePath: (branchNodeId: string, pathId: string, updates: Partial<BranchPath>) => void;
+}) {
+  const paths = getOrMigratePaths(branchNode.config);
+  const path = paths.find((p) => p.id === pathId);
+
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [filters, setFilters] = useState<
+    Array<{ field: string; operator: string; value: string }>
+  >([{ field: "", operator: "is equal to", value: "" }]);
+
+  useEffect(() => {
+    const nextPath = getOrMigratePaths(branchNode.config).find((p) => p.id === pathId);
+    if (!nextPath) return;
+    setName(nextPath.name ?? "");
+    setDescription(nextPath.description ?? "");
+    setFilters(
+      nextPath.filters?.length
+        ? nextPath.filters.map((f) => ({
+            field: f.field,
+            operator: f.operator || "is equal to",
+            value: f.value,
+          }))
+        : [{ field: "", operator: "is equal to", value: "" }],
+    );
+  }, [pathId, branchNode.config]);
+
+  if (!path) return null;
+
+  const persistFilters = filters.filter((f) => f.field.trim() !== "");
+
+  return (
+    <div
+      className={cn(
+        "absolute right-6 top-6 bottom-6 z-10 flex flex-col overflow-hidden pt-6",
+        AGENTS_BUILDER_RIGHT_PANE_WIDTH_CLASS,
+        FLOATING_PANEL_DOCKED_SURFACE_CLASSNAME,
+      )}
+    >
+      <div className="flex shrink-0 items-center justify-between px-4 pb-3">
+        <span className="text-[16px] leading-6 text-muted-foreground">Branch details</span>
+        <div className="flex items-center gap-1">
+          <button type="button" className="rounded p-1 text-muted-foreground hover:bg-muted/40" title="Test run" disabled>
+            <Play className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
+          </button>
+          <button type="button" className="rounded p-1 text-muted-foreground hover:bg-muted/40" title="Expand">
+            <ChevronUp className="size-[14px] rotate-90" strokeWidth={1.6} absoluteStrokeWidth />
+          </button>
+          <button type="button" onClick={onClose} className="rounded p-1 text-muted-foreground hover:bg-muted/40">
+            <X className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-1">
+            <PanelFieldLabel required>Branch name</PanelFieldLabel>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={rra20SingleLineInputClass}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <PanelFieldLabel required>Description</PanelFieldLabel>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className={cn(rra20TextareaClass, "min-h-[80px]")}
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <PanelFieldLabel>Filter conditions</PanelFieldLabel>
+            <div className="flex flex-col gap-3">
+              {filters.map((row, rowIdx) => (
+                <div key={rowIdx} className="flex flex-col gap-2 rounded-md bg-muted/40 p-3">
+                  <Select
+                    value={row.field || undefined}
+                    onValueChange={(v) =>
+                      setFilters((prev) =>
+                        prev.map((r, i) => (i === rowIdx ? { ...r, field: v } : r)),
+                      )
+                    }
+                  >
+                    <SelectTrigger className="h-9 border-border bg-background text-[13px]">
+                      <SelectValue placeholder="Select variable" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="{x} 1.Review.spam">{"{x} 1.Review.spam"}</SelectItem>
+                      <SelectItem value="{x} Review.sentiment">{"{x} Review.sentiment"}</SelectItem>
+                      <SelectItem value="{x} Review.rating">{"{x} Review.rating"}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={row.operator || undefined}
+                    onValueChange={(v) =>
+                      setFilters((prev) =>
+                        prev.map((r, i) => (i === rowIdx ? { ...r, operator: v } : r)),
+                      )
+                    }
+                  >
+                    <SelectTrigger className="h-9 border-border bg-background text-[13px]">
+                      <SelectValue placeholder="is equal to" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="is equal to">is equal to</SelectItem>
+                      <SelectItem value="is not equal to">is not equal to</SelectItem>
+                      <SelectItem value="contains">contains</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={row.value || undefined}
+                    onValueChange={(v) =>
+                      setFilters((prev) =>
+                        prev.map((r, i) => (i === rowIdx ? { ...r, value: v } : r)),
+                      )
+                    }
+                  >
+                    <SelectTrigger className="h-9 border-border bg-background text-[13px]">
+                      <SelectValue placeholder="Value" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="True">True</SelectItem>
+                      <SelectItem value="False">False</SelectItem>
+                      <SelectItem value="Negative">Negative</SelectItem>
+                      <SelectItem value="Positive">Positive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() =>
+                  setFilters((prev) => [
+                    ...prev,
+                    { field: "", operator: "is equal to", value: "" },
+                  ])
+                }
+                className="flex items-center gap-1 self-start text-[13px] text-primary hover:underline"
+              >
+                <Plus className="size-[14px]" strokeWidth={1.6} absoluteStrokeWidth />
+                Add condition
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <PanelSaveButton
+        onClick={() => {
+          onSavePath(branchNode.id, path.id, {
+            name,
+            description,
+            filters: persistFilters,
+          });
+          onClose();
+        }}
+      />
+    </div>
+  );
+}
+
 function PropertiesPanel({
   node,
   onClose,
   onSaveConfig,
   onCanvasPatch,
+  onAcceptCoachingChanges,
 }: {
   node: WorkflowNode;
   onClose: () => void;
   onSaveConfig: (id: string, config: Record<string, unknown>) => void;
   onCanvasPatch: (id: string, patch: WorkflowNodeCanvasPatch) => void;
+  onAcceptCoachingChanges?: (nodeId: string) => void;
 }) {
   const typeLabel =
     node.type === "agent"
@@ -2429,6 +3298,7 @@ function PropertiesPanel({
           onCanvasPatch={(patch) => onCanvasPatch(node.id, patch)}
           onSave={(config) => onSaveConfig(node.id, config)}
           onClose={onClose}
+          onAcceptCoachingChanges={onAcceptCoachingChanges ? () => onAcceptCoachingChanges(node.id) : undefined}
         />
       )}
       {(node.type === "branch" || node.type === "delay") && (
@@ -2464,21 +3334,368 @@ function makePrePopulatedNodes(agentDisplayName?: string | null): WorkflowNode[]
   ];
 }
 
-export function AgentsBuilderView({ onBack, agentName, initialPhase }: AgentsBuilderViewProps) {
+/** Matches `RESPONSE_AGENT_ROWS` id in Reviews — [Figma Review Response agent 2.0](https://www.figma.com/design/mCFHJowuWOQMo0giLAjwyj/Review-Response-agent-2.0?node-id=58-30140). */
+export const AGENTS_BUILDER_NORTH_AUTONOMOUS_PRESET_ID = "north-autonomous" as const;
+export const AGENTS_BUILDER_NORTH_AUTONOMOUS_DISPLAY_NAME =
+  "Review response agent replying autonomously - North Region" as const;
+
+const NORTH_AUTONOMOUS_TRIGGER_DESCRIPTION =
+  "Agent triggers on new or updated reviews across all sources and locations.";
+
+const NORTH_AUTONOMOUS_TRIAGE_DESCRIPTION =
+  "The system checks the review to decide whether a response is required based on whether it is a genuine customer review or spam content that is irrelevant to the business or in any way violates the content policy of the source.";
+
+const NORTH_AUTONOMOUS_SYSTEM_PROMPT =
+  "You are the First-Line triaging agent. Analyze the incoming review if it is a genuine customer review or irrelevant spam.";
+
+const NORTH_AUTONOMOUS_USER_PROMPT =
+  "1. If the review content violates any content terms of {x} Review.source treat it as spam.\n2. If the review contains business-unrelated self-promotion or distracts from the business profile, treat it as spam.";
+
+const NORTH_AUTONOMOUS_AGENT_GOALS =
+  "Autonomously triage incoming reviews for the North Region: detect spam and policy risk, honor each source’s content rules, and route genuine reviews toward a safe, on-brand autonomous reply.";
+
+const NORTH_AUTONOMOUS_AGENT_OUTCOMES =
+  "Reduce manual moderation load, keep public responses compliant, and maintain consistent customer experience across all connected locations.";
+
+const NORTH_AUTONOMOUS_LOCATIONS = [
+  "1001 — North Region hub",
+  "1002 — Seattle, WA",
+  "1003 — Portland, OR",
+  "1004 — Chicago, IL",
+];
+
+const NORTH_POST_TRIAGE_REVIEW_DETAILS_DESC =
+  "Detects what the reviewer is talking about, maps it to the business's vocabulary, scores severity, identifies staff mentioned and competitors, and flags relevant business context details.";
+
+const NORTH_POST_TRIAGE_RESPONSE_GENERATION_DESC =
+  "Assemble the final message using the drafted strategy, the extracted details, and the brand voice.";
+
+const NORTH_POST_TRIAGE_REVIEW_RESPONDER_CANVAS_DESC =
+  "Responds to the given review using the selected response";
+
+const NORTH_POST_TRIAGE_REVIEW_RESPONDER_PANEL_DESC = "Reply to the review using the generated response";
+
+const NORTH_POST_TRIAGE_EMAIL_ALERT_DESC =
+  "Alerts specific users when a review has been marked as SPAM and user has to take an action to flag it on the review site";
+
+const NORTH_BRANCH_RESPOND_DESCRIPTION =
+  "Decide based on the contents of the review if it warrants a reply.";
+
+const NORTH_REVIEW_DETAILS_SYSTEM_PROMPT =
+  "You are a Review Intelligence Extractor. Your job is to analyze a customer review and extract details. Be precise. Do not hallucinate. If something is not mentioned or cannot be confidently inferred from the review, do not invent it — say it explicitly as unknown or omit it.";
+
+const NORTH_REVIEW_DETAILS_USER_PROMPT = `Analyze the following review:
+Review Text: {x} Review.text
+Star Rating: {x} Review.rating
+
+Perform all of the following: extract language, severity, sentiment, severity reason, escalation flag, topics, staff mentions, competitor mentions, and any other structured fields defined in your output specification.`;
+
+const NORTH_RESPONSE_GENERATION_SYSTEM_PROMPT =
+  "You are a marketing manager specialised in writing responses to customer reviews";
+
+const NORTH_RESPONSE_GENERATION_USER_PROMPT = `Write a response to {x} Review.text with Star rating: {x} Review.rating
+Apply all relevant rules below (cumulative, not exclusive).
+Rule 0 - LANGUAGE: Respond in the same language as the review.
+Rule 1 - TONE AND VOICE: Reflect our brand voice; be respectful and solution-oriented.
+Rule 2 - FACTUALITY: Do not invent details; only use information supported by the review and provided context.
+Rule 3 - PLATFORM POLICY: Follow the destination platform's public posting guidelines.
+Rule 4 - SENSITIVE TOPICS: Avoid unsafe or disallowed claims; escalate when unsure.`;
+
+const NORTH_REVIEW_RESPONDER_SYSTEM_PROMPT =
+  "You are a marketing manager specialised in responding to reviews. Given the generated response, post it to the review.";
+
+const NORTH_REVIEW_RESPONDER_USER_PROMPT =
+  "Use response from {x} 5.review.response and respond using 🔧 Review responder";
+
+/** Canvas + default property panel values for “Review response agent replying autonomously — North Region”. */
+function makeNorthAutonomousWorkflowNodes(displayName: string): WorkflowNode[] {
+  const name = displayName.trim() || AGENTS_BUILDER_NORTH_AUTONOMOUS_DISPLAY_NAME;
+  return [
+    {
+      id: DEFAULT_AGENT_NODE_ID,
+      type: "agent",
+      subtype: "agent-identity",
+      title: name,
+      description: "500 locations",
+      config: {
+        name,
+        description: "500 locations",
+        goals: NORTH_AUTONOMOUS_AGENT_GOALS,
+        outcomes: NORTH_AUTONOMOUS_AGENT_OUTCOMES,
+        locations: NORTH_AUTONOMOUS_LOCATIONS,
+        additionalLocations: 496,
+      },
+      enabled: true,
+      order: 0,
+    },
+    {
+      id: "node-1",
+      type: "trigger",
+      subtype: "review-new-or-updated",
+      title: "When a new review is received or updated",
+      description: NORTH_AUTONOMOUS_TRIGGER_DESCRIPTION,
+      config: {
+        triggerName: "When a new review is received or updated",
+        description: NORTH_AUTONOMOUS_TRIGGER_DESCRIPTION,
+        conditions: ["", "", ""],
+      },
+      enabled: true,
+      order: 1,
+    },
+    {
+      id: "node-2",
+      type: "task",
+      subtype: "triage-review",
+      title: "Triage review",
+      description: NORTH_AUTONOMOUS_TRIAGE_DESCRIPTION,
+      config: {
+        taskName: "Triage review",
+        description: NORTH_AUTONOMOUS_TRIAGE_DESCRIPTION,
+        llmModel: "fast",
+        systemPrompt: NORTH_AUTONOMOUS_SYSTEM_PROMPT,
+        userPrompt: NORTH_AUTONOMOUS_USER_PROMPT,
+        contextChips: ["{x} Review.comment", "{x} Review.source", "https://www.yelp.com/guidelines"],
+        contextMoreCount: 8,
+        inputFieldChips: ["{x} Review.comment", "{x} Review.source", "{x} Review.rating"],
+        outputFieldChips: ["{x} Review.isSpam", "{x} Review.spamReason"],
+      },
+      enabled: true,
+      order: 2,
+    },
+    {
+      id: "north-node-branch",
+      type: "branch",
+      subtype: "branch",
+      title: "Based on conditions",
+      description: "Build condition-specific flows.",
+      config: {
+        branchType: "condition",
+        paths: [
+          {
+            id: "north-path-respond",
+            name: "Respond",
+            description: NORTH_BRANCH_RESPOND_DESCRIPTION,
+            filters: [
+              {
+                field: "{x} 1.Review.spam",
+                operator: "is equal to",
+                value: "False",
+              },
+            ],
+            nodes: [
+              {
+                id: "north-node-review-details",
+                type: "task",
+                subtype: "review-details-extraction",
+                title: "Review details extraction",
+                description: NORTH_POST_TRIAGE_REVIEW_DETAILS_DESC,
+                config: {
+                  taskName: "Review details extraction",
+                  description: NORTH_POST_TRIAGE_REVIEW_DETAILS_DESC,
+                  llmModel: "thinking",
+                  systemPrompt: NORTH_REVIEW_DETAILS_SYSTEM_PROMPT,
+                  userPrompt: NORTH_REVIEW_DETAILS_USER_PROMPT,
+                  contextChips: [
+                    "Location.name",
+                    "Location.brand",
+                    "location.speciality",
+                    "www.aspendental.com",
+                  ],
+                  contextMoreCount: 2,
+                  inputFieldChips: [
+                    "Review.comment",
+                    "Review.rating",
+                    "Review.source",
+                    "Contact.assistedby",
+                  ],
+                  outputFieldChips: [
+                    "Review.language",
+                    "Review.severity",
+                    "Review.sentiment",
+                    "Review.severityreason",
+                    "Review.escalate",
+                    "Topics",
+                    "Staff_mentions",
+                    "Competitor_mentions",
+                  ],
+                  promptStrength: "weak",
+                },
+                enabled: true,
+                order: 0,
+              },
+              {
+                id: "north-node-response-generation",
+                type: "task",
+                subtype: "response-generation",
+                title: "Response generation",
+                description: NORTH_POST_TRIAGE_RESPONSE_GENERATION_DESC,
+                config: {
+                  taskName: "Response generation",
+                  description: NORTH_POST_TRIAGE_RESPONSE_GENERATION_DESC,
+                  llmModel: "balanced",
+                  systemPrompt: NORTH_RESPONSE_GENERATION_SYSTEM_PROMPT,
+                  userPrompt: NORTH_RESPONSE_GENERATION_USER_PROMPT,
+                  contextChips: [
+                    "{x} Location.brand",
+                    "{x} Location.name",
+                    "{x} Location.alias",
+                    "{x} Location.address",
+                    "{x} Location.phone",
+                    "{x} Location.email",
+                  ],
+                  contextMoreCount: 14,
+                  inputFieldChips: [
+                    "{x} 4.review.sentiment",
+                    "{x} 4.review.language",
+                    "{x} 4.review.escalate",
+                    "{x} 4.topics",
+                  ],
+                  outputFieldChips: ["{x} Review.response"],
+                  promptStrength: "weak",
+                },
+                enabled: true,
+                order: 1,
+              },
+              {
+                id: "north-node-review-responder",
+                type: "task",
+                subtype: "review-responder",
+                title: "Review responder",
+                description: NORTH_POST_TRIAGE_REVIEW_RESPONDER_CANVAS_DESC,
+                config: {
+                  taskName: "Send a review response",
+                  description: NORTH_POST_TRIAGE_REVIEW_RESPONDER_PANEL_DESC,
+                  llmModel: "fast",
+                  systemPrompt: NORTH_REVIEW_RESPONDER_SYSTEM_PROMPT,
+                  userPrompt: NORTH_REVIEW_RESPONDER_USER_PROMPT,
+                  promptStrength: "weak",
+                  syncTaskNameToTitle: false,
+                  syncDescriptionToCard: false,
+                },
+                enabled: true,
+                order: 2,
+              },
+            ],
+          },
+          {
+            id: "north-path-no-conditions",
+            name: "No conditions met",
+            nodes: [
+              {
+                id: "north-node-email-alert",
+                type: "task",
+                subtype: "send-email-alert",
+                title: "Send an email alert",
+                description: NORTH_POST_TRIAGE_EMAIL_ALERT_DESC,
+                config: {
+                  taskName: "Send an email alert",
+                  description: NORTH_POST_TRIAGE_EMAIL_ALERT_DESC,
+                  toolOnlyTask: true,
+                  toolNames: ["Send email"],
+                },
+                enabled: true,
+                order: 0,
+              },
+            ],
+          },
+        ],
+      },
+      enabled: true,
+      order: 3,
+    },
+  ];
+}
+
+function resolveBuilderInitialNodes(
+  agentName?: string | null,
+  workflowPresetId?: string | null,
+): WorkflowNode[] {
+  const isNorthAutonomous =
+    workflowPresetId === AGENTS_BUILDER_NORTH_AUTONOMOUS_PRESET_ID ||
+    agentName === AGENTS_BUILDER_NORTH_AUTONOMOUS_DISPLAY_NAME;
+  if (isNorthAutonomous) {
+    return makeNorthAutonomousWorkflowNodes(agentName ?? AGENTS_BUILDER_NORTH_AUTONOMOUS_DISPLAY_NAME);
+  }
+  if (agentName) return makePrePopulatedNodes(agentName);
+  return [];
+}
+
+export function AgentsBuilderView({
+  onBack,
+  agentName,
+  workflowPresetId,
+  initialPhase,
+  coachingHighlightNodeIds,
+  initialSelectedNodeId,
+  leftPanel,
+  onCoachingAcceptChanges,
+  onCoachingEditAgent,
+  coachingSuggestedChanges,
+}: AgentsBuilderViewProps) {
+  const [acceptedCoachingNodeIds, setAcceptedCoachingNodeIds] = useState<Set<string>>(new Set());
+
+  const coachingHighlightSet = useMemo(
+    () => new Set((coachingHighlightNodeIds ?? []).filter((id) => !acceptedCoachingNodeIds.has(id))),
+    [coachingHighlightNodeIds, acceptedCoachingNodeIds],
+  );
+
+  const effectiveSuggestedChanges = useMemo(
+    () => coachingSuggestedChanges?.filter((item) => !acceptedCoachingNodeIds.has(item.nodeId)),
+    [coachingSuggestedChanges, acceptedCoachingNodeIds],
+  );
+
+  function handleAcceptNodeCoachingChanges(nodeId: string) {
+    setAcceptedCoachingNodeIds((prev) => new Set([...prev, nodeId]));
+  }
   const [phase, setPhase] = useState<BuilderPhase>(
-    initialPhase ?? (agentName ? "building" : "library")
+    initialPhase ?? (agentName || workflowPresetId ? "building" : "library"),
   );
   const [nodes, setNodes] = useState<WorkflowNode[]>(() =>
-    agentName ? makePrePopulatedNodes(agentName) : [],
+    resolveBuilderInitialNodes(agentName, workflowPresetId),
   );
+  const workflowCanvasApiRef = useRef<WorkflowCanvasApi | null>(null);
+  const [suggestedChangesOpen, setSuggestedChangesOpen] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(() =>
-    agentName ? DEFAULT_AGENT_NODE_ID : null,
+    agentName || workflowPresetId
+      ? (initialSelectedNodeId !== undefined ? initialSelectedNodeId : DEFAULT_AGENT_NODE_ID)
+      : null,
   );
+  const [selectedBranchPath, setSelectedBranchPath] = useState<BranchPathSelection | null>(null);
   const [dragItem, setDragItem] = useState<DraggableItemData | null>(null);
+
+  /** Selecting a node deselects any branch path, and vice versa. */
+  const handleSelectNode = useCallback((id: string | null) => {
+    setSelectedNodeId(id);
+    if (id !== null) setSelectedBranchPath(null);
+  }, []);
+  const handleSelectBranchPath = useCallback((sel: BranchPathSelection | null) => {
+    setSelectedBranchPath(sel);
+    if (sel !== null) setSelectedNodeId(null);
+  }, []);
+
+  /** Persist Branch-path edits (name/description/filters) into the parent branch's config. */
+  const handleSaveBranchPath = useCallback(
+    (branchNodeId: string, pathId: string, updates: Partial<BranchPath>) => {
+      setNodes((prev) =>
+        mapWorkflowNodeById(prev, branchNodeId, (n) => {
+          const paths = getOrMigratePaths(n.config);
+          const newPaths = paths.map((p) => (p.id === pathId ? { ...p, ...updates } : p));
+          return { ...n, config: { ...n.config, paths: newPaths } };
+        }),
+      );
+    },
+    [],
+  );
+
+  /** Branch node referenced by the currently-selected branch path (if any). */
+  const selectedBranchNode = useMemo(
+    () => (selectedBranchPath ? findWorkflowNodeById(nodes, selectedBranchPath.branchNodeId) : null),
+    [nodes, selectedBranchPath],
+  );
   /** Bumped on every `onDragEnd` so toolbox flyouts close without unmounting mid-drag (breaks `useDraggable`). */
   const [toolboxFlyoutCloseTick, setToolboxFlyoutCloseTick] = useState(0);
 
-  const initialBuildingNodes = agentName ? makePrePopulatedNodes(agentName) : [];
+  const initialBuildingNodes = resolveBuilderInitialNodes(agentName, workflowPresetId);
   const initialAcc = toolboxAccordionsForHasTrigger(workflowHasTriggerNode(initialBuildingNodes));
   const [toolboxTriggerExpanded, setToolboxTriggerExpanded] = useState(initialAcc.triggerExpanded);
   const [toolboxTasksExpanded, setToolboxTasksExpanded] = useState(initialAcc.tasksExpanded);
@@ -2486,7 +3703,10 @@ export function AgentsBuilderView({ onBack, agentName, initialPhase }: AgentsBui
 
   const prevTriggerCountRef = useRef<number | null>(null);
 
-  const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
+  const selectedNode = useMemo(
+    () => findWorkflowNodeById(nodes, selectedNodeId),
+    [nodes, selectedNodeId],
+  );
 
   const canAddTrigger = !workflowHasTriggerNode(nodes);
 
@@ -2578,18 +3798,10 @@ export function AgentsBuilderView({ onBack, agentName, initialPhase }: AgentsBui
         enabled: true,
         order: afterOrder + 0.5,
       };
-      setNodes((prev) =>
-        prev.map((n) => {
-          if (n.id !== branchNodeId) return n;
-          const paths = getOrMigratePaths(n.config);
-          const newPaths = paths.map((p) => {
-            if (p.id !== pathId) return p;
-            const withNew = [...p.nodes, newNode].sort((a, b) => a.order - b.order);
-            return { ...p, nodes: withNew.map((nd, i) => ({ ...nd, order: i })) };
-          });
-          return { ...n, config: { ...n.config, paths: newPaths } };
-        }),
-      );
+      setNodes((prev) => {
+        const { nodes: updated } = insertNodeIntoBranchPath(prev, branchNodeId!, pathId!, newNode);
+        return updated;
+      });
       setSelectedNodeId(newNode.id);
       if (phase === "library") setPhase("building");
       return;
@@ -2647,14 +3859,15 @@ export function AgentsBuilderView({ onBack, agentName, initialPhase }: AgentsBui
   };
 
   const handleToggleNode = useCallback((id: string) => {
-    setNodes((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, enabled: !n.enabled } : n))
-    );
+    setNodes((prev) => {
+      if (!findWorkflowNodeById(prev, id)) return prev;
+      return mapWorkflowNodeById(prev, id, (n) => ({ ...n, enabled: !n.enabled }));
+    });
   }, []);
 
   const handleDeleteNode = useCallback((id: string) => {
     if (id === DEFAULT_AGENT_NODE_ID) return;
-    setNodes((prev) => prev.filter((n) => n.id !== id));
+    setNodes((prev) => removeWorkflowNodeFromTree(prev, id));
     setSelectedNodeId((cur) => (cur === id ? null : cur));
   }, []);
 
@@ -2691,22 +3904,22 @@ export function AgentsBuilderView({ onBack, agentName, initialPhase }: AgentsBui
   }, []);
 
   const handleWorkflowNodeCanvasPatch = useCallback((id: string, patch: WorkflowNodeCanvasPatch) => {
-    setNodes((prev) =>
-      prev.map((n) => {
-        if (n.id !== id) return n;
+    setNodes((prev) => {
+      if (!findWorkflowNodeById(prev, id)) return prev;
+      return mapWorkflowNodeById(prev, id, (n) => {
         const next = { ...n };
         if (patch.title !== undefined) next.title = patch.title;
         if (patch.description !== undefined) next.description = patch.description;
         if (patch.config) next.config = { ...n.config, ...patch.config };
         return next;
-      }),
-    );
+      });
+    });
   }, []);
 
   const handleSaveConfig = useCallback((id: string, config: Record<string, unknown>) => {
-    setNodes((prev) =>
-      prev.map((n) => {
-        if (n.id !== id) return n;
+    setNodes((prev) => {
+      if (!findWorkflowNodeById(prev, id)) return prev;
+      return mapWorkflowNodeById(prev, id, (n) => {
         const merged = { ...n.config, ...config };
         const base: WorkflowNode = { ...n, config: merged };
         if (n.type === "agent") {
@@ -2720,13 +3933,15 @@ export function AgentsBuilderView({ onBack, agentName, initialPhase }: AgentsBui
           return base;
         }
         if (n.type === "task") {
-          if (typeof config.taskName === "string") base.title = config.taskName;
-          if (typeof config.description === "string") base.description = config.description;
+          const syncTitle = merged.syncTaskNameToTitle !== false;
+          const syncDesc = merged.syncDescriptionToCard !== false;
+          if (typeof config.taskName === "string" && syncTitle) base.title = config.taskName;
+          if (typeof config.description === "string" && syncDesc) base.description = config.description;
           return base;
         }
         return base;
-      }),
-    );
+      });
+    });
   }, []);
 
   const handleCreateFromScratch = () => {
@@ -2752,7 +3967,22 @@ export function AgentsBuilderView({ onBack, agentName, initialPhase }: AgentsBui
     setToolboxControlsExpanded(acc.controlsExpanded);
   };
 
+  const agentsBuilderCanvasPanelValue = useMemo(
+    () =>
+      leftPanel
+        ? {
+            focusWorkflowNode: (nodeId: string) => {
+              workflowCanvasApiRef.current?.focusWorkflowNode(nodeId);
+            },
+            selectedNodeId,
+          }
+        : null,
+    [leftPanel, selectedNodeId],
+  );
+
   return (
+    <CoachingHighlightContext.Provider value={coachingHighlightSet}>
+    <AgentsBuilderCanvasPanelContext.Provider value={agentsBuilderCanvasPanelValue}>
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex-1 flex flex-col overflow-hidden bg-background">
         <MainCanvasViewHeader
@@ -2767,26 +3997,136 @@ export function AgentsBuilderView({ onBack, agentName, initialPhase }: AgentsBui
               >
                 <ChevronLeft className="size-4" strokeWidth={1.6} absoluteStrokeWidth />
               </Button>
-              <span className="truncate text-foreground">
-                {agentName ?? "New review response agent"}
-              </span>
+              {coachingHighlightNodeIds?.length ? (
+                <span className="flex min-w-0 flex-col gap-0.5">
+                  <span className="text-[15px] font-semibold leading-none tracking-tight text-foreground">
+                    Coach
+                  </span>
+                  <span className="flex min-w-0 items-center gap-2 leading-none">
+                    <span className="truncate text-[13px] font-normal text-muted-foreground">
+                      {agentName ?? "New review response agent"}
+                    </span>
+                    <span className="inline-flex shrink-0 items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                      Running
+                    </span>
+                  </span>
+                </span>
+              ) : (
+                <span className="truncate">
+                  {agentName ?? "New review response agent"}
+                </span>
+              )}
             </span>
+          }
+          actions={
+            <div className="flex items-center gap-2">
+              {coachingHighlightNodeIds && coachingHighlightNodeIds.length > 0 ? (
+                <>
+                  {effectiveSuggestedChanges && effectiveSuggestedChanges.length > 0 ? (
+                    <Popover
+                      open={suggestedChangesOpen}
+                      onOpenChange={setSuggestedChangesOpen}
+                    >
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
+                        >
+                          <AlertCircle className="size-4 text-amber-500" strokeWidth={1.6} absoluteStrokeWidth />
+                          <span>Suggested changes ({effectiveSuggestedChanges.length})</span>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent align="end" className="w-[320px] p-3">
+                        <div className="flex flex-col gap-2">
+                          {effectiveSuggestedChanges.map((item) => (
+                            <NodeInsightCard
+                              key={item.nodeId}
+                              node={item}
+                              onSelect={() => {
+                                workflowCanvasApiRef.current?.focusWorkflowNode(item.nodeId);
+                                setSuggestedChangesOpen(false);
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => onCoachingEditAgent?.()}
+                    className="inline-flex items-center rounded-md px-2 py-1 text-sm font-medium text-primary transition-colors hover:underline"
+                    aria-label="Edit agent"
+                  >
+                    Edit agent
+                  </button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-9 rounded-lg px-4 text-sm"
+                    onClick={() => {
+                      setNodes((prev) =>
+                        prev.map((n) => {
+                          const diff = COACHING_DIFFS[n.id];
+                          if (!diff) return n;
+                          const newConfig: Record<string, unknown> = { ...n.config };
+                          if (diff.acceptedSystemPrompt) {
+                            newConfig.systemPrompt = diff.acceptedSystemPrompt;
+                          }
+                          if (diff.acceptedUserPrompt) {
+                            newConfig.userPrompt = diff.acceptedUserPrompt;
+                          }
+                          if (diff.acceptedOutputFieldChips?.length) {
+                            const existing = (n.config.outputFieldChips as string[] | undefined) ?? [];
+                            newConfig.outputFieldChips = [...existing, ...diff.acceptedOutputFieldChips];
+                          }
+                          return { ...n, config: newConfig };
+                        }),
+                      );
+                      onCoachingAcceptChanges?.();
+                    }}
+                  >
+                    Accept changes
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
+                    aria-label="Auto-save"
+                    title="Auto-save"
+                  >
+                    <CloudUpload className="size-[18px]" strokeWidth={1.6} absoluteStrokeWidth />
+                  </button>
+                  <Button
+                    type="button"
+                    className="h-9 rounded-lg px-4 text-sm"
+                    onClick={() => toast.success("Agent published successfully.")}
+                  >
+                    Publish
+                  </Button>
+                </>
+              )}
+            </div>
           }
         />
 
         <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden bg-app-shell-l2-surface">
           {phase === "building" ? (
-            <ToolboxPanel
-              hideFlyoutWhileDragging={dragItem !== null}
-              flyoutCloseTick={toolboxFlyoutCloseTick}
-              triggerExpanded={toolboxTriggerExpanded}
-              tasksExpanded={toolboxTasksExpanded}
-              controlsExpanded={toolboxControlsExpanded}
-              onToggleTriggerAccordion={toggleToolboxTriggerAccordion}
-              onToggleTasksAccordion={toggleToolboxTasksAccordion}
-              onToggleControlsAccordion={toggleToolboxControlsAccordion}
-              canAddTrigger={canAddTrigger}
-            />
+            leftPanel !== undefined ? leftPanel : (
+              <ToolboxPanel
+                hideFlyoutWhileDragging={dragItem !== null}
+                flyoutCloseTick={toolboxFlyoutCloseTick}
+                triggerExpanded={toolboxTriggerExpanded}
+                tasksExpanded={toolboxTasksExpanded}
+                controlsExpanded={toolboxControlsExpanded}
+                onToggleTriggerAccordion={toggleToolboxTriggerAccordion}
+                onToggleTasksAccordion={toggleToolboxTasksAccordion}
+                onToggleControlsAccordion={toggleToolboxControlsAccordion}
+                canAddTrigger={canAddTrigger}
+              />
+            )
           ) : null}
 
           {phase === "library" ? (
@@ -2798,15 +4138,19 @@ export function AgentsBuilderView({ onBack, agentName, initialPhase }: AgentsBui
             <BuildingPhase
               nodes={nodes}
               selectedNodeId={selectedNodeId}
-              onSelectNode={setSelectedNodeId}
+              onSelectNode={handleSelectNode}
               onToggleNode={handleToggleNode}
               onDeleteNode={handleDeleteNode}
               onDuplicateNode={handleDuplicateNode}
               onInsertBetween={handleInsertBetween}
               onAddBranch={handleAddBranch}
               onSaveBranchConfig={handleSaveConfig}
+              selectedBranchPath={selectedBranchPath}
+              onSelectBranchPath={handleSelectBranchPath}
               isDragActive={dragItem !== null}
-              hasFloatingPropertyPanel={selectedNode !== null}
+              emphasizeTriggerDropZones={dragItem?.type === "trigger"}
+              hasFloatingPropertyPanel={selectedNode !== null || selectedBranchPath !== null}
+              workflowCanvasApiRef={leftPanel ? workflowCanvasApiRef : undefined}
             />
           )}
 
@@ -2816,6 +4160,16 @@ export function AgentsBuilderView({ onBack, agentName, initialPhase }: AgentsBui
               onClose={() => setSelectedNodeId(null)}
               onSaveConfig={handleSaveConfig}
               onCanvasPatch={handleWorkflowNodeCanvasPatch}
+              onAcceptCoachingChanges={handleAcceptNodeCoachingChanges}
+            />
+          )}
+
+          {selectedBranchPath && selectedBranchNode && (
+            <BranchPathDetailsPanel
+              branchNode={selectedBranchNode}
+              pathId={selectedBranchPath.pathId}
+              onClose={() => setSelectedBranchPath(null)}
+              onSavePath={handleSaveBranchPath}
             />
           )}
         </div>
@@ -2825,5 +4179,7 @@ export function AgentsBuilderView({ onBack, agentName, initialPhase }: AgentsBui
         {dragItem ? <DragGhostCard item={dragItem} /> : null}
       </DragOverlay>
     </DndContext>
+    </AgentsBuilderCanvasPanelContext.Provider>
+    </CoachingHighlightContext.Provider>
   );
 }

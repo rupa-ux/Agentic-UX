@@ -17,11 +17,19 @@ export function ReviewsView({
   onViewFeedbackProgress,
   onCreateAgent,
   onEditAgent,
+  onBuilderModeChange,
+  initialAgentId,
+  initialFeedbackId,
+  deepLinkKey,
 }: {
   reviewsL2ActiveItem?: string;
   onViewFeedbackProgress?: () => void;
   onCreateAgent?: () => void;
   onEditAgent?: (agentName: string) => void;
+  onBuilderModeChange?: (active: boolean) => void;
+  initialAgentId?: string;
+  initialFeedbackId?: string;
+  deepLinkKey?: number;
 } = {}) {
   const [mode, setMode] = useState<ReviewsViewMode>("list");
   if (reviewsL2ActiveItem === REVIEWS_L2_GENERATE_REVIEW_KEY) {
@@ -38,7 +46,16 @@ export function ReviewsView({
     );
   }
   if (reviewsL2ActiveItem === REVIEWS_L2_RESPONSE_AGENT_KEY) {
-    return <ReviewsResponseAgentsPage onCreateAgent={onCreateAgent} onEditAgent={onEditAgent} />;
+    return (
+      <ReviewsResponseAgentsPage
+        key={deepLinkKey}
+        initialAgentId={initialAgentId}
+        initialFeedbackId={initialFeedbackId}
+        onCreateAgent={onCreateAgent}
+        onEditAgent={onEditAgent}
+        onBuilderModeChange={onBuilderModeChange}
+      />
+    );
   }
 
   return mode === "list" ? (

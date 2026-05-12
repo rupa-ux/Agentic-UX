@@ -73,7 +73,11 @@ import { ConversationStream } from "./components/ConversationStream";
 import { AgentActivityView } from "./components/AgentActivityView";
 import { AgentConfigView } from "./components/AgentConfigView";
 import { AgentsMonitorView } from "./components/AgentsMonitorView";
-import { AgentsBuilderView } from "./components/AgentsBuilderView.v1";
+import {
+  AgentsBuilderView,
+  AGENTS_BUILDER_NORTH_AUTONOMOUS_DISPLAY_NAME,
+  AGENTS_BUILDER_NORTH_AUTONOMOUS_PRESET_ID,
+} from "./components/AgentsBuilderView.v1";
 import { SettingsView } from "./components/SettingsView.v1";
 import { SettingsL2NavPanel } from "./components/SettingsL2NavPanel.v1";
 import { BirdAILoginPage } from "./components/auth/BirdAILoginPage";
@@ -184,6 +188,7 @@ export default function App() {
     "nav:l2:reviews",
     "Human actions/View all reviews",
   );
+  const [reviewsBuilderActive, setReviewsBuilderActive] = useState(false);
   const [referralsL2Active, setReferralsL2Active] = usePersistedState(
     "nav:l2:referrals",
     REFERRALS_L2_DEFAULT_ACTIVE_KEY,
@@ -208,6 +213,9 @@ export default function App() {
   const [contactsDetailId, setContactsDetailId] = useState<number | null>(null);
   const [contactsQuickViewId, setContactsQuickViewId] = useState<number | null>(null);
   const [contactsBulkImportActive, setContactsBulkImportActive] = useState(false);
+
+  const [reviewsFeedbackDeepLinkKey, setReviewsFeedbackDeepLinkKey] = useState(0);
+  const [reviewsFeedbackDeepLink, setReviewsFeedbackDeepLink] = useState<{ agentId: string; feedbackId: string } | null>(null);
   const [contactsBulkImportStep, setContactsBulkImportStep] =
     useState<ContactsBulkImportStep>("upload");
 
@@ -525,8 +533,8 @@ export default function App() {
             <L2NavPanel currentView={currentView} onViewChange={handleViewChange} />
           )}
 
-          {/* Reviews L2 nav panel */}
-          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "reviews" && (
+          {/* Reviews L2 nav panel — hidden while coaching canvas is open */}
+          {!aiPanelOpen && !mynaWorkspaceExpanded && currentView === "reviews" && !reviewsBuilderActive && (
             <ReviewsL2NavPanel activeItem={reviewsL2Active} onActiveItemChange={setReviewsL2Active} />
           )}
           {/* Social L2 nav panel — hidden on Create post (full-width composer) */}
@@ -646,9 +654,18 @@ export default function App() {
             ) : currentView === "reviews" ? (
               <ReviewsView
                 reviewsL2ActiveItem={reviewsL2Active}
-                onViewFeedbackProgress={() => handleViewChange("agents-monitor")}
+                onViewFeedbackProgress={() => {
+                  setReviewsFeedbackDeepLink({ agentId: "north-autonomous", feedbackId: "fb-1" });
+                  setReviewsFeedbackDeepLinkKey((k) => k + 1);
+                  setReviewsL2Active("Agents/Response agent");
+                  handleViewChange("reviews");
+                }}
                 onCreateAgent={() => { setEditingAgentName(undefined); handleViewChange("agents-builder"); }}
                 onEditAgent={(name) => { setEditingAgentName(name); handleViewChange("agents-builder"); }}
+                onBuilderModeChange={setReviewsBuilderActive}
+                initialAgentId={reviewsFeedbackDeepLink?.agentId}
+                initialFeedbackId={reviewsFeedbackDeepLink?.feedbackId}
+                deepLinkKey={reviewsFeedbackDeepLinkKey}
               />
             ) : currentView === "social" ? (
               <SocialView activeItem={socialL2Active} onActiveItemChange={handleSocialL2Change} />
@@ -657,6 +674,11 @@ export default function App() {
             ) : currentView === "agents-builder" ? (
               <AgentsBuilderView
                 agentName={editingAgentName}
+                workflowPresetId={
+                  editingAgentName === AGENTS_BUILDER_NORTH_AUTONOMOUS_DISPLAY_NAME
+                    ? AGENTS_BUILDER_NORTH_AUTONOMOUS_PRESET_ID
+                    : undefined
+                }
                 initialPhase={editingAgentName ? "building" : "library"}
                 onBack={() => { setEditingAgentName(undefined); handleViewChange("reviews"); }}
               />

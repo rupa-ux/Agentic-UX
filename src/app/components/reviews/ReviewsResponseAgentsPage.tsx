@@ -1,6 +1,8 @@
-import { useMemo, useState } from "react";
-import { AgentsBuilderView } from "@/app/components/AgentsBuilderView.v1";
-import { ArrowRight, ArrowUp, Check, ChevronDown, ChevronLeft, Clock, ExternalLink, Filter, Flag, Info, LayoutGrid, List, MessageSquare, Mic, MoreVertical, Search, Sparkles, Star, ThumbsDown, Zap } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import { AgentsBuilderView, AGENTS_BUILDER_NORTH_AUTONOMOUS_DISPLAY_NAME } from "@/app/components/AgentsBuilderView.v1";
+import { CoachingAgentCanvas } from "@/app/components/reviews/CoachingAgentCanvas";
+import { AlertCircle, AlertTriangle, ArrowRight, ArrowUp, ArrowUpRight, Check, ChevronDown, ChevronLeft, Clock, ExternalLink, Filter, Flag, Info, LayoutGrid, List, ListTodo, MessageSquare, Mic, MoreVertical, Pencil, Search, Sparkles, Star, ThumbsDown, X, Zap } from "lucide-react";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
 import { AppDataTable } from "@/app/components/ui/AppDataTable";
@@ -48,13 +50,37 @@ type LocationOutcomeRow = {
   costSavedUsd: number;
 };
 
+type FeedbackTagTone = "default";
+type FeedbackStatus = "accepted" | "pending review";
+
+type ConfigChangeDiff = {
+  changeType: string;
+  reason: string;
+  diff: {
+    removed?: string;
+    added: string;
+  };
+};
+
+type SuggestedTask = {
+  taskLabel: string;
+  changes: string[];
+  deployWarning?: string;
+  configChanges?: ConfigChangeDiff[];
+};
+
 type FeedbackRow = {
   id: string;
   tags: string[];
+  tagTone: FeedbackTagTone;
   description: string;
   suggestedResponse: string;
-  status: "accepted" | "pending review";
+  suggestedTasks: SuggestedTask[];
+  status: FeedbackStatus;
   dateLabel: string;
+  dateOrder: number;
+  flagReasons?: string[];
+  afterCoachingResponse?: string;
   customer: {
     name: string;
     initials: string;
@@ -75,7 +101,7 @@ type FeedbackRow = {
 const RESPONSE_AGENT_ROWS: ResponseAgentRow[] = [
   {
     id: "north-autonomous",
-    name: "Review response agent replying autonomously - North Region",
+    name: AGENTS_BUILDER_NORTH_AUTONOMOUS_DISPLAY_NAME,
     status: "running",
     issues: 0,
     reviewsResponded: 102,
@@ -151,16 +177,76 @@ const columnHelper = createColumnHelper<ResponseAgentRow>();
 const locationColumnHelper = createColumnHelper<LocationOutcomeRow>();
 const feedbackColumnHelper = createColumnHelper<FeedbackRow>();
 
+const COACHING_TASK_NODE_MAP: Record<string, string> = {
+  "Task 5: Response generation": "north-node-response-generation",
+  "Task 4: Review details extraction": "north-node-review-details",
+};
+
+function getNodeIdsForFeedbackRow(row: FeedbackRow): string[] {
+  return [
+    ...new Set(
+      row.suggestedTasks
+        .map((t) => COACHING_TASK_NODE_MAP[t.taskLabel])
+        .filter(Boolean) as string[],
+    ),
+  ];
+}
+
+function getAllCoachingNodeIds(): string[] {
+  return [
+    ...new Set(
+      RESPONSE_AGENT_FEEDBACK_ROWS.flatMap(getNodeIdsForFeedbackRow),
+    ),
+  ];
+}
+
 const RESPONSE_AGENT_FEEDBACK_ROWS: FeedbackRow[] = [
   {
     id: "fb-1",
     tags: ["More empathy", "Improve brand voice"],
+    tagTone: "default",
     description:
-      "Response felt too generic for such a serious complaint. Marcus was in pain — the reply needed to acknowledge that more directly and offer a concrete next step.",
+      "Response felt too generic for a serious complaint — needed direct acknowledgment and a concrete next step.",
     suggestedResponse:
       "We're truly sorry, Marcus — this isn't the experience we want for anyone. Please reach out to us directly so we can make this right for you personally.",
+    flagReasons: [
+      "Marcus was in physical discomfort — the reply gave no direct acknowledgment of that",
+      "Response used generic phrasing (\"we take this seriously\") — off-brand",
+      "No concrete next step offered — just a vague \"hope to improve\"",
+    ],
+    afterCoachingResponse:
+      "Hi Marcus, sitting in pain for 30 minutes without anyone checking on you — and then having the procedure rushed without explanation — is not the care you deserved. We're genuinely sorry. Our clinical director will call you directly this week to understand what happened and make it right. Thank you for telling us.",
+    suggestedTasks: [
+      {
+        taskLabel: "Task 5: Response generation",
+        changes: ["System prompt update", "Context: add variable"],
+        configChanges: [
+          {
+            changeType: "System prompt update",
+            reason:
+              "Current system prompt has no persona depth or instruction for distress-level reviews. The LLM defaults to corporate tone regardless of severity.",
+            diff: {
+              removed:
+                "You are a marketing manager specialised in writing responses to customer reviews",
+              added:
+                "You are a customer experience manager for {Location.brand} who genuinely cares about every patient's experience. You write responses that feel personal and specific — never copy-paste, never corporate. For reviews involving physical pain, long waits, or staff dismissiveness, acknowledge the specific experience directly before moving to resolution.",
+            },
+          },
+          {
+            changeType: "Context — add variable",
+            reason:
+              "Add structured brand voice guidelines so the model stops inventing filler phrases.",
+            diff: {
+              added:
+                "Location.brand_voice_guidelines\n\"Warm but direct. Use first names. Never use: 'we take all reviews seriously', 'at your convenience', 'meet expectations'. Always use specific action language and direct ownership.\"",
+            },
+          },
+        ],
+      },
+    ],
     status: "pending review",
-    dateLabel: "2 min ago",
+    dateLabel: "2m ago",
+    dateOrder: 4,
     reviewPostedStatus: "posted",
     customer: {
       name: "Marcus Thompson",
@@ -187,12 +273,48 @@ const RESPONSE_AGENT_FEEDBACK_ROWS: FeedbackRow[] = [
   {
     id: "fb-2",
     tags: ["Missed context", "Weak follow-up"],
+    tagTone: "default",
     description:
-      "The reply missed the point about parking entirely — it acknowledged the compliment but didn't show any awareness of why the parking issue matters to evening visitors.",
+      "Reply missed the parking issue entirely — no awareness of why it matters to evening visitors.",
     suggestedResponse:
       "Thank you for the kind words — and you're right to flag the parking. Evening access is a real pain point we're actively working to fix. Your feedback is exactly what helps us prioritize it.",
-    status: "accepted",
-    dateLabel: "5 min ago",
+    flagReasons: [
+      "Parking concern mentioned twice — agent response made no reference to it",
+      "Generic closing line added no value for a 4-star review",
+    ],
+    suggestedTasks: [
+      {
+        taskLabel: "Task 5: Response generation",
+        changes: ["Input fields: fix missing outputs"],
+        configChanges: [
+          {
+            changeType: "Input fields — fix missing outputs",
+            reason: "The parking issue was extracted by Task 4 but never wired as an input to Task 5 — the response generator had no visibility into it.",
+            diff: {
+              removed: "inputs: [review_text, brand_voice, location_name]",
+              added: "inputs: [review_text, brand_voice, location_name, extracted_issues]",
+            },
+          },
+        ],
+      },
+      {
+        taskLabel: "Task 4: Review details extraction",
+        changes: ["User prompt: add extraction rule"],
+        deployWarning: "Task 4 must be deployed first",
+        configChanges: [
+          {
+            changeType: "User prompt — add extraction rule",
+            reason: "Task 4 had no rule for operational complaints like parking. The extraction now explicitly flags location access issues.",
+            diff: {
+              added: "If the review mentions parking, access, or location logistics, include these in extracted_issues with issue_type: 'operational'.",
+            },
+          },
+        ],
+      },
+    ],
+    status: "pending review",
+    dateLabel: "10 May",
+    dateOrder: 3,
     reviewPostedStatus: "posted",
     customer: {
       name: "Sarah Johnson",
@@ -218,12 +340,47 @@ const RESPONSE_AGENT_FEEDBACK_ROWS: FeedbackRow[] = [
   {
     id: "fb-3",
     tags: ["Too brief", "No resolution offered"],
+    tagTone: "default",
     description:
-      "The response ended without a clear path for the guest to follow up or confirmation that someone would reach out directly.",
+      "2-star review citing being ignored three times — needed a callback offer, not a vague manager mention.",
     suggestedResponse:
       "We hear you, and we don't want to leave this unresolved. Please contact our team directly and we'll personally follow up to make sure this is fully addressed.",
+    flagReasons: [
+      "Lost reservation on an anniversary — response gave no acknowledgment of the occasion",
+      "45-minute wait with no apology — agent response did not address the specific delay",
+      "No concrete resolution or follow-up offered",
+    ],
+    suggestedTasks: [
+      {
+        taskLabel: "Task 5: Response generation",
+        changes: ["User prompt: add severity role"],
+        configChanges: [
+          {
+            changeType: "User prompt — add severity routing",
+            reason: "2-star and 1-star reviews were routed through the same response template as 4-star reviews. High-severity cases now get a more direct, empathetic opening.",
+            diff: {
+              added: "If review_severity >= 4, open by directly naming the specific incident before moving to resolution. Do not start with a thank-you.",
+            },
+          },
+        ],
+      },
+      {
+        taskLabel: "Task 4: Review details extraction",
+        changes: ["System prompt: add severity scoring guide"],
+        configChanges: [
+          {
+            changeType: "System prompt — add severity scoring",
+            reason: "Task 4 was not scoring severity consistently — anniversary occasions and reservation failures were not marked as high-severity.",
+            diff: {
+              added: "Score severity 1–5: 5 = safety or health, 4 = significant service failure (lost reservation, long wait with no acknowledgment), 3 = operational issue, 2 = minor inconvenience, 1 = neutral or positive.",
+            },
+          },
+        ],
+      },
+    ],
     status: "pending review",
-    dateLabel: "18 min ago",
+    dateLabel: "10 May",
+    dateOrder: 2,
     reviewPostedStatus: "escalated",
     customer: {
       name: "James Williams",
@@ -249,12 +406,43 @@ const RESPONSE_AGENT_FEEDBACK_ROWS: FeedbackRow[] = [
   {
     id: "fb-4",
     tags: ["Generic response", "Off-brand tone"],
+    tagTone: "default",
     description:
-      "Opening lines sounded templated and did not reflect the hospitality tone used elsewhere for this location.",
+      "Reads like a copy-paste template — no personality, no specific services referenced.",
     suggestedResponse:
       "It means a lot that you chose us — and your experience should have reflected that. We'd love to welcome you back and show you what genuine hospitality looks like here.",
-    status: "accepted",
-    dateLabel: "32 min ago",
+    flagReasons: [
+      "Review cited a specific service gap at the door — response ignored it entirely",
+      "\"Hope to see you again\" closing is off-brand for this location tier",
+    ],
+    suggestedTasks: [
+      {
+        taskLabel: "Task 5: Response generation",
+        changes: [
+          "Context: add few-shot examples",
+          "User prompt: add negative examples",
+        ],
+        configChanges: [
+          {
+            changeType: "Context — add few-shot examples",
+            reason: "Without examples the model defaulted to a generic acknowledgment template. Brand-specific examples anchor the tone and teach specificity.",
+            diff: {
+              added: "Example — 3-star hospitality review:\n\"Hi David, the welcome you described doesn't reflect what we stand for here. Thank you for being direct — that kind of feedback is exactly what helps us improve.\"",
+            },
+          },
+          {
+            changeType: "User prompt — add negative examples",
+            reason: "The model had no guard against corporate filler phrases. Explicit negative examples prevent the copy-paste patterns that undermine trust.",
+            diff: {
+              added: "Never write: 'Thank you for your feedback', 'We appreciate your review', 'Hope to see you again'. These feel impersonal and signal the response was not written for this person.",
+            },
+          },
+        ],
+      },
+    ],
+    status: "pending review",
+    dateLabel: "9 May",
+    dateOrder: 1,
     reviewPostedStatus: "posted",
     customer: {
       name: "David Kim",
@@ -374,9 +562,35 @@ function statusLabel(status: ResponseAgentStatus): string {
   return "Draft";
 }
 
-function feedbackStatusLabel(status: FeedbackRow["status"]): string {
+function feedbackStatusLabel(status: FeedbackStatus): string {
   if (status === "accepted") return "Accepted";
   return "Pending review";
+}
+
+function feedbackStatusBadgeClasses(status: FeedbackStatus): string {
+  if (status === "accepted") return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  return "border-amber-200 bg-amber-50 text-amber-700";
+}
+
+function feedbackTagClasses(_tone: FeedbackTagTone): string {
+  return "border-0 bg-destructive/10 text-destructive hover:bg-destructive/15";
+}
+
+/** Splits "Category — title" coaching change labels for a two-line summary + description layout. */
+function splitConfigChangeTitle(changeType: string): { category?: string; title: string } {
+  const sep = " — ";
+  const i = changeType.indexOf(sep);
+  if (i === -1) return { title: changeType };
+  return {
+    category: changeType.slice(0, i).trim(),
+    title: changeType.slice(i + sep.length).trim(),
+  };
+}
+
+function sentenceCaseLabel(phrase: string): string {
+  const t = phrase.trim();
+  if (!t) return t;
+  return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
 function ResponseAgentRowActions({ status, onEdit }: { status: ResponseAgentStatus; onEdit: () => void }) {
@@ -501,26 +715,159 @@ function StarRating({ value }: { value: number }) {
   );
 }
 
+type SectionPhase = "idle" | "thinking" | "typing";
+
+function ThinkingDots() {
+  return (
+    <span
+      className="inline-flex items-center gap-1"
+      role="status"
+      aria-label="Thinking"
+    >
+      <span className="size-1.5 rounded-full bg-muted-foreground/55 animate-[pulse_1.2s_ease-in-out_infinite] [animation-delay:0ms]" aria-hidden />
+      <span className="size-1.5 rounded-full bg-muted-foreground/55 animate-[pulse_1.2s_ease-in-out_infinite] [animation-delay:200ms]" aria-hidden />
+      <span className="size-1.5 rounded-full bg-muted-foreground/55 animate-[pulse_1.2s_ease-in-out_infinite] [animation-delay:400ms]" aria-hidden />
+    </span>
+  );
+}
+
+function useTypewriter(text: string, enabled: boolean, charsPerSec = 280) {
+  const [shown, setShown] = useState(enabled ? "" : text);
+
+  useEffect(() => {
+    if (!enabled) {
+      setShown(text);
+      return;
+    }
+    setShown("");
+    let i = 0;
+    const intervalMs = Math.max(8, Math.floor(1000 / charsPerSec));
+    const id = setInterval(() => {
+      i = Math.min(i + 1, text.length);
+      setShown(text.slice(0, i));
+      if (i >= text.length) clearInterval(id);
+    }, intervalMs);
+    return () => clearInterval(id);
+  }, [text, enabled, charsPerSec]);
+
+  return shown;
+}
+
+function TypingText({
+  text,
+  enabled,
+  charsPerSec = 280,
+  cursor = true,
+}: {
+  text: string;
+  enabled: boolean;
+  charsPerSec?: number;
+  cursor?: boolean;
+}) {
+  const shown = useTypewriter(text, enabled, charsPerSec);
+  const isDone = shown === text;
+  return (
+    <>
+      {shown}
+      {cursor && enabled && !isDone ? (
+        <span
+          className="ml-px inline-block h-3 w-[2px] -mb-[1px] align-baseline bg-current opacity-50 animate-[pulse_0.9s_ease-in-out_infinite]"
+          aria-hidden
+        />
+      ) : null}
+    </>
+  );
+}
+
+function TypingListItem({
+  text,
+  startDelayMs,
+  bulletClassName,
+}: {
+  text: string;
+  startDelayMs: number;
+  bulletClassName?: string;
+}) {
+  const [started, setStarted] = useState(false);
+  useEffect(() => {
+    setStarted(false);
+    const t = setTimeout(() => setStarted(true), startDelayMs);
+    return () => clearTimeout(t);
+  }, [startDelayMs, text]);
+  return (
+    <li className="flex items-start gap-2 text-[13px] leading-normal text-muted-foreground">
+      <span
+        className={cn(
+          "mt-[7px] size-1.5 shrink-0 rounded-full",
+          bulletClassName ?? "bg-muted-foreground/40",
+        )}
+        aria-hidden
+      />
+      <span>
+        <TypingText text={text} enabled={started} />
+      </span>
+    </li>
+  );
+}
+
 function ResponseAgentFeedbackDetailView({
   agent,
   feedbackRows,
   selectedFeedbackId,
   onSelectFeedback,
   onBack,
+  onGoToTask,
 }: {
   agent: ResponseAgentRow;
   feedbackRows: FeedbackRow[];
   selectedFeedbackId: string;
   onSelectFeedback: (id: string) => void;
   onBack: () => void;
+  onGoToTask?: (nodeId: string) => void;
 }) {
-  const selected =
-    feedbackRows.find((row) => row.id === selectedFeedbackId) ?? feedbackRows[0];
+  const selected = feedbackRows.find((row) => row.id === selectedFeedbackId) ?? feedbackRows[0];
   const region = agent.name.split(" - ")[1] ?? "";
   const [conversationOpen, setConversationOpen] = useState(false);
   const [followUp, setFollowUp] = useState("");
   const [followUpsByFeedback, setFollowUpsByFeedback] = useState<Record<string, string[]>>({});
   const followUpMessages = followUpsByFeedback[selected.id] ?? [];
+
+  const [phase1, setPhase1] = useState<SectionPhase>("idle");
+  const [phase2, setPhase2] = useState<SectionPhase>("idle");
+  const [phase3, setPhase3] = useState<SectionPhase>("idle");
+  const [phase4, setPhase4] = useState<SectionPhase>("idle");
+  const phaseTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  useEffect(() => {
+    phaseTimersRef.current.forEach(clearTimeout);
+    phaseTimersRef.current = [];
+    setPhase1("idle");
+    setPhase2("idle");
+    setPhase3("idle");
+    setPhase4("idle");
+
+    const schedule = (ms: number, fn: () => void) => {
+      phaseTimersRef.current.push(setTimeout(fn, ms));
+    };
+
+    // Section 1 — What went wrong
+    schedule(400, () => setPhase1("thinking"));
+    schedule(1000, () => setPhase1("typing"));
+
+    // Section 2 — What I'll change
+    schedule(2400, () => setPhase2("thinking"));
+    schedule(3000, () => setPhase2("typing"));
+
+    // Section 3 — Reasoning
+    schedule(4400, () => setPhase3("thinking"));
+    schedule(5000, () => setPhase3("typing"));
+
+    // Section 4 — The improved response (+ Accept card)
+    schedule(6400, () => setPhase4("thinking"));
+    schedule(7000, () => setPhase4("typing"));
+
+    return () => phaseTimersRef.current.forEach(clearTimeout);
+  }, [selected.id]);
 
   type AcceptScope = "all-feedback" | "future" | "similar";
   type AcceptState =
@@ -530,13 +877,18 @@ function ResponseAgentFeedbackDetailView({
     Record<string, AcceptState>
   >({});
   const acceptState = acceptStateByFeedback[selected.id];
-  const effectiveStatus = acceptState ? "accepted" : selected.status;
   const scopeLabel = (scope: AcceptScope) =>
     scope === "all-feedback"
       ? "all feedback"
       : scope === "future"
         ? "all future responses"
         : "similar responses";
+
+  const reasoningText = `Cross-referenced the customer's review, the brand voice for ${selected.customer.location}, and similar past replies. The original message was flagged for ${selected.tags.map((t) => t.toLowerCase()).join(", ")}. The revised version below addresses those gaps while keeping the tone aligned with brand guidelines.`;
+
+  const tasksWithConfigChanges = selected.suggestedTasks.filter(
+    (t) => t.configChanges && t.configChanges.length > 0,
+  );
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
@@ -582,30 +934,20 @@ function ResponseAgentFeedbackDetailView({
           <ul className="min-h-0 flex-1 overflow-y-auto">
             {feedbackRows.map((row) => {
               const isActive = row.id === selected.id;
-              const rowStatus = acceptStateByFeedback[row.id]
-                ? "accepted"
-                : row.status;
+              const rowStatus = acceptStateByFeedback[row.id] ? "accepted" : row.status;
               return (
-                <li
-                  key={row.id}
-                  className="border-t border-border first:border-t-0"
-                >
+                <li key={row.id} className="border-t border-border first:border-t-0">
                   <button
                     type="button"
                     onClick={() => onSelectFeedback(row.id)}
                     className={cn(
                       "flex w-full flex-col gap-2 px-6 py-4 text-left transition-colors",
-                      isActive
-                        ? "bg-primary/5"
-                        : "hover:bg-muted/40",
+                      isActive ? "bg-primary/5" : "hover:bg-muted/40",
                     )}
                   >
                     <div className="flex flex-wrap items-center gap-1">
                       {row.tags.map((tag) => (
-                        <Badge
-                          key={tag}
-                          className="border-0 bg-destructive/10 text-destructive hover:bg-destructive/15"
-                        >
+                        <Badge key={tag} className={feedbackTagClasses(row.tagTone)}>
                           {tag}
                         </Badge>
                       ))}
@@ -615,12 +957,7 @@ function ResponseAgentFeedbackDetailView({
                     </p>
                     <Badge
                       variant="outline"
-                      className={cn(
-                        "self-start",
-                        rowStatus === "accepted"
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                          : "border-amber-200 bg-amber-50 text-amber-700",
-                      )}
+                      className={cn("self-start", feedbackStatusBadgeClasses(rowStatus))}
                     >
                       {feedbackStatusLabel(rowStatus)}
                     </Badge>
@@ -634,6 +971,8 @@ function ResponseAgentFeedbackDetailView({
         <section className="flex min-w-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 overflow-y-auto">
             <div className="flex flex-col gap-4 px-10 py-8">
+
+              {/* Original agent response */}
               <div className="overflow-hidden rounded-lg border border-border bg-card">
                 <div className="flex items-center justify-between px-4 py-2">
                   <div className="flex items-center gap-2">
@@ -721,6 +1060,7 @@ function ResponseAgentFeedbackDetailView({
                 ) : null}
               </div>
 
+              {/* Rupa D's feedback bubble */}
               <div className="flex justify-end">
                 <div className="flex max-w-[80%] flex-col items-end gap-1">
                   <div className="rounded-lg bg-primary/10 px-4 py-2">
@@ -734,99 +1074,332 @@ function ResponseAgentFeedbackDetailView({
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 px-1">
-                <div className="flex items-center gap-2">
-                  <Zap
-                    className="size-4 text-amber-500"
-                    strokeWidth={1.6}
-                    absoluteStrokeWidth
-                    aria-hidden
-                  />
-                  <span className="text-[13px] text-foreground">Reasoning</span>
-                </div>
-                <p className="text-[13px] leading-normal text-muted-foreground">
-                  Cross-referenced the customer's review, the brand voice for{" "}
-                  {selected.customer.location}, and similar past replies. The
-                  original message was flagged for{" "}
-                  {selected.tags.map((t) => t.toLowerCase()).join(", ")}. The
-                  revised version below addresses those gaps while keeping the
-                  tone aligned with brand guidelines.
-                </p>
-              </div>
-
-              <div className="overflow-hidden rounded-lg border border-border bg-card">
-                <div className="px-4 py-4">
-                  <div className="mb-2 flex items-center gap-2">
-                    <span
-                      className="size-2 shrink-0 rounded-full bg-destructive"
+              {/* What went wrong — phase 1 */}
+              {phase1 !== "idle" && selected.flagReasons && selected.flagReasons.length > 0 ? (
+                <div className="flex flex-col gap-3 pt-8">
+                  <div className="flex items-center gap-2 px-1">
+                    <AlertCircle
+                      className="size-4 text-destructive"
+                      strokeWidth={1.6}
+                      absoluteStrokeWidth
                       aria-hidden
                     />
-                    <span className="text-[13px] text-foreground">
-                      Original agent response
-                    </span>
+                    <span className="text-[13px] text-foreground">What went wrong</span>
                   </div>
-                  <p className="text-[13px] leading-normal text-muted-foreground">
-                    {selected.agentResponse.text}
-                  </p>
-                </div>
-                <div className="border-t border-border px-4 py-4">
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="size-2 shrink-0 rounded-full bg-emerald-500"
-                        aria-hidden
-                      />
-                      <span className="text-[13px] text-foreground">
-                        Revised response
-                      </span>
+                  {phase1 === "thinking" ? (
+                    <div className="px-1">
+                      <ThinkingDots />
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        effectiveStatus === "accepted"
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                          : "border-amber-200 bg-amber-50 text-amber-700",
-                      )}
-                    >
-                      {effectiveStatus === "accepted"
-                        ? "Accepted"
-                        : "Pending approval"}
-                    </Badge>
-                  </div>
-                  <p className="text-[13px] leading-normal text-muted-foreground">
-                    {selected.suggestedResponse}
-                  </p>
+                  ) : (
+                    <ul className="flex flex-col gap-2">
+                      {selected.flagReasons.map((reason, i) => (
+                        <TypingListItem
+                          key={`${selected.id}-flag-${i}`}
+                          text={reason}
+                          startDelayMs={i * 350}
+                          bulletClassName="bg-destructive/50"
+                        />
+                      ))}
+                    </ul>
+                  )}
                 </div>
-                {effectiveStatus !== "accepted" && !acceptState ? (
-                  <div className="flex items-center justify-end gap-2 border-t border-border px-4 py-2">
-                    <Button type="button" variant="outline" size="sm">
-                      Cancel
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() =>
-                        setAcceptStateByFeedback((prev) => ({
-                          ...prev,
-                          [selected.id]: {
-                            stage: "choosing",
-                            scope: "future",
-                          },
-                        }))
-                      }
-                    >
-                      Accept
-                    </Button>
-                  </div>
-                ) : null}
-              </div>
+              ) : null}
 
-              {acceptState ? (
-                <div className="rounded-lg border border-emerald-200 bg-emerald-50/40 px-4 py-4">
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-2">
+              {/* What I'll change — phase 2 */}
+              {phase2 !== "idle" && tasksWithConfigChanges.length > 0 ? (
+                <div className="flex flex-col gap-3 pt-8">
+                  <div className="flex items-center gap-2 px-1">
+                    <Pencil
+                      className="size-4 text-muted-foreground"
+                      strokeWidth={1.6}
+                      absoluteStrokeWidth
+                      aria-hidden
+                    />
+                    <span className="text-[13px] text-foreground">What I'll change</span>
+                  </div>
+                  {phase2 === "thinking" ? (
+                    <div className="px-1">
+                      <ThinkingDots />
+                    </div>
+                  ) : (
+                    tasksWithConfigChanges.map((task, ti) => (
+                      <div key={ti} className="flex flex-col gap-3">
+                        {task.configChanges!.map((cc, ci) => {
+                          const { category, title } = splitConfigChangeTitle(cc.changeType);
+                          return (
+                          <div key={ci} className="overflow-hidden rounded-lg border border-border bg-card">
+                            <div className="flex flex-col gap-2 px-4 py-3">
+                              <div className="flex flex-wrap items-start justify-between gap-2">
+                                <span className="inline-flex min-w-0 flex-wrap items-center gap-1">
+                                  <ListTodo
+                                    className="size-[15px] shrink-0 text-[#00897B]"
+                                    strokeWidth={1.6}
+                                    absoluteStrokeWidth
+                                    aria-hidden
+                                  />
+                                  <span className="text-[12px] leading-[19px] tracking-[-0.22px] text-[#8f8f8f]">
+                                    Task
+                                  </span>
+                                  <span className="text-[12px] leading-[19px] text-[#8f8f8f] opacity-40" aria-hidden>
+                                    ·
+                                  </span>
+                                  <span className="text-[12px] leading-[19px] tracking-[-0.22px] text-[#212121]">
+                                    {task.taskLabel.replace(/^Task \d+: /, "")}
+                                  </span>
+                                </span>
+                                {onGoToTask && COACHING_TASK_NODE_MAP[task.taskLabel] ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => onGoToTask(COACHING_TASK_NODE_MAP[task.taskLabel])}
+                                    className="inline-flex shrink-0 items-center gap-1 text-[12px] text-primary underline-offset-4 hover:underline"
+                                  >
+                                    Open in builder
+                                    <ArrowUpRight className="size-3.5" strokeWidth={1.6} absoluteStrokeWidth />
+                                  </button>
+                                ) : null}
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                {category?.toLowerCase() === "context" ? (
+                                  <>
+                                    <p className="text-[12px] leading-[18px] font-medium text-foreground">
+                                      Context: {sentenceCaseLabel(title)}
+                                    </p>
+                                    <p className="text-[12px] leading-normal text-muted-foreground">
+                                      <TypingText text={cc.reason} enabled charsPerSec={400} />
+                                    </p>
+                                  </>
+                                ) : !category && /system prompt/i.test(cc.changeType) ? (
+                                  <>
+                                    <p className="text-[12px] leading-[18px] font-medium text-foreground">
+                                      {sentenceCaseLabel(cc.changeType)}
+                                    </p>
+                                    <p className="text-[12px] leading-normal text-muted-foreground">
+                                      <TypingText text={cc.reason} enabled charsPerSec={400} />
+                                    </p>
+                                  </>
+                                ) : (
+                                  <>
+                                    {category ? (
+                                      <span className="text-[12px] leading-[18px] text-muted-foreground">
+                                        {sentenceCaseLabel(category)}
+                                      </span>
+                                    ) : null}
+                                    <p className="text-[13px] font-medium leading-normal text-foreground">
+                                      {sentenceCaseLabel(title)}
+                                    </p>
+                                    <p className="text-[13px] leading-normal text-muted-foreground">
+                                      <TypingText text={cc.reason} enabled charsPerSec={400} />
+                                    </p>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex flex-col gap-1 border-t border-border bg-muted/30 px-4 py-3 font-mono text-[12px] leading-relaxed">
+                              {cc.diff.removed ? (
+                                <div className="rounded bg-destructive/10 px-3 py-2 text-destructive">
+                                  {cc.diff.removed.split("\n").map((line, li) => (
+                                    <div key={li}>− {line}</div>
+                                  ))}
+                                </div>
+                              ) : null}
+                              <div className="rounded bg-emerald-50 px-3 py-2 text-emerald-700">
+                                {cc.diff.added.split("\n").map((line, li) => (
+                                  <div key={li}>+ {line}</div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          );
+                        })}
+                      </div>
+                    ))
+                  )}
+                </div>
+              ) : null}
+
+              {/* Reasoning — phase 3 */}
+              {phase3 !== "idle" ? (
+                <div className="flex flex-col gap-2 px-1 pt-8">
+                  <div className="flex items-center gap-2">
+                    <Zap
+                      className="size-4 text-amber-500"
+                      strokeWidth={1.6}
+                      absoluteStrokeWidth
+                      aria-hidden
+                    />
+                    <span className="text-[13px] text-foreground">Reasoning</span>
+                  </div>
+                  {phase3 === "thinking" ? (
+                    <ThinkingDots />
+                  ) : (
+                    <p className="text-[13px] leading-normal text-muted-foreground">
+                      <TypingText text={reasoningText} enabled charsPerSec={320} />
+                    </p>
+                  )}
+                </div>
+              ) : null}
+
+              {/* The improved response — phase 4 */}
+              {phase4 !== "idle" ? (
+                <div className="flex flex-col gap-3 pt-8">
+                  <div className="flex items-center gap-2 px-1">
+                    <MessageSquare
+                      className="size-4 text-muted-foreground"
+                      strokeWidth={1.6}
+                      absoluteStrokeWidth
+                      aria-hidden
+                    />
+                    <span className="text-[13px] text-foreground">The improved response</span>
+                  </div>
+                  {phase4 === "thinking" ? (
+                    <div className="px-1">
+                      <ThinkingDots />
+                    </div>
+                  ) : (
+                    <div className="overflow-hidden rounded-lg border border-border bg-card">
+                      <div className="px-4 py-4">
+                        <div className="mb-2 flex items-center gap-2">
+                          <span className="size-2 shrink-0 rounded-full bg-destructive" aria-hidden />
+                          <span className="text-[13px] text-foreground">Original agent response</span>
+                        </div>
+                        <p className="text-[13px] leading-normal text-muted-foreground">
+                          {selected.agentResponse.text}
+                        </p>
+                      </div>
+                      <div className="border-t border-emerald-200 bg-emerald-50/60 px-4 py-4">
+                        <div className="mb-2 flex items-center gap-2">
+                          <span className="size-2 shrink-0 rounded-full bg-emerald-500" aria-hidden />
+                          <span className="text-[13px] text-foreground">After coaching</span>
+                        </div>
+                        <p className="text-[13px] leading-normal text-muted-foreground">
+                          <TypingText
+                            text={selected.suggestedResponse}
+                            enabled
+                            charsPerSec={300}
+                          />
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+
+              {/* Accept this coaching — separate card, phase 4 typing */}
+              {phase4 === "typing" ? (
+                <div className="pt-8">
+                {!acceptState ? (
+                  <div className="overflow-hidden rounded-lg border border-border bg-card">
+                    <div className="flex items-start gap-3 px-4 py-4">
                       <div
-                        className="flex size-7 items-center justify-center rounded-md bg-emerald-100"
+                        className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary/10"
+                        aria-hidden
+                      >
+                        <Sparkles
+                          className="size-4 text-primary"
+                          strokeWidth={1.6}
+                          absoluteStrokeWidth
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[13px] text-foreground">Accept this coaching</span>
+                        <p className="text-[13px] leading-normal text-muted-foreground">
+                          Apply these changes to update the agent's configuration and improve future responses.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end gap-2 border-t border-border px-4 py-3">
+                      <Button type="button" variant="outline" size="sm">Dismiss</Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() =>
+                          setAcceptStateByFeedback((prev) => ({
+                            ...prev,
+                            [selected.id]: { stage: "choosing", scope: "future" },
+                          }))
+                        }
+                      >
+                        Accept
+                      </Button>
+                    </div>
+                  </div>
+                ) : acceptState.stage === "choosing" ? (
+                  <div className="overflow-hidden rounded-lg border border-border bg-card">
+                    <div className="flex flex-col gap-3 px-4 py-4">
+                      <span className="text-[13px] text-foreground">
+                        Should this change reflect in:
+                      </span>
+                      <RadioGroup
+                        value={acceptState.scope}
+                        onValueChange={(value) =>
+                          setAcceptStateByFeedback((prev) => ({
+                            ...prev,
+                            [selected.id]: { stage: "choosing", scope: value as AcceptScope },
+                          }))
+                        }
+                        className="gap-2"
+                      >
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem
+                            value="all-feedback"
+                            id={`scope-all-feedback-${selected.id}`}
+                            className="border-border"
+                          />
+                          <label
+                            htmlFor={`scope-all-feedback-${selected.id}`}
+                            className="cursor-pointer text-[13px] text-foreground"
+                          >
+                            All feedback
+                          </label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem
+                            value="future"
+                            id={`scope-future-${selected.id}`}
+                            className="border-border"
+                          />
+                          <label
+                            htmlFor={`scope-future-${selected.id}`}
+                            className="cursor-pointer text-[13px] text-foreground"
+                          >
+                            All future responses
+                          </label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem
+                            value="similar"
+                            id={`scope-similar-${selected.id}`}
+                            className="border-border"
+                          />
+                          <label
+                            htmlFor={`scope-similar-${selected.id}`}
+                            className="cursor-pointer text-[13px] text-foreground"
+                          >
+                            Only similar responses
+                          </label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                    <div className="flex items-center justify-end border-t border-border px-4 py-3">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() =>
+                          setAcceptStateByFeedback((prev) => ({
+                            ...prev,
+                            [selected.id]: { stage: "applied", scope: acceptState.scope },
+                          }))
+                        }
+                      >
+                        Confirm
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50/40">
+                    <div className="flex items-center gap-3 px-4 py-4">
+                      <div
+                        className="flex size-7 shrink-0 items-center justify-center rounded-md bg-emerald-100"
                         aria-hidden
                       >
                         <Sparkles
@@ -835,12 +1408,9 @@ function ResponseAgentFeedbackDetailView({
                           absoluteStrokeWidth
                         />
                       </div>
-                      <span className="text-[13px] text-foreground">
-                        Agent skills updated
-                      </span>
+                      <span className="text-[13px] text-foreground">Agent skills updated</span>
                     </div>
-
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 border-t border-emerald-200/60 px-4 py-4">
                       <p className="text-[13px] leading-normal text-muted-foreground">
                         The agent learned the following from this feedback:
                       </p>
@@ -851,101 +1421,17 @@ function ResponseAgentFeedbackDetailView({
                             variant="outline"
                             className="gap-1 border-emerald-200 bg-card text-emerald-700"
                           >
-                            <Check
-                              className="size-3 shrink-0"
-                              strokeWidth={1.6}
-                              absoluteStrokeWidth
-                            />
+                            <Check className="size-3 shrink-0" strokeWidth={1.6} absoluteStrokeWidth />
                             {tag}
                           </Badge>
                         ))}
                       </div>
-                    </div>
-
-                    {acceptState.stage === "choosing" ? (
-                      <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
-                          <span className="text-[13px] text-foreground">
-                            Should this change reflect in:
-                          </span>
-                          <RadioGroup
-                            value={acceptState.scope}
-                            onValueChange={(value) =>
-                              setAcceptStateByFeedback((prev) => ({
-                                ...prev,
-                                [selected.id]: {
-                                  stage: "choosing",
-                                  scope: value as AcceptScope,
-                                },
-                              }))
-                            }
-                            className="gap-2"
-                          >
-                            <div className="flex items-center gap-2">
-                              <RadioGroupItem
-                                value="all-feedback"
-                                id={`scope-all-feedback-${selected.id}`}
-                                className="border-border"
-                              />
-                              <label
-                                htmlFor={`scope-all-feedback-${selected.id}`}
-                                className="cursor-pointer text-[13px] text-foreground"
-                              >
-                                All feedback
-                              </label>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <RadioGroupItem
-                                value="future"
-                                id={`scope-future-${selected.id}`}
-                                className="border-border"
-                              />
-                              <label
-                                htmlFor={`scope-future-${selected.id}`}
-                                className="cursor-pointer text-[13px] text-foreground"
-                              >
-                                All future responses
-                              </label>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <RadioGroupItem
-                                value="similar"
-                                id={`scope-similar-${selected.id}`}
-                                className="border-border"
-                              />
-                              <label
-                                htmlFor={`scope-similar-${selected.id}`}
-                                className="cursor-pointer text-[13px] text-foreground"
-                              >
-                                Only similar responses
-                              </label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-                        <div className="flex items-center justify-end">
-                          <Button
-                            type="button"
-                            size="sm"
-                            onClick={() =>
-                              setAcceptStateByFeedback((prev) => ({
-                                ...prev,
-                                [selected.id]: {
-                                  stage: "applied",
-                                  scope: acceptState.scope,
-                                },
-                              }))
-                            }
-                          >
-                            Confirm
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="border-t border-emerald-200/60 pt-4 text-[12px] italic text-muted-foreground">
+                      <p className="pt-1 text-[12px] italic text-muted-foreground">
                         Applied to {scopeLabel(acceptState.scope)}.
                       </p>
-                    )}
+                    </div>
                   </div>
+                )}
                 </div>
               ) : null}
 
@@ -1022,15 +1508,19 @@ function ResponseAgentDetailPage({
   onColumnSheetOpenChange,
   onBack,
   onEdit,
+  onCoachAgent,
+  initialFeedbackId,
 }: {
   agent: ResponseAgentRow;
   columnSheetOpen: boolean;
   onColumnSheetOpenChange: (open: boolean) => void;
   onBack: () => void;
   onEdit: () => void;
+  onCoachAgent: (highlightNodeIds: string[], initialSelectedNodeId?: string) => void;
+  initialFeedbackId?: string;
 }) {
-  const [activeDetailTab, setActiveDetailTab] = useState<ResponseAgentDetailTab>("outcomes");
-  const [selectedFeedbackId, setSelectedFeedbackId] = useState<string | null>(null);
+  const [activeDetailTab, setActiveDetailTab] = useState<ResponseAgentDetailTab>(initialFeedbackId ? "coach" : "outcomes");
+  const [selectedFeedbackId, setSelectedFeedbackId] = useState<string | null>(initialFeedbackId ?? null);
   const flaggedFeedbackCount = RESPONSE_AGENT_FEEDBACK_ROWS.length;
 
   const columns = useMemo<ColumnDef<LocationOutcomeRow, unknown>[]>(() => [
@@ -1083,102 +1573,123 @@ function ResponseAgentDetailPage({
     feedbackColumnHelper.display({
       id: "feedbackReason",
       header: "Feedback reason",
-      minSize: 200,
-      meta: { settingsLabel: "Feedback reason", sizeWeight: 6 },
+      minSize: 240,
+      meta: { settingsLabel: "Feedback reason", sizeWeight: 5, cellClassName: "align-top" },
       cell: (info) => {
         const row = info.row.original;
         return (
-          <div className="flex gap-2 py-0.5">
-            <span className="mt-0.5 shrink-0 text-destructive" aria-hidden>
-              <ThumbsDown className="size-4" strokeWidth={1.6} absoluteStrokeWidth />
-            </span>
-            <div className="min-w-0 space-y-2">
-              <div className="flex flex-wrap gap-1">
-                {row.tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    className="border-0 bg-destructive/10 font-medium text-destructive hover:bg-destructive/15"
-                  >
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-              <p className="text-[13px] leading-normal text-muted-foreground line-clamp-3">{row.description}</p>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedFeedbackId(row.id);
-                }}
-                className="text-[13px] text-primary underline-offset-4 hover:underline"
-              >
-                View details
-              </button>
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-wrap gap-1">
+              {row.tags.map((tag) => (
+                <Badge key={tag} className={cn("font-medium", feedbackTagClasses(row.tagTone))}>
+                  {tag}
+                </Badge>
+              ))}
             </div>
+            <p className="text-[13px] leading-relaxed text-muted-foreground line-clamp-3">
+              {row.description}
+            </p>
           </div>
         );
       },
     }),
     feedbackColumnHelper.display({
-      id: "suggestedResponse",
-      header: "Suggested response",
-      minSize: 200,
-      meta: { settingsLabel: "Suggested response", sizeWeight: 6 },
-      cell: (info) => (
-        <p className="text-[13px] leading-normal text-muted-foreground line-clamp-3">
-          {info.row.original.suggestedResponse}
-        </p>
-      ),
+      id: "suggestedChanges",
+      header: "Suggested changes",
+      minSize: 260,
+      meta: { settingsLabel: "Suggested changes", sizeWeight: 5, cellClassName: "align-top" },
+      cell: (info) => {
+        const row = info.row.original;
+        return (
+          <div className="flex flex-col gap-4">
+            {row.suggestedTasks.map((task, taskIdx) => (
+              <div key={taskIdx} className="flex flex-col gap-1.5">
+                <span className="text-[13px] font-medium leading-normal text-foreground">
+                  {task.taskLabel}
+                </span>
+                <ul className="flex flex-col gap-1">
+                  {task.changes.map((change, changeIdx) => (
+                    <li
+                      key={changeIdx}
+                      className="flex items-start gap-1.5 text-[13px] leading-relaxed text-muted-foreground"
+                    >
+                      <span
+                        className="mt-1.5 size-1 shrink-0 rounded-full bg-muted-foreground/40"
+                        aria-hidden
+                      />
+                      {change}
+                    </li>
+                  ))}
+                </ul>
+                {task.deployWarning ? (
+                  <div className="flex items-center gap-1 pt-0.5 text-[12px] leading-normal text-amber-700">
+                    <AlertTriangle
+                      className="size-3.5 shrink-0"
+                      strokeWidth={1.6}
+                      absoluteStrokeWidth
+                      aria-hidden
+                    />
+                    <span>{task.deployWarning}</span>
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        );
+      },
     }),
     feedbackColumnHelper.accessor("status", {
       id: "status",
       header: "Status",
       minSize: 140,
-      meta: { settingsLabel: "Status", sizeWeight: 0.4 },
+      meta: { settingsLabel: "Status", sizeWeight: 0.5 },
       cell: (info) => {
         const v = info.getValue();
         return (
-          <Badge
-            variant="outline"
-            className={cn(
-              v === "accepted"
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                : "border-amber-200 bg-amber-50 text-amber-700",
-            )}
-          >
+          <Badge variant="outline" className={feedbackStatusBadgeClasses(v)}>
             {feedbackStatusLabel(v)}
           </Badge>
         );
       },
     }),
-    feedbackColumnHelper.accessor("dateLabel", {
+    feedbackColumnHelper.accessor("dateOrder", {
       id: "date",
       header: "Date",
       minSize: 96,
       enableResizing: false,
-      meta: { settingsLabel: "date", sizeWeight: 0.3 },
+      sortingFn: "alphanumeric",
+      meta: { settingsLabel: "Date", sizeWeight: 0.3 },
       cell: (info) => (
-        <span className="text-[13px] text-muted-foreground">{info.getValue()}</span>
+        <span className="text-[13px] text-muted-foreground">
+          {info.row.original.dateLabel}
+        </span>
       ),
     }),
     feedbackColumnHelper.display({
-      id: "action",
+      id: "rowAction",
       header: "",
-      minSize: 120,
+      size: 160,
       enableSorting: false,
       enableResizing: false,
-      meta: { settingsLabel: "Action", stopRowClick: true, sizeWeight: 0.1 },
-      cell: () => (
-        <div className="flex items-center gap-1 text-[13px]">
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 cursor-pointer text-primary underline-offset-4 opacity-0 transition-opacity group-hover/table-row:opacity-100 hover:text-primary/90 hover:underline"
-          >
-            Coach agent
-            <ArrowRight className="h-3 w-3" strokeWidth={1.6} absoluteStrokeWidth />
-          </button>
-        </div>
-      ),
+      meta: { settingsLabel: "Action", stopRowClick: true, sizeWeight: 0 },
+      cell: (info) => {
+        const row = info.row.original;
+        return (
+          <div className="flex w-full items-center justify-end pr-4">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedFeedbackId(row.id);
+              }}
+              className="inline-flex items-center gap-1 text-[13px] text-primary underline-offset-4 opacity-0 transition-opacity group-hover/table-row:opacity-100 hover:underline"
+            >
+              Review changes
+              <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={1.6} absoluteStrokeWidth />
+            </button>
+          </div>
+        );
+      },
     }),
   ], []);
 
@@ -1190,6 +1701,7 @@ function ResponseAgentDetailPage({
         selectedFeedbackId={selectedFeedbackId}
         onSelectFeedback={setSelectedFeedbackId}
         onBack={() => setSelectedFeedbackId(null)}
+        onGoToTask={(nodeId) => onCoachAgent([nodeId], nodeId)}
       />
     );
   }
@@ -1357,6 +1869,7 @@ function ResponseAgentDetailPage({
               </div>
               <button
                 type="button"
+                onClick={() => onCoachAgent(getAllCoachingNodeIds())}
                 className="inline-flex shrink-0 items-center gap-1 cursor-pointer text-[13px] text-primary underline-offset-4 transition-colors hover:text-primary/90 hover:underline"
               >
                 Coach agent
@@ -1367,7 +1880,7 @@ function ResponseAgentDetailPage({
 
           <div className="min-h-0 flex-1 px-6 pb-6">
             <AppDataTable<FeedbackRow>
-              tableId={`reviews.response-agent-detail.feedback.v3.${agent.id}`}
+              tableId={`reviews.response-agent-detail.feedback.v5.${agent.id}`}
               data={RESPONSE_AGENT_FEEDBACK_ROWS}
               columns={feedbackColumns}
               initialSorting={[{ id: "date", desc: true }]}
@@ -1378,7 +1891,7 @@ function ResponseAgentDetailPage({
               columnSheetOpen={columnSheetOpen}
               onColumnSheetOpenChange={onColumnSheetOpenChange}
               stickyFirstColumn={false}
-              rowDensity="default"
+              rowDensity="medium"
             />
           </div>
         </>
@@ -1394,16 +1907,26 @@ function ResponseAgentDetailPage({
 export function ReviewsResponseAgentsPage({
   onCreateAgent,
   onEditAgent,
+  onBuilderModeChange,
+  initialAgentId,
+  initialFeedbackId,
 }: {
   onCreateAgent?: () => void;
   onEditAgent?: (agentName: string) => void;
+  onBuilderModeChange?: (active: boolean) => void;
+  initialAgentId?: string;
+  initialFeedbackId?: string;
 } = {}) {
   const [activeTab, setActiveTab] = useState<"agents" | "library">("agents");
   const [libraryViewMode, setLibraryViewMode] = useState<LibraryViewMode>("grid");
   const [columnSheetOpen, setColumnSheetOpen] = useState(false);
   const [detailColumnSheetOpen, setDetailColumnSheetOpen] = useState(false);
-  const [selectedAgent, setSelectedAgent] = useState<ResponseAgentRow | null>(null);
+  const [selectedAgent, setSelectedAgent] = useState<ResponseAgentRow | null>(
+    initialAgentId ? (RESPONSE_AGENT_ROWS.find((r) => r.id === initialAgentId) ?? null) : null,
+  );
   const [editingAgent, setEditingAgent] = useState<ResponseAgentRow | null>(null);
+  const [coachingHighlightNodeIds, setCoachingHighlightNodeIds] = useState<string[]>([]);
+  const [coachingInitialNodeId, setCoachingInitialNodeId] = useState<string | undefined>(undefined);
 
   const columns = useMemo<ColumnDef<ResponseAgentRow, unknown>[]>(() => [
     columnHelper.accessor("name", {
@@ -1566,11 +2089,41 @@ export function ReviewsResponseAgentsPage({
   );
 
   if (editingAgent) {
+    const handleCoachingBack = () => {
+      setEditingAgent(null);
+      setCoachingHighlightNodeIds([]);
+      setCoachingInitialNodeId(undefined);
+      onBuilderModeChange?.(false);
+    };
+
+    if (coachingHighlightNodeIds.length > 0) {
+      return (
+        <CoachingAgentCanvas
+          agent={editingAgent}
+          highlightNodeIds={coachingHighlightNodeIds}
+          initialSelectedNodeId={coachingInitialNodeId}
+          onBack={handleCoachingBack}
+          onAcceptChanges={() => {
+            toast.success("Changes accepted.");
+            setCoachingHighlightNodeIds([]);
+            setCoachingInitialNodeId(undefined);
+            setEditingAgent(null);
+            onBuilderModeChange?.(false);
+          }}
+          onEditAgent={() => {
+            setCoachingHighlightNodeIds([]);
+            setCoachingInitialNodeId(undefined);
+          }}
+        />
+      );
+    }
+
     return (
       <AgentsBuilderView
-        agentName={editingAgent.id === 'new' ? undefined : editingAgent.name}
-        initialPhase={editingAgent.id === 'new' ? 'library' : 'building'}
-        onBack={() => setEditingAgent(null)}
+        agentName={editingAgent.id === "new" ? undefined : editingAgent.name}
+        workflowPresetId={editingAgent.id === "new" ? undefined : editingAgent.id}
+        initialPhase={editingAgent.id === "new" ? "library" : "building"}
+        onBack={() => { setEditingAgent(null); onBuilderModeChange?.(false); }}
       />
     );
   }
@@ -1583,6 +2136,14 @@ export function ReviewsResponseAgentsPage({
         onColumnSheetOpenChange={setDetailColumnSheetOpen}
         onBack={() => setSelectedAgent(null)}
         onEdit={() => onEditAgent && selectedAgent ? onEditAgent(selectedAgent.name) : setEditingAgent(selectedAgent)}
+        initialFeedbackId={initialFeedbackId}
+        onCoachAgent={(nodeIds, initialNodeId) => {
+          setCoachingHighlightNodeIds(nodeIds);
+          setCoachingInitialNodeId(initialNodeId);
+          const northAgent = RESPONSE_AGENT_ROWS.find((r) => r.id === "north-autonomous")!;
+          setEditingAgent(northAgent);
+          onBuilderModeChange?.(true);
+        }}
       />
     ) : (
     <div className="flex h-full min-h-0 flex-col bg-background">
