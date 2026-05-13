@@ -425,7 +425,6 @@ function CoachingNarrative({
 }) {
   const [phase, setPhase] = useState<Phase>("intro");
   const [acceptState, setAcceptState] = useState<AcceptState>("idle");
-  const [scopeSelection, setScopeSelection] = useState<"all" | "future" | "similar" | null>(null);
   const [reviewInput, setReviewInput] = useState("");
   const [submittedReview, setSubmittedReview] = useState("");
   const [hasSubmittedReview, setHasSubmittedReview] = useState(false);
@@ -445,11 +444,6 @@ function CoachingNarrative({
     });
     return () => timers.forEach(clearTimeout);
   }, []);
-
-  useEffect(() => {
-    if (!scrollRef.current) return;
-    scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [scopeSelection]);
 
   useEffect(() => {
     if (!scrollRef.current) return;
@@ -503,7 +497,19 @@ function CoachingNarrative({
           {phaseReached(phase, "accept-prompt") && acceptState === "idle" ? (
             <>
               <AcceptCoachingCard
-                onAccept={() => { setAcceptState("accepted"); setPhase("test-prompt"); onAccept(); }}
+                onAccept={() => {
+                  setAcceptState("accepted");
+                  setPhase("test-prompt");
+                  onAccept();
+                  toast("Agent updated — coaching is now live.", {
+                    icon: (
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-100">
+                        <Check className="size-3 text-emerald-600" strokeWidth={2.5} absoluteStrokeWidth />
+                      </span>
+                    ),
+                  });
+                  setTimeout(onBack, 2000);
+                }}
                 onDismiss={() => setAcceptState("dismissed")}
               />
               {!hasSubmittedReview && (
@@ -524,7 +530,19 @@ function CoachingNarrative({
               showResponse={phase === "test-response"}
               acceptState={acceptState}
               hideUserBubble={acceptState === "accepted"}
-              onAccept={() => { setAcceptState("accepted"); setPhase("test-prompt"); onAccept(); }}
+              onAccept={() => {
+                setAcceptState("accepted");
+                setPhase("test-prompt");
+                onAccept();
+                toast("Agent updated — coaching is now live.", {
+                  icon: (
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-100">
+                      <Check className="size-3 text-emerald-600" strokeWidth={2.5} absoluteStrokeWidth />
+                    </span>
+                  ),
+                });
+                setTimeout(onBack, 2000);
+              }}
               onDismiss={() => setAcceptState("dismissed")}
             />
           ) : null}
@@ -558,10 +576,6 @@ function CoachingNarrative({
             </div>
           ) : null}
 
-          {/* Scope selector */}
-          {acceptState === "accepted" && applyState === "accepted" ? (
-            <ScopeSelector selected={scopeSelection} onSelect={setScopeSelection} onDone={onBack} />
-          ) : null}
 
           {/* Dismissed state */}
           {acceptState === "dismissed" ? (
