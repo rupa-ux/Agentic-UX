@@ -1348,8 +1348,7 @@ function ResponseAgentFeedbackDetailView({
                               [selected.id]: { stage: "applied", scope: opt.id },
                             }));
                             onFeedbackAccepted?.(selected.id);
-                            toast(`Agent updated — coaching applied to ${opt.title.toLowerCase()}.`, {
-                              description: "Changes are live. Future responses will reflect the new rules.",
+                            toast("Agent updated — coaching is now live.", {
                               icon: (
                                 <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-100">
                                   <Check className="size-3 text-emerald-600" strokeWidth={2.5} absoluteStrokeWidth />
