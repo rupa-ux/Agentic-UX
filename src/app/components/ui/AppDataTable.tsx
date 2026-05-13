@@ -625,6 +625,7 @@ export function AppDataTable<TData>({
                             STICKY_LEADER_CELL_BASE,
                             isLastStickyLeader && stickyHScroll && STICKY_EDGE_ACTIVE_CLASS,
                           ),
+                        (cell.column.columnDef.meta as { cellClassName?: string } | undefined)?.cellClassName,
                       )}
                       style={{
                         width: cell.column.getSize(),

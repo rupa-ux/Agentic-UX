@@ -26,9 +26,9 @@ import {
   MessageSquareOff,
   ShieldCheck,
   ShieldX,
+  Sparkles,
 } from "lucide-react";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
-import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
 import {
   Dialog,
@@ -552,6 +552,14 @@ function MynaAIReply({
   onViewFeedbackProgress?: () => void;
 }) {
   const isPosted = responseKind === "posted";
+  const statusLabel =
+    isPosted
+      ? platform
+        ? `Agent posted via ${platform}`
+        : "Agent posted"
+      : platform
+        ? `Agent drafted via ${platform}`
+        : "Agent drafted";
   const [selectedFeedback, setSelectedFeedback] = useState<"up" | "down" | null>(null);
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
@@ -620,15 +628,16 @@ function MynaAIReply({
         <div className="flex flex-col gap-[6px]">
           {/* Header row */}
           <div className="flex items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={isPosted ? "success" : "warning"} className="font-normal">
-                {isPosted ? "Agent posted" : "Agent drafted"}
-              </Badge>
-              {platform ? (
-                <span className="text-[12px] text-muted-foreground">
-                  via {platform}
-                </span>
-              ) : null}
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+              <Sparkles
+                className="size-[14px] shrink-0 text-muted-foreground"
+                strokeWidth={1.6}
+                absoluteStrokeWidth
+                aria-hidden
+              />
+              <span className="text-[13px] font-medium leading-tight tracking-tight text-muted-foreground">
+                {statusLabel}
+              </span>
             </div>
             {date ? (
               <span className="shrink-0 text-[12px] text-muted-foreground">
@@ -652,43 +661,41 @@ function MynaAIReply({
           ) : null}
         </div>
       </div>
-      {isPosted ? (
-        <div className="flex justify-end gap-1">
-            <ManusToolbarIconHit
-              title="Good response"
-              aria-label="Good response"
-              aria-pressed={selectedFeedback === "up"}
-              onClick={handleThumbsUp}
-              className={cn(
-                "rounded-md",
-                selectedFeedback === "up" &&
-                  "border border-[#138a36] bg-[#f1faf0] text-[#138a36] hover:bg-[#e8f6eb] hover:text-[#138a36] dark:bg-[#1a3d1f] dark:text-[#6fcf74]",
-              )}
-            >
-              <ThumbsUp {...reviewActionLucideProps} />
-            </ManusToolbarIconHit>
-            <ManusToolbarIconHit
-              title="Poor response"
-              aria-label="Poor response"
-              aria-pressed={selectedFeedback === "down"}
-              onClick={handleThumbsDown}
-              className={cn(
-                "rounded-md",
-                selectedFeedback === "down" &&
-                  "border border-destructive bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive",
-              )}
-            >
-              <ThumbsDown {...reviewActionLucideProps} />
-            </ManusToolbarIconHit>
-            <ManusToolbarIconHit title="More actions" aria-label="More actions">
-              <MoreVertical {...reviewActionLucideProps} />
-            </ManusToolbarIconHit>
-        </div>
-      ) : null}
+      <div className="flex justify-end gap-1">
+          <ManusToolbarIconHit
+            title="Good response"
+            aria-label="Good response"
+            aria-pressed={selectedFeedback === "up"}
+            onClick={handleThumbsUp}
+            className={cn(
+              "rounded-md",
+              selectedFeedback === "up" &&
+                "border border-[#138a36] bg-[#f1faf0] text-[#138a36] hover:bg-[#e8f6eb] hover:text-[#138a36] dark:bg-[#1a3d1f] dark:text-[#6fcf74]",
+            )}
+          >
+            <ThumbsUp {...reviewActionLucideProps} />
+          </ManusToolbarIconHit>
+          <ManusToolbarIconHit
+            title="Poor response"
+            aria-label="Poor response"
+            aria-pressed={selectedFeedback === "down"}
+            onClick={handleThumbsDown}
+            className={cn(
+              "rounded-md",
+              selectedFeedback === "down" &&
+                "border border-destructive bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive",
+            )}
+          >
+            <ThumbsDown {...reviewActionLucideProps} />
+          </ManusToolbarIconHit>
+          <ManusToolbarIconHit title="More actions" aria-label="More actions">
+            <MoreVertical {...reviewActionLucideProps} />
+          </ManusToolbarIconHit>
+      </div>
       {feedbackToastVisible ? (
         <div
           className={cn(
-            "fixed bottom-6 z-[100] flex min-h-11 max-w-[min(420px,calc(100vw-2rem))] -translate-x-1/2 items-center justify-center gap-2.5 rounded-lg bg-foreground px-4 py-2.5 text-background shadow-lg",
+            "fixed top-6 z-[100] flex min-h-11 max-w-[min(420px,calc(100vw-2rem))] -translate-x-1/2 items-center justify-center gap-2.5 rounded-lg bg-foreground px-4 py-2.5 text-background shadow-lg",
             feedbackToastVariant === "working" ? "pointer-events-auto" : "pointer-events-none",
           )}
           style={{ left: "var(--reviews-feedback-center-x, 50%)" }}
@@ -716,20 +723,21 @@ function MynaAIReply({
       ) : null}
       <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
         <DialogContent
-          className="h-[420px] w-[480px] max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-md p-0 shadow-lg sm:max-w-[480px]"
+          overlayClassName="!bg-[#9CA3AF]/80 !backdrop-blur-0 dark:!bg-slate-500/85"
+          className="h-[420px] w-[480px] max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-2xl border-0 bg-white p-0 shadow-[0_24px_60px_-12px_rgba(15,23,42,0.18),0_8px_20px_-8px_rgba(15,23,42,0.08)] sm:max-w-[480px]"
           style={{ left: "var(--reviews-feedback-center-x, 50%)" }}
         >
-          <DialogHeader className="w-full px-6 pb-3 pt-6 pr-14">
-            <DialogTitle className="text-[16px] font-medium leading-6 tracking-[-0.01em]">
+          <DialogHeader className="w-full px-7 pb-2 pt-7 pr-14">
+            <DialogTitle className="text-[17px] font-semibold leading-6 tracking-[-0.01em] text-foreground">
               Share feedback
             </DialogTitle>
-            <DialogDescription className="mt-1 max-w-[460px] text-[12px] leading-[18px] text-muted-foreground">
+            <DialogDescription className="mt-1.5 max-w-[420px] text-[13px] leading-[19px] text-muted-foreground">
               Give an instruction to improve the review response. The agent will return an updated version for future responses.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col gap-4 px-6 py-3">
-            <div className="flex flex-wrap gap-2.5">
+          <div className="flex flex-col gap-4 px-7 py-4">
+            <div className="flex flex-wrap gap-2">
               {RESPONSE_FEEDBACK_REASONS.map((reason) => {
                 const selected = selectedReasons.includes(reason);
                 return (
@@ -738,9 +746,11 @@ function MynaAIReply({
                     type="button"
                     onClick={() => toggleReason(reason)}
                     className={cn(
-                    "h-9 rounded-full border border-border bg-card px-4 text-[14px] font-normal leading-5 text-foreground shadow-sm transition-colors hover:border-primary/40 hover:bg-muted",
+                      "h-8 rounded-full border px-3.5 text-[13px] font-normal leading-5 transition-all",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35",
-                    selected && "border-primary bg-primary/10 text-primary",
+                      selected
+                        ? "border-primary/60 bg-primary/8 text-primary"
+                        : "border-[#E4E7EC] bg-white text-foreground hover:border-[#D0D5DD] hover:bg-[#F9FAFB]",
                     )}
                   >
                     {reason}
@@ -753,16 +763,25 @@ function MynaAIReply({
               value={feedbackDetails}
               onChange={(event) => setFeedbackDetails(event.target.value)}
               placeholder="Please provide feedback on what to improve about this response."
-              className="min-h-[136px] rounded-md border border-border bg-background px-3 py-2 text-[14px] leading-5 shadow-sm focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+              className="min-h-[120px] resize-none rounded-lg border border-[#E4E7EC] bg-white px-3.5 py-2.5 text-[13px] leading-5 shadow-none transition-colors placeholder:text-muted-foreground/70 focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/15"
             />
           </div>
 
-          <DialogFooter className="items-center gap-2 px-6 pb-6 pt-3 sm:justify-end">
-            <div className="flex gap-2.5">
-              <Button type="button" variant="ghost" className="h-9 px-3 text-[14px] font-medium text-primary hover:bg-transparent" onClick={() => setFeedbackDialogOpen(false)}>
+          <DialogFooter className="items-center gap-2 px-7 pb-6 pt-3 sm:justify-end">
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-9 rounded-lg px-3.5 text-[13px] font-medium text-muted-foreground hover:bg-[#F2F4F7] hover:text-foreground"
+                onClick={() => setFeedbackDialogOpen(false)}
+              >
                 Cancel
               </Button>
-              <Button type="button" className="h-9 rounded-md px-4 text-[14px] font-medium" onClick={handleSubmitFeedback}>
+              <Button
+                type="button"
+                className="h-9 rounded-lg px-4 text-[13px] font-medium shadow-sm"
+                onClick={handleSubmitFeedback}
+              >
                 Submit feedback
               </Button>
             </div>
@@ -1083,22 +1102,27 @@ function ReviewCard({
         </div>
       </div>
 
-      {/* Review text (word-safe clamp + view more / less) */}
-      <ReviewBody key={review.id} text={review.text} />
+      {/* Content rail aligns with reviewer name column (40px logo + 12px gap). */}
+      <div className="pl-[52px]">
+        <div className="flex flex-col gap-5">
+          {/* Review text (word-safe clamp + view more / less) */}
+          <ReviewBody key={review.id} text={review.text} />
 
-      {/* Photo carousel */}
-      {review.photos.length > 0 && <PhotoCarousel photos={review.photos} />}
+          {/* Photo carousel */}
+          {review.photos.length > 0 && <PhotoCarousel photos={review.photos} />}
 
-      {/* Agent response */}
-      {agentReply ? (
-        <MynaAIReply
-          responseKind={review.existingReply ? "posted" : "drafted"}
-          text={agentReply.text}
-          platform={agentReply.platform}
-          date={agentReply.date}
-          onViewFeedbackProgress={onViewFeedbackProgress}
-        />
-      ) : null}
+          {/* Agent response */}
+          {agentReply ? (
+            <MynaAIReply
+              responseKind={review.existingReply ? "posted" : "drafted"}
+              text={agentReply.text}
+              platform={agentReply.platform}
+              date={agentReply.date}
+              onViewFeedbackProgress={onViewFeedbackProgress}
+            />
+          ) : null}
+        </div>
+      </div>
 
     </div>
   );

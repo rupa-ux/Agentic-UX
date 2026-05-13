@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AgentsBuilderView, AGENTS_BUILDER_NORTH_AUTONOMOUS_DISPLAY_NAME } from "@/app/components/AgentsBuilderView.v1";
 import { CoachingAgentCanvas } from "@/app/components/reviews/CoachingAgentCanvas";
+import { CoachingAgentCanvasV2 } from "@/app/components/reviews/CoachingAgentCanvas.v2";
 import { AlertCircle, AlertTriangle, ArrowRight, ArrowUp, ArrowUpRight, Check, ChevronDown, ChevronLeft, Clock, ExternalLink, Filter, Flag, Info, LayoutGrid, List, ListTodo, MessageSquare, Mic, MoreVertical, Pencil, Search, Sparkles, Star, ThumbsDown, X, Zap } from "lucide-react";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
@@ -573,7 +574,7 @@ function feedbackStatusBadgeClasses(status: FeedbackStatus): string {
 }
 
 function feedbackTagClasses(_tone: FeedbackTagTone): string {
-  return "border-0 bg-destructive/10 text-destructive hover:bg-destructive/15";
+  return "rounded-full border border-primary/40 bg-primary/5 text-primary font-normal hover:bg-primary/10";
 }
 
 /** Splits "Category — title" coaching change labels for a two-line summary + description layout. */
@@ -817,6 +818,7 @@ function ResponseAgentFeedbackDetailView({
   onSelectFeedback,
   onBack,
   onGoToTask,
+  onFeedbackAccepted,
 }: {
   agent: ResponseAgentRow;
   feedbackRows: FeedbackRow[];
@@ -824,6 +826,7 @@ function ResponseAgentFeedbackDetailView({
   onSelectFeedback: (id: string) => void;
   onBack: () => void;
   onGoToTask?: (nodeId: string) => void;
+  onFeedbackAccepted?: (id: string) => void;
 }) {
   const selected = feedbackRows.find((row) => row.id === selectedFeedbackId) ?? feedbackRows[0];
   const region = agent.name.split(" - ")[1] ?? "";
@@ -1284,34 +1287,35 @@ function ResponseAgentFeedbackDetailView({
                 </div>
               ) : null}
 
-              {/* Accept this coaching — separate card, phase 4 typing */}
+              {/* Accept this coaching — v2 flow */}
               {phase4 === "typing" ? (
-                <div className="pt-8">
+                <div className="flex flex-col gap-3 pt-8">
                 {!acceptState ? (
+                  /* Step 1 — accept card (v2 style) */
                   <div className="overflow-hidden rounded-lg border border-border bg-card">
-                    <div className="flex items-start gap-3 px-4 py-4">
-                      <div
-                        className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary/10"
-                        aria-hidden
-                      >
-                        <Sparkles
-                          className="size-4 text-primary"
-                          strokeWidth={1.6}
-                          absoluteStrokeWidth
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[13px] text-foreground">Accept this coaching</span>
-                        <p className="text-[13px] leading-normal text-muted-foreground">
-                          Apply these changes to update the agent's configuration and improve future responses.
+                    <div className="flex items-start gap-3 px-5 py-4">
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                        <Sparkles className="size-4 text-primary" strokeWidth={1.6} absoluteStrokeWidth />
+                      </span>
+                      <div className="flex min-w-0 flex-1 flex-col gap-1">
+                        <span className="text-[14px] font-semibold text-foreground">Accept this coaching</span>
+                        <p className="text-[13px] leading-snug text-muted-foreground">
+                          Apply these changes to update the agent&apos;s configuration and improve future responses.
+                        </p>
+                        <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">
+                          Want to test the changes? Paste in a review below and I&apos;ll show you how the agent responds now.
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center justify-end gap-2 border-t border-border px-4 py-3">
-                      <Button type="button" variant="outline" size="sm">Dismiss</Button>
+                    <div className="flex items-center justify-end gap-2 px-5 pb-4">
+                      <Button type="button" variant="outline" size="sm" className="gap-1.5">
+                        <X className="size-3.5" strokeWidth={1.6} absoluteStrokeWidth />
+                        Dismiss
+                      </Button>
                       <Button
                         type="button"
                         size="sm"
+                        className="gap-1.5"
                         onClick={() =>
                           setAcceptStateByFeedback((prev) => ({
                             ...prev,
@@ -1319,116 +1323,66 @@ function ResponseAgentFeedbackDetailView({
                           }))
                         }
                       >
-                        Accept
+                        <Check className="size-3.5" strokeWidth={1.6} absoluteStrokeWidth />
+                        Accept changes
                       </Button>
                     </div>
                   </div>
                 ) : acceptState.stage === "choosing" ? (
-                  <div className="overflow-hidden rounded-lg border border-border bg-card">
-                    <div className="flex flex-col gap-3 px-4 py-4">
-                      <span className="text-[13px] text-foreground">
-                        Should this change reflect in:
-                      </span>
-                      <RadioGroup
-                        value={acceptState.scope}
-                        onValueChange={(value) =>
-                          setAcceptStateByFeedback((prev) => ({
-                            ...prev,
-                            [selected.id]: { stage: "choosing", scope: value as AcceptScope },
-                          }))
-                        }
-                        className="gap-2"
-                      >
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem
-                            value="all-feedback"
-                            id={`scope-all-feedback-${selected.id}`}
-                            className="border-border"
-                          />
-                          <label
-                            htmlFor={`scope-all-feedback-${selected.id}`}
-                            className="cursor-pointer text-[13px] text-foreground"
-                          >
-                            All feedback
-                          </label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem
-                            value="future"
-                            id={`scope-future-${selected.id}`}
-                            className="border-border"
-                          />
-                          <label
-                            htmlFor={`scope-future-${selected.id}`}
-                            className="cursor-pointer text-[13px] text-foreground"
-                          >
-                            All future responses
-                          </label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem
-                            value="similar"
-                            id={`scope-similar-${selected.id}`}
-                            className="border-border"
-                          />
-                          <label
-                            htmlFor={`scope-similar-${selected.id}`}
-                            className="cursor-pointer text-[13px] text-foreground"
-                          >
-                            Only similar responses
-                          </label>
-                        </div>
-                      </RadioGroup>
-                    </div>
-                    <div className="flex items-center justify-end border-t border-border px-4 py-3">
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() =>
-                          setAcceptStateByFeedback((prev) => ({
-                            ...prev,
-                            [selected.id]: { stage: "applied", scope: acceptState.scope },
-                          }))
-                        }
-                      >
-                        Confirm
-                      </Button>
-                    </div>
+                  /* Step 2 — scope cards, click to apply immediately */
+                  <div className="flex flex-col gap-2">
+                    <p className="text-[13px] text-muted-foreground">Where should these changes take effect?</p>
+                    {([
+                      { id: "all-feedback" as AcceptScope, title: "All feedback", description: "Apply to all flagged responses and any backlog waiting for a reply." },
+                      { id: "future" as AcceptScope, title: "All future responses", description: "Only new reviews from today — doesn't touch anything already sent." },
+                      { id: "similar" as AcceptScope, title: "Only similar responses", description: "Reviews flagged for tone or action gaps, like these." },
+                    ]).map((opt) => {
+                      const active = acceptState.scope === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => {
+                            setAcceptStateByFeedback((prev) => ({
+                              ...prev,
+                              [selected.id]: { stage: "applied", scope: opt.id },
+                            }));
+                            onFeedbackAccepted?.(selected.id);
+                            toast(`Agent updated — coaching applied to ${opt.title.toLowerCase()}.`, {
+                              description: "Changes are live. Future responses will reflect the new rules.",
+                              icon: (
+                                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-100">
+                                  <Check className="size-3 text-emerald-600" strokeWidth={2.5} absoluteStrokeWidth />
+                                </span>
+                              ),
+                            });
+                            setTimeout(() => onBack(), 1200);
+                          }}
+                          className={cn(
+                            "flex w-full items-start gap-3 rounded-lg border px-4 py-3 text-left transition-colors",
+                            active ? "border-primary bg-primary/5" : "border-border bg-card hover:bg-muted/50",
+                          )}
+                        >
+                          <span className={cn("mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors", active ? "border-primary bg-primary" : "border-muted-foreground/40")}>
+                            {active && <span className="size-1.5 rounded-full bg-white" />}
+                          </span>
+                          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                            <span className={cn("text-[13px] font-medium", active ? "text-primary" : "text-foreground")}>{opt.title}</span>
+                            <span className="text-[12px] leading-relaxed text-muted-foreground">{opt.description}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 ) : (
-                  <div className="overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50/40">
-                    <div className="flex items-center gap-3 px-4 py-4">
-                      <div
-                        className="flex size-7 shrink-0 items-center justify-center rounded-md bg-emerald-100"
-                        aria-hidden
-                      >
-                        <Sparkles
-                          className="size-4 text-emerald-600"
-                          strokeWidth={1.6}
-                          absoluteStrokeWidth
-                        />
-                      </div>
-                      <span className="text-[13px] text-foreground">Agent skills updated</span>
-                    </div>
-                    <div className="flex flex-col gap-2 border-t border-emerald-200/60 px-4 py-4">
-                      <p className="text-[13px] leading-normal text-muted-foreground">
-                        The agent learned the following from this feedback:
-                      </p>
-                      <div className="flex flex-wrap gap-1">
-                        {selected.tags.map((tag) => (
-                          <Badge
-                            key={tag}
-                            variant="outline"
-                            className="gap-1 border-emerald-200 bg-card text-emerald-700"
-                          >
-                            <Check className="size-3 shrink-0" strokeWidth={1.6} absoluteStrokeWidth />
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                      <p className="pt-1 text-[12px] italic text-muted-foreground">
-                        Applied to {scopeLabel(acceptState.scope)}.
-                      </p>
+                  /* Step 3 — applied confirmation */
+                  <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-5 py-4">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-emerald-100">
+                      <Check className="size-4 text-emerald-600" strokeWidth={2} absoluteStrokeWidth />
+                    </span>
+                    <div className="flex flex-col gap-0.5">
+                      <p className="text-[14px] font-semibold text-emerald-900">Coaching applied</p>
+                      <p className="text-[12px] text-emerald-700">Applied to {scopeLabel(acceptState.scope)}. Agent is up to date.</p>
                     </div>
                   </div>
                 )}
@@ -1510,16 +1464,22 @@ function ResponseAgentDetailPage({
   onEdit,
   onCoachAgent,
   initialFeedbackId,
+  initialTab,
+  acceptedFeedbackIds,
+  onFeedbackAccepted,
 }: {
   agent: ResponseAgentRow;
   columnSheetOpen: boolean;
   onColumnSheetOpenChange: (open: boolean) => void;
   onBack: () => void;
   onEdit: () => void;
-  onCoachAgent: (highlightNodeIds: string[], initialSelectedNodeId?: string) => void;
+  onCoachAgent: (highlightNodeIds: string[], initialSelectedNodeId?: string, version?: 1 | 2) => void;
   initialFeedbackId?: string;
+  initialTab?: ResponseAgentDetailTab;
+  acceptedFeedbackIds?: Set<string>;
+  onFeedbackAccepted?: (id: string) => void;
 }) {
-  const [activeDetailTab, setActiveDetailTab] = useState<ResponseAgentDetailTab>(initialFeedbackId ? "coach" : "outcomes");
+  const [activeDetailTab, setActiveDetailTab] = useState<ResponseAgentDetailTab>(initialTab ?? (initialFeedbackId ? "coach" : "outcomes"));
   const [selectedFeedbackId, setSelectedFeedbackId] = useState<string | null>(initialFeedbackId ?? null);
   const flaggedFeedbackCount = RESPONSE_AGENT_FEEDBACK_ROWS.length;
 
@@ -1571,17 +1531,51 @@ function ResponseAgentDetailPage({
 
   const feedbackColumns = useMemo<ColumnDef<FeedbackRow, unknown>[]>(() => [
     feedbackColumnHelper.display({
+      id: "review",
+      header: "Review",
+      minSize: 240,
+      meta: { settingsLabel: "Review", sizeWeight: 4, cellClassName: "align-top" },
+      cell: (info) => {
+        const row = info.row.original;
+        const { customer } = row;
+        return (
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] font-medium leading-snug text-foreground">
+                {customer.name}
+              </span>
+              <div className="flex items-center gap-0.5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className={cn(
+                      "size-3 shrink-0",
+                      i < customer.rating ? "fill-amber-400 text-amber-400" : "fill-muted text-muted",
+                    )}
+                    strokeWidth={0}
+                  />
+                ))}
+              </div>
+            </div>
+            <p className="text-[12px] leading-relaxed text-muted-foreground line-clamp-3">
+              {customer.reviewText}
+            </p>
+          </div>
+        );
+      },
+    }),
+    feedbackColumnHelper.display({
       id: "feedbackReason",
       header: "Feedback reason",
-      minSize: 240,
-      meta: { settingsLabel: "Feedback reason", sizeWeight: 5, cellClassName: "align-top" },
+      minSize: 280,
+      meta: { settingsLabel: "Feedback reason", sizeWeight: 4, cellClassName: "align-top" },
       cell: (info) => {
         const row = info.row.original;
         return (
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap gap-1">
               {row.tags.map((tag) => (
-                <Badge key={tag} className={cn("font-medium", feedbackTagClasses(row.tagTone))}>
+                <Badge key={tag} className={feedbackTagClasses(row.tagTone)}>
                   {tag}
                 </Badge>
               ))}
@@ -1596,7 +1590,7 @@ function ResponseAgentDetailPage({
     feedbackColumnHelper.display({
       id: "suggestedChanges",
       header: "Suggested changes",
-      minSize: 260,
+      minSize: 280,
       meta: { settingsLabel: "Suggested changes", sizeWeight: 5, cellClassName: "align-top" },
       cell: (info) => {
         const row = info.row.original;
@@ -1604,14 +1598,17 @@ function ResponseAgentDetailPage({
           <div className="flex flex-col gap-4">
             {row.suggestedTasks.map((task, taskIdx) => (
               <div key={taskIdx} className="flex flex-col gap-1.5">
-                <span className="text-[13px] font-medium leading-normal text-foreground">
-                  {task.taskLabel}
-                </span>
-                <ul className="flex flex-col gap-1">
+                <div className="flex items-center gap-1.5">
+                  <ListTodo className="size-[13px] shrink-0 text-[#00897B]" strokeWidth={1.6} absoluteStrokeWidth />
+                  <span className="text-[12px] font-semibold leading-snug text-foreground">
+                    {task.taskLabel}
+                  </span>
+                </div>
+                <ul className="flex flex-col gap-1 pl-1">
                   {task.changes.map((change, changeIdx) => (
                     <li
                       key={changeIdx}
-                      className="flex items-start gap-1.5 text-[13px] leading-relaxed text-muted-foreground"
+                      className="flex items-start gap-1.5 text-[12px] leading-relaxed text-muted-foreground"
                     >
                       <span
                         className="mt-1.5 size-1 shrink-0 rounded-full bg-muted-foreground/40"
@@ -1622,9 +1619,9 @@ function ResponseAgentDetailPage({
                   ))}
                 </ul>
                 {task.deployWarning ? (
-                  <div className="flex items-center gap-1 pt-0.5 text-[12px] leading-normal text-amber-700">
+                  <div className="flex items-center gap-1 pt-0.5 text-[11px] leading-normal text-amber-700">
                     <AlertTriangle
-                      className="size-3.5 shrink-0"
+                      className="size-3 shrink-0"
                       strokeWidth={1.6}
                       absoluteStrokeWidth
                       aria-hidden
@@ -1644,6 +1641,14 @@ function ResponseAgentDetailPage({
       minSize: 140,
       meta: { settingsLabel: "Status", sizeWeight: 0.5 },
       cell: (info) => {
+        const rowId = info.row.original.id;
+        if (acceptedFeedbackIds?.has(rowId)) {
+          return (
+            <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+              Coaching applied
+            </Badge>
+          );
+        }
         const v = info.getValue();
         return (
           <Badge variant="outline" className={feedbackStatusBadgeClasses(v)}>
@@ -1691,7 +1696,8 @@ function ResponseAgentDetailPage({
         );
       },
     }),
-  ], []);
+  ], [acceptedFeedbackIds]);
+
 
   if (selectedFeedbackId) {
     return (
@@ -1702,6 +1708,7 @@ function ResponseAgentDetailPage({
         onSelectFeedback={setSelectedFeedbackId}
         onBack={() => setSelectedFeedbackId(null)}
         onGoToTask={(nodeId) => onCoachAgent([nodeId], nodeId)}
+        onFeedbackAccepted={onFeedbackAccepted}
       />
     );
   }
@@ -1867,14 +1874,40 @@ function ResponseAgentDetailPage({
                   {flaggedFeedbackCount} responses flagged for improvement
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => onCoachAgent(getAllCoachingNodeIds())}
-                className="inline-flex shrink-0 items-center gap-1 cursor-pointer text-[13px] text-primary underline-offset-4 transition-colors hover:text-primary/90 hover:underline"
-              >
-                Coach agent
-                <ArrowRight className="h-3 w-3" strokeWidth={1.6} absoluteStrokeWidth />
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex shrink-0 items-center gap-1 cursor-pointer text-[13px] text-primary underline-offset-4 transition-colors hover:text-primary/90 hover:underline"
+                    onMouseEnter={(e) => (e.currentTarget as HTMLElement).click()}
+                  >
+                    Coach agent
+                    <ArrowRight className="h-3 w-3" strokeWidth={1.6} absoluteStrokeWidth />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 rounded-lg">
+                  <DropdownMenuItem
+                    className="text-[13px]"
+                    onClick={() => onCoachAgent(getAllCoachingNodeIds(), undefined, 1)}
+                  >
+                    Version 1 🤔
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-[13px]"
+                    onClick={() => onCoachAgent(getAllCoachingNodeIds(), undefined, 2)}
+                  >
+                    <span className="flex items-center gap-2">
+                      Version 2
+                      <span
+                        className="inline-flex size-4 shrink-0 items-center justify-center rounded-[2px] bg-emerald-600"
+                        aria-hidden
+                      >
+                        <Check className="size-[10px] text-white" strokeWidth={1.6} absoluteStrokeWidth />
+                      </span>
+                    </span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -1927,6 +1960,9 @@ export function ReviewsResponseAgentsPage({
   const [editingAgent, setEditingAgent] = useState<ResponseAgentRow | null>(null);
   const [coachingHighlightNodeIds, setCoachingHighlightNodeIds] = useState<string[]>([]);
   const [coachingInitialNodeId, setCoachingInitialNodeId] = useState<string | undefined>(undefined);
+  const [coachingVersion, setCoachingVersion] = useState<1 | 2>(1);
+  const [coachingCompleted, setCoachingCompleted] = useState(false);
+  const [acceptedFeedbackIds, setAcceptedFeedbackIds] = useState<Set<string>>(new Set());
 
   const columns = useMemo<ColumnDef<ResponseAgentRow, unknown>[]>(() => [
     columnHelper.accessor("name", {
@@ -2089,14 +2125,28 @@ export function ReviewsResponseAgentsPage({
   );
 
   if (editingAgent) {
-    const handleCoachingBack = () => {
+    const handleCoachingBack = (completed = false) => {
+      const wasV1 = coachingVersion === 1;
+      if (!wasV1 && completed) {
+        setCoachingCompleted(true);
+        setAcceptedFeedbackIds(new Set(RESPONSE_AGENT_FEEDBACK_ROWS.map((r) => r.id)));
+      }
       setEditingAgent(null);
       setCoachingHighlightNodeIds([]);
       setCoachingInitialNodeId(undefined);
-      onBuilderModeChange?.(false);
+      setCoachingVersion(1);
+      if (wasV1) onBuilderModeChange?.(false);
     };
 
     if (coachingHighlightNodeIds.length > 0) {
+      if (coachingVersion === 2) {
+        return (
+          <CoachingAgentCanvasV2
+            agent={editingAgent}
+            onBack={(completed?: boolean) => handleCoachingBack(completed)}
+          />
+        );
+      }
       return (
         <CoachingAgentCanvas
           agent={editingAgent}
@@ -2134,15 +2184,21 @@ export function ReviewsResponseAgentsPage({
         agent={selectedAgent}
         columnSheetOpen={detailColumnSheetOpen}
         onColumnSheetOpenChange={setDetailColumnSheetOpen}
-        onBack={() => setSelectedAgent(null)}
+        onBack={() => { setSelectedAgent(null); setCoachingCompleted(false); setAcceptedFeedbackIds(new Set()); }}
         onEdit={() => onEditAgent && selectedAgent ? onEditAgent(selectedAgent.name) : setEditingAgent(selectedAgent)}
         initialFeedbackId={initialFeedbackId}
-        onCoachAgent={(nodeIds, initialNodeId) => {
+        initialTab={coachingCompleted ? "coach" : undefined}
+        acceptedFeedbackIds={acceptedFeedbackIds}
+        onFeedbackAccepted={(id) => setAcceptedFeedbackIds((prev) => new Set([...prev, id]))}
+        onCoachAgent={(nodeIds, initialNodeId, version) => {
           setCoachingHighlightNodeIds(nodeIds);
           setCoachingInitialNodeId(initialNodeId);
+          setCoachingVersion(version ?? 1);
+          setCoachingCompleted(false);
           const northAgent = RESPONSE_AGENT_ROWS.find((r) => r.id === "north-autonomous")!;
           setEditingAgent(northAgent);
-          onBuilderModeChange?.(true);
+          // v1 takes full width (hide L2 nav). v2 keeps Reviews L2 nav visible.
+          onBuilderModeChange?.((version ?? 1) === 1);
         }}
       />
     ) : (
