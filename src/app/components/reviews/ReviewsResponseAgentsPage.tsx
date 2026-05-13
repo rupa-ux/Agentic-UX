@@ -1483,6 +1483,10 @@ function ResponseAgentDetailPage({
   const [selectedFeedbackId, setSelectedFeedbackId] = useState<string | null>(initialFeedbackId ?? null);
   const flaggedFeedbackCount = RESPONSE_AGENT_FEEDBACK_ROWS.length;
 
+  useEffect(() => {
+    if (initialTab) setActiveDetailTab(initialTab);
+  }, [initialTab]);
+
   const columns = useMemo<ColumnDef<LocationOutcomeRow, unknown>[]>(() => [
     locationColumnHelper.accessor("location", {
       id: "location",
