@@ -23,6 +23,7 @@ import { AgentsL2NavPanel as AgentsL2NavPanelV1 } from "@/app/components/AgentsL
 import { AgentsL2NavPanel as AgentsL2NavPanelV2 } from "@/app/components/AgentsL2NavPanel.v2";
 import { APP_SHELL_GUTTER_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
 import { MonitorNotificationsProvider } from "@/app/context/MonitorNotificationsContext";
+import { ProductVerticalProvider } from "@/app/context/ProductVerticalContext";
 import type { AppView } from "@/app/App";
 import { CONTACTS_L2_KEY_ALL } from "@/app/components/ContactsView";
 import { SEARCH_AI_L2_DEFAULT_ACTIVE } from "@/app/components/searchai/searchAIL2Keys";
@@ -153,11 +154,13 @@ export const IconStripOnly: Story = {
     const [view, setView] = useState<AppView>(argView);
     useEffect(() => { setView(argView); }, [argView]);
     return (
-      <MonitorNotificationsProvider onNavigateToMonitor={() => setView("agents-monitor")}>
-        <SidebarFrame>
-          <IconStrip currentView={view} onViewChange={setView} iconSize={iconSize} />
-        </SidebarFrame>
-      </MonitorNotificationsProvider>
+      <ProductVerticalProvider>
+        <MonitorNotificationsProvider onNavigateToMonitor={() => setView("agents-monitor")}>
+          <SidebarFrame>
+            <IconStrip currentView={view} onViewChange={setView} iconSize={iconSize} />
+          </SidebarFrame>
+        </MonitorNotificationsProvider>
+      </ProductVerticalProvider>
     );
   },
 };
@@ -172,12 +175,14 @@ export const SidebarCombined: Story = {
     const [view, setView] = useState<AppView>(argView);
     useEffect(() => { setView(argView); }, [argView]);
     return (
-      <MonitorNotificationsProvider onNavigateToMonitor={() => setView("agents-monitor")}>
-        <SidebarFrame>
-          <IconStrip currentView={view} onViewChange={setView} iconSize={iconSize} />
-          <ActiveL2Panel view={view} onViewChange={setView} />
-        </SidebarFrame>
-      </MonitorNotificationsProvider>
+      <ProductVerticalProvider>
+        <MonitorNotificationsProvider onNavigateToMonitor={() => setView("agents-monitor")}>
+          <SidebarFrame>
+            <IconStrip currentView={view} onViewChange={setView} iconSize={iconSize} />
+            <ActiveL2Panel view={view} onViewChange={setView} />
+          </SidebarFrame>
+        </MonitorNotificationsProvider>
+      </ProductVerticalProvider>
     );
   },
 };

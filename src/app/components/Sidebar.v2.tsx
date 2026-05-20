@@ -7,11 +7,18 @@ import {
   useCallback,
 } from "react";
 import { usePersistedState } from "@/app/hooks/usePersistedState";
+import type { LucideIcon } from "lucide-react";
 import {
   ChevronDown, ChevronUp, Settings, Camera, Moon, Sun, Monitor, ChevronLeft, ExternalLink, Plus, Info, MessageSquare,
   MoreHorizontal,
   Search,
+  Shield,
+  ClipboardList,
+  Pencil,
+  Receipt,
+  User,
 } from "lucide-react";
+import { useProductVertical, type ProductVertical } from "@/app/context/ProductVerticalContext";
 import {
   FigmaIconBirdAI, FigmaIconOverview, FigmaIconInbox,
   FigmaIconReviews, FigmaIconReferrals, FigmaIconPayments, FigmaIconAppointments,
@@ -89,6 +96,26 @@ function AeoSearchAiL1Icon({ size, className }: { size?: number; className?: str
   );
 }
 
+function createHealthcareL1Icon(Icon: LucideIcon) {
+  return function HealthcareL1Icon({ size, className }: { size?: number; className?: string }) {
+    return (
+      <Icon
+        size={size}
+        className={className}
+        strokeWidth={L1_STRIP_ICON_STROKE_PX}
+        absoluteStrokeWidth
+      />
+    );
+  };
+}
+
+const HealthcareL1IconFrontdesk = createHealthcareL1Icon(Monitor);
+const HealthcareL1IconInsurance = createHealthcareL1Icon(Shield);
+const HealthcareL1IconIntake = createHealthcareL1Icon(ClipboardList);
+const HealthcareL1IconPrescriptions = createHealthcareL1Icon(Pencil);
+const HealthcareL1IconClaims = createHealthcareL1Icon(Receipt);
+const HealthcareL1IconPatients = createHealthcareL1Icon(User);
+
 const sidebarSections: SidebarNavSection[] = [
   {
     items: [
@@ -131,6 +158,138 @@ const sidebarSections: SidebarNavSection[] = [
     ],
   },
 ];
+
+const healthcareSections: SidebarNavSection[] = [
+  {
+    title: "Marketing",
+    items: [
+      { label: "Search AI", Icon: AeoSearchAiL1Icon, view: "aeo-search-ai" },
+      { label: "Listings", Icon: FigmaIconListings, view: "aeo-product-listing-1" },
+      { label: "Reviews", Icon: FigmaIconReviews, view: "reviews" },
+      { label: "Social", Icon: FigmaIconSocial, view: "social" },
+      { label: "Referral", Icon: FigmaIconReferrals, view: "referrals" },
+      { label: "Marketing automation", Icon: FigmaIconCampaigns, view: "campaigns" },
+    ],
+  },
+  {
+    title: "Operations",
+    items: [
+      { label: "Inbox", Icon: FigmaIconInbox, view: "inbox" },
+      { label: "Frontdesk", Icon: HealthcareL1IconFrontdesk, view: "healthcare-frontdesk" },
+      { label: "Appointments", Icon: FigmaIconAppointments, view: "appointments" },
+      { label: "Insurance", Icon: HealthcareL1IconInsurance, view: "healthcare-insurance" },
+      { label: "Intake", Icon: HealthcareL1IconIntake, view: "healthcare-intake" },
+      { label: "Prescriptions", Icon: HealthcareL1IconPrescriptions, view: "healthcare-prescriptions" },
+      { label: "Claims", Icon: HealthcareL1IconClaims, view: "healthcare-claims" },
+    ],
+  },
+  {
+    title: "Customer experience",
+    items: [
+      { label: "Surveys", Icon: FigmaIconSurveys, view: "surveys" },
+      { label: "Ticketing", Icon: FigmaIconTicketing, view: "ticketing" },
+      { label: "Reports", Icon: FigmaIconReports, view: "dashboard" },
+      { label: "Insights", Icon: FigmaIconInsights, view: "insights" },
+    ],
+  },
+  {
+    title: "Patients",
+    items: [
+      { label: "Patients", Icon: HealthcareL1IconPatients, view: "healthcare-patients" },
+    ],
+  },
+];
+
+const dentalSections: SidebarNavSection[] = [
+  {
+    items: [
+      { label: "Overview", Icon: FigmaIconOverview, view: "business-overview" },
+      { label: "Agents", Icon: FigmaIconBirdAI, view: "agents-monitor" },
+    ],
+  },
+  {
+    title: "Marketing",
+    items: [
+      { label: "Search AI", Icon: AeoSearchAiL1Icon, view: "aeo-search-ai" },
+      { label: "Listings", Icon: FigmaIconListings, view: "aeo-product-listing-1" },
+      { label: "Reviews", Icon: FigmaIconReviews, view: "reviews" },
+      { label: "Referrals", Icon: FigmaIconReferrals, view: "referrals" },
+      { label: "Marketing automations", Icon: FigmaIconCampaigns, view: "campaigns" },
+    ],
+  },
+  {
+    title: "Operations",
+    items: [
+      { label: "Inbox", Icon: FigmaIconInbox, view: "inbox" },
+      { label: "Appointments", Icon: FigmaIconAppointments, view: "appointments" },
+      { label: "Contacts", Icon: FigmaIconContacts, view: "contacts" },
+      { label: "Payments", Icon: FigmaIconPayments, view: "payments" },
+    ],
+  },
+  {
+    title: "Patient experience",
+    items: [
+      { label: "Surveys", Icon: FigmaIconSurveys, view: "surveys" },
+    ],
+  },
+  {
+    title: "Analytics",
+    items: [
+      { label: "Reports", Icon: FigmaIconReports, view: "dashboard" },
+      { label: "Insights", Icon: FigmaIconInsights, view: "insights" },
+    ],
+  },
+];
+
+const automotiveSections: SidebarNavSection[] = [
+  {
+    items: [
+      { label: "Overview", Icon: FigmaIconOverview, view: "business-overview" },
+      { label: "Agents", Icon: FigmaIconBirdAI, view: "agents-monitor" },
+    ],
+  },
+  {
+    title: "Marketing",
+    items: [
+      { label: "Search AI", Icon: AeoSearchAiL1Icon, view: "aeo-search-ai" },
+      { label: "Listings", Icon: FigmaIconListings, view: "aeo-product-listing-1" },
+      { label: "Reviews", Icon: FigmaIconReviews, view: "reviews" },
+      { label: "Social", Icon: FigmaIconSocial, view: "social" },
+      { label: "Marketing automations", Icon: FigmaIconCampaigns, view: "campaigns" },
+    ],
+  },
+  {
+    title: "Operations",
+    items: [
+      { label: "Inbox", Icon: FigmaIconInbox, view: "inbox" },
+      { label: "Appointments", Icon: FigmaIconAppointments, view: "appointments" },
+      { label: "Contacts", Icon: FigmaIconContacts, view: "contacts" },
+      { label: "Payments", Icon: FigmaIconPayments, view: "payments" },
+    ],
+  },
+  {
+    title: "Customer experience",
+    items: [
+      { label: "Surveys", Icon: FigmaIconSurveys, view: "surveys" },
+    ],
+  },
+  {
+    title: "Analytics",
+    items: [
+      { label: "Reports", Icon: FigmaIconReports, view: "dashboard" },
+      { label: "Insights", Icon: FigmaIconInsights, view: "insights" },
+    ],
+  },
+];
+
+function getSectionsForVertical(vertical: ProductVertical): SidebarNavSection[] {
+  switch (vertical) {
+    case "healthcare": return healthcareSections;
+    case "dental": return dentalSections;
+    case "automotive": return automotiveSections;
+    default: return sidebarSections;
+  }
+}
 
 const RAIL_ICON_PX = 32;
 const RAIL_SECTION_INNER_GAP_PX = 2;
@@ -175,6 +334,7 @@ export function IconStrip({
   const [activeIcon, setActiveIcon] = useState("Agents");
   const [profileOpen, setProfileOpen] = useState(false);
   const [accountSheetOpen, setAccountSheetOpen] = useState(false);
+  const { vertical } = useProductVertical();
 
   /* ── L1 hover-to-expand (user preference; see useSidebarHoverExpand) ── */
   const [hoverExpandEnabled, setHoverExpandEnabled] = useSidebarHoverExpand();
@@ -238,7 +398,8 @@ export function IconStrip({
     return localStorage.getItem("profile_avatar") || DEFAULT_AVATAR;
   });
 
-  const flatNav = useMemo(() => sidebarSections.flatMap((s) => s.items), []);
+  const activeSections = useMemo(() => getSectionsForVertical(vertical), [vertical]);
+  const flatNav = useMemo(() => activeSections.flatMap((s) => s.items), [activeSections]);
   const [swapView, setSwapView] = usePersistedState<AppView | null>("nav:l1:swapView", null);
   const navMeasureRef = useRef<HTMLDivElement>(null);
   const [navInnerH, setNavInnerH] = useState(0);
@@ -257,7 +418,13 @@ export function IconStrip({
     else if (currentView === "campaigns") setActiveIcon("Campaigns");
     else if (currentView === "insights") setActiveIcon("Insights");
     else if (currentView === "competitors") setActiveIcon("Competitors");
-    else if (currentView === "referrals") setActiveIcon("Referrals");
+    else if (currentView === "referrals") setActiveIcon("Referral");
+    else if (currentView === "healthcare-frontdesk") setActiveIcon("Frontdesk");
+    else if (currentView === "healthcare-insurance") setActiveIcon("Insurance");
+    else if (currentView === "healthcare-intake") setActiveIcon("Intake");
+    else if (currentView === "healthcare-prescriptions") setActiveIcon("Prescriptions");
+    else if (currentView === "healthcare-claims") setActiveIcon("Claims");
+    else if (currentView === "healthcare-patients") setActiveIcon("Patients");
     else if (currentView === "payments") setActiveIcon("Payments");
     else if (currentView === "appointments") setActiveIcon("Appointments");
     else if (currentView === "aeo-product-listing-1") setActiveIcon("Listings");
@@ -309,9 +476,11 @@ export function IconStrip({
       onViewChange("reviews");
     }
     else if (label === "Social") onViewChange("social");
-    else if (label === "Referrals") onViewChange("referrals");
+    else if (label === "Referral" || label === "Referrals") onViewChange("referrals");
     else if (label === "Contacts") onViewChange("contacts");
-    else if (label === "Marketing automations" || label === "Campaigns") onViewChange("campaigns");
+    else if (label === "Marketing automation" || label === "Marketing automations" || label === "Campaigns") {
+      onViewChange("campaigns");
+    }
     else if (label === "Inbox") onViewChange("inbox");
     else if (label === "Payments") onViewChange("payments");
     else if (label === "Appointments") onViewChange("appointments");
@@ -322,6 +491,12 @@ export function IconStrip({
     else if (label === "Surveys") onViewChange("surveys");
     else if (label === "Listings") onViewChange("aeo-product-listing-1");
     else if (label === "Search AI") onViewChange("aeo-search-ai");
+    else if (label === "Frontdesk") onViewChange("healthcare-frontdesk");
+    else if (label === "Insurance") onViewChange("healthcare-insurance");
+    else if (label === "Intake") onViewChange("healthcare-intake");
+    else if (label === "Prescriptions") onViewChange("healthcare-prescriptions");
+    else if (label === "Claims") onViewChange("healthcare-claims");
+    else if (label === "Patients") onViewChange("healthcare-patients");
     else if (label === "Settings") onViewChange("agent-config");
   };
 
@@ -338,7 +513,7 @@ export function IconStrip({
 
   const railMetrics = useMemo(() => {
     const measured = navInnerH > 0;
-    const fullH = heightOfCollapsedSectionedRail(sidebarSections);
+    const fullH = heightOfCollapsedSectionedRail(activeSections);
     const overflowMode = measured && fullH > navInnerH;
     const maxRows = Math.max(2, Math.floor((navInnerH + 8) / RAIL_OVERFLOW_ROW_PITCH_PX));
     const P =
@@ -582,7 +757,7 @@ export function IconStrip({
                 </div>
               </>
             ) : (
-              sidebarSections.map(renderRailSection)
+              activeSections.map(renderRailSection)
             )}
           </div>
         </div>
@@ -868,7 +1043,7 @@ export function IconStrip({
 
         {/* Labeled nav rows */}
         <div className="flex flex-col items-stretch pb-[8px] pt-0 gap-[2px] flex-1 overflow-y-auto overflow-x-hidden px-[12px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {sidebarSections.map(renderPanelSection)}
+          {activeSections.map(renderPanelSection)}
         </div>
 
         {/* Footer stack — keep the same order as collapsed: Settings, Notifications, Profile */}
@@ -1538,24 +1713,36 @@ export function CompetitorsL2NavPanel() {
 const appointmentsConfig = {
   headerAction: { label: "Book an appointment" },
   defaultExpandedSections: ["Human actions"],
-  flatNavItems: [{ label: "Outcomes", key: "outcomes" }],
   sections: [
-    { label: "Human actions", children: ["Calendar", "Schedule", "Waitlist", "Providers"] },
+    {
+      label: "Human actions",
+      children: [
+        "View all appointments",
+        "View schedule",
+        "Manage waitlist",
+        "View by providers",
+      ],
+    },
     {
       label: "Agents",
       children: [
-        "Frontdesk agent",
-        "Scheduling agent",
+        "Appointment agent",
         "Reminder agent",
-        "Outreach agent",
+        "Waitlist agent",
         "Insurance verification agent",
-        "Rx Management agent",
+      ],
+    },
+    {
+      label: "Outcomes",
+      children: [
+        "Bookings",
+        "No-shows",
+        { label: "All reports", external: true },
       ],
     },
     {
       label: "Resources",
       children: [
-        "Knowledge base",
         "Intake forms",
         "Phone numbers",
         "Widgets",
@@ -1589,11 +1776,25 @@ export { APPOINTMENTS_L2_CALENDAR_KEY } from "@/app/components/appointmentsL2Nav
 const inboxConfig = {
   headerAction: { label: "New message" },
   defaultExpandedSections: ["Human actions"],
-  flatNavItems: [{ label: "Outcomes", key: "outcomes" }],
   sections: [
     {
       label: "Human actions",
       children: ["All", "Assigned to me", "Leads", "Messages", "Reviews", "Spam", "Surveys"],
+    },
+    {
+      label: "Agents",
+      children: ["Lead generation agents", "Tagging & routing agent"],
+    },
+    {
+      label: "Outcomes",
+      children: [
+        "Inbox metrics",
+        { label: "All reports", external: true },
+      ],
+    },
+    {
+      label: "Resources",
+      children: ["Knowledge base"],
     },
     {
       label: "Status",
@@ -1612,14 +1813,6 @@ const inboxConfig = {
     {
       label: "Saved filter",
       children: ["Missed calls today", "New patient inquiries"],
-    },
-    {
-      label: "Agents",
-      children: ["Lead generation agents", "Tagging & routing agent"],
-    },
-    {
-      label: "Resources",
-      children: ["Knowledge base"],
     },
     { label: "Settings", children: ["Chatbot", "Receptionist"] },
   ],

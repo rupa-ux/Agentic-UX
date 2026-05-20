@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { AgentsBuilderView, AGENTS_BUILDER_NORTH_AUTONOMOUS_DISPLAY_NAME } from "@/app/components/AgentsBuilderView.v1";
 import { CoachingAgentCanvas } from "@/app/components/reviews/CoachingAgentCanvas";
 import { CoachingAgentCanvasV2 } from "@/app/components/reviews/CoachingAgentCanvas.v2";
+import { ReviewResponseAgentWorkflowCanvas } from "@/app/components/reviews/ReviewResponseAgentWorkflowCanvas";
 import { AlertCircle, AlertTriangle, ArrowRight, ArrowUp, ArrowUpRight, Check, ChevronDown, ChevronLeft, Clock, ExternalLink, Filter, Flag, Info, LayoutGrid, List, ListTodo, MessageSquare, Mic, MoreVertical, Pencil, Search, Sparkles, Star, ThumbsDown, X, Zap } from "lucide-react";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
@@ -39,7 +40,7 @@ type ResponseAgentRow = {
 };
 
 type LibraryViewMode = "grid" | "list";
-type ResponseAgentDetailTab = "outcomes" | "coach" | "logs" | "reports";
+type ResponseAgentDetailTab = "outcomes" | "configuration" | "coach" | "logs" | "reports";
 
 type LocationOutcomeRow = {
   id: string;
@@ -1761,7 +1762,8 @@ function ResponseAgentDetailPage({
           {(
             [
               { key: "outcomes", label: "Outcomes" },
-              { key: "coach", label: "Coach" },
+              { key: "configuration", label: "Configuration" },
+              { key: "coach", label: "Recommendation" },
               { key: "logs", label: "Logs" },
               { key: "reports", label: "Reports", external: true },
             ] as const satisfies readonly {
@@ -1859,6 +1861,10 @@ function ResponseAgentDetailPage({
             />
           </div>
         </>
+      ) : activeDetailTab === "configuration" ? (
+        <div className="flex min-h-0 flex-1 flex-col px-6 pb-6">
+          <ReviewResponseAgentWorkflowCanvas onEdit={onEdit} />
+        </div>
       ) : activeDetailTab === "coach" ? (
         <>
           <div className="shrink-0 px-6 pb-4">
@@ -1893,14 +1899,14 @@ function ResponseAgentDetailPage({
                     className="text-[13px]"
                     onClick={() => onCoachAgent(getAllCoachingNodeIds(), undefined, 1)}
                   >
-                    Version 1 🤔
+                    Workflow recommendations
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-[13px]"
                     onClick={() => onCoachAgent(getAllCoachingNodeIds(), undefined, 2)}
                   >
                     <span className="flex items-center gap-2">
-                      Version 2
+                      Guided recommendations
                       <span
                         className="inline-flex size-4 shrink-0 items-center justify-center rounded-[2px] bg-emerald-600"
                         aria-hidden

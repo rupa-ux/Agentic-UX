@@ -62,6 +62,18 @@ export function getAppViewTitle(view: AppView): string {
       return "Listings";
     case "aeo-search-ai":
       return "Search AI";
+    case "healthcare-frontdesk":
+      return "Frontdesk";
+    case "healthcare-insurance":
+      return "Insurance";
+    case "healthcare-intake":
+      return "Intake";
+    case "healthcare-prescriptions":
+      return "Prescriptions";
+    case "healthcare-claims":
+      return "Claims";
+    case "healthcare-patients":
+      return "Patients";
     default:
       return "Reports";
   }

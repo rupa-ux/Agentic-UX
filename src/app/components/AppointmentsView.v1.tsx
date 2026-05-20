@@ -63,7 +63,7 @@ const PROVIDERS: Provider[] = [
   { id: "p3",  name: "Dr. Priya Nair",     specialty: "Cosmetic Dentistry",     color: "#059669", avatar: "https://randomuser.me/api/portraits/women/56.jpg" },
   { id: "p4",  name: "Dr. James Osei",     specialty: "Oral Surgery",           color: "#d97706", avatar: "https://randomuser.me/api/portraits/men/76.jpg"   },
   { id: "p8",  name: "Dr. Ethan Park",     specialty: "Prosthodontics",         color: "#0d9488", avatar: "https://randomuser.me/api/portraits/men/48.jpg"   },
-  { id: "p11", name: "Dr. Kevin Patel",    specialty: "Implant Dentistry",      color: "#15803d", avatar: "https://randomuser.me/api/portraits/men/41.jpg"   },
+  { id: "p11", name: "Dr. Kevin Patel",    specialty: "Implant Dentistry",      color: "#ea580c", avatar: "https://randomuser.me/api/portraits/men/41.jpg"   },
   { id: "p12", name: "Dr. Yuki Tanaka",    specialty: "TMJ & Sleep Dentistry",  color: "#c2410c", avatar: "https://randomuser.me/api/portraits/women/79.jpg" },
   { id: "p2",  name: "Dr. Marcus Webb",    specialty: "Orthodontics",           color: "#0891b2", avatar: "https://randomuser.me/api/portraits/men/85.jpg"   },
 ];
@@ -330,39 +330,56 @@ export function ApptCard({
   onClick,
   compact = false,
   hideDoctor = false,
+  className,
 }: {
   appt: Appointment;
   onClick: (a: Appointment) => void;
   compact?: boolean;
   hideDoctor?: boolean;
+  className?: string;
 }) {
   const provider = providerById(appt.providerId);
+  const timeRange = `${fmtTime12(appt.startTime)} – ${fmtTime12(appt.endTime)}`;
 
   return (
     <button
+      type="button"
       onClick={() => onClick(appt)}
-      className="w-full text-left rounded-lg border border-border overflow-hidden transition-colors cursor-pointer group"
+      className={cn(
+        "flex h-full w-full min-h-[36px] overflow-hidden rounded-lg border border-border/70 bg-card text-left shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-muted/40 dark:shadow-none",
+        className,
+      )}
     >
-      <div className="px-2.5 py-2 bg-card group-hover:bg-muted transition-colors">
-        <p className={`font-semibold text-foreground leading-tight ${compact ? "text-[11px]" : "text-xs"}`}>
+      <div
+        className="w-1 shrink-0 self-stretch"
+        style={{ backgroundColor: provider.color }}
+        aria-hidden
+      />
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-center gap-0.5 overflow-hidden px-2.5 py-2">
+        <p
+          className={cn(
+            "truncate font-semibold leading-tight text-foreground",
+            compact ? "text-[11px]" : "text-[13px]",
+          )}
+        >
           {appt.patientName}
         </p>
-        {!hideDoctor && (
-          <p className="text-[10px] font-medium mt-0.5 leading-tight" style={{ color: provider.color }}>
+        {!compact && (
+          <p className="truncate text-[12px] leading-snug text-muted-foreground">{appt.service}</p>
+        )}
+        <p
+          className={cn(
+            "flex min-w-0 items-center gap-1 truncate text-muted-foreground",
+            compact ? "text-[10px]" : "text-[11px]",
+          )}
+        >
+          <Clock className="shrink-0" size={compact ? 10 : 11} strokeWidth={1.6} absoluteStrokeWidth />
+          <span className="truncate">{timeRange}</span>
+        </p>
+        {!hideDoctor && !compact && (
+          <p className="truncate text-[11px] font-medium leading-tight" style={{ color: provider.color }}>
             {provider.name}
           </p>
-        )}
-        {!compact && (
-          <>
-            <p className="text-[10px] text-muted-foreground mt-0.5">{appt.service}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
-              <Clock size={9} strokeWidth={1.6} absoluteStrokeWidth />
-              {fmtTime12(appt.startTime)} · {appt.duration}m
-            </p>
-          </>
-        )}
-        {compact && (
-          <p className="text-[10px] text-muted-foreground mt-0.5">{fmtTime12(appt.startTime)}</p>
         )}
       </div>
     </button>
@@ -495,7 +512,7 @@ function WeekCalendar({
                           className={cn("absolute pointer-events-auto", pastAppt && "opacity-60")}
                           style={{ top: topPx + 2, height: heightPx, left: `${leftPct}%`, width: `${widthPct}%`, padding: "0 2px" }}
                         >
-                          <ApptCard appt={a} onClick={onApptClick} compact={a.duration <= 30} />
+                          <ApptCard appt={a} onClick={onApptClick} compact={a.duration < 45} />
                         </div>
                       );
                     })
@@ -587,25 +604,14 @@ function DayCalendar({
               </div>
               {/* Appointment cards — side by side if same start time */}
               <div className="flex flex-1 flex-wrap gap-2">
-                {appts.map((a) => {
-                  const provider = providerById(a.providerId);
-                  return (
-                    <button
-                      key={a.id}
-                      type="button"
-                      onClick={() => onApptClick(a)}
-                      className="flex flex-col gap-0.5 rounded-lg border border-border bg-card px-3 py-2.5 text-left min-w-[180px] flex-1 hover:bg-muted transition-colors cursor-pointer"
-                    >
-                      <p className="text-[13px] font-semibold text-foreground">{a.patientName}</p>
-                      <p className="text-[12px] text-muted-foreground">{a.service}</p>
-                      <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                        <Clock size={9} strokeWidth={1.6} absoluteStrokeWidth />
-                        {fmtTime12(a.startTime)} – {fmtTime12(a.endTime)}
-                      </p>
-                      <p className="text-[11px] font-medium mt-0.5" style={{ color: provider.color }}>{provider.name}</p>
-                    </button>
-                  );
-                })}
+                {appts.map((a) => (
+                  <ApptCard
+                    key={a.id}
+                    appt={a}
+                    onClick={onApptClick}
+                    className="min-w-[200px] max-w-[280px] flex-1"
+                  />
+                ))}
               </div>
             </div>
           );
@@ -771,7 +777,7 @@ export function ByDoctorCalendar({
                           className={cn("absolute pointer-events-auto", pastAppt && "opacity-60")}
                           style={{ top: topPx + 2, height: heightPx, left: `${leftPct}%`, width: `${widthPct}%`, padding: "0 2px" }}
                         >
-                          <ApptCard appt={a} onClick={onApptClick} compact hideDoctor />
+                          <ApptCard appt={a} onClick={onApptClick} compact={a.duration < 45} hideDoctor />
                         </div>
                       );
                     })

@@ -1,7 +1,10 @@
 import { L2_FLAT_NAV_KEY_PREFIX } from "@/app/components/L2NavLayout";
 
-/** L2 key for the calendar surface hosted in the shell (`AppointmentsView`). */
-export const APPOINTMENTS_L2_CALENDAR_KEY = "Human actions/Calendar";
+/** L2 key for the default appointments surface hosted in the shell (`AppointmentsView`). */
+export const APPOINTMENTS_L2_CALENDAR_KEY = "Human actions/View all appointments";
+
+/** L2 key for the appointment management agents list (matches Reviews response agents pattern). */
+export const APPOINTMENTS_L2_APPOINTMENT_AGENT_KEY = "Agents/Appointment agent";
 
 function titleCaseWords(s: string): string {
   return s
@@ -23,6 +26,8 @@ export function appointmentsL2PlaceholderProductLabel(activeKey: string): string
   return `Appointments · ${child}`;
 }
 
+const APPOINTMENTS_L2_CALENDAR_KEY_LEGACY = "Human actions/Calendar";
+
 export function appointmentsL2ShowsCalendarCanvas(activeKey: string): boolean {
-  return activeKey === APPOINTMENTS_L2_CALENDAR_KEY;
+  return activeKey === APPOINTMENTS_L2_CALENDAR_KEY || activeKey === APPOINTMENTS_L2_CALENDAR_KEY_LEGACY;
 }

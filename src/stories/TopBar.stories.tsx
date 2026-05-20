@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { TopBar } from "@/app/components/TopBar";
+import { ProductVerticalProvider } from "@/app/context/ProductVerticalContext";
 import type { AppView } from "@/app/App";
 
 const meta: Meta<typeof TopBar> = {
@@ -17,9 +18,11 @@ const meta: Meta<typeof TopBar> = {
   },
   decorators: [
     (Story) => (
-      <div style={{ width: "100%", maxWidth: 900 }}>
-        <Story />
-      </div>
+      <ProductVerticalProvider>
+        <div style={{ width: "100%", maxWidth: 900 }}>
+          <Story />
+        </div>
+      </ProductVerticalProvider>
     ),
   ],
 };

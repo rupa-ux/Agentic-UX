@@ -15,6 +15,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { usePersistedState } from "./hooks/usePersistedState";
 import { Toaster, toast } from "sonner";
 import { MonitorNotificationsProvider } from "./context/MonitorNotificationsContext";
+import { ProductVerticalProvider } from "./context/ProductVerticalContext";
 import { TopBar } from "./components/TopBar";
 import { Dashboard } from "./components/Dashboard";
 import { SharedByMe } from "./components/SharedByMe";
@@ -42,10 +43,6 @@ import { ScheduleBuilderView } from "./components/ScheduleBuilderView";
 import { ReferralsView, referralsL2KeyToSection } from "./components/ReferralsView";
 import { PaymentsView, paymentsL2KeyToStatusFilter } from "./components/PaymentsView";
 import { AppointmentsView } from "./components/AppointmentsView";
-import {
-  appointmentsL2PlaceholderProductLabel,
-  appointmentsL2ShowsCalendarCanvas,
-} from "./components/appointmentsL2Nav";
 import { SurveysView } from "./components/SurveysView";
 import { TicketingView } from "./components/TicketingView";
 import { ListingsView } from "./components/ListingsView";
@@ -138,6 +135,12 @@ export type AppView =
   | "agent-config"
   | "aeo-product-listing-1"
   | "aeo-search-ai"
+  | "healthcare-frontdesk"
+  | "healthcare-insurance"
+  | "healthcare-intake"
+  | "healthcare-prescriptions"
+  | "healthcare-claims"
+  | "healthcare-patients"
   | "settings";
 
 export default function App() {
@@ -472,9 +475,16 @@ export default function App() {
     v === "appointments" ||
     v === "aeo-product-listing-1" ||
     v === "aeo-search-ai" ||
+    v === "healthcare-frontdesk" ||
+    v === "healthcare-insurance" ||
+    v === "healthcare-intake" ||
+    v === "healthcare-prescriptions" ||
+    v === "healthcare-claims" ||
+    v === "healthcare-patients" ||
     v === "settings";
 
   return (
+    <ProductVerticalProvider>
     <MonitorNotificationsProvider
       onNavigateToMonitor={() => {
         setMynaChatExpanded(false);
@@ -716,18 +726,18 @@ export default function App() {
             ) : currentView === "payments" ? (
               <PaymentsView statusFilter={paymentsL2KeyToStatusFilter(paymentsL2Active)} />
             ) : currentView === "appointments" ? (
-              appointmentsL2ShowsCalendarCanvas(appointmentsL2Active) ? (
-                <AppointmentsView />
-              ) : (
-                <AppShellContentPlaceholder
-                  view="appointments"
-                  productLabel={appointmentsL2PlaceholderProductLabel(appointmentsL2Active)}
-                />
-              )
+              <AppointmentsView appointmentsL2ActiveItem={appointmentsL2Active} />
             ) : currentView === "aeo-product-listing-1" ? (
               <AppShellContentPlaceholder view="aeo-product-listing-1" productLabel="Listings" />
             ) : currentView === "aeo-search-ai" ? (
               <AppShellContentPlaceholder view="aeo-search-ai" productLabel="Search AI" />
+            ) : currentView === "healthcare-frontdesk" ||
+              currentView === "healthcare-insurance" ||
+              currentView === "healthcare-intake" ||
+              currentView === "healthcare-prescriptions" ||
+              currentView === "healthcare-claims" ||
+              currentView === "healthcare-patients" ? (
+              <AppShellContentPlaceholder view={currentView} />
             ) : currentView === "conversation-stream" ? (
               <ConversationStream />
             ) : currentView === "agent-activity" ? (
@@ -764,5 +774,6 @@ export default function App() {
     </div>
     </AppEntryWithSplash>
     </MonitorNotificationsProvider>
+    </ProductVerticalProvider>
   );
 }

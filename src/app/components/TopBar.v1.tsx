@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import {
@@ -5,6 +6,7 @@ import {
   type QuickCreateAction,
 } from "@/app/components/QuickCreateLauncher";
 import { APP_SHELL_RAIL_SURFACE_CLASS } from "@/app/components/layout/appShellClasses";
+import { ProductVerticalSwitcher } from "@/app/components/ProductVerticalSwitcher";
 import type { AppView } from "../App";
 import { getAppViewTitle } from "../appViewTitle";
 
@@ -16,6 +18,24 @@ interface TopBarProps {
 }
 
 export function TopBar({ currentView, onViewChange, onToggleMynaChat }: TopBarProps) {
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const hideTimer = useRef<number | null>(null);
+
+  const handleEnter = () => {
+    if (hideTimer.current) {
+      clearTimeout(hideTimer.current);
+      hideTimer.current = null;
+    }
+    setSwitcherOpen(true);
+  };
+
+  const handleLeave = () => {
+    hideTimer.current = window.setTimeout(() => {
+      setSwitcherOpen(false);
+      hideTimer.current = null;
+    }, 120);
+  };
+
   const handleQuickCreate = (action: QuickCreateAction) => {
     if (action.id === "review-request") onViewChange("reviews");
     else if (action.id === "new-message") onViewChange("inbox");
@@ -31,47 +51,60 @@ export function TopBar({ currentView, onViewChange, onToggleMynaChat }: TopBarPr
 
   return (
     <div
-      className={`h-[48px] flex items-center justify-between px-4 shrink-0 rounded-tr-lg ${APP_SHELL_RAIL_SURFACE_CLASS}`}
+      className={`flex shrink-0 flex-col rounded-tr-lg ${APP_SHELL_RAIL_SURFACE_CLASS}`}
       data-no-print
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
     >
-      {/* Left: current area (aligned with L1 rail / route) */}
-      <p className="text-[16px] text-[#212121] dark:text-foreground tracking-[-0.31px]" style={{ fontWeight: 400 }}>
-        {getAppViewTitle(currentView)}
-      </p>
+      <div
+        aria-hidden={!switcherOpen}
+        className={`flex justify-end overflow-hidden px-4 transition-[max-height,opacity] duration-200 ease-out ${
+          switcherOpen
+            ? "max-h-9 border-b border-border/60 py-1.5 opacity-100"
+            : "pointer-events-none max-h-0 opacity-0"
+        }`}
+      >
+        <ProductVerticalSwitcher />
+      </div>
 
-      {/* Right: design version (dev) + BirdAI */}
-      <div className="flex items-center gap-2">
-        <QuickCreateLauncher layout="appGrid" onActionSelect={handleQuickCreate} />
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={onToggleMynaChat}
-          className="group ml-1 h-[30px] min-h-[30px] gap-1 rounded-lg border-0 bg-app-shell-l2-surface px-2 py-0 text-[12px] leading-none hover:bg-app-shell-l2-surface hover:text-inherit dark:bg-muted dark:hover:bg-[#252a3a]"
-        >
-          <svg aria-hidden className="absolute h-0 w-0 overflow-hidden">
-            <defs>
-              <linearGradient id="ask-birdai-cta-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#9970D7" />
-                <stop offset="55%" stopColor="#7f87e8" />
-                <stop offset="100%" stopColor="#2552ED" />
-                <animateTransform
-                  attributeName="gradientTransform"
-                  type="translate"
-                  values="-1 0;1 0;-1 0"
-                  dur="2.2s"
-                  repeatCount="indefinite"
-                />
-              </linearGradient>
-            </defs>
-          </svg>
-          <Sparkles
-            className="h-3.5 w-3.5 shrink-0 group-hover:animate-[myna-cta-icon-tilt_360ms_ease-out_1] motion-reduce:group-hover:animate-none"
-            style={{ stroke: "url(#ask-birdai-cta-gradient)" }}
-          />
-          <span className="bg-gradient-to-r from-[#9970D7] via-[#7f87e8] to-[#2552ED] bg-[length:220%_100%] bg-clip-text text-transparent leading-none animate-[l2-nav-shimmer_2.2s_linear_infinite] motion-reduce:animate-none">
-            Ask BirdAI
-          </span>
-        </Button>
+      <div className="flex h-[48px] items-center justify-between px-4">
+        <p className="text-[16px] text-[#212121] dark:text-foreground tracking-[-0.31px]" style={{ fontWeight: 400 }}>
+          {getAppViewTitle(currentView)}
+        </p>
+
+        <div className="flex items-center gap-2">
+          <QuickCreateLauncher layout="appGrid" onActionSelect={handleQuickCreate} />
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onToggleMynaChat}
+            className="group ml-1 h-[30px] min-h-[30px] gap-1 rounded-lg border-0 bg-app-shell-l2-surface px-2 py-0 text-[12px] leading-none hover:bg-app-shell-l2-surface hover:text-inherit dark:bg-muted dark:hover:bg-[#252a3a]"
+          >
+            <svg aria-hidden className="absolute h-0 w-0 overflow-hidden">
+              <defs>
+                <linearGradient id="ask-birdai-cta-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#9970D7" />
+                  <stop offset="55%" stopColor="#7f87e8" />
+                  <stop offset="100%" stopColor="#2552ED" />
+                  <animateTransform
+                    attributeName="gradientTransform"
+                    type="translate"
+                    values="-1 0;1 0;-1 0"
+                    dur="2.2s"
+                    repeatCount="indefinite"
+                  />
+                </linearGradient>
+              </defs>
+            </svg>
+            <Sparkles
+              className="h-3.5 w-3.5 shrink-0 group-hover:animate-[myna-cta-icon-tilt_360ms_ease-out_1] motion-reduce:group-hover:animate-none"
+              style={{ stroke: "url(#ask-birdai-cta-gradient)" }}
+            />
+            <span className="bg-gradient-to-r from-[#9970D7] via-[#7f87e8] to-[#2552ED] bg-[length:220%_100%] bg-clip-text text-transparent leading-none animate-[l2-nav-shimmer_2.2s_linear_infinite] motion-reduce:animate-none">
+              Ask BirdAI
+            </span>
+          </Button>
+        </div>
       </div>
     </div>
   );

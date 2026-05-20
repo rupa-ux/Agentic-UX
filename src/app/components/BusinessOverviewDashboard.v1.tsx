@@ -13,7 +13,6 @@ import {
 import { Share2, ChevronDown, Maximize2, Info, Star } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { MainCanvasViewHeader } from "@/app/components/layout/MainCanvasViewHeader";
-
 // ─── Chart series (neutral at rest; brand blue reserved for hover/focus on links) ───
 /** Uses CSS variable so the stroke adapts to light/dark mode automatically. */
 const CHART_STROKE = "var(--color-muted-foreground)";
@@ -170,19 +169,22 @@ const insightRows = [
 // ─── Main Component ───
 export default function BusinessOverviewDashboard() {
   return (
-    <div className="h-full min-h-0 overflow-hidden rounded-tl-lg bg-white dark:bg-background">
-      <div className="h-full min-h-0 overflow-y-auto">
-      <div className="flex flex-col gap-5 px-6 pb-8 pt-2">
+    <div className="h-full min-h-0 flex flex-col overflow-hidden rounded-tl-lg bg-white dark:bg-background">
 
-        <MainCanvasViewHeader
-          title="Welcome, Balaji"
-          description="Here are the things which need your attention."
-          actions={
-            <Button variant="outline" size="icon" aria-label="Share">
-              <Share2 className="h-4 w-4 text-muted-foreground" />
-            </Button>
-          }
-        />
+      <MainCanvasViewHeader
+        className="shrink-0"
+        title="Welcome, Balaji"
+        description="Here are the things which need your attention."
+        actions={
+          <Button variant="outline" size="icon" aria-label="Share">
+            <Share2 className="h-4 w-4 text-muted-foreground" />
+          </Button>
+        }
+      />
+
+      {/* ── Scrollable cards area ── */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div className="flex flex-col gap-5 px-6 pb-8 pt-2">
 
         {/* 2. Attention Cards Row */}
         <div className="border border-border rounded-lg overflow-hidden grid grid-cols-2 divide-x divide-border">
@@ -524,3 +526,4 @@ export default function BusinessOverviewDashboard() {
     </div>
   );
 }
+
