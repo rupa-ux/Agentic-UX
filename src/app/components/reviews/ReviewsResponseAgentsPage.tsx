@@ -1456,6 +1456,189 @@ function ResponseAgentFeedbackDetailView({
   );
 }
 
+// ─── Logs tab ────────────────────────────────────────────────────────────────
+
+type AgentRunStatus = "completed" | "failed" | "in_progress";
+
+type AgentRunLog = {
+  id: string;
+  timestamp: string;
+  timestampOrder: number;
+  status: AgentRunStatus;
+  summary: Array<{ text: string; link?: boolean }>;
+};
+
+// 29 runs total — 20 completed, 5 failed, 4 in_progress → approval rate 69%
+const AGENT_RUN_LOGS: AgentRunLog[] = [
+  { id: "run-01", timestamp: "Mar 15, 2025, 5:30 pm", timestampOrder: 29, status: "completed",   summary: [{ text: "Responded to " }, { text: "23 reviews", link: true }, { text: " across 4 platforms" }] },
+  { id: "run-02", timestamp: "Mar 08, 2025, 5:30 pm", timestampOrder: 28, status: "completed",   summary: [{ text: "Responded to " }, { text: "18 reviews", link: true }, { text: ",  14 went through approval workflows" }] },
+  { id: "run-03", timestamp: "Mar 01, 2025, 5:30 pm", timestampOrder: 27, status: "failed",      summary: [{ text: "Failed to post on Google — OAuth token expired for 3 locations" }] },
+  { id: "run-04", timestamp: "Feb 22, 2025, 5:30 pm", timestampOrder: 26, status: "in_progress", summary: [{ text: "Drafted " }, { text: "15 responses", link: true }, { text: ", awaiting approval" }] },
+  { id: "run-05", timestamp: "Feb 15, 2025, 5:30 pm", timestampOrder: 25, status: "in_progress", summary: [{ text: "Generated " }, { text: "9 responses", link: true }, { text: ", awaiting approval" }] },
+  { id: "run-06", timestamp: "Feb 08, 2025, 5:30 pm", timestampOrder: 24, status: "completed",   summary: [{ text: "Responded to " }, { text: "20 reviews", link: true }, { text: ",  8 went through approval workflows" }] },
+  { id: "run-07", timestamp: "Feb 01, 2025, 5:30 pm", timestampOrder: 23, status: "completed",   summary: [{ text: "Responded to " }, { text: "17 reviews", link: true }, { text: " across 3 platforms" }] },
+  { id: "run-08", timestamp: "Jan 25, 2025, 5:30 pm", timestampOrder: 22, status: "completed",   summary: [{ text: "Responded to " }, { text: "12 reviews", link: true }, { text: ",  16 went through approval workflows" }] },
+  { id: "run-09", timestamp: "Jan 18, 2025, 5:30 pm", timestampOrder: 21, status: "in_progress", summary: [{ text: "Processing " }, { text: "11 new reviews", link: true }, { text: ", 7 pending classification" }] },
+  { id: "run-10", timestamp: "Jan 11, 2025, 5:30 pm", timestampOrder: 20, status: "failed",      summary: [{ text: "Yelp API rate limit exceeded — " }, { text: "8 responses", link: true }, { text: " queued for retry" }] },
+  { id: "run-11", timestamp: "Jan 04, 2025, 5:30 pm", timestampOrder: 19, status: "completed",   summary: [{ text: "Responded to " }, { text: "28 reviews", link: true }, { text: " across 5 platforms" }] },
+  { id: "run-12", timestamp: "Dec 28, 2024, 5:30 pm", timestampOrder: 18, status: "completed",   summary: [{ text: "Responded to " }, { text: "22 reviews", link: true }, { text: ",  11 went through approval workflows" }] },
+  { id: "run-13", timestamp: "Dec 21, 2024, 5:30 pm", timestampOrder: 17, status: "failed",      summary: [{ text: "Post failed on " }, { text: "45 pages", link: true }, { text: " across 6 channels — connectivity error" }] },
+  { id: "run-14", timestamp: "Dec 14, 2024, 5:30 pm", timestampOrder: 16, status: "completed",   summary: [{ text: "Responded to " }, { text: "19 reviews", link: true }, { text: " across 4 platforms" }] },
+  { id: "run-15", timestamp: "Dec 07, 2024, 5:30 pm", timestampOrder: 15, status: "completed",   summary: [{ text: "Responded to " }, { text: "14 reviews", link: true }, { text: ",  9 went through approval workflows" }] },
+  { id: "run-16", timestamp: "Nov 30, 2024, 5:30 pm", timestampOrder: 14, status: "in_progress", summary: [{ text: "Generated " }, { text: "6 responses", link: true }, { text: ", awaiting approval" }] },
+  { id: "run-17", timestamp: "Nov 23, 2024, 5:30 pm", timestampOrder: 13, status: "completed",   summary: [{ text: "Responded to " }, { text: "31 reviews", link: true }, { text: ",  19 went through approval workflows" }] },
+  { id: "run-18", timestamp: "Nov 16, 2024, 5:30 pm", timestampOrder: 12, status: "completed",   summary: [{ text: "Responded to " }, { text: "10 reviews", link: true }, { text: ",  20 went through approval workflows" }] },
+  { id: "run-19", timestamp: "Nov 09, 2024, 5:30 pm", timestampOrder: 11, status: "failed",      summary: [{ text: "Failed to post on " }, { text: "12 listings", link: true }, { text: " across 3 platforms — rate limit exceeded" }] },
+  { id: "run-20", timestamp: "Nov 02, 2024, 5:30 pm", timestampOrder: 10, status: "completed",   summary: [{ text: "Responded to " }, { text: "25 reviews", link: true }, { text: " across 4 platforms" }] },
+  { id: "run-21", timestamp: "Oct 26, 2024, 5:30 pm", timestampOrder: 9,  status: "completed",   summary: [{ text: "Responded to " }, { text: "16 reviews", link: true }, { text: ",  12 went through approval workflows" }] },
+  { id: "run-22", timestamp: "Oct 19, 2024, 5:30 pm", timestampOrder: 8,  status: "completed",   summary: [{ text: "Responded to " }, { text: "20 reviews", link: true }, { text: " across 3 platforms" }] },
+  { id: "run-23", timestamp: "Oct 12, 2024, 5:30 pm", timestampOrder: 7,  status: "failed",      summary: [{ text: "Tripadvisor webhook timeout — " }, { text: "5 responses", link: true }, { text: " not delivered" }] },
+  { id: "run-24", timestamp: "Oct 05, 2024, 5:30 pm", timestampOrder: 6,  status: "completed",   summary: [{ text: "Responded to " }, { text: "13 reviews", link: true }, { text: " across 2 platforms" }] },
+  { id: "run-25", timestamp: "Sep 28, 2024, 5:30 pm", timestampOrder: 5,  status: "completed",   summary: [{ text: "Responded to " }, { text: "18 reviews", link: true }, { text: ",  7 went through approval workflows" }] },
+  { id: "run-26", timestamp: "Sep 21, 2024, 5:30 pm", timestampOrder: 4,  status: "completed",   summary: [{ text: "Responded to " }, { text: "11 reviews", link: true }, { text: " across 4 platforms" }] },
+  { id: "run-27", timestamp: "Sep 14, 2024, 5:30 pm", timestampOrder: 3,  status: "completed",   summary: [{ text: "Responded to " }, { text: "24 reviews", link: true }, { text: ",  10 went through approval workflows" }] },
+  { id: "run-28", timestamp: "Sep 07, 2024, 5:30 pm", timestampOrder: 2,  status: "completed",   summary: [{ text: "Responded to " }, { text: "15 reviews", link: true }, { text: " across 3 platforms" }] },
+  { id: "run-29", timestamp: "Aug 31, 2024, 5:30 pm", timestampOrder: 1,  status: "completed",   summary: [{ text: "Responded to " }, { text: "20 reviews", link: true }, { text: ",  5 went through approval workflows" }] },
+];
+
+
+function RunStatusBadge({ status }: { status: AgentRunStatus }) {
+  const classes =
+    status === "completed" ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+    : status === "failed" ? "bg-rose-50 text-rose-700 border-rose-200"
+    : "bg-amber-50 text-amber-700 border-amber-200";
+  const label =
+    status === "completed" ? "Completed"
+    : status === "failed" ? "Failed"
+    : "In progress";
+  return (
+    <span className={cn("inline-flex items-center rounded-md border px-2.5 py-0.5 text-[12px] font-medium", classes)}>
+      {label}
+    </span>
+  );
+}
+
+function RunSummaryCell({ parts }: { parts: AgentRunLog["summary"] }) {
+  return (
+    <span className="text-[13px] text-muted-foreground">
+      {parts.map((p, i) =>
+        p.link ? (
+          <span key={i} className="text-primary">
+            {p.text}
+          </span>
+        ) : (
+          <span key={i}>{p.text}</span>
+        ),
+      )}
+    </span>
+  );
+}
+
+type SortDir = "asc" | "desc" | null;
+
+function AgentLogsTab() {
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  const totalRuns = AGENT_RUN_LOGS.length;
+  const successfulRuns = AGENT_RUN_LOGS.filter((r) => r.status === "completed").length;
+  const failedRuns = AGENT_RUN_LOGS.filter((r) => r.status === "failed").length;
+  const approvalRate = Math.round((successfulRuns / totalRuns) * 100);
+
+  const sorted = useMemo(() => {
+    const copy = [...AGENT_RUN_LOGS];
+    copy.sort((a, b) =>
+      sortDir === "asc" ? a.timestampOrder - b.timestampOrder : b.timestampOrder - a.timestampOrder,
+    );
+    return copy;
+  }, [sortDir]);
+
+  function cycleSort() {
+    setSortDir((d) => (d === "desc" ? "asc" : "desc"));
+  }
+
+  return (
+    <>
+      {/* Metric cards */}
+      <div className="shrink-0 px-6 pb-4 pt-5">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {[
+            { label: "Total agent runs", value: String(totalRuns), tooltip: "Total number of times this agent has run in the selected period." },
+            { label: "Successful runs", value: String(successfulRuns), tooltip: "Runs that completed without errors." },
+            { label: "Failed runs", value: String(failedRuns), tooltip: "Runs that encountered an error and could not complete." },
+            { label: "Approval rate", value: `${approvalRate}%`, tooltip: "Percentage of runs that were successfully completed." },
+          ].map(({ label, value, tooltip }) => (
+            <div key={label} className="flex flex-col rounded-lg border border-border bg-card p-4">
+              <p className="font-medium tabular-nums tracking-[-0.48px] text-[24px] leading-[36px] text-foreground">
+                {value}
+              </p>
+              <div className="mt-2 flex items-center gap-1">
+                <p className="text-[13px] leading-[18px] text-muted-foreground">{label}</p>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button" className="flex items-center text-muted-foreground transition-colors hover:text-foreground">
+                      <Info className="h-3.5 w-3.5 shrink-0" strokeWidth={1.6} absoluteStrokeWidth />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[200px] text-left text-balance">
+                    {tooltip}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Activity table */}
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
+        <table className="w-auto border-collapse">
+          <thead>
+            <tr className="border-b border-border">
+              <th className="pl-4 pt-2 pb-3 pr-12 text-left">
+                <button
+                  type="button"
+                  onClick={cycleSort}
+                  className="inline-flex items-center gap-1 text-[13px] font-medium text-muted-foreground hover:text-foreground"
+                >
+                  Timestamp
+                  <ChevronDown
+                    className={cn("size-3.5 transition-transform", sortDir === "asc" && "rotate-180")}
+                    strokeWidth={1.6}
+                    absoluteStrokeWidth
+                  />
+                </button>
+              </th>
+              <th className="pl-4 pt-2 pb-3 pr-12 text-left">
+                <span className="text-[13px] font-medium text-muted-foreground">Status</span>
+              </th>
+              <th className="pl-4 pt-2 pb-3 text-left">
+                <span className="text-[13px] font-medium text-muted-foreground">Summary</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((row) => (
+              <tr key={row.id} className="border-b border-border last:border-0">
+                <td className="pl-4 py-3 pr-12 align-middle">
+                  <span className="whitespace-nowrap text-[13px] tabular-nums text-foreground">
+                    {row.timestamp}
+                  </span>
+                </td>
+                <td className="pl-4 py-3 pr-12 align-middle">
+                  <RunStatusBadge status={row.status} />
+                </td>
+                <td className="pl-4 py-3 align-middle">
+                  <RunSummaryCell parts={row.summary} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
 function ResponseAgentDetailPage({
   agent,
   columnSheetOpen,
@@ -1937,6 +2120,8 @@ function ResponseAgentDetailPage({
             />
           </div>
         </>
+      ) : activeDetailTab === "logs" ? (
+        <AgentLogsTab />
       ) : (
         <div className="flex min-h-0 flex-1 items-center justify-center px-6 pb-6 text-sm text-muted-foreground">
           No data available for this tab yet.

@@ -25,6 +25,7 @@ import {
 } from "@/app/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/app/components/ui/tooltip";
 import { cn } from "@/app/components/ui/utils";
+import { AppointmentRecommendationTab } from "@/app/components/appointments/AppointmentRecommendationTab";
 
 type AppointmentAgentStatus = "running" | "paused" | "draft" | "failed";
 
@@ -669,9 +670,7 @@ function AppointmentAgentDetailView({
       ) : activeTab === "rules" ? (
         <RulesTab />
       ) : activeTab === "coach" ? (
-        <div className="flex min-h-0 flex-1 items-center justify-center px-6 pb-6 text-sm text-muted-foreground">
-          Coaching for appointment management agents is not available yet.
-        </div>
+        <AppointmentRecommendationTab />
       ) : activeTab === "logs" ? (
         <div className="flex min-h-0 flex-1 items-center justify-center px-6 pb-6 text-sm text-muted-foreground">
           Interaction logs are not available in this prototype.

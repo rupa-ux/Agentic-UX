@@ -1720,7 +1720,6 @@ const appointmentsConfig = {
         "View all appointments",
         "View schedule",
         "Manage waitlist",
-        "View by providers",
       ],
     },
     {
