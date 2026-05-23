@@ -637,7 +637,8 @@ export function AppointmentsReviewPage() {
       {/* Table */}
       <div className="min-h-0 flex-1 px-6 pb-6">
         <AppDataTable<AppointmentRow>
-          tableId="appointments.review.v2"
+          tableId="appointments.review.v3"
+          persist={false}
           data={rows}
           columns={columns}
           initialSorting={[{ id: "appointmentTime", desc: false }]}
