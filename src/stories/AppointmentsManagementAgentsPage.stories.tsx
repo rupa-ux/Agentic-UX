@@ -14,10 +14,10 @@ type Story = StoryObj<typeof AppointmentsManagementAgentsPage>;
 
 export const Default: Story = {};
 
-export const PlaybookTab: Story = {
-  name: "Playbook tab (healthcare)",
+export const ProceduresTab: Story = {
+  name: "Procedures tab (healthcare)",
 };
 
-export const RulesTab: Story = {
-  name: "Rules tab (healthcare)",
+export const PoliciesTab: Story = {
+  name: "Policies tab (healthcare)",
 };

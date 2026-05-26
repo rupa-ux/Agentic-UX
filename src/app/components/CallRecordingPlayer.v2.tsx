@@ -530,12 +530,19 @@ function CallSummary({ record }: { record: CallRecord }) {
 
 /* ─── Transcript bubble ─────────────────────────────────────── */
 function TranscriptBubble({
-  msg, language, isActive, onSeek,
+  msg,
+  language,
+  isActive,
+  onSeek,
+  contactName,
+  agentName,
 }: {
   msg: CallTranscriptMessage;
   language: Language;
   isActive: boolean;
   onSeek: (t: number) => void;
+  contactName: string;
+  agentName: string;
 }) {
   const isAgent = msg.sender === "agent";
   const [hovered, setHovered] = useState(false);
@@ -577,7 +584,7 @@ function TranscriptBubble({
 
       <div className="mt-1.5 flex items-center gap-2 px-1">
         <span className="text-[11px] text-[#b0b0b0] dark:text-[#5a6170] italic" style={{ fontWeight: 400 }}>
-          {isAgent ? "Agent" : "Customer"}
+          {isAgent ? agentName : contactName}
         </span>
         <span className="text-[11px] tabular-nums text-[#999] dark:text-[#5a6170]" style={{ fontWeight: 400 }}>
           {fmt(msg.timestampSec)}
@@ -769,6 +776,8 @@ export function CallRecordingPlayer({ record }: CallRecordingPlayerProps) {
               language={language}
               isActive={i === activeMsgIdx}
               onSeek={seek}
+              contactName={record.contactName}
+              agentName={record.agentName}
             />
           </div>
         ))}

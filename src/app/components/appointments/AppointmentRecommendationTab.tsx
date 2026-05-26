@@ -1,32 +1,46 @@
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   BookOpen,
   CalendarClock,
+  ChevronDown,
   Database,
-  FileText,
+  ListFilter,
   MessageSquareText,
-  PenLine,
   Phone,
-  Plus,
+  Play,
   ShieldCheck,
   Sparkles,
-  Stethoscope,
   Wand2,
   Workflow,
   Zap,
 } from "lucide-react";
+import {
+  APPOINTMENT_AGENT_SANDBOX_PANEL_WIDTH,
+  AppointmentAgentSandboxPanel,
+} from "@/app/components/appointments/AppointmentAgentSandboxSheet";
+import { SlidingSidePanel } from "@/app/components/layout/SlidingSidePanel";
 import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/app/components/ui/tooltip";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/app/components/ui/collapsible";
 import { ScrollArea } from "@/app/components/ui/scroll-area";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/app/components/ui/dropdown-menu";
 import { cn } from "@/app/components/ui/utils";
 
 type GapType = "knowledge" | "context" | "action";
-type ImpactLevel = "high" | "medium" | "low";
-
 interface RecommendationItem {
   id: string;
   gap: GapType;
-  impact: ImpactLevel;
   title: string;
   meta: string;
   hint: string;
@@ -37,7 +51,6 @@ const RECOMMENDATIONS: RecommendationItem[] = [
   {
     id: "same-day-urgent",
     gap: "knowledge",
-    impact: "high",
     title: "Same-day & urgent appointment policy",
     meta: "Asked 27 times this week",
     hint: "Add same-day booking policy, urgent care pathway, and walk-in hours to the knowledge base",
@@ -45,7 +58,6 @@ const RECOMMENDATIONS: RecommendationItem[] = [
   {
     id: "telehealth",
     gap: "knowledge",
-    impact: "high",
     title: "Telehealth vs in-person appointment options",
     meta: "Asked 31 times this week",
     hint: "Add telehealth eligibility rules per visit type and a “how to join” guide",
@@ -53,7 +65,6 @@ const RECOMMENDATIONS: RecommendationItem[] = [
   {
     id: "pediatric-prep",
     gap: "knowledge",
-    impact: "medium",
     title: "Pediatric visit prep and required documents",
     meta: "Asked 18 times this week",
     hint: "Document vaccination forms, guardian consent, and what to bring for under-12 visits",
@@ -61,7 +72,6 @@ const RECOMMENDATIONS: RecommendationItem[] = [
   {
     id: "nguyen-schedule",
     gap: "context",
-    impact: "high",
     title: "Dr. Nguyen’s schedule not syncing from Athena",
     meta: "Affected 22 patients · incomplete_data",
     hint: "Verify Dr. Nguyen’s schedule is published — patients are being told no availability exists",
@@ -70,7 +80,6 @@ const RECOMMENDATIONS: RecommendationItem[] = [
   {
     id: "cigna-eligibility",
     gap: "context",
-    impact: "medium",
     title: "Insurance eligibility check failing for Cigna",
     meta: "Affected 14 patients · api_error",
     hint: "Check Availity enrollment for Cigna payer ID — eligibility calls timing out",
@@ -79,7 +88,6 @@ const RECOMMENDATIONS: RecommendationItem[] = [
   {
     id: "cancel-via-chat",
     gap: "action",
-    impact: "high",
     title: "Patients want to cancel appointments via chat",
     meta: "34 escalations this week",
     hint: "Enable “cancel appointment” write action on the chat channel — one-toggle fix",
@@ -87,7 +95,6 @@ const RECOMMENDATIONS: RecommendationItem[] = [
   {
     id: "update-insurance",
     gap: "action",
-    impact: "medium",
     title: "Patients want to update insurance on file during booking",
     meta: "21 requests this week",
     hint: "Enable “update insurance” write action — requires Athena write permission",
@@ -95,7 +102,6 @@ const RECOMMENDATIONS: RecommendationItem[] = [
   {
     id: "reminder-confirm",
     gap: "action",
-    impact: "medium",
     title: "Reminder confirmations not updating appointment status",
     meta: "16 patients this week",
     hint: "Enable “write confirmation status” when patient replies YES to reminder",
@@ -108,10 +114,48 @@ const GAP_LABEL: Record<GapType, string> = {
   action: "Action gap",
 };
 
+const GAP_FILTER_LABEL: Record<GapType, string> = {
+  knowledge: "Knowledge gaps",
+  context: "Context gaps",
+  action: "Action gaps",
+};
+
+const GAP_TYPES: GapType[] = ["knowledge", "context", "action"];
+
+/** Mixed display order (not grouped by gap type). */
+const RECOMMENDATION_DISPLAY_ORDER: string[] = [
+  "cancel-via-chat",
+  "pediatric-prep",
+  "cigna-eligibility",
+  "same-day-urgent",
+  "reminder-confirm",
+  "nguyen-schedule",
+  "telehealth",
+  "update-insurance",
+];
+
+const RECOMMENDATION_BY_ID = Object.fromEntries(
+  RECOMMENDATIONS.map((item) => [item.id, item]),
+) as Record<string, RecommendationItem>;
+
+const ORDERED_RECOMMENDATIONS = RECOMMENDATION_DISPLAY_ORDER.map(
+  (id) => RECOMMENDATION_BY_ID[id],
+).filter((item): item is RecommendationItem => item != null);
+
+/** Matches agent status badges (e.g. Running) in AppointmentsManagementAgentsPage */
 const GAP_BADGE: Record<GapType, string> = {
-  knowledge: "bg-emerald-50 text-emerald-800 border-emerald-200",
-  context: "bg-emerald-50/70 text-emerald-700 border-emerald-200",
-  action: "bg-emerald-50/40 text-emerald-700 border-emerald-200",
+  knowledge: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  context: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  action: "bg-emerald-50 text-emerald-700 border-emerald-200",
+};
+
+const STATUS_BADGE_ADDED = "bg-emerald-50 text-emerald-700 border-emerald-200";
+const STATUS_BADGE_MODIFIED = "bg-amber-50 text-amber-700 border-amber-200";
+
+const GAP_LIST_ICON_TILE: Record<GapType, string> = {
+  knowledge: "bg-violet-500/10 text-violet-700 dark:text-violet-300",
+  context: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
+  action: "bg-amber-500/10 text-amber-800 dark:text-amber-300",
 };
 
 const GAP_BAR_COLOR: Record<GapType, string> = {
@@ -126,39 +170,19 @@ const GAP_DOT_COLOR: Record<GapType, string> = {
   action: "bg-emerald-300",
 };
 
-const IMPACT_DOT: Record<ImpactLevel, string> = {
-  high: "bg-rose-500",
-  medium: "bg-amber-500",
-  low: "bg-emerald-500",
-};
+/** Demo: patient interactions analyzed for coach recommendations */
+const COACH_INTERACTION_COUNT = 63;
 
-const IMPACT_LABEL: Record<ImpactLevel, string> = {
-  high: "High impact",
-  medium: "Medium impact",
-  low: "Low impact",
-};
-
-function ImpactPill({ level }: { level: ImpactLevel }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 text-[11px] text-foreground">
-      <span className={cn("inline-block size-1.5 rounded-full", IMPACT_DOT[level])} aria-hidden />
-      {IMPACT_LABEL[level]}
-    </span>
-  );
-}
-
-function RecCategory({ title, count, children }: { title: string; count: number; children: ReactNode }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between px-1">
-        <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          {title}
-        </span>
-        <span className="text-[11px] tabular-nums text-muted-foreground">{count}</span>
-      </div>
-      <ul className="flex flex-col gap-2">{children}</ul>
-    </div>
-  );
+function GapListIcon({ gap }: { gap: GapType }) {
+  const className = "size-3.5 shrink-0";
+  switch (gap) {
+    case "knowledge":
+      return <BookOpen className={className} strokeWidth={1.6} absoluteStrokeWidth />;
+    case "context":
+      return <Database className={className} strokeWidth={1.6} absoluteStrokeWidth />;
+    case "action":
+      return <Workflow className={className} strokeWidth={1.6} absoluteStrokeWidth />;
+  }
 }
 
 function RecListItem({
@@ -176,71 +200,162 @@ function RecListItem({
         type="button"
         onClick={onSelect}
         className={cn(
-          "group flex w-full flex-col gap-2 rounded-lg border bg-card p-3 text-left transition-colors",
+          "group flex w-full flex-col gap-2 rounded-lg border bg-card p-4 text-left transition-colors",
           selected
             ? "border-primary/40 bg-primary/5 ring-1 ring-primary/30"
             : "border-border hover:border-foreground/20 hover:bg-muted/40",
         )}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           <span
             className={cn(
-              "shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium",
-              GAP_BADGE[item.gap],
+              "flex size-6 shrink-0 items-center justify-center rounded-md",
+              GAP_LIST_ICON_TILE[item.gap],
             )}
           >
+            <GapListIcon gap={item.gap} />
+          </span>
+          <span className="truncate text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
             {GAP_LABEL[item.gap]}
           </span>
-          <ImpactPill level={item.impact} />
         </div>
-        <p className="text-[13px] font-medium leading-snug text-foreground">{item.title}</p>
-        <p className="text-[12px] leading-relaxed text-muted-foreground">{item.meta}</p>
+        <p className="text-[14px] font-medium leading-snug text-foreground">{item.title}</p>
+        <p className="line-clamp-2 text-[13px] leading-relaxed text-muted-foreground">{item.hint}</p>
       </button>
     </li>
   );
 }
 
-// ─── Right-pane content ─────────────────────────────────────────────────────
+// ─── Right-pane content (open document layout) ──────────────────────────────
 
-function SectionCard({
-  icon,
-  eyebrow,
-  title,
+type RecoIconTone = "primary" | "knowledge" | "playbook" | "rules" | "responses";
+
+const RECO_ICON_TONE_CLASS: Record<RecoIconTone, string> = {
+  primary: "bg-primary/10 text-primary",
+  knowledge: "bg-violet-500/10 text-violet-700 dark:text-violet-300",
+  playbook: "bg-amber-500/10 text-amber-800 dark:text-amber-300",
+  rules: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+  responses: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
+};
+
+function RecoStatusBadge({
   children,
-  trailing,
+  variant,
 }: {
-  icon: ReactNode;
-  eyebrow: string;
-  title: string;
-  trailing?: ReactNode;
   children: ReactNode;
+  variant: "added" | "modified";
 }) {
   return (
-    <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-            {icon}
-          </span>
-          <div className="flex flex-col gap-0.5">
-            <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-              {eyebrow}
-            </span>
-            <h3 className="text-[15px] font-medium leading-tight text-foreground">{title}</h3>
-          </div>
+    <Badge
+      variant="outline"
+      className={cn(
+        "shrink-0 capitalize",
+        variant === "added" ? STATUS_BADGE_ADDED : STATUS_BADGE_MODIFIED,
+      )}
+    >
+      {children}
+    </Badge>
+  );
+}
+
+function RecoContentSection({
+  icon,
+  iconTone = "primary",
+  label,
+  title,
+  articleTitle,
+  trailing,
+  children,
+  defaultOpen = true,
+}: {
+  icon: ReactNode;
+  iconTone?: RecoIconTone;
+  /** Uppercase source label (e.g. Knowledge base) — shows chevron when set */
+  label?: string;
+  /** Section heading beside the icon (e.g. Why this came up?) */
+  title?: string;
+  /** Optional document title inside the body */
+  articleTitle?: string;
+  trailing?: ReactNode;
+  children: ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <section className="flex gap-3">
+      <span
+        className={cn(
+          "flex size-8 shrink-0 items-center justify-center rounded-lg",
+          RECO_ICON_TONE_CLASS[iconTone],
+        )}
+        aria-hidden
+      >
+        {icon}
+      </span>
+
+      <Collapsible open={open} onOpenChange={setOpen} className="flex min-w-0 flex-1 flex-col">
+        <div className="flex flex-wrap items-center gap-2">
+          {label ? (
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="flex min-w-0 items-center gap-2 rounded-md text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              >
+                <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  {label}
+                </span>
+                <ChevronDown
+                  className={cn(
+                    "size-4 shrink-0 text-muted-foreground transition-transform duration-200",
+                    !open && "-rotate-90",
+                  )}
+                  strokeWidth={1.6}
+                  absoluteStrokeWidth
+                  aria-hidden
+                />
+              </button>
+            </CollapsibleTrigger>
+          ) : title ? (
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="flex min-w-0 items-center gap-2 rounded-md text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              >
+                <h2 className="text-[15px] font-semibold leading-snug text-foreground">{title}</h2>
+                <ChevronDown
+                  className={cn(
+                    "size-4 shrink-0 text-muted-foreground transition-transform duration-200",
+                    !open && "-rotate-90",
+                  )}
+                  strokeWidth={1.6}
+                  absoluteStrokeWidth
+                  aria-hidden
+                />
+              </button>
+            </CollapsibleTrigger>
+          ) : null}
+          {trailing}
         </div>
-        {trailing}
-      </div>
-      <div className="flex flex-col gap-3 text-[13px] leading-relaxed text-foreground">{children}</div>
+
+        <CollapsibleContent className="flex flex-col gap-6 pt-4">
+          {articleTitle ? (
+            <h3 className="text-[15px] font-semibold leading-snug text-foreground">{articleTitle}</h3>
+          ) : null}
+          <div className="flex flex-col gap-6 text-[13px] leading-relaxed text-muted-foreground">
+            {children}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </section>
   );
 }
 
 function PolicySubsection({ heading, children }: { heading: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <h4 className="text-[13px] font-semibold text-foreground">{heading}</h4>
-      <div className="text-[13px] leading-relaxed text-muted-foreground">{children}</div>
+    <div className="flex flex-col gap-2">
+      <h4 className="text-[14px] font-semibold text-foreground">{heading}</h4>
+      <div>{children}</div>
     </div>
   );
 }
@@ -277,52 +392,15 @@ function ResponseCompare({
   );
 }
 
-function ImpactSummary({ rec }: { rec: RecommendationItem }) {
-  return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border bg-gradient-to-br from-primary/[0.06] via-card to-card p-5">
-      <div className="flex items-center gap-2">
-        <span className="flex size-7 items-center justify-center rounded-md bg-primary/15 text-primary">
-          <Sparkles className="size-4" strokeWidth={1.6} absoluteStrokeWidth />
-        </span>
-        <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          Impact summary
-        </span>
-      </div>
-      <p className="text-[14px] leading-relaxed text-foreground">
-        Applying this recommendation is estimated to resolve <span className="font-medium">27 patient escalations / week</span>,
-        improve same-day booking confidence, and reduce after-hours staff calls by <span className="font-medium">~18%</span>.
-      </p>
-      <div className="flex flex-wrap items-center gap-2 pt-1">
-        <Badge variant="outline" className={cn("capitalize", GAP_BADGE[rec.gap])}>
-          {GAP_LABEL[rec.gap]}
-        </Badge>
-        <Badge variant="outline" className="bg-card">
-          Knowledge base
-        </Badge>
-        <Badge variant="outline" className="bg-card">
-          Playbook
-        </Badge>
-        <Badge variant="outline" className="bg-card">
-          Rules
-        </Badge>
-      </div>
-    </div>
-  );
-}
-
 function SameDayPolicyDetail() {
   return (
-    <>
-      <SectionCard
+    <div className="flex flex-col gap-8">
+      <RecoContentSection
         icon={<BookOpen className="size-4" strokeWidth={1.6} absoluteStrokeWidth />}
-        eyebrow="Knowledge base · New article"
-        title="Same-day & urgent appointment policy"
-        trailing={
-          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700">
-            <Plus className="size-3" strokeWidth={1.6} absoluteStrokeWidth />
-            Added
-          </span>
-        }
+        iconTone="knowledge"
+        label="Knowledge base"
+        articleTitle="Same-day & urgent appointment policy"
+        trailing={<RecoStatusBadge variant="added">Added</RecoStatusBadge>}
       >
         <PolicySubsection heading="Can I get a same-day appointment?">
           Yes. We hold a limited number of same-day slots each morning for acute and urgent needs. These are
@@ -388,23 +466,17 @@ function SameDayPolicyDetail() {
           </ul>
         </PolicySubsection>
 
-        <div className="mt-1 flex items-center gap-2 border-t border-border pt-3 text-[11px] text-muted-foreground">
-          <span>Last reviewed: May 2026</span>
-          <span aria-hidden>·</span>
-          <span>Scope: Appointment agent (chat + phone channels)</span>
-        </div>
-      </SectionCard>
+        <p className="text-[11px] text-muted-foreground">
+          Last reviewed: May 2026 · Scope: Appointment agent (chat + phone channels)
+        </p>
+      </RecoContentSection>
 
-      <SectionCard
+      <RecoContentSection
         icon={<Workflow className="size-4" strokeWidth={1.6} absoluteStrokeWidth />}
-        eyebrow="Playbook · Updated step"
-        title="Slot selection and hold — same-day handling"
-        trailing={
-          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-medium text-amber-800">
-            <PenLine className="size-3" strokeWidth={1.6} absoluteStrokeWidth />
-            Modified
-          </span>
-        }
+        iconTone="playbook"
+        label="Procedure · Updated step"
+        articleTitle="Slot selection and hold — same-day handling"
+        trailing={<RecoStatusBadge variant="modified">Modified</RecoStatusBadge>}
       >
         <p>
           When the patient describes urgent symptoms or asks for “today,” the agent now branches into the
@@ -416,18 +488,14 @@ function SameDayPolicyDetail() {
           <li>For pediatric (&lt; 12) sick visits, route to the pediatric same-day queue only.</li>
           <li>If symptoms suggest emergency, stop the booking flow and surface 911 guidance.</li>
         </ol>
-      </SectionCard>
+      </RecoContentSection>
 
-      <SectionCard
+      <RecoContentSection
         icon={<ShieldCheck className="size-4" strokeWidth={1.6} absoluteStrokeWidth />}
-        eyebrow="Rules · New rule"
-        title="Urgent symptom escalation"
-        trailing={
-          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700">
-            <Plus className="size-3" strokeWidth={1.6} absoluteStrokeWidth />
-            Added
-          </span>
-        }
+        iconTone="rules"
+        label="Policies · New policy"
+        articleTitle="Urgent symptom escalation"
+        trailing={<RecoStatusBadge variant="added">Added</RecoStatusBadge>}
       >
         <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[13px]">
           <span className="text-muted-foreground">If</span>
@@ -446,12 +514,13 @@ function SameDayPolicyDetail() {
             </Badge>
           </span>
         </div>
-      </SectionCard>
+      </RecoContentSection>
 
-      <SectionCard
+      <RecoContentSection
         icon={<MessageSquareText className="size-4" strokeWidth={1.6} absoluteStrokeWidth />}
-        eyebrow="Agent responses · Before vs after"
-        title="How the agent now answers same-day requests"
+        iconTone="responses"
+        label="Agent responses · Before vs after"
+        articleTitle="How the agent now answers same-day requests"
       >
         <ResponseCompare
           scenario="“My throat is killing me — can I be seen today?”"
@@ -468,33 +537,42 @@ function SameDayPolicyDetail() {
           oldResponse="“Yes, you’re welcome to come in anytime during business hours and we’ll fit you in.”"
           newResponse="“Walk-ins are accepted Monday–Friday 8–11 AM and Saturday 9–11 AM — wait times can run 30 min to 2+ hours. I’d recommend calling ahead to check current wait, or I can book you the next open slot now if that’s easier.”"
         />
-      </SectionCard>
-    </>
+      </RecoContentSection>
+    </div>
   );
 }
 
 function GenericRecommendationDetail({ rec }: { rec: RecommendationItem }) {
-  const iconByGap: Record<GapType, ReactNode> = {
-    knowledge: <BookOpen className="size-4" strokeWidth={1.6} absoluteStrokeWidth />,
-    context: <Database className="size-4" strokeWidth={1.6} absoluteStrokeWidth />,
-    action: <Zap className="size-4" strokeWidth={1.6} absoluteStrokeWidth />,
+  const iconByGap: Record<GapType, { icon: ReactNode; tone: RecoIconTone }> = {
+    knowledge: {
+      icon: <BookOpen className="size-4" strokeWidth={1.6} absoluteStrokeWidth />,
+      tone: "knowledge",
+    },
+    context: {
+      icon: <Database className="size-4" strokeWidth={1.6} absoluteStrokeWidth />,
+      tone: "primary",
+    },
+    action: {
+      icon: <Zap className="size-4" strokeWidth={1.6} absoluteStrokeWidth />,
+      tone: "playbook",
+    },
   };
+  const { icon, tone } = iconByGap[rec.gap];
 
   return (
-    <SectionCard
-      icon={iconByGap[rec.gap]}
-      eyebrow={`${GAP_LABEL[rec.gap]} · Suggested change`}
-      title={rec.title}
+    <RecoContentSection
+      icon={icon}
+      iconTone={tone}
+      label={`${GAP_LABEL[rec.gap]} · Suggested change`}
+      articleTitle={rec.title}
     >
       <p>{rec.hint}</p>
-      {rec.source ? (
-        <p className="text-muted-foreground">Source: {rec.source}</p>
-      ) : null}
-      <p className="text-muted-foreground">
+      {rec.source ? <p>Source: {rec.source}</p> : null}
+      <p>
         Select <span className="text-foreground">Same-day & urgent appointment policy</span> from the
         list to see a full example of the changes the coach proposes for an appointment agent.
       </p>
-    </SectionCard>
+    </RecoContentSection>
   );
 }
 
@@ -502,7 +580,24 @@ function GenericRecommendationDetail({ rec }: { rec: RecommendationItem }) {
 
 export function AppointmentRecommendationTab() {
   const [selectedId, setSelectedId] = useState<string>("same-day-urgent");
+  const [sandboxOpen, setSandboxOpen] = useState(false);
+  const [gapFilters, setGapFilters] = useState<GapType[]>([]);
   const selected = RECOMMENDATIONS.find((r) => r.id === selectedId) ?? RECOMMENDATIONS[0];
+
+  const filteredRecommendations = useMemo(() => {
+    if (gapFilters.length === 0) return ORDERED_RECOMMENDATIONS;
+    return ORDERED_RECOMMENDATIONS.filter((item) => gapFilters.includes(item.gap));
+  }, [gapFilters]);
+
+  const activeFilterCount = gapFilters.length;
+
+  const setGapFilterChecked = (gap: GapType, checked: boolean) => {
+    setGapFilters((prev) =>
+      checked ? (prev.includes(gap) ? prev : [...prev, gap]) : prev.filter((g) => g !== gap),
+    );
+  };
+
+  const clearGapFilters = () => setGapFilters([]);
 
   const knowledge = RECOMMENDATIONS.filter((r) => r.gap === "knowledge");
   const context = RECOMMENDATIONS.filter((r) => r.gap === "context");
@@ -513,10 +608,12 @@ export function AppointmentRecommendationTab() {
   const actionPct = (action.length / total) * 100;
 
   return (
-    <div className="flex min-h-0 flex-1 gap-6 px-6 pb-6">
+    <TooltipProvider delayDuration={200}>
+    <div className="flex min-h-0 flex-1 overflow-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 gap-6 overflow-hidden px-6 pb-6">
       {/* ── Left rail ── */}
-      <aside className="flex w-[340px] shrink-0 flex-col gap-4 rounded-xl border border-border bg-card">
-        <div className="flex flex-col gap-2 px-4 pt-4">
+      <aside className="flex min-h-0 w-[340px] shrink-0 flex-col overflow-hidden rounded-xl border border-border bg-card">
+        <div className="flex shrink-0 flex-col gap-2 px-4 pt-4 pb-4">
           <p className="text-[13px] leading-relaxed text-muted-foreground">
             Most impactful ways to improve your agent’s response quality
           </p>
@@ -550,25 +647,81 @@ export function AppointmentRecommendationTab() {
             </span>
             <span className="inline-flex items-center gap-1.5">
               <span className={cn("size-1.5 rounded-full", GAP_DOT_COLOR.action)} aria-hidden />
-              Action gaps
+              {GAP_FILTER_LABEL.action}
             </span>
           </div>
         </div>
 
-        <div className="mx-4 rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2.5">
-          <p className="flex items-start gap-2 text-[12px] leading-relaxed text-muted-foreground">
-            <Sparkles className="mt-0.5 size-3.5 shrink-0 text-primary" strokeWidth={1.6} absoluteStrokeWidth />
-            <span>
-              Based on <span className="text-foreground">63 patient interactions</span>, I’ve identified
-              <span className="text-foreground"> {total} changes</span> across knowledge, context, and actions.
-            </span>
-          </p>
-        </div>
-
         <ScrollArea className="min-h-0 flex-1">
-          <div className="flex flex-col gap-5 px-4 pb-4">
-            <RecCategory title="Knowledge gaps" count={knowledge.length}>
-              {knowledge.map((item) => (
+          <div className="flex flex-col gap-4 px-4 pb-4">
+            <div className="rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2.5">
+              <p className="flex items-start gap-2 text-[12px] leading-relaxed text-muted-foreground">
+                <Sparkles className="mt-0.5 size-3.5 shrink-0 text-primary" strokeWidth={1.6} absoluteStrokeWidth />
+                <span>
+                  Based on{" "}
+                  <span className="text-foreground">{COACH_INTERACTION_COUNT} patient interactions</span>, I’ve
+                  identified <span className="text-foreground">{total} changes</span> across knowledge, context,
+                  and actions.
+                </span>
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between gap-2 border-b border-border pb-3">
+              <span className="text-[13px] text-foreground">
+                <span className="tabular-nums">{filteredRecommendations.length}</span> items
+              </span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1.5 px-2 text-[13px] font-normal"
+                    aria-label={
+                      activeFilterCount > 0
+                        ? `Filters, ${activeFilterCount} active`
+                        : "Filters"
+                    }
+                  >
+                    <ListFilter className="size-4 shrink-0" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                    Filters
+                    <span className="tabular-nums text-muted-foreground">{activeFilterCount}</span>
+                    <ChevronDown
+                      className="size-4 shrink-0 text-muted-foreground"
+                      strokeWidth={1.6}
+                      absoluteStrokeWidth
+                      aria-hidden
+                    />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  {GAP_TYPES.map((gap) => (
+                    <DropdownMenuCheckboxItem
+                      key={gap}
+                      checked={gapFilters.includes(gap)}
+                      onCheckedChange={(checked) => setGapFilterChecked(gap, checked === true)}
+                    >
+                      {GAP_FILTER_LABEL[gap]}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                  {activeFilterCount > 0 ? (
+                    <>
+                      <DropdownMenuSeparator />
+                      <button
+                        type="button"
+                        className="w-full rounded-sm px-2 py-1.5 text-left text-[13px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        onClick={clearGapFilters}
+                      >
+                        Clear filters
+                      </button>
+                    </>
+                  ) : null}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            <ul className="flex flex-col gap-2">
+              {filteredRecommendations.map((item) => (
                 <RecListItem
                   key={item.id}
                   item={item}
@@ -576,90 +729,56 @@ export function AppointmentRecommendationTab() {
                   onSelect={() => setSelectedId(item.id)}
                 />
               ))}
-            </RecCategory>
-            <RecCategory title="Context gaps" count={context.length}>
-              {context.map((item) => (
-                <RecListItem
-                  key={item.id}
-                  item={item}
-                  selected={selectedId === item.id}
-                  onSelect={() => setSelectedId(item.id)}
-                />
-              ))}
-            </RecCategory>
-            <RecCategory title="Action gaps" count={action.length}>
-              {action.map((item) => (
-                <RecListItem
-                  key={item.id}
-                  item={item}
-                  selected={selectedId === item.id}
-                  onSelect={() => setSelectedId(item.id)}
-                />
-              ))}
-            </RecCategory>
+            </ul>
           </div>
         </ScrollArea>
       </aside>
 
       {/* ── Right pane ── */}
       <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-4 pr-1">
-          {/* Header strip with selected rec context + actions */}
-          <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 md:flex-row md:items-start md:justify-between">
-            <div className="flex min-w-0 flex-col gap-1.5">
+        <div className="flex flex-col gap-8 pr-1">
+          <header className="flex items-start justify-between gap-4">
+            <div className="flex min-w-0 flex-col gap-2">
               <div className="flex flex-wrap items-center gap-2">
-                <span
-                  className={cn(
-                    "shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium",
-                    GAP_BADGE[selected.gap],
-                  )}
-                >
+                <h1 className="text-[22px] font-semibold leading-tight tracking-tight text-foreground">
+                  {selected.title}
+                </h1>
+                <Badge variant="outline" className={cn("shrink-0 capitalize", GAP_BADGE[selected.gap])}>
                   {GAP_LABEL[selected.gap]}
-                </span>
-                <ImpactPill level={selected.impact} />
-                {selected.id === "same-day-urgent" ? (
-                  <Badge variant="outline" className="gap-1 bg-card text-muted-foreground">
-                    <Stethoscope className="size-3" strokeWidth={1.6} absoluteStrokeWidth />
-                    Healthcare
-                  </Badge>
-                ) : null}
+                </Badge>
               </div>
-              <h1 className="text-[20px] font-medium leading-tight text-foreground">{selected.title}</h1>
               <p className="text-[13px] text-muted-foreground">{selected.meta}</p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <Button type="button" variant="outline" size="sm" className="h-9 gap-1.5 rounded-lg text-sm">
-                <FileText className="size-3.5" strokeWidth={1.6} absoluteStrokeWidth />
-                View conversations
-              </Button>
+              <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="size-9 rounded-lg p-0"
+                    onClick={() => setSandboxOpen(true)}
+                    aria-label="Test agent"
+                    title="Test agent"
+                  >
+                    <Play className="size-4" strokeWidth={1.6} absoluteStrokeWidth />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={4}>
+                  Test agent
+                </TooltipContent>
+              </Tooltip>
               <Button type="button" size="sm" className="h-9 gap-1.5 rounded-lg text-sm">
                 <Wand2 className="size-3.5" strokeWidth={1.6} absoluteStrokeWidth />
                 Apply changes
               </Button>
             </div>
-          </div>
+          </header>
 
-          <ImpactSummary rec={selected} />
-
-          {/* What I’ll change — and why */}
-          <div className="flex items-center gap-2 px-1 pt-1">
-            <PenLine className="size-3.5 text-muted-foreground" strokeWidth={1.6} absoluteStrokeWidth />
-            <span className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
-              What I’ll change — and why
-            </span>
-          </div>
-
-          {selected.id === "same-day-urgent" ? (
-            <SameDayPolicyDetail />
-          ) : (
-            <GenericRecommendationDetail rec={selected} />
-          )}
-
-          {/* Trigger context */}
-          <SectionCard
+          <RecoContentSection
             icon={<CalendarClock className="size-4" strokeWidth={1.6} absoluteStrokeWidth />}
-            eyebrow="Trigger context"
-            title="Why this came up"
+            iconTone="primary"
+            title="Why this came up?"
           >
             <p>
               Over the past 7 days, the agent received <span className="text-foreground">27 same-day requests</span>
@@ -668,22 +787,43 @@ export function AppointmentRecommendationTab() {
               <span className="text-foreground"> 4 cases</span> involving a sick child, the conversation was
               escalated to staff after the patient asked twice.
             </p>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="gap-1 bg-card text-muted-foreground">
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px]">
+              <span className="inline-flex items-center gap-1">
                 <Phone className="size-3" strokeWidth={1.6} absoluteStrokeWidth />
                 Phone · 14
-              </Badge>
-              <Badge variant="outline" className="gap-1 bg-card text-muted-foreground">
+              </span>
+              <span aria-hidden className="text-muted-foreground/60">
+                ·
+              </span>
+              <span className="inline-flex items-center gap-1">
                 <MessageSquareText className="size-3" strokeWidth={1.6} absoluteStrokeWidth />
                 Chat · 13
-              </Badge>
-              <Badge variant="outline" className="bg-card text-muted-foreground">
-                Escalated to staff · 4
-              </Badge>
-            </div>
-          </SectionCard>
+              </span>
+              <span aria-hidden className="text-muted-foreground/60">
+                ·
+              </span>
+              <span>Escalated to staff · 4</span>
+            </p>
+          </RecoContentSection>
+
+          {selected.id === "same-day-urgent" ? (
+            <SameDayPolicyDetail />
+          ) : (
+            <GenericRecommendationDetail rec={selected} />
+          )}
         </div>
       </ScrollArea>
+      </div>
+
+      <SlidingSidePanel
+        side="right"
+        open={sandboxOpen}
+        widthPx={APPOINTMENT_AGENT_SANDBOX_PANEL_WIDTH}
+        innerClassName="border-l border-border bg-background"
+      >
+        <AppointmentAgentSandboxPanel onClose={() => setSandboxOpen(false)} />
+      </SlidingSidePanel>
     </div>
+    </TooltipProvider>
   );
 }

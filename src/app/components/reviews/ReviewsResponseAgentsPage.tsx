@@ -23,6 +23,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/app/components/ui/too
 import { cn } from "@/app/components/ui/utils";
 import { RESPONSE_AGENT_LIBRARY_TEMPLATES } from "@/app/components/reviews/responseAgentLibraryTemplates";
 import { ResponseAgentLibraryTemplateCard } from "@/app/components/reviews/ResponseAgentLibraryTemplateCard";
+import { ReviewResponseAgentRecommendationTab } from "@/app/components/reviews/ReviewResponseAgentRecommendationTab";
 
 type ResponseAgentStatus = "running" | "paused" | "draft" | "failed";
 
@@ -1664,6 +1665,7 @@ function ResponseAgentDetailPage({
 }) {
   const [activeDetailTab, setActiveDetailTab] = useState<ResponseAgentDetailTab>(initialTab ?? (initialFeedbackId ? "coach" : "outcomes"));
   const [selectedFeedbackId, setSelectedFeedbackId] = useState<string | null>(initialFeedbackId ?? null);
+  const [recommendationVersion, setRecommendationVersion] = useState<1 | 2>(1);
   const flaggedFeedbackCount = RESPONSE_AGENT_FEEDBACK_ROWS.length;
 
   useEffect(() => {
@@ -2066,59 +2068,101 @@ function ResponseAgentDetailPage({
                   {flaggedFeedbackCount} responses flagged for improvement
                 </p>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="inline-flex shrink-0 items-center gap-1 cursor-pointer text-[13px] text-primary underline-offset-4 transition-colors hover:text-primary/90 hover:underline"
-                    onMouseEnter={(e) => (e.currentTarget as HTMLElement).click()}
-                  >
-                    Coach agent
-                    <ArrowRight className="h-3 w-3" strokeWidth={1.6} absoluteStrokeWidth />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 rounded-lg">
-                  <DropdownMenuItem
-                    className="text-[13px]"
-                    onClick={() => onCoachAgent(getAllCoachingNodeIds(), undefined, 1)}
-                  >
-                    Workflow recommendations
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-[13px]"
-                    onClick={() => onCoachAgent(getAllCoachingNodeIds(), undefined, 2)}
-                  >
-                    <span className="flex items-center gap-2">
-                      Guided recommendations
-                      <span
-                        className="inline-flex size-4 shrink-0 items-center justify-center rounded-[2px] bg-emerald-600"
-                        aria-hidden
-                      >
-                        <Check className="size-[10px] text-white" strokeWidth={1.6} absoluteStrokeWidth />
+              <div className="flex shrink-0 items-center gap-3">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="inline-flex shrink-0 items-center gap-1 cursor-pointer text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {recommendationVersion === 1 ? "Version 1" : "Version 2 (old)"}
+                      <ChevronDown className="h-3 w-3" strokeWidth={1.6} absoluteStrokeWidth />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-44 rounded-lg">
+                    <DropdownMenuItem
+                      className="text-[13px]"
+                      onClick={() => setRecommendationVersion(1)}
+                    >
+                      <span className="flex flex-1 items-center justify-between gap-2">
+                        Version 1
+                        {recommendationVersion === 1 ? (
+                          <Check className="size-3.5 text-primary" strokeWidth={1.6} absoluteStrokeWidth />
+                        ) : null}
                       </span>
-                    </span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-[13px]"
+                      onClick={() => setRecommendationVersion(2)}
+                    >
+                      <span className="flex flex-1 items-center justify-between gap-2">
+                        Version 2 (old)
+                        {recommendationVersion === 2 ? (
+                          <Check className="size-3.5 text-primary" strokeWidth={1.6} absoluteStrokeWidth />
+                        ) : null}
+                      </span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="inline-flex shrink-0 items-center gap-1 cursor-pointer text-[13px] text-primary underline-offset-4 transition-colors hover:text-primary/90 hover:underline"
+                      onMouseEnter={(e) => (e.currentTarget as HTMLElement).click()}
+                    >
+                      Coach agent
+                      <ArrowRight className="h-3 w-3" strokeWidth={1.6} absoluteStrokeWidth />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 rounded-lg">
+                    <DropdownMenuItem
+                      className="text-[13px]"
+                      onClick={() => onCoachAgent(getAllCoachingNodeIds(), undefined, 1)}
+                    >
+                      Workflow recommendations
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-[13px]"
+                      onClick={() => onCoachAgent(getAllCoachingNodeIds(), undefined, 2)}
+                    >
+                      <span className="flex items-center gap-2">
+                        Guided recommendations
+                        <span
+                          className="inline-flex size-4 shrink-0 items-center justify-center rounded-[2px] bg-emerald-600"
+                          aria-hidden
+                        >
+                          <Check className="size-[10px] text-white" strokeWidth={1.6} absoluteStrokeWidth />
+                        </span>
+                      </span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 px-6 pb-6">
-            <AppDataTable<FeedbackRow>
-              tableId={`reviews.response-agent-detail.feedback.v5.${agent.id}`}
-              data={RESPONSE_AGENT_FEEDBACK_ROWS}
-              columns={feedbackColumns}
-              initialSorting={[{ id: "date", desc: true }]}
-              getRowId={(row) => row.id}
-              className="h-full min-h-0 px-0"
-              columnSheetTitle="Coach columns"
-              hideColumnsButton
-              columnSheetOpen={columnSheetOpen}
-              onColumnSheetOpenChange={onColumnSheetOpenChange}
-              stickyFirstColumn={false}
-              rowDensity="medium"
-            />
-          </div>
+          {recommendationVersion === 1 ? (
+            <ReviewResponseAgentRecommendationTab />
+          ) : (
+            <div className="min-h-0 flex-1 px-6 pb-6">
+              <AppDataTable<FeedbackRow>
+                tableId={`reviews.response-agent-detail.feedback.v5.${agent.id}`}
+                data={RESPONSE_AGENT_FEEDBACK_ROWS}
+                columns={feedbackColumns}
+                initialSorting={[{ id: "date", desc: true }]}
+                getRowId={(row) => row.id}
+                className="h-full min-h-0 px-0"
+                columnSheetTitle="Coach columns"
+                hideColumnsButton
+                columnSheetOpen={columnSheetOpen}
+                onColumnSheetOpenChange={onColumnSheetOpenChange}
+                stickyFirstColumn={false}
+                rowDensity="medium"
+              />
+            </div>
+          )}
         </>
       ) : activeDetailTab === "logs" ? (
         <AgentLogsTab />
