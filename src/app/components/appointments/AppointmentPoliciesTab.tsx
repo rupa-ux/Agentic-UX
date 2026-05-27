@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import {
   AlertTriangle,
+  BookOpen,
   Check,
   ChevronDown,
+  ExternalLink,
   MoreVertical,
   Pencil,
   Plus,
@@ -26,7 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/app/components/ui/alert-dialog";
-import { Button, buttonVariants } from "@/app/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -57,8 +59,23 @@ export interface AppointmentPolicy {
   prompt: string;
   /** Plain-English bullet guidelines that further qualify the policy. */
   guidelines: string[];
+  /** Optional: procedures where this policy applies. */
+  appliesToProcedures?: string[];
   enabled: boolean;
 }
+
+/** Matches ProcedureSopCard shell (border, hover wash, title hover color). */
+const POLICY_CARD_SHELL_CLASS =
+  "group/policy rounded-lg border border-border bg-card text-left transition-colors duration-200 hover:border-primary/30 hover:bg-primary/[0.04] dark:hover:bg-primary/10";
+
+/**
+ * Policy edit fields should match the “Trigger / Description” form styling:
+ * larger padding + rounded corners + blue border on focus (no outer glow).
+ */
+const POLICY_EDIT_FIELD_CLASS =
+  "h-12 rounded-lg bg-background border-border px-4 text-[16px] focus-visible:!ring-0 focus-visible:!ring-transparent focus-visible:!shadow-none focus-visible:!border-primary";
+const POLICY_EDIT_TEXTAREA_CLASS =
+  "min-h-28 rounded-lg bg-background border-border px-4 py-3 text-[16px] focus-visible:!ring-0 focus-visible:!ring-transparent focus-visible:!shadow-none focus-visible:!border-primary";
 
 const DEFAULT_POLICIES: AppointmentPolicy[] = [
   {
@@ -73,6 +90,7 @@ const DEFAULT_POLICIES: AppointmentPolicy[] = [
       "For pediatric sick visits under 12, route to the pediatric same-day queue only.",
       "If symptoms suggest an emergency (chest pain, difficulty breathing, signs of stroke), stop booking and surface 911 guidance.",
     ],
+    appliesToProcedures: ["Slot selection and hold"],
     enabled: true,
   },
   {
@@ -87,6 +105,7 @@ const DEFAULT_POLICIES: AppointmentPolicy[] = [
       "For self-pay patients, surface the visit's cash price and confirm acceptance before booking.",
       "Never quote out-of-pocket cost without first checking the eligibility response.",
     ],
+    appliesToProcedures: ["Patient intake verification"],
     enabled: true,
   },
   {
@@ -101,6 +120,7 @@ const DEFAULT_POLICIES: AppointmentPolicy[] = [
       "For callers acting on behalf of a patient, confirm authorization is on file before continuing.",
       "Never read back a full medical record number, SSN, or insurance ID over the phone or chat.",
     ],
+    appliesToProcedures: ["Patient intake verification"],
     enabled: true,
   },
   {
@@ -115,6 +135,7 @@ const DEFAULT_POLICIES: AppointmentPolicy[] = [
       "Tell the patient: \"A care team member will confirm your visit shortly.\"",
       "Never minimize symptoms or suggest the patient \"wait and see\" for flagged concerns.",
     ],
+    appliesToProcedures: ["Human review for complex cases"],
     enabled: true,
   },
   {
@@ -129,79 +150,19 @@ const DEFAULT_POLICIES: AppointmentPolicy[] = [
       "Explain the practice's late-cancel and no-show policy in plain language.",
       "Do not deny booking outright; offer a same-week slot and document the confirmation.",
     ],
+    appliesToProcedures: ["Booking confirmation and reminders"],
     enabled: true,
-  },
-  {
-    id: "cancellation-window",
-    name: "Cancellation and reschedule courtesy",
-    description: "Honor the cancellation window and offer alternatives proactively.",
-    prompt:
-      "Honor the practice's cancellation window and offer rescheduling proactively when a patient cancels.",
-    guidelines: [
-      "Cancellations made at least 24 hours in advance release the slot immediately at no fee.",
-      "Late cancellations are noted on the patient's record per the cancellation policy.",
-      "Always offer 2-3 alternative times before ending the conversation.",
-      "If the patient cancels twice in a row, ask if anything is making it hard to attend.",
-    ],
-    enabled: true,
-  },
-  {
-    id: "provider-capacity",
-    name: "Provider capacity and overbooking",
-    description: "Respect daily capacity limits; offer alternatives instead of overbooking.",
-    prompt:
-      "Respect provider daily capacity limits; offer alternatives rather than overbooking a panel that has reached its cap.",
-    guidelines: [
-      "Once a provider hits 90% of daily capacity, prefer an alternate in-network provider or next available day.",
-      "Never overbook a same-day urgent slot without explicit care-team approval.",
-      "Preserve buffer slots reserved for established complex patients.",
-      "Surface the wait time honestly rather than offering an unrealistic time.",
-    ],
-    enabled: true,
-  },
-  {
-    id: "telehealth-eligibility",
-    name: "Telehealth eligibility",
-    description: "Offer telehealth only when the visit type and patient's state allow it.",
-    prompt:
-      "Offer telehealth only when the visit type and the patient's state of residence allow it.",
-    guidelines: [
-      "Match the visit type against the telehealth-eligible list before suggesting video.",
-      "Confirm the provider is licensed in the patient's current state of residence.",
-      "For new patients, follow the practice's policy on whether the first visit must be in-person.",
-      "Share clear \"how to join\" instructions and a fallback phone number.",
-    ],
-    enabled: true,
-  },
-  {
-    id: "pediatric-safeguards",
-    name: "Pediatric visit safeguards",
-    description: "Confirm guardian consent, required forms, and pediatric-specific routing.",
-    prompt:
-      "Apply extra care for pediatric visits — confirm guardian consent, required forms, and pediatric-specific routing.",
-    guidelines: [
-      "Confirm an adult guardian is present or authorized on file before booking.",
-      "Remind the family to bring vaccination records and any required intake forms.",
-      "For infants under 3 months with any fever, escalate to staff immediately.",
-      "Use pediatric-specific same-day slots; do not book a sick child into an adult slot.",
-    ],
-    enabled: true,
-  },
-  {
-    id: "after-hours",
-    name: "After-hours booking requests",
-    description: "Queue requests received outside business hours and respond first thing the next day.",
-    prompt:
-      "Queue booking requests received outside business hours and respond first thing the next business day.",
-    guidelines: [
-      "Acknowledge the request immediately and give a clear callback window.",
-      "If the request sounds urgent, surface urgent-care and 911 options before queuing.",
-      "Process queued requests in arrival order at the start of the next business day.",
-      "Do not promise a specific slot until live availability is checked.",
-    ],
-    enabled: false,
   },
 ];
+
+function PolicyProcedurePill({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/60 px-2.5 py-1 text-[12px] leading-none text-foreground">
+      <BookOpen className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+      {label}
+    </span>
+  );
+}
 
 function newPolicyId() {
   return `policy-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
@@ -265,33 +226,30 @@ function PolicyForm({
           value={state.name}
           placeholder="e.g. Same-day and urgent appointments"
           onChange={(e) => onChange({ ...state, name: e.target.value })}
+          className={POLICY_EDIT_FIELD_CLASS}
         />
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="policy-description">Short description</Label>
-        <p className="text-[12px] text-muted-foreground">
-          One line summarizing what this policy does — shown when the row is collapsed.
-        </p>
+        <Label htmlFor="policy-description">Description</Label>
         <Input
           id="policy-description"
           value={state.description}
           placeholder="e.g. Check the same-day queue before promising any urgent slot."
           onChange={(e) => onChange({ ...state, description: e.target.value })}
+          className={POLICY_EDIT_FIELD_CLASS}
         />
       </div>
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="policy-prompt">Instruction to the agent</Label>
-        <p className="text-[12px] text-muted-foreground">
-          Write what the agent should do in plain English — as if you were telling a new teammate.
-        </p>
         <Textarea
           id="policy-prompt"
           value={state.prompt}
           rows={3}
           placeholder="When a patient describes urgent symptoms, check the same-day queue before offering a future slot..."
           onChange={(e) => onChange({ ...state, prompt: e.target.value })}
+          className={POLICY_EDIT_TEXTAREA_CLASS}
         />
       </div>
 
@@ -306,12 +264,9 @@ function PolicyForm({
             onClick={addGuideline}
           >
             <Plus className="size-3.5" strokeWidth={1.6} absoluteStrokeWidth />
-            Add bullet
+            Add condition
           </Button>
         </div>
-        <p className="text-[12px] text-muted-foreground">
-          One condition per bullet. Phrase each like a sentence — the agent reads them as guardrails.
-        </p>
         <ul className="flex flex-col gap-2">
           {state.guidelines.map((g, idx) => (
             <li key={idx} className="flex items-start gap-2">
@@ -324,7 +279,7 @@ function PolicyForm({
                 rows={2}
                 placeholder="If the same-day queue is empty, offer a telehealth slot before suggesting tomorrow."
                 onChange={(e) => setGuideline(idx, e.target.value)}
-                className="flex-1"
+                className={cn("flex-1", POLICY_EDIT_TEXTAREA_CLASS)}
               />
               <Button
                 type="button"
@@ -341,16 +296,6 @@ function PolicyForm({
         </ul>
       </div>
 
-      <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
-        <Switch
-          id="policy-enabled"
-          checked={state.enabled}
-          onCheckedChange={(enabled) => onChange({ ...state, enabled })}
-        />
-        <Label htmlFor="policy-enabled" className="text-[13px] text-foreground">
-          {state.enabled ? "Policy active" : "Policy inactive"}
-        </Label>
-      </div>
     </div>
   );
 }
@@ -358,32 +303,55 @@ function PolicyForm({
 function PolicyRowHeader({
   policy,
   isOpen,
+  isEditing,
   onToggle,
   onEdit,
   onDelete,
 }: {
   policy: AppointmentPolicy;
   isOpen: boolean;
+  isEditing: boolean;
   onToggle: (enabled: boolean) => void;
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const appliesTo = policy.appliesToProcedures ?? [];
   return (
-    <div className="flex w-full items-center gap-3 px-4 py-3">
+    <div className="flex w-full items-start gap-4 p-4">
       <CollapsibleTrigger asChild>
         <button
           type="button"
-          className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className={cn(
+            "flex min-w-0 flex-1 items-start gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+            isEditing && "min-h-8 justify-end",
+          )}
           aria-label={isOpen ? "Collapse policy" : "Expand policy"}
         >
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <span className="truncate text-[14px] font-medium text-foreground">
-              {policy.name}
-            </span>
-          </div>
+          {!isEditing ? (
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <span
+                className={cn(
+                  "text-[14px] font-normal leading-snug text-foreground group-hover/policy:text-primary",
+                  isOpen && "text-primary",
+                )}
+              >
+                {policy.name}
+              </span>
+              <p className="text-[13px] leading-relaxed text-muted-foreground">
+                {policy.description}
+              </p>
+              {!isOpen && appliesTo.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {appliesTo.map((p) => (
+                    <PolicyProcedurePill key={p} label={p} />
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
           <ChevronDown
             className={cn(
-              "size-4 shrink-0 text-muted-foreground transition-transform duration-200",
+              "mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform duration-200",
               !isOpen && "-rotate-90",
             )}
             strokeWidth={1.6}
@@ -407,10 +375,7 @@ function PolicyRowHeader({
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "sm" }),
-                "h-8 w-8 p-0 text-muted-foreground hover:text-foreground",
-              )}
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               aria-label="Policy actions"
             >
               <MoreVertical className="size-4" strokeWidth={1.6} absoluteStrokeWidth />
@@ -440,11 +405,23 @@ function PolicyRowHeader({
 function PolicyView({ policy }: { policy: AppointmentPolicy }) {
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-[13px] leading-relaxed text-foreground">{policy.prompt}</p>
+      {policy.appliesToProcedures && policy.appliesToProcedures.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            Applies to procedures
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {policy.appliesToProcedures.map((p) => (
+              <PolicyProcedurePill key={p} label={p} />
+            ))}
+          </div>
+        </div>
+      ) : null}
+      <p className="text-[13px] leading-relaxed text-muted-foreground">{policy.prompt}</p>
       {policy.guidelines.length > 0 ? (
         <div className="flex flex-col gap-1.5">
           <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-            Conditions and guidelines
+            Conditions
           </span>
           <ul className="flex flex-col gap-1.5 text-[13px] leading-relaxed text-muted-foreground">
             {policy.guidelines.map((g, idx) => (
@@ -499,10 +476,12 @@ function PolicyEditor({
 
 export interface AppointmentPoliciesTabProps {
   initialPolicies?: AppointmentPolicy[];
+  onEditBrandGuidelines?: () => void;
 }
 
 export function AppointmentPoliciesTab({
   initialPolicies,
+  onEditBrandGuidelines,
 }: AppointmentPoliciesTabProps = {}) {
   const [policies, setPolicies] = useState<AppointmentPolicy[]>(
     () => initialPolicies ?? DEFAULT_POLICIES,
@@ -604,14 +583,26 @@ export function AppointmentPoliciesTab({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 pb-6">
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <p className="text-[13px] text-muted-foreground">
-              Business policies the agent must enforce before confirming or modifying any appointment.
-            </p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="text-[12px] leading-relaxed text-muted-foreground">
+            Business policies the agent must enforce before confirming or modifying any appointment.
+          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] leading-relaxed text-muted-foreground">
+            <span>Brand guidelines are configured at the business level.</span>
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
+              className="h-auto p-0 text-[12px] font-normal"
+              onClick={onEditBrandGuidelines}
+            >
+              Edit brand guidelines
+              <ExternalLink className="size-3" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+            </Button>
           </div>
-          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
             {searchOpen ? (
               <div className="relative h-9 w-[240px] shrink-0">
                 <Search
@@ -664,14 +655,13 @@ export function AppointmentPoliciesTab({
               <Plus className="size-4" strokeWidth={1.6} absoluteStrokeWidth />
               Add
             </Button>
-          </div>
         </div>
       </div>
 
       {filtered.length === 0 ? (
         <EmptyState onAdd={() => setAddOpen(true)} hasQuery={query.length > 0} />
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-4">
           {filtered.map((policy) => {
             const isEditing = editingId === policy.id;
             const isOpen = openId === policy.id;
@@ -684,20 +674,23 @@ export function AppointmentPoliciesTab({
                     setOpenId(open ? policy.id : undefined);
                   }}
                   className={cn(
-                    "rounded-lg border border-border bg-card transition-opacity",
+                    POLICY_CARD_SHELL_CLASS,
+                    isOpen && (isEditing ? "border-primary/30" : "border-primary/30 bg-primary/[0.04] dark:bg-primary/10"),
                     !policy.enabled && !isEditing && "opacity-60",
                     isEditing && "ring-1 ring-primary/30",
+                    isEditing && "hover:bg-card dark:hover:bg-card",
                   )}
                 >
                   <PolicyRowHeader
                     policy={policy}
                     isOpen={isOpen}
+                    isEditing={isEditing}
                     onToggle={(enabled) => togglePolicy(policy.id, enabled)}
                     onEdit={() => startEdit(policy)}
                     onDelete={() => setDeletingId(policy.id)}
                   />
                   <CollapsibleContent>
-                    <div className="border-t border-border px-4 py-4">
+                    <div className="px-4 pb-4">
                       {isEditing ? (
                         <PolicyEditor
                           state={editingForm}

@@ -58,6 +58,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/app/components/ui/too
 import { cn } from "@/app/components/ui/utils";
 import { AppointmentRecommendationTab } from "@/app/components/appointments/AppointmentRecommendationTab";
 import { AppointmentPoliciesTab } from "@/app/components/appointments/AppointmentPoliciesTab";
+import { AppointmentSettingsTab } from "@/app/components/appointments/AppointmentSettingsTab";
 
 type AppointmentAgentStatus = "running" | "paused" | "draft" | "failed";
 
@@ -257,7 +258,7 @@ function AppointmentAgentRowActions({ status }: { status: AppointmentAgentStatus
 
 // ─── Detail view types ───────────────────────────────────────────────────────
 
-type AgentDetailTab = "outcomes" | "procedures" | "workflows" | "policies" | "coach" | "logs" | "settings" | "reports";
+type AgentDetailTab = "outcomes" | "procedures" | "policies" | "coach" | "logs" | "settings";
 
 type LocationOutcomeRow = {
   id: string;
@@ -1923,13 +1924,11 @@ function AppointmentAgentDetailView({
     { key: "outcomes" as const, label: "Outcomes" },
     ...(isHealthcare ? [
       { key: "procedures" as const, label: "Procedures" },
-      { key: "workflows" as const, label: "Workflows" },
       { key: "policies" as const, label: "Policies" },
     ] : []),
     { key: "coach" as const, label: "Recommendation" },
     { key: "logs" as const, label: "Logs" },
     { key: "settings" as const, label: "Settings" },
-    { key: "reports" as const, label: "Reports", external: true },
   ] satisfies readonly { key: AgentDetailTab; label: string; external?: boolean }[];
 
   return (
@@ -2058,23 +2057,13 @@ function AppointmentAgentDetailView({
         <div className="flex min-h-0 flex-1 overflow-hidden">
           <AppointmentRecommendationTab />
         </div>
-      ) : activeTab === "workflows" ? (
-        <div className="flex min-h-0 flex-1 items-center justify-center px-6 pb-6 text-sm text-muted-foreground">
-          Workflow canvas is not available in this prototype.
-        </div>
       ) : activeTab === "logs" ? (
         <div className="flex min-h-0 flex-1 items-center justify-center px-6 pb-6 text-sm text-muted-foreground">
           Interaction logs are not available in this prototype.
         </div>
       ) : activeTab === "settings" ? (
-        <div className="flex min-h-0 flex-1 items-center justify-center px-6 pb-6 text-sm text-muted-foreground">
-          Agent settings are not available in this prototype.
-        </div>
-      ) : (
-        <div className="flex min-h-0 flex-1 items-center justify-center px-6 pb-6 text-sm text-muted-foreground">
-          Reports are opening in a new tab…
-        </div>
-      )}
+        <AppointmentSettingsTab />
+      ) : null}
       </div>
 
       <SlidingSidePanel

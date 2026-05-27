@@ -170,8 +170,8 @@ const GAP_DOT_COLOR: Record<GapType, string> = {
   action: "bg-emerald-300",
 };
 
-/** Demo: patient interactions analyzed for coach recommendations */
-const COACH_INTERACTION_COUNT = 63;
+/** Demo: user feedback analyzed for coach recommendations */
+const COACH_INTERACTION_COUNT = 10;
 
 function GapListIcon({ gap }: { gap: GapType }) {
   const className = "size-3.5 shrink-0";
@@ -659,7 +659,7 @@ export function AppointmentRecommendationTab() {
                 <Sparkles className="mt-0.5 size-3.5 shrink-0 text-primary" strokeWidth={1.6} absoluteStrokeWidth />
                 <span>
                   Based on{" "}
-                  <span className="text-foreground">{COACH_INTERACTION_COUNT} patient interactions</span>, I’ve
+                  <span className="text-foreground">{COACH_INTERACTION_COUNT} user feedback</span>, I’ve
                   identified <span className="text-foreground">{total} changes</span> across knowledge, context,
                   and actions.
                 </span>
