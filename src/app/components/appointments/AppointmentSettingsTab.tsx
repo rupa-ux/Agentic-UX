@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import {
   Braces,
   Check,
-  Clock,
+  ChevronDown,
   Database,
   FileText,
   Home,
@@ -11,7 +11,6 @@ import {
   MessageSquare,
   Mic,
   Package,
-  Phone,
   Plus,
   Smartphone,
   X,
@@ -20,22 +19,22 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/app/components/ui/button";
 import { Checkbox } from "@/app/components/ui/checkbox";
-import { Input } from "@/app/components/ui/input";
 import { cn } from "@/app/components/ui/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type TriggerChannel = "voice" | "chat" | "sms";
 
-interface ChannelTriggerCondition {
-  id: string;
-  text: string;
-}
-
 interface ChannelConfig {
   channel: TriggerChannel;
   enabled: boolean;
-  conditions: ChannelTriggerCondition[];
+}
+
+interface ChannelRule {
+  id: string;
+  intent: string;
+  event: string;
+  timing: string;
 }
 
 type SettingsContextKind = "json" | "file" | "link" | "brand" | "style" | "industry";
@@ -57,25 +56,14 @@ const DEFAULT_SETTINGS: AgentSettingsState = {
     {
       channel: "voice",
       enabled: true,
-      conditions: [
-        { id: "v1", text: "Schedule an appointment" },
-        { id: "v2", text: "Reschedule or cancel" },
-        { id: "v3", text: "Check availability" },
-      ],
     },
     {
       channel: "chat",
       enabled: true,
-      conditions: [
-        { id: "c1", text: "Book appointment" },
-        { id: "c2", text: "Find a doctor" },
-        { id: "c3", text: "Cancel visit" },
-      ],
     },
     {
       channel: "sms",
       enabled: false,
-      conditions: [],
     },
   ],
   locations: [
@@ -102,9 +90,29 @@ const CHANNEL_ICONS: Record<TriggerChannel, typeof Mic> = {
   sms: Smartphone,
 };
 
-function conditionId() {
-  return `cond-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;
+function channelRuleId() {
+  return `rule-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;
 }
+
+const DEFAULT_CHANNEL_RULES: Record<TriggerChannel, ChannelRule[]> = {
+  voice: [
+    {
+      id: channelRuleId(),
+      intent: "Voice",
+      event: "Incoming call",
+      timing: "During work hours",
+    },
+  ],
+  chat: [
+    {
+      id: channelRuleId(),
+      intent: "Chat",
+      event: "Message received",
+      timing: "During work hours",
+    },
+  ],
+  sms: [],
+};
 
 const SETTINGS_CONTEXT_ICON: Record<SettingsContextKind, typeof Braces> = {
   json: Braces,
@@ -284,25 +292,22 @@ function AdditionalContextPanel({
   );
 }
 
-function TriggerConditionChip({
-  text,
-  onRemove,
+function ChannelRuleSelect({
+  value,
+  ariaLabel,
 }: {
-  text: string;
-  onRemove: () => void;
+  value: string;
+  ariaLabel: string;
 }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/60 px-2.5 py-1 text-[12px] text-foreground">
-      {text}
-      <button
-        type="button"
-        onClick={onRemove}
-        aria-label={`Remove "${text}"`}
-        className="ml-0.5 inline-flex size-4 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      >
-        <X className="size-3" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
-      </button>
-    </span>
+    <button
+      type="button"
+      aria-label={ariaLabel}
+      className="flex h-[44px] w-full items-center justify-between rounded-lg border border-border bg-background px-4 text-left text-[13px] text-foreground transition-colors hover:border-ring"
+    >
+      <span className="truncate">{value}</span>
+      <ChevronDown className="size-5 shrink-0 text-foreground/80" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+    </button>
   );
 }
 
@@ -320,11 +325,9 @@ export function AppointmentSettingsTab({
     ...initialSettings,
   });
   const [saved, setSaved] = useState(true);
-  const [conditionInputs, setConditionInputs] = useState<Record<TriggerChannel, string>>({
-    voice: "",
-    chat: "",
-    sms: "",
-  });
+  const [channelRules, setChannelRules] = useState<Record<TriggerChannel, ChannelRule[]>>(
+    DEFAULT_CHANNEL_RULES,
+  );
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const update = <K extends keyof AgentSettingsState>(key: K, value: AgentSettingsState[K]) => {
@@ -346,25 +349,23 @@ export function AppointmentSettingsTab({
     update("channels", next);
   };
 
-  const addCondition = (ch: TriggerChannel) => {
-    const text = conditionInputs[ch].trim();
-    if (!text) return;
-    const next = settings.channels.map((c) =>
-      c.channel === ch
-        ? { ...c, conditions: [...c.conditions, { id: conditionId(), text }] }
-        : c,
-    );
-    update("channels", next);
-    setConditionInputs((prev) => ({ ...prev, [ch]: "" }));
+  const addRule = (channel: TriggerChannel) => {
+    const nextRule: ChannelRule = {
+      id: channelRuleId(),
+      intent: CHANNEL_LABELS[channel],
+      event: channel === "voice" ? "Incoming call" : channel === "chat" ? "Message received" : "SMS received",
+      timing: "During work hours",
+    };
+    setChannelRules((prev) => ({ ...prev, [channel]: [...prev[channel], nextRule] }));
+    setSaved(false);
   };
 
-  const removeCondition = (ch: TriggerChannel, id: string) => {
-    const next = settings.channels.map((c) =>
-      c.channel === ch
-        ? { ...c, conditions: c.conditions.filter((cond) => cond.id !== id) }
-        : c,
-    );
-    update("channels", next);
+  const removeRule = (channel: TriggerChannel, id: string) => {
+    setChannelRules((prev) => ({
+      ...prev,
+      [channel]: prev[channel].filter((rule) => rule.id !== id),
+    }));
+    setSaved(false);
   };
 
   // ── Location helpers ─────────────────────────────────────────────────────
@@ -434,9 +435,10 @@ export function AppointmentSettingsTab({
               <div className="flex flex-col gap-3">
                 {enabledChannels.map((ch) => {
                   const Icon = CHANNEL_ICONS[ch.channel];
+                  const rules = channelRules[ch.channel] ?? [];
                   return (
                     <SectionBox key={ch.channel} className="px-4 py-4">
-                      <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-2">
                           <span className="inline-flex size-6 items-center justify-center rounded-md bg-muted">
                             <Icon
@@ -450,49 +452,52 @@ export function AppointmentSettingsTab({
                             {CHANNEL_LABELS[ch.channel]}
                           </span>
                         </div>
-
-                        {ch.conditions.length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
-                            {ch.conditions.map((cond) => (
-                              <TriggerConditionChip
-                                key={cond.id}
-                                text={cond.text}
-                                onRemove={() => removeCondition(ch.channel, cond.id)}
-                              />
-                            ))}
+                        {rules.map((rule, idx) => (
+                          <div key={rule.id} className="flex flex-col gap-3">
+                            <div className="flex items-center gap-2">
+                              <div className="min-w-0 flex-1">
+                                <ChannelRuleSelect value={rule.intent} ariaLabel={`${CHANNEL_LABELS[ch.channel]} channel`} />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeRule(ch.channel, rule.id)}
+                                aria-label={`Remove ${CHANNEL_LABELS[ch.channel]} rule`}
+                                className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                              >
+                                <X className="size-5" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                              </button>
+                            </div>
+                            <ChannelRuleSelect value={rule.event} ariaLabel={`${CHANNEL_LABELS[ch.channel]} event`} />
+                            <ChannelRuleSelect value={rule.timing} ariaLabel={`${CHANNEL_LABELS[ch.channel]} timing`} />
+                            <div className="inline-flex items-center gap-2 text-[12px] text-primary">
+                              <button
+                                type="button"
+                                onClick={() => addRule(ch.channel)}
+                                className="inline-flex items-center gap-1 rounded-md px-1 py-0.5 transition-colors hover:bg-primary/10"
+                              >
+                                <Plus className="size-4" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                                Add
+                              </button>
+                              <ChevronDown className="size-4" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                            </div>
+                            {idx < rules.length - 1 ? (
+                              <div className="inline-flex items-center gap-1 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                                <span>OR</span>
+                                <ChevronDown className="size-3.5" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                              </div>
+                            ) : null}
                           </div>
-                        ) : null}
-
-                        <div className="flex gap-2">
-                          <Input
-                            value={conditionInputs[ch.channel]}
-                            onChange={(e) =>
-                              setConditionInputs((prev) => ({
-                                ...prev,
-                                [ch.channel]: e.target.value,
-                              }))
-                            }
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                addCondition(ch.channel);
-                              }
-                            }}
-                            placeholder={`Add trigger condition for ${CHANNEL_LABELS[ch.channel]}…`}
-                            className="h-8 flex-1 rounded-md text-[12px]"
-                          />
-                          <Button
+                        ))}
+                        {rules.length === 0 ? (
+                          <button
                             type="button"
-                            variant="outline"
-                            size="sm"
-                            className="h-8 gap-1 rounded-md px-3 text-[12px]"
-                            onClick={() => addCondition(ch.channel)}
-                            disabled={!conditionInputs[ch.channel].trim()}
+                            onClick={() => addRule(ch.channel)}
+                            className="inline-flex items-center gap-1.5 rounded-md px-1 py-0.5 text-[12px] text-primary transition-colors hover:bg-primary/10"
                           >
-                            <Plus className="size-3" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
+                            <Plus className="size-4" strokeWidth={1.6} absoluteStrokeWidth aria-hidden />
                             Add
-                          </Button>
-                        </div>
+                          </button>
+                        ) : null}
                       </div>
                     </SectionBox>
                   );
@@ -559,6 +564,7 @@ export function AppointmentSettingsTab({
             className="h-9 rounded-lg text-[13px]"
             onClick={() => {
               setSettings({ ...DEFAULT_SETTINGS, ...initialSettings });
+              setChannelRules(DEFAULT_CHANNEL_RULES);
               setSaved(true);
             }}
           >
