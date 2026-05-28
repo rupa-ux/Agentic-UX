@@ -1,13 +1,23 @@
 import { L2_FLAT_NAV_KEY_PREFIX } from "@/app/components/L2NavLayout";
 
-/** L2 key for the default appointments surface hosted in the shell (`AppointmentsView`). */
-export const APPOINTMENTS_L2_CALENDAR_KEY = "Human actions/View all appointments";
+/** L2 key for the review appointments table view (default appointments L2 selection). */
+export const APPOINTMENTS_L2_REVIEW_KEY = "Human actions/Review appointments";
+
+/** Persisted nav may still reference the former label. */
+const APPOINTMENTS_L2_REVIEW_KEY_LEGACY = "Human actions/View all appointments";
+
+/** @deprecated Prefer `APPOINTMENTS_L2_REVIEW_KEY`; alias kept for existing imports. */
+export const APPOINTMENTS_L2_CALENDAR_KEY = APPOINTMENTS_L2_REVIEW_KEY;
 
 /** L2 key for the schedule view — renders the calendar canvas. */
 export const APPOINTMENTS_L2_SCHEDULE_KEY = "Human actions/View schedule";
 
-/** L2 key for the review appointments table view. */
-export const APPOINTMENTS_L2_REVIEW_KEY = "Human actions/View all appointments";
+export function appointmentsL2IsReviewKey(activeKey: string | undefined): boolean {
+  return (
+    activeKey === APPOINTMENTS_L2_REVIEW_KEY ||
+    activeKey === APPOINTMENTS_L2_REVIEW_KEY_LEGACY
+  );
+}
 
 /** L2 key for the waitlist management view. */
 export const APPOINTMENTS_L2_WAITLIST_KEY = "Human actions/Manage waitlist";

@@ -13,8 +13,8 @@ import { AppointmentsReviewPage } from "@/app/components/appointments/Appointmen
 import { AppointmentsWaitlistPage } from "@/app/components/appointments/AppointmentsWaitlistPage";
 import {
   APPOINTMENTS_L2_APPOINTMENT_AGENT_KEY,
-  APPOINTMENTS_L2_REVIEW_KEY,
   APPOINTMENTS_L2_WAITLIST_KEY,
+  appointmentsL2IsReviewKey,
   appointmentsL2PlaceholderProductLabel,
   appointmentsL2ShowsCalendarCanvas,
 } from "@/app/components/appointmentsL2Nav";
@@ -32,7 +32,7 @@ export function AppointmentsView({
     return <AppointmentsManagementAgentsPage />;
   }
 
-  if (appointmentsL2ActiveItem === APPOINTMENTS_L2_REVIEW_KEY) {
+  if (appointmentsL2IsReviewKey(appointmentsL2ActiveItem)) {
     return <AppointmentsReviewPage />;
   }
 

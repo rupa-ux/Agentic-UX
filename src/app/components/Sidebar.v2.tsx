@@ -1717,7 +1717,7 @@ const appointmentsConfig = {
     {
       label: "Human actions",
       children: [
-        "View all appointments",
+        "Review appointments",
         "View schedule",
         "Manage waitlist",
       ],
@@ -1728,7 +1728,6 @@ const appointmentsConfig = {
         "Appointment agent",
         "Reminder agent",
         "Waitlist agent",
-        "Insurance verification agent",
       ],
     },
     {
